@@ -28,18 +28,16 @@ namespace HepEVD {
 using Position = std::array<float, 3>;
 
 class GeoVolume {
-public:
-    GeoVolume(const Position &pos) :
-        position(pos) {}
+  public:
+    GeoVolume(const Position &pos) : position(pos) {}
 
-    friend std::ostream& operator<< (std::ostream &os, GeoVolume const &vol) {
+    friend std::ostream &operator<<(std::ostream &os, GeoVolume const &vol) {
         os << vol.getJsonString();
         return os;
     }
 
-protected:
-
-    std::string getJsonStringStart () const {
+  protected:
+    std::string getJsonStringStart() const {
         std::stringstream os;
         os << "{"
            << "\"x\": " << this->position[0] << ","
@@ -57,21 +55,20 @@ protected:
 using Volumes = std::vector<std::shared_ptr<GeoVolume>>;
 
 class BoxVolume : GeoVolume {
-public:
-    BoxVolume(const Position &pos, float xWidth, float yWidth, float zWidth) :
-        GeoVolume(pos), xWidth(xWidth), yWidth(yWidth), zWidth(zWidth) {}
+  public:
+    BoxVolume(const Position &pos, float xWidth, float yWidth, float zWidth)
+        : GeoVolume(pos), xWidth(xWidth), yWidth(yWidth), zWidth(zWidth) {}
 
-    std::string getJsonString () {
+    std::string getJsonString() {
         std::stringstream os;
-        os << this->getJsonStringStart()
-           << "\"xWidth\": " << this->xWidth << ","
+        os << this->getJsonStringStart() << "\"xWidth\": " << this->xWidth << ","
            << "\"yWidth\": " << this->yWidth << ","
-           << "\"zWidth\": " << this->zWidth
-           << "}";
+           << "\"zWidth\": " << this->zWidth << "}";
 
         return os.str();
     }
-protected:
+
+  protected:
     float xWidth, yWidth, zWidth;
 };
 
@@ -79,11 +76,10 @@ protected:
 
 class DetectorGeometry {
 
-    DetectorGeometry(Volumes &vols) :
-        volumes(vols) {}
+    DetectorGeometry(Volumes &vols) : volumes(vols) {}
 
-    friend std::ostream& operator<< (std::ostream &os, DetectorGeometry const &geo) {
-        if (! geo.volumes.has_value())
+    friend std::ostream &operator<<(std::ostream &os, DetectorGeometry const &geo) {
+        if (!geo.volumes.has_value())
             return os;
 
         for (const auto &volume : geo.volumes.value())
@@ -91,37 +87,24 @@ class DetectorGeometry {
 
         return os;
     }
-protected:
+
+  protected:
     std::optional<Volumes> volumes;
 };
 
-enum HitType {
-    GENERAL,
-    TRUTH,
-    PRIMARY,
-    U_VIEW,
-    V_VIEW,
-    W_VIEW
-};
+enum HitType { GENERAL, TRUTH, PRIMARY, U_VIEW, V_VIEW, W_VIEW };
 
 class Hit {
-public:
-    Hit(const Position &pos, float t = 0, float e = 0) :
-        position(pos), time(t), energy(e) {}
+  public:
+    Hit(const Position &pos, float t = 0, float e = 0) : position(pos), time(t), energy(e) {}
 
-    void setHitType(const HitType &type) {
-        hitType = type;
-    }
+    void setHitType(const HitType &type) { hitType = type; }
 
-    void setLabel(const std::string &str) {
-        label = str;
-    }
+    void setLabel(const std::string &str) { label = str; }
 
-    void setProperties(std::map<std::string, float> props) {
-        properties = props;
-    }
+    void setProperties(std::map<std::string, float> props) { properties = props; }
 
-    friend std::ostream& operator<< (std::ostream &os, Hit const &hit) {
+    friend std::ostream &operator<<(std::ostream &os, Hit const &hit) {
         os << "{";
         os << "\"x\": " << hit.position[0] << ",";
         os << "\"y\": " << hit.position[1] << ",";
@@ -129,21 +112,24 @@ public:
         os << "\"t\": " << hit.time << ",";
         os << "\"e\": " << hit.energy;
 
-        if (! hit.label.empty())
-            os << "\"label\": " << hit.label;
+        if (!hit.label.empty())
+            os << ", \"label\": " << hit.label;
 
-        if (! hit.properties.empty()) {
-            os << "\"properties\": [";
+        if (!hit.properties.empty()) {
+            os << ", \"properties\": [";
             for (const auto &propValuePair : hit.properties)
                 os << "{\"" << propValuePair.first << "\": " << propValuePair.second << "},";
 
-            os.seekp(-1, os.cur); os << "]";
+            os.seekp(-1, os.cur);
+            os << "]";
         }
 
-        os << "}";;
+        os << "}";
+        ;
         return os;
     }
-protected:
+
+  protected:
     Position position;
     float time, energy;
     HitType hitType = HitType::GENERAL;
@@ -153,16 +139,13 @@ protected:
 using Hits = std::vector<Hit>;
 
 class MCHit : public Hit {
-public:
-    MCHit(const Position &pos, float t = 0, float energy = 0) :
-        Hit(pos, t, energy) {
-        this->hitType = HitType::TRUTH;
-    }
+  public:
+    MCHit(const Position &pos, float t = 0, float energy = 0) : Hit(pos, t, energy) { this->hitType = HitType::TRUTH; }
 };
 using MCHits = std::vector<MCHit>;
 
 class HttpEventDisplayServer {
-public:
+  public:
     HttpEventDisplayServer() {}
 
     // Start the event display server, blocking until exit is called by the
@@ -186,12 +169,10 @@ public:
         this->mcTruth = truth;
         return true;
     }
-private:
 
-    template <typename T>
-    std::string jsonify(const std::vector<T> &data, const std::string &label);
-    template <typename T>
-    std::string jsonify(const T &data, const std::string &label);
+  private:
+    template <typename T> std::string jsonify(const std::vector<T> &data, const std::string &label);
+    template <typename T> std::string jsonify(const T &data, const std::string &label);
 
     httplib::Server server;
 
@@ -209,7 +190,8 @@ inline std::string HttpEventDisplayServer::jsonify(const std::vector<T> &data, c
     }
 
     std::stringstream json_string;
-    json_string << "{" << "\"" << label << "\": [";
+    json_string << "{"
+                << "\"" << label << "\": [";
 
     for (const auto &dataPoint : data) {
         json_string << dataPoint << ",";
@@ -223,26 +205,24 @@ inline std::string HttpEventDisplayServer::jsonify(const std::vector<T> &data, c
     return json_string.str();
 }
 
-template <typename T>
-inline std::string HttpEventDisplayServer::jsonify(const T &data, const std::string &label) {
+template <typename T> inline std::string HttpEventDisplayServer::jsonify(const T &data, const std::string &label) {
     return HttpEventDisplayServer::jsonify(std::vector<T>({data}), label);
 }
 
 inline void HttpEventDisplayServer::startServer() {
     using namespace httplib;
 
-    this->server.Get("/hello_world", [](const Request&, Response &res) {
-        res.set_content("Hello, World!", "text/plain");
-    });
+    this->server.Get("/hello_world",
+                     [](const Request &, Response &res) { res.set_content("Hello, World!", "text/plain"); });
 
     // Simple commands to return the currently understood server state.
-    this->server.Get("/hits", [&](const Request&, Response &res) {
+    this->server.Get("/hits", [&](const Request &, Response &res) {
         res.set_content(this->jsonify<Hit>(this->hits.value(), "hits"), "application/json");
     });
-    this->server.Get("/mc_hits", [&](const Request&, Response &res) {
+    this->server.Get("/mc_hits", [&](const Request &, Response &res) {
         res.set_content(this->jsonify<MCHit>(this->mcHits.value(), "mcHits"), "application/json");
     });
-    this->server.Get("/geometry", [&](const Request&, Response &res) {
+    this->server.Get("/geometry", [&](const Request &, Response &res) {
         res.set_content(this->jsonify<DetectorGeometry>(this->geometry.value(), "geometry"), "application/json");
     });
 

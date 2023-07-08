@@ -1,10 +1,10 @@
 #CXX = clang++
-CXXFLAGS = -O2 -std=c++17 -I.. -Wall -Wextra -pthread
+CXXFLAGS = -O2 -std=c++17 -I.. -Wall -Wextra
 
-all: hits
+all: basic
 
-hits : hits.cpp ../httplib.h Makefile
-	$(CXX) -o hits $(CXXFLAGS) hits.cpp
+basic : basic.cpp ../httplib.h Makefile
+	$(CXX) -o basic $(CXXFLAGS) basic.cpp
 
 clean:
-	rm hits
+	rm basic
