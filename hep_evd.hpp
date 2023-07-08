@@ -54,7 +54,7 @@ protected:
     Position position;
 };
 
-using Volumes = std::vector<GeoVolume>;
+using Volumes = std::vector<std::shared_ptr<GeoVolume>>;
 
 class BoxVolume : GeoVolume {
 public:
@@ -79,14 +79,15 @@ protected:
 
 class DetectorGeometry {
 
-    DetectorGeometry() {}
+    DetectorGeometry(Volumes &vols) :
+        volumes(vols) {}
 
     friend std::ostream& operator<< (std::ostream &os, DetectorGeometry const &geo) {
         if (! geo.volumes.has_value())
             return os;
 
         for (const auto &volume : geo.volumes.value())
-            os << volume;
+            os << *volume;
 
         return os;
     }
@@ -108,20 +109,46 @@ public:
     Hit(const Position &pos, float t = 0, float e = 0) :
         position(pos), time(t), energy(e) {}
 
+    void setHitType(const HitType &type) {
+        hitType = type;
+    }
+
+    void setLabel(const std::string &str) {
+        label = str;
+    }
+
+    void setProperties(std::map<std::string, float> props) {
+        properties = props;
+    }
+
     friend std::ostream& operator<< (std::ostream &os, Hit const &hit) {
-        os << "{"
-           << "\"x\": " << hit.position[0] << ","
-           << "\"y\": " << hit.position[1] << ","
-           << "\"z\": " << hit.position[2] << ","
-           << "\"t\": " << hit.time << ","
-           << "\"e\": " << hit.energy
-           << "}";
+        os << "{";
+        os << "\"x\": " << hit.position[0] << ",";
+        os << "\"y\": " << hit.position[1] << ",";
+        os << "\"z\": " << hit.position[2] << ",";
+        os << "\"t\": " << hit.time << ",";
+        os << "\"e\": " << hit.energy;
+
+        if (! hit.label.empty())
+            os << "\"label\": " << hit.label;
+
+        if (! hit.properties.empty()) {
+            os << "\"properties\": [";
+            for (const auto &propValuePair : hit.properties)
+                os << "{\"" << propValuePair.first << "\": " << propValuePair.second << "},";
+
+            os.seekp(-1, os.cur); os << "]";
+        }
+
+        os << "}";;
         return os;
     }
 protected:
     Position position;
     float time, energy;
-    HitType hitType;
+    HitType hitType = HitType::GENERAL;
+    std::string label;
+    std::map<std::string, float> properties;
 };
 using Hits = std::vector<Hit>;
 
@@ -184,12 +211,12 @@ inline std::string HttpEventDisplayServer::jsonify(const std::vector<T> &data, c
     std::stringstream json_string;
     json_string << "{" << "\"" << label << "\": [";
 
-    for (const auto dataPoint : data) {
+    for (const auto &dataPoint : data) {
         json_string << dataPoint << ",";
     }
 
     // Move the stringstream write head back one char,
-    // removing the trailing space.
+    // removing the trailing comma, then close the JSON.
     json_string.seekp(-1, json_string.cur);
     json_string << "]}";
 
@@ -204,18 +231,18 @@ inline std::string HttpEventDisplayServer::jsonify(const T &data, const std::str
 inline void HttpEventDisplayServer::startServer() {
     using namespace httplib;
 
-    this->server.Get("/hello_world", [](const Request& req, Response &res) {
+    this->server.Get("/hello_world", [](const Request&, Response &res) {
         res.set_content("Hello, World!", "text/plain");
     });
 
     // Simple commands to return the currently understood server state.
-    this->server.Get("/hits", [&](const Request& req, Response &res) {
+    this->server.Get("/hits", [&](const Request&, Response &res) {
         res.set_content(this->jsonify<Hit>(this->hits.value(), "hits"), "application/json");
     });
-    this->server.Get("/mc_hits", [&](const Request& req, Response &res) {
+    this->server.Get("/mc_hits", [&](const Request&, Response &res) {
         res.set_content(this->jsonify<MCHit>(this->mcHits.value(), "mcHits"), "application/json");
     });
-    this->server.Get("/geometry", [&](const Request& req, Response &res) {
+    this->server.Get("/geometry", [&](const Request&, Response &res) {
         res.set_content(this->jsonify<DetectorGeometry>(this->geometry.value(), "geometry"), "application/json");
     });
 
