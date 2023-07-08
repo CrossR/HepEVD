@@ -8,7 +8,6 @@
 #ifndef CPPHEP_EVD_H
 #define CPPHEP_EVD_H
 
-#include <sstream>
 #ifndef CPPHEP_EVD_PORT
 #define CPPHEP_EVD_PORT 55555
 #endif
@@ -17,6 +16,8 @@
 
 #include <iostream>
 #include <optional>
+#include <stdexcept>
+#include <sstream>
 #include <string>
 
 #include "httplib.h"
@@ -26,6 +27,13 @@
 namespace HepEVD {
 
 using Position = std::array<float, 3>;
+inline std::string getPositionJson(const Position &pos) {
+    std::stringstream os;
+    os << "\"x\": " << pos[0] << ","
+       << "\"y\": " << pos[1] << ","
+       << "\"z\": " << pos[2];
+    return os.str();
+}
 
 class GeoVolume {
   public:
@@ -37,31 +45,22 @@ class GeoVolume {
     }
 
   protected:
-    std::string getJsonStringStart() const {
-        std::stringstream os;
-        os << "{"
-           << "\"x\": " << this->position[0] << ","
-           << "\"y\": " << this->position[1] << ","
-           << "\"z\": " << this->position[2] << ",";
-
-        return os.str();
-    }
-
     virtual std::string getJsonString() const = 0;
 
     Position position;
 };
 
-using Volumes = std::vector<std::shared_ptr<GeoVolume>>;
-
-class BoxVolume : GeoVolume {
+class BoxVolume : public GeoVolume {
   public:
     BoxVolume(const Position &pos, float xWidth, float yWidth, float zWidth)
         : GeoVolume(pos), xWidth(xWidth), yWidth(yWidth), zWidth(zWidth) {}
 
-    std::string getJsonString() {
+    std::string getJsonString() const {
         std::stringstream os;
-        os << this->getJsonStringStart() << "\"xWidth\": " << this->xWidth << ","
+        os << "{"
+           << "\"volume\": \"BOX\","
+           << getPositionJson(this->position) << ","
+           << "\"xWidth\": " << this->xWidth << ","
            << "\"yWidth\": " << this->yWidth << ","
            << "\"zWidth\": " << this->zWidth << "}";
 
@@ -73,23 +72,56 @@ class BoxVolume : GeoVolume {
 };
 
 // TODO: Extend geometry model to include lines, sphere, cylinder etc.
+enum VolumeType { BOX, LINE };
+
+using Volumes = std::vector<GeoVolume *>;
+using VolumeMap = std::map<VolumeType, std::vector<float>>;
 
 class DetectorGeometry {
 
+  public:
     DetectorGeometry(Volumes &vols) : volumes(vols) {}
 
+    DetectorGeometry(VolumeMap &volumeMap) {
+        for (const auto &volume : volumeMap) {
+
+            std::vector<float> params = volume.second;
+            VolumeType volumeType(volume.first);
+
+            if (params.size() < 3)
+                throw std::invalid_argument("All volumes need at least a position!");
+
+            Position pos({params[0], params[1], params[2]});
+
+            switch (volumeType) {
+            case BOX: {
+                if (volume.second.size() != 6)
+                    throw std::invalid_argument("A box volume needs 6 inputs!");
+                BoxVolume volume(pos, params[3], params[4], params[5]);
+                volumes.push_back(&volume);
+
+                break;
+            }
+            case LINE:
+            default:
+                throw std::invalid_argument("Unknown volume type given!");
+            }
+        }
+    }
+
     friend std::ostream &operator<<(std::ostream &os, DetectorGeometry const &geo) {
-        if (!geo.volumes.has_value())
+        if (geo.volumes.size() == 0)
             return os;
 
-        for (const auto &volume : geo.volumes.value())
-            os << *volume;
+        for (const auto &volume : geo.volumes)
+            os << *volume << ",";
 
+        os.seekp(-1, os.cur);
         return os;
     }
 
   protected:
-    std::optional<Volumes> volumes;
+    Volumes volumes;
 };
 
 enum HitType { GENERAL, TRUTH, PRIMARY, U_VIEW, V_VIEW, W_VIEW };
@@ -123,9 +155,8 @@ class Hit {
             os.seekp(-1, os.cur);
             os << "]";
         }
-
         os << "}";
-        ;
+
         return os;
     }
 
