@@ -1,0 +1,59 @@
+body { margin: 0; }
+canvas { margin : 0; }
+div { margin : 0; }
+
+body.darktheme { color: green; background-color: black; }
+body.lighttheme { background-color: white; }
+
+button {
+    font-weight: 800;
+    z-index: 1;
+    height: 2em;
+}
+
+.darktheme button {
+    background-color: black;
+    color: green;
+    border-color: green;
+}
+
+.lighttheme button {
+    background-color: white;
+    border-color: gray;
+}
+
+input {
+    background-color: transparent;
+    height: 2em;
+    border: 0px;
+}
+
+.darktheme input { color: green; }
+
+.dropdown {
+    position: relative;
+    display: inline-block;
+    z-index: 1;
+}
+
+/* Dropdown Content (Hidden by Default) */
+.dropdown-content {
+    display: none;
+    position: absolute;
+    z-index: 1;
+}
+
+/* Match parent button width */
+.dropdown-content > button { width: 100%; }
+
+/* Show the dropdown menu on hover */
+.dropdown:hover .dropdown-content { display: block; }
+
+.label {
+    position: absolute;
+    pointer-events: none;
+    transform: translate(-50%, -50%); /* center */
+}
+
+.darktheme .label { color: white; }
+.lighttheme .label { color: black; }
