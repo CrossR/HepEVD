@@ -1,5 +1,7 @@
 import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+import { Lut } from 'three/addons/math/Lut.js'
+
 import Stats from "three/addons/libs/stats.module.js";
 
 // ============================================================================
@@ -62,19 +64,25 @@ function drawBoxVolume(group, material, box) {
   group.add(boxLines);
 }
 
-function drawThreeDHits(group, material, hit, hit_size = 1) {
+function drawThreeDHits(group, material, hits, hit_size = 5) {
   const hitGeometry = new THREE.BoxGeometry(hit_size, hit_size, hit_size);
-  const hitEdges = new THREE.EdgesGeometry(hitGeometry);
-  const hitMesh = new THREE.InstancedMesh(hitEdges, material, hits.length);
+  const hitMesh = new THREE.InstancedMesh(hitGeometry, material, hits.length);
 
   const dummyObject = new THREE.Object3D();
+
+  const energyLut = new Lut('rainbow', 512);
+  energyLut.setMax(hits.reduce((max, hit) => hit.e > max ? hit.e : max, 0));
 
   hits.forEach(function (hit, index) {
     dummyObject.position.set(hit.x, hit.y, hit.z);
     dummyObject.updateMatrix();
 
     hitMesh.setMatrixAt(index, dummyObject.matrix);
+    hitMesh.setColorAt(index, energyLut.getColor(hit.e));
   });
+
+  hitMesh.instanceMatrix.needsUpdate = true;
+  hitMesh.instanceColor.needsUpdate = true;
 
   group.add(hitMesh);
 }
@@ -118,6 +126,7 @@ const materialGeometry = new THREE.LineBasicMaterial({ color: "darkred" });
 const materialHit = new THREE.MeshBasicMaterial({
   color: "gray",
   side: THREE.DoubleSide,
+  flatShared: true
 });
 
 const detectorGeometryGroup = new THREE.Group();

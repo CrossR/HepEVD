@@ -142,8 +142,8 @@ enum HitType { THREE_D, TWO_D, TRUTH, PRIMARY };
 
 class Hit {
   public:
-    Hit(const Position &pos, double t = 0, double e = 0) : position(pos), time(t), energy(e) {}
-    Hit(const std::array<double, 3> &pos, double t = 0, double e = 0) : position(pos), time(t), energy(e) {}
+    Hit(const Position &pos, double e = 0, double t = 0) : position(pos), time(t), energy(e) {}
+    Hit(const std::array<double, 3> &pos, double e = 0, double t = 0) : position(pos), time(t), energy(e) {}
 
     void setHitType(const HitType &type) { hitType = type; }
 
