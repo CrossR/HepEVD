@@ -23,7 +23,7 @@ int main(void) {
     std::mt19937 gen(rd());
 
     std::uniform_real_distribution<float> disX(-350, 350);
-    std::uniform_real_distribution<float> disY(-350, 350);
+    std::uniform_real_distribution<float> disY(-600, 600);
     std::uniform_real_distribution<float> disZ(0, 1300);
 
     for (unsigned int i = 0; i < 5000; ++i) {
