@@ -26,7 +26,7 @@ int main(void) {
     std::uniform_real_distribution<float> disY(-350, 350);
     std::uniform_real_distribution<float> disZ(0, 1300);
 
-    for (unsigned int i = 0; i < 100; ++i) {
+    for (unsigned int i = 0; i < 5000; ++i) {
         Hit hit({disX(gen), disY(gen), disZ(gen)});
         MCHit mcHit({disX(gen), disY(gen), disZ(gen)});
         hits.push_back(hit);

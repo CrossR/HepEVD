@@ -1,5 +1,6 @@
 import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+import Stats from "three/addons/libs/stats.module.js";
 
 // ============================================================================
 // Helper functions
@@ -14,10 +15,7 @@ function fitSceneInCamera(camera, controls, detectorGeometry) {
 
   // Get the bounding box of the detector geometry.
   // This should be the group for best results.
-  console.log(detectorGeometry);
   let boundingBox = new THREE.Box3().setFromObject(detectorGeometry);
-  console.log(boundingBox);
-  console.log(boundingBox.isEmpty());
 
   const size = boundingBox.getSize(new THREE.Vector3());
   const center = boundingBox.getCenter(new THREE.Vector3());
@@ -42,7 +40,7 @@ function fitSceneInCamera(camera, controls, detectorGeometry) {
   // And if required, update the controls.
   if (controls) {
     controls.target = center;
-    controls.maxDistance = cameraToFarEdge;;
+    controls.maxDistance = cameraToFarEdge;
     controls.saveState();
   } else {
     camera.lookAt(center);
@@ -64,20 +62,27 @@ function drawBoxVolume(group, material, box) {
   group.add(boxLines);
 }
 
-function drawThreeDHit(group, material, hit, hit_size = 1) {
+function drawThreeDHits(group, material, hit, hit_size = 1) {
   const hitGeometry = new THREE.BoxGeometry(hit_size, hit_size, hit_size);
   const hitEdges = new THREE.EdgesGeometry(hitGeometry);
-  const hitLines = new THREE.LineSegments(hitEdges, material);
+  const hitMesh = new THREE.InstancedMesh(hitEdges, material, hits.length);
 
-  hitLines.position.set(hit.x, hit.y, hit.z);
-  hitLines.updateMatrixWorld();
+  const dummyObject = new THREE.Object3D();
 
-  group.add(hitLines);
+  hits.forEach(function (hit, index) {
+    dummyObject.position.set(hit.x, hit.y, hit.z);
+    dummyObject.updateMatrix();
+
+    hitMesh.setMatrixAt(index, dummyObject.matrix);
+  });
+
+  group.add(hitMesh);
 }
 
 function animate() {
   requestAnimationFrame(animate);
   renderer.render(scene, camera);
+  stats.update();
 }
 
 // ============================================================================
@@ -96,6 +101,7 @@ const camera = new THREE.PerspectiveCamera(
 );
 const renderer = new THREE.WebGLRenderer();
 const controls = new OrbitControls(camera, renderer.domElement);
+const stats = new Stats();
 renderer.setSize(window.innerWidth, window.innerHeight);
 
 if (document.body.className === "lighttheme") renderer.setClearColor("white");
@@ -104,6 +110,7 @@ else renderer.setClearColor("black");
 renderer.alpha = true;
 renderer.antialias = false;
 document.body.appendChild(renderer.domElement);
+document.body.appendChild(stats.dom);
 
 // Then, setup some basic materials and data structures the rest of the renderer can use.
 const materialLine = new THREE.LineBasicMaterial({ color: "gray" });
@@ -130,9 +137,11 @@ detectorGeometry
   .forEach((box) =>
     drawBoxVolume(detectorGeometryGroup, materialGeometry, box)
   );
-hits
-  .filter((hit) => hit.type === "3D")
-  .forEach((hit) => drawThreeDHit(threeDHitGroup, materialHit, hit));
+drawThreeDHits(
+  threeDHitGroup,
+  materialHit,
+  hits.filter((hit) => hit.type === "3D")
+);
 
 // Start the final rendering of the event.
 
