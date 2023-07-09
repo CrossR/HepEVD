@@ -154,8 +154,8 @@ class Hit {
     friend std::ostream &operator<<(std::ostream &os, Hit const &hit) {
         os << "{"
            << "\"type\": \"" << Hit::hitTypeToString(hit.hitType) << "\"," << hit.position << ","
-           << "\"t\": " << hit.time << ","
-           << "\"e\": " << hit.energy;
+           << "\"time\": " << hit.time << ","
+           << "\"energy\": " << hit.energy;
 
         if (!hit.label.empty())
             os << ", \"label\": " << hit.label;
@@ -178,11 +178,11 @@ class Hit {
         case THREE_D:
             return "3D";
         case TWO_D:
-            return "3D";
+            return "2D";
         case TRUTH:
-            return "3D";
+            return "TRUTH";
         case PRIMARY:
-            return "3D";
+            return "PRIMARY";
         }
         throw std::invalid_argument("Unknown hit type!");
     }
