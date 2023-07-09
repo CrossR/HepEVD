@@ -16,8 +16,8 @@
 
 #include <iostream>
 #include <optional>
-#include <stdexcept>
 #include <sstream>
+#include <stdexcept>
 #include <string>
 
 #include "httplib.h"
@@ -26,14 +26,20 @@
 
 namespace HepEVD {
 
-using Position = std::array<float, 3>;
-inline std::string getPositionJson(const Position &pos) {
-    std::stringstream os;
-    os << "\"x\": " << pos[0] << ","
-       << "\"y\": " << pos[1] << ","
-       << "\"z\": " << pos[2];
-    return os.str();
-}
+class Position {
+
+  public:
+    Position(const std::array<float, 3> pos) : x(pos[0]), y(pos[1]), z(pos[2]) {}
+
+    friend std::ostream &operator<<(std::ostream &os, Position const &pos) {
+        os << "\"x\": " << pos.x << ","
+           << "\"y\": " << pos.y << ","
+           << "\"z\": " << pos.z;
+        return os;
+    }
+
+    const float x, y, z;
+};
 
 class GeoVolume {
   public:
@@ -52,14 +58,16 @@ class GeoVolume {
 
 class BoxVolume : public GeoVolume {
   public:
+
+    static const int ARG_COUNT = 3;
+
     BoxVolume(const Position &pos, float xWidth, float yWidth, float zWidth)
         : GeoVolume(pos), xWidth(xWidth), yWidth(yWidth), zWidth(zWidth) {}
 
     std::string getJsonString() const {
         std::stringstream os;
         os << "{"
-           << "\"volume\": \"BOX\","
-           << getPositionJson(this->position) << ","
+           << "\"volume\": \"BOX\"," << this->position << ","
            << "\"xWidth\": " << this->xWidth << ","
            << "\"yWidth\": " << this->yWidth << ","
            << "\"zWidth\": " << this->zWidth << "}";
@@ -72,7 +80,7 @@ class BoxVolume : public GeoVolume {
 };
 
 // TODO: Extend geometry model to include lines, sphere, cylinder etc.
-enum VolumeType { BOX, LINE };
+enum VolumeType { BOX, LINE, SPHERE, CYLINDER };
 
 using Volumes = std::vector<GeoVolume *>;
 using VolumeMap = std::map<VolumeType, std::vector<float>>;
@@ -95,7 +103,7 @@ class DetectorGeometry {
 
             switch (volumeType) {
             case BOX: {
-                if (volume.second.size() != 6)
+                if (volume.second.size() - 3 != BoxVolume::ARG_COUNT)
                     throw std::invalid_argument("A box volume needs 6 inputs!");
                 BoxVolume volume(pos, params[3], params[4], params[5]);
                 volumes.push_back(&volume);
@@ -103,6 +111,9 @@ class DetectorGeometry {
                 break;
             }
             case LINE:
+            case SPHERE:
+            case CYLINDER:
+                throw std::logic_error("Geometry not yet implemented!");
             default:
                 throw std::invalid_argument("Unknown volume type given!");
             }
@@ -137,12 +148,9 @@ class Hit {
     void setProperties(std::map<std::string, float> props) { properties = props; }
 
     friend std::ostream &operator<<(std::ostream &os, Hit const &hit) {
-        os << "{";
-        os << "\"x\": " << hit.position[0] << ",";
-        os << "\"y\": " << hit.position[1] << ",";
-        os << "\"z\": " << hit.position[2] << ",";
-        os << "\"t\": " << hit.time << ",";
-        os << "\"e\": " << hit.energy;
+        os << "{" << hit.position << ","
+           << "\"t\": " << hit.time << ","
+           << "\"e\": " << hit.energy;
 
         if (!hit.label.empty())
             os << ", \"label\": " << hit.label;
@@ -243,14 +251,11 @@ template <typename T> inline std::string HttpEventDisplayServer::jsonify(const T
 inline void HttpEventDisplayServer::startServer() {
     using namespace httplib;
 
-    this->server.Get("/hello_world",
-                     [](const Request &, Response &res) { res.set_content("Hello, World!", "text/plain"); });
-
     // Simple commands to return the currently understood server state.
     this->server.Get("/hits", [&](const Request &, Response &res) {
         res.set_content(this->jsonify<Hit>(this->hits.value(), "hits"), "application/json");
     });
-    this->server.Get("/mc_hits", [&](const Request &, Response &res) {
+    this->server.Get("/mcHits", [&](const Request &, Response &res) {
         res.set_content(this->jsonify<MCHit>(this->mcHits.value(), "mcHits"), "application/json");
     });
     this->server.Get("/geometry", [&](const Request &, Response &res) {

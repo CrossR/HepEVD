@@ -8,6 +8,7 @@ int main(void) {
 
     HttpEventDisplayServer server;
     Hits hits;
+    MCHits mcHits;
 
     BoxVolume volume1({-182.954544067, 0, 696.293762207}, 359.415008545, 1207.84753418, 1394.33996582);
     BoxVolume volume2({182.954544067, 0, 696.293762207}, 359.415008545, 1207.84753418, 1394.33996582);
@@ -22,10 +23,13 @@ int main(void) {
 
     for (unsigned int i = 0; i < 100; ++i) {
         Hit hit({disX(gen), disY(gen), disZ(gen)});
+        MCHit mcHit({disX(gen), disY(gen), disZ(gen)});
         hits.push_back(hit);
+        mcHits.push_back(mcHit);
     }
 
     server.addHits(hits);
+    server.addTruth(mcHits, "10 GeV \\nu_\\mu");
     server.assignGeometry(DetectorGeometry(vols));
 
     server.startServer();
