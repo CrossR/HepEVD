@@ -52,30 +52,31 @@ function fitSceneInCamera(camera, controls, detectorGeometry) {
   }
 }
 
-// Build up a <string, array[hits]> map, linking every available hit property.
+// Build up a map between a property name and a property.
+//
+// This should mean that any property can be easily drawn without
+// needing to worry about the specific location of a property.
 function getHitProperties(hits) {
   const hitPropMap = new Map();
 
-  // Create a default entry for energy and time,
-  // since every hit should have this info.
-  hitPropMap.set("energy", hits);
-  hitPropMap.set("time", hits);
-
-  const setOrAdd = (hit, prop) => {
-    if (hitPropMap.has(prop)) {
-      hitPropMap.get(prop).push(hit);
-    } else {
-      hitPropMap.set(prop, [hit]);
-    }
-  };
-
+  // Every hit should have an energy property, but there is
+  // then two additional cases where a hit can be grouped:
+  //  - If a hit is labelled.
+  //  - If a hit has a property map associated.
   hits.forEach((hit) => {
+    hitPropMap.set(hit, new Map([["energy", hit.energy]]));
+
     if (Object.hasOwn(hit, "label")) {
-      setOrAdd(hit, hit.label);
+      hitPropMap.get(hit).set(hit.label, 1.0);
     }
 
     if (Object.hasOwn(hit, "properties")) {
-      hit.properties.forEach((prop) => setOrAdd(hit, prop));
+      hit.properties.forEach((prop) => {
+        const key = Object.keys(prop)[0];
+        const value = Object.values(prop)[0];
+
+        hitPropMap.get(hit).set(key, value);
+      });
     }
   });
 
@@ -106,6 +107,7 @@ function drawThreeDHits(
   group,
   material,
   hits,
+  hitPropMap,
   useColour = false,
   colourProp = "",
   hitSize = 3
@@ -116,25 +118,49 @@ function drawThreeDHits(
   const dummyObject = new THREE.Object3D();
   const energyLut = new Lut("rainbow", 512);
 
-  if (useColour) {
-    energyLut.setMax(
-      hits.reduce(
-        (max, hit) => (hit[colourProp] > max ? hit[colourProp] : max),
-        0
-      )
-    );
+  const properties = new Map();
+  hits.forEach((hit, index) => {
+    if (!hitPropMap.has(hit)) {
+      return;
+    }
+
+    if (!hitPropMap.get(hit).has(colourProp)) {
+      return;
+    }
+
+    properties.set(index, hitPropMap.get(hit).get(colourProp));
+  });
+
+  const usingColour =
+    useColour &&
+    properties.size > 0 &&
+    [...properties.values()][0].constructor == Number;
+
+  if (usingColour) {
+    let minColourValue = Infinity;
+    let maxColourValue = Number.NEGATIVE_INFINITY;
+    properties.forEach((value, _) => {
+      if (value < minColourValue) minColourValue = value;
+      if (value > maxColourValue) maxColourValue = value;
+    });
+    energyLut.setMax(maxColourValue);
   }
 
   hits.forEach(function (hit, index) {
     dummyObject.position.set(hit.x, hit.y, hit.z);
     dummyObject.updateMatrix();
 
+    if (usingColour && ! properties.has(index)) {
+      return;
+    }
+
     hitMesh.setMatrixAt(index, dummyObject.matrix);
-    if (useColour) {
-      console.log(hit[colourProp])
-      hitMesh.setColorAt(index, energyLut.getColor(hit[colourProp]));
+
+    if (usingColour) {
+      console.log(properties.get(index));
+      hitMesh.setColorAt(index, energyLut.getColor(properties.get(index)));
     } else {
-      hitMesh.setColorAt(index, new THREE.Color('gray'));
+      hitMesh.setColorAt(index, new THREE.Color("gray"));
     }
   });
 
@@ -154,39 +180,39 @@ function animate() {
 // GUI Functions
 // ============================================================================
 
-function threeDHitsToggle(
-  threeDHitGroupMap,
-  hitPropertiesMap,
-  toggleTarget
-) {
-
+function threeDHitsToggle(hits, threeDHitGroupMap, hitPropMap, toggleTarget) {
   if (toggleTarget === "none") {
     threeDHitGroupMap.forEach((group) => (group.visible = false));
     return;
   }
 
-  const hasGroup = threeDHitGroupMap.has(toggleTarget) === true;
-  const targetExists = hitPropertiesMap.has(toggleTarget) === true;
-
-  // If the property doesn't exist, we can't do anything.
-  if (! hasGroup && ! targetExists) {
-    return;
-  }
-
   // If it does exist, then just toggle its visibility.
-  if (hasGroup) {
+  if (threeDHitGroupMap.has(toggleTarget) === true) {
     const threeDHitGroup = threeDHitGroupMap.get(toggleTarget);
     threeDHitGroup.visible = !threeDHitGroup.visible;
 
     return;
   }
 
-  // If we are here, the property exists, but we haven't actually rendered it
-  // yet.  So make a new group, populate it, store it for later.
+  // Otherwise, we need to make a new group, populate it and store it for later.
   const newGroup = new THREE.Group();
   scene.add(newGroup);
-  drawThreeDHits(newGroup, materialHit, hitPropertiesMap.get(toggleTarget), true, toggleTarget);
+  drawThreeDHits(newGroup, materialHit, hits, hitPropMap, true, toggleTarget);
   threeDHitGroupMap.set(toggleTarget, newGroup);
+
+  return;
+}
+
+// Given a drop down,
+function populateDropdown(dropdownID, entries, onClick = (_) => {}) {
+  const dropDown = document.getElementById(dropdownID);
+
+  entries.forEach((entry) => {
+    const newButton = document.createElement("button");
+    newButton.innerText = entry;
+    newButton.addEventListener("click", () => onClick(entry));
+    dropDown.appendChild(newButton);
+  });
 
   return;
 }
@@ -239,7 +265,7 @@ const detectorGeometry = await fetch("geometry").then((response) =>
   response.json()
 );
 const hits = await fetch("hits").then((response) => response.json());
-const hitPropertiesMap = getHitProperties(hits);
+const hitPropMap = getHitProperties(hits);
 
 // Time to start the actual rendering.
 detectorGeometry
@@ -250,13 +276,24 @@ detectorGeometry
 drawThreeDHits(
   threeDHitGroup,
   materialHit,
-  hits.filter((hit) => hit.type === "3D")
+  hits.filter((hit) => hit.type === "3D"),
+  hitPropMap
 );
 
 // Populate the UI properly.
 // This includes functions that the GUI uses, and filling in the various dropdowns.
-document.threeDHitsToggle = (toggleTarget) =>
-  threeDHitsToggle(threeDHitGroupMap, hitPropertiesMap, toggleTarget);
+let threeDHitsDropDownOnClick = (toggleTarget) =>
+  threeDHitsToggle(hits, threeDHitGroupMap, hitPropMap, toggleTarget);
+const threeDHitProperties = new Set();
+hitPropMap.forEach((properties, _) => {
+  properties.forEach((_, propString) => threeDHitProperties.add(propString));
+});
+document.threeDHitsToggle = threeDHitsDropDownOnClick;
+populateDropdown(
+  "threeD_dropdown",
+  threeDHitProperties,
+  threeDHitsDropDownOnClick
+);
 
 // Start the final rendering of the event.
 

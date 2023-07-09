@@ -9,6 +9,8 @@ button {
     font-weight: 800;
     z-index: 1;
     height: 2em;
+    width: 8em;
+    text-transform: capitalize;
 }
 
 .darktheme button {

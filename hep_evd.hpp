@@ -149,6 +149,7 @@ class Hit {
 
     void setLabel(const std::string &str) { label = str; }
 
+    // TODO: This may want to be extensible. I.e. string -> double + other properties (CATEGORIC, NUMERIC) etc;
     void setProperties(std::map<std::string, double> props) { properties = props; }
 
     friend std::ostream &operator<<(std::ostream &os, Hit const &hit) {
