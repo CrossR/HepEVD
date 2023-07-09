@@ -4,7 +4,16 @@ A header-only web-based event display for particle physics events.
 
 ## Installation + Usage
 
-TODO
+For now, needs the `httplib.h` file from
+[cpp-httplib](https://github.com/yhirose/cpp-httplib) in the root of the repo.
+
+To run example:
+
+```
+cd example/
+make
+./basic
+```
 
 ## Motivation
 
@@ -44,5 +53,8 @@ as possible.
  - Can / should we compile to a truly single-header solution, bundling in HTTPLib,
    assuming the license allows it? (Its MIT so I'd guess so). Could likely have that as
    a build step on GitHub Actions.
+   - HTML/JS/CSS files kinda mess that up, so maybe a better solution would be a
+   single folder that can just be stuck next to a file / in a system-wide
+   include location, for simple usage.
  - Helper functions for Pandora, LArSoft + more to convert bits.
 
