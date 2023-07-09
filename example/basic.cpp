@@ -27,9 +27,22 @@ int main(void) {
     std::uniform_real_distribution<float> disZ(0, 1300);
     std::uniform_real_distribution<float> disE(0, 10);
 
+    std::uniform_real_distribution<float> disProb(0, 1);
+
     for (unsigned int i = 0; i < 10000; ++i) {
-        Hit hit({disX(gen), disY(gen), disZ(gen)}, disE(gen));
+        const double energy = disE(gen);
+        Hit hit({disX(gen), disY(gen), disZ(gen)}, energy);
         MCHit mcHit({disX(gen), disY(gen), disZ(gen)});
+
+        if (energy > 8.0) {
+            hit.setLabel("High Energy");
+        } else if (energy < 0.5) {
+            hit.setLabel("Low Energy");
+        } else {
+            const double trackLike(disProb(gen));
+            hit.setProperties({{"Track-Like", trackLike}, {"Shower-Like", 1 - trackLike}});
+        }
+
         hits.push_back(hit);
         mcHits.push_back(mcHit);
     }

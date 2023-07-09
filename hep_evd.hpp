@@ -158,7 +158,7 @@ class Hit {
            << "\"energy\": " << hit.energy;
 
         if (!hit.label.empty())
-            os << ", \"label\": " << hit.label;
+            os << ", \"label\": \"" << hit.label << "\"";
 
         if (!hit.properties.empty()) {
             os << ", \"properties\": [";
