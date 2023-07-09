@@ -56,5 +56,16 @@ as possible.
    - HTML/JS/CSS files kinda mess that up, so maybe a better solution would be a
    single folder that can just be stuck next to a file / in a system-wide
    include location, for simple usage.
+  
+ - UI needs to be able to pick between multiple sets of 2D / 3D hits:
+  - That is, say 3D hits, 3D hits with energy colouring, 3D hits with a score
+    applied etcetc.
+
+ - Start populating and passing over the other menu entries (vertices, 2D hits).
+
+ - Add a basic 2D render view.
+
+ - Toggle rendering / show multiple entries at once.
+ 
  - Helper functions for Pandora, LArSoft + more to convert bits.
 
