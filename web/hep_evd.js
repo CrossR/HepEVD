@@ -204,17 +204,31 @@ function threeDHitsToggle(hits, threeDHitGroupMap, hitPropMap, toggleTarget) {
 }
 
 // Given a drop down,
-function populateDropdown(dropdownID, entries, onClick = (_) => {}) {
+function populateDropdown(className, dropdownID, entries, onClick = (_) => {}) {
   const dropDown = document.getElementById(dropdownID);
 
   entries.forEach((entry) => {
     const newButton = document.createElement("button");
     newButton.innerText = entry;
+    newButton.id = `${className}_${entry}`
     newButton.addEventListener("click", () => onClick(entry));
     dropDown.appendChild(newButton);
   });
 
   return;
+}
+
+// Toggle active state of a given button
+function toggleButton(className, ID) {
+  const button = document.getElementById(`${className}_${ID}`);
+
+  const isActive = button.style.color === "white";
+
+  if (isActive) {
+    button.style.color = "green";
+  } else {
+    button.style.color = "white";
+  }
 }
 
 // ============================================================================
@@ -282,18 +296,22 @@ drawThreeDHits(
 
 // Populate the UI properly.
 // This includes functions that the GUI uses, and filling in the various dropdowns.
-let threeDHitsDropDownOnClick = (toggleTarget) =>
+let threeDHitsDropDownOnClick = (toggleTarget) => {
   threeDHitsToggle(hits, threeDHitGroupMap, hitPropMap, toggleTarget);
+  toggleButton("threeD", toggleTarget);
+};
 const threeDHitProperties = new Set();
 hitPropMap.forEach((properties, _) => {
   properties.forEach((_, propString) => threeDHitProperties.add(propString));
 });
 document.threeDHitsToggle = threeDHitsDropDownOnClick;
 populateDropdown(
+  "threeD",
   "threeD_dropdown",
   threeDHitProperties,
   threeDHitsDropDownOnClick
 );
+toggleButton("threeD", "default");
 
 // Start the final rendering of the event.
 

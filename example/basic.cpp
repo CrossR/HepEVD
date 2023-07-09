@@ -30,19 +30,33 @@ int main(void) {
     std::uniform_real_distribution<float> disProb(0, 1);
 
     for (unsigned int i = 0; i < 10000; ++i) {
-        const double energy = disE(gen);
-        Hit hit({disX(gen), disY(gen), disZ(gen)}, energy);
+
+        const double x = disX(gen);
+        const double y = disY(gen);
+        const double z = disZ(gen);
+        const double e = disX(gen);
+
+        Hit hit({x, y, z}, e);
         MCHit mcHit({disX(gen), disY(gen), disZ(gen)});
 
-        if (energy > 8.0) {
-            hit.setLabel("High Energy");
-        } else if (energy < 0.5) {
-            hit.setLabel("Low Energy");
-        } else {
-            const double trackLike(disProb(gen));
-            hit.setProperties({{"Track-Like", trackLike}, {"Shower-Like", 1 - trackLike}});
-        }
+        std::map<std::string, double> properties;
 
+        if (x < -250.0)
+            properties["Left"] = 1.0f;
+        if (x > 250.0)
+            properties["Right"] = 1.0f;
+
+        if (y < -500.0)
+            properties["Bottom"] = 1.0f;
+        if (y > 500.0)
+            properties["Top"] = 1.0f;
+
+        if (z < 100.0)
+            properties["Front"] = 1.0f;
+        if (z > 1200.0)
+            properties["Back"] = 1.0f;
+
+        hit.setProperties(properties);
         hits.push_back(hit);
         mcHits.push_back(mcHit);
     }
