@@ -29,7 +29,7 @@ namespace HepEVD {
 class Position {
 
   public:
-    Position(const std::array<float, 3> pos) : x(pos[0]), y(pos[1]), z(pos[2]) {}
+    Position(const std::array<double, 3> &pos) : x(pos[0]), y(pos[1]), z(pos[2]) {}
 
     friend std::ostream &operator<<(std::ostream &os, Position const &pos) {
         os << "\"x\": " << pos.x << ","
@@ -38,7 +38,7 @@ class Position {
         return os;
     }
 
-    const float x, y, z;
+    double x, y, z;
 };
 
 class GeoVolume {
@@ -50,24 +50,25 @@ class GeoVolume {
         return os;
     }
 
-  protected:
+    virtual Position getCenter() const = 0;
     virtual std::string getJsonString() const = 0;
 
+  protected:
     Position position;
 };
 
 class BoxVolume : public GeoVolume {
   public:
-
     static const int ARG_COUNT = 3;
 
-    BoxVolume(const Position &pos, float xWidth, float yWidth, float zWidth)
+    BoxVolume(const Position &pos, double xWidth, double yWidth, double zWidth)
         : GeoVolume(pos), xWidth(xWidth), yWidth(yWidth), zWidth(zWidth) {}
 
     std::string getJsonString() const {
         std::stringstream os;
         os << "{"
-           << "\"volume\": \"BOX\"," << this->position << ","
+           << "\"type\": \"box\"," << this->position << ","
+           << "\"center\": {" << this->getCenter() << "},"
            << "\"xWidth\": " << this->xWidth << ","
            << "\"yWidth\": " << this->yWidth << ","
            << "\"zWidth\": " << this->zWidth << "}";
@@ -75,15 +76,17 @@ class BoxVolume : public GeoVolume {
         return os.str();
     }
 
+    Position getCenter() const { return this->position; }
+
   protected:
-    float xWidth, yWidth, zWidth;
+    double xWidth, yWidth, zWidth;
 };
 
 // TODO: Extend geometry model to include lines, sphere, cylinder etc.
 enum VolumeType { BOX, LINE, SPHERE, CYLINDER };
 
 using Volumes = std::vector<GeoVolume *>;
-using VolumeMap = std::map<VolumeType, std::vector<float>>;
+using VolumeMap = std::map<VolumeType, std::vector<double>>;
 
 class DetectorGeometry {
 
@@ -93,7 +96,7 @@ class DetectorGeometry {
     DetectorGeometry(VolumeMap &volumeMap) {
         for (const auto &volume : volumeMap) {
 
-            std::vector<float> params = volume.second;
+            std::vector<double> params = volume.second;
             VolumeType volumeType(volume.first);
 
             if (params.size() < 3)
@@ -135,20 +138,22 @@ class DetectorGeometry {
     Volumes volumes;
 };
 
-enum HitType { GENERAL, TRUTH, PRIMARY, U_VIEW, V_VIEW, W_VIEW };
+enum HitType { THREE_D, TWO_D, TRUTH, PRIMARY };
 
 class Hit {
   public:
-    Hit(const Position &pos, float t = 0, float e = 0) : position(pos), time(t), energy(e) {}
+    Hit(const Position &pos, double t = 0, double e = 0) : position(pos), time(t), energy(e) {}
+    Hit(const std::array<double, 3> &pos, double t = 0, double e = 0) : position(pos), time(t), energy(e) {}
 
     void setHitType(const HitType &type) { hitType = type; }
 
     void setLabel(const std::string &str) { label = str; }
 
-    void setProperties(std::map<std::string, float> props) { properties = props; }
+    void setProperties(std::map<std::string, double> props) { properties = props; }
 
     friend std::ostream &operator<<(std::ostream &os, Hit const &hit) {
-        os << "{" << hit.position << ","
+        os << "{"
+           << "\"type\": \"" << Hit::hitTypeToString(hit.hitType) << "\"," << hit.position << ","
            << "\"t\": " << hit.time << ","
            << "\"e\": " << hit.energy;
 
@@ -168,24 +173,46 @@ class Hit {
         return os;
     }
 
+    static std::string hitTypeToString(const HitType &hit) {
+        switch (hit) {
+        case THREE_D:
+            return "3D";
+        case TWO_D:
+            return "3D";
+        case TRUTH:
+            return "3D";
+        case PRIMARY:
+            return "3D";
+        }
+        throw std::invalid_argument("Unknown hit type!");
+    }
+
   protected:
     Position position;
-    float time, energy;
-    HitType hitType = HitType::GENERAL;
+    double time, energy;
+    HitType hitType = HitType::THREE_D;
     std::string label;
-    std::map<std::string, float> properties;
+    std::map<std::string, double> properties;
 };
 using Hits = std::vector<Hit>;
 
 class MCHit : public Hit {
   public:
-    MCHit(const Position &pos, float t = 0, float energy = 0) : Hit(pos, t, energy) { this->hitType = HitType::TRUTH; }
+    MCHit(const Position &pos, double t = 0, double energy = 0) : Hit(pos, t, energy) {
+        this->hitType = HitType::TRUTH;
+    }
+    MCHit(const std::array<double, 3> &pos, double t = 0, double energy = 0) : Hit(pos, t, energy) {
+        this->hitType = HitType::TRUTH;
+    }
 };
 using MCHits = std::vector<MCHit>;
 
 class HttpEventDisplayServer {
   public:
-    HttpEventDisplayServer() {}
+    HttpEventDisplayServer(const DetectorGeometry &geo, const Hits &hits)
+        : geometry(geo), hits(hits), mcHits({}), mcTruth("") {}
+    HttpEventDisplayServer(const DetectorGeometry &geo, const Hits &hits, const MCHits &mc)
+        : geometry(geo), hits(hits), mcHits(mc), mcTruth("") {}
 
     // Start the event display server, blocking until exit is called by the
     // server.
@@ -193,16 +220,19 @@ class HttpEventDisplayServer {
 
     // Pass over the required event information.
     // TODO: Verify the information passed over.
-    bool assignGeometry(const DetectorGeometry &geo) {
-        this->geometry = geo;
-        return true;
-    }
-
     bool addHits(const Hits &hits) {
-        this->hits = hits;
+
+        if (this->hits.has_value()) {
+            this->hits = hits;
+            return true;
+        }
+
+        Hits newHits = this->hits.value();
+        newHits.insert(newHits.end(), hits.begin(), hits.end());
+        this->hits = newHits;
+
         return true;
     }
-
     bool addTruth(const MCHits &mcHits, const std::string truth = "") {
         this->mcHits = mcHits;
         this->mcTruth = truth;
@@ -210,8 +240,8 @@ class HttpEventDisplayServer {
     }
 
   private:
-    template <typename T> std::string jsonify(const std::vector<T> &data, const std::string &label);
-    template <typename T> std::string jsonify(const T &data, const std::string &label);
+    template <typename T> std::string jsonify(const std::vector<T> &data);
+    template <typename T> std::string jsonify(const T &data);
 
     httplib::Server server;
 
@@ -221,16 +251,14 @@ class HttpEventDisplayServer {
     std::optional<std::string> mcTruth;
 };
 
-template <typename T>
-inline std::string HttpEventDisplayServer::jsonify(const std::vector<T> &data, const std::string &label) {
+template <typename T> inline std::string HttpEventDisplayServer::jsonify(const std::vector<T> &data) {
 
     if (data.size() == 0) {
         return "";
     }
 
     std::stringstream json_string;
-    json_string << "{"
-                << "\"" << label << "\": [";
+    json_string << "[";
 
     for (const auto &dataPoint : data) {
         json_string << dataPoint << ",";
@@ -239,13 +267,13 @@ inline std::string HttpEventDisplayServer::jsonify(const std::vector<T> &data, c
     // Move the stringstream write head back one char,
     // removing the trailing comma, then close the JSON.
     json_string.seekp(-1, json_string.cur);
-    json_string << "]}";
+    json_string << "]";
 
     return json_string.str();
 }
 
-template <typename T> inline std::string HttpEventDisplayServer::jsonify(const T &data, const std::string &label) {
-    return HttpEventDisplayServer::jsonify(std::vector<T>({data}), label);
+template <typename T> inline std::string HttpEventDisplayServer::jsonify(const T &data) {
+    return HttpEventDisplayServer::jsonify(std::vector<T>({data}));
 }
 
 inline void HttpEventDisplayServer::startServer() {
@@ -253,16 +281,27 @@ inline void HttpEventDisplayServer::startServer() {
 
     // Simple commands to return the currently understood server state.
     this->server.Get("/hits", [&](const Request &, Response &res) {
-        res.set_content(this->jsonify<Hit>(this->hits.value(), "hits"), "application/json");
+        res.set_content(this->jsonify<Hit>(this->hits.value()), "application/json");
     });
     this->server.Get("/mcHits", [&](const Request &, Response &res) {
-        res.set_content(this->jsonify<MCHit>(this->mcHits.value(), "mcHits"), "application/json");
+        res.set_content(this->jsonify<MCHit>(this->mcHits.value()), "application/json");
     });
     this->server.Get("/geometry", [&](const Request &, Response &res) {
-        res.set_content(this->jsonify<DetectorGeometry>(this->geometry.value(), "geometry"), "application/json");
+        res.set_content(this->jsonify<DetectorGeometry>(this->geometry.value()), "application/json");
     });
 
+    // Management controls...
+    this->server.Get("/quit", [&](const Request &, Response &res) {
+        res.set_content("Goodbye!", "text/plain");
+        this->server.stop();
+    });
+
+    // Finally, mount the www folder, which contains the actual HepEVD JS code.
+    this->server.set_mount_point("/", "./../web");
+
+    std::cout << "Starting a server on http://localhost:" << CPPHEP_EVD_PORT << "..." << std::endl;
     this->server.listen("localhost", CPPHEP_EVD_PORT);
+    std::cout << "Server closed, continuing..." << std::endl;
 }
 
 }; // namespace HepEVD

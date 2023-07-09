@@ -6,12 +6,17 @@ int main(void) {
 
     using namespace HepEVD;
 
-    HttpEventDisplayServer server;
     Hits hits;
     MCHits mcHits;
 
-    BoxVolume volume1({-182.954544067, 0, 696.293762207}, 359.415008545, 1207.84753418, 1394.33996582);
-    BoxVolume volume2({182.954544067, 0, 696.293762207}, 359.415008545, 1207.84753418, 1394.33996582);
+    BoxVolume volume1(
+        Position({-182.954544067, 0, 696.293762207}),
+        359.415008545, 1207.84753418, 1394.33996582
+    );
+    BoxVolume volume2(
+        Position({182.954544067, 0, 696.293762207}),
+        359.415008545, 1207.84753418, 1394.33996582
+    );
     Volumes vols({&volume1, &volume2});
 
     std::random_device rd;
@@ -28,9 +33,9 @@ int main(void) {
         mcHits.push_back(mcHit);
     }
 
-    server.addHits(hits);
-    server.addTruth(mcHits, "10 GeV \\nu_\\mu");
-    server.assignGeometry(DetectorGeometry(vols));
+    HttpEventDisplayServer server(
+        DetectorGeometry(vols), hits, mcHits
+    );
 
     server.startServer();
     return 0;
