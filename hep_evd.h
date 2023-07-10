@@ -9,7 +9,11 @@
 #define CPPHEP_EVD_H
 
 #ifndef CPPHEP_EVD_PORT
-#define CPPHEP_EVD_PORT 55555
+#define CPPHEP_EVD_PORT 5555
+#endif
+
+#ifndef CPPHEP_EVD_PANDORA_HELPERS
+#define CPPHEP_EVD_PANDORA_HELPERS 1
 #endif
 
 #define CPPHEP_EVD_VERSION "0.0.1"
@@ -26,6 +30,7 @@
 
 namespace HepEVD {
 
+// Store a 3D position, and include a helper for JSON production.
 class Position {
 
   public:
@@ -41,6 +46,8 @@ class Position {
     double x, y, z;
 };
 
+// Abstract class to represent any form of detector geometry volume.
+// A volume is just some shape at a 3D position.
 class GeoVolume {
   public:
     GeoVolume(const Position &pos) : position(pos) {}
@@ -57,6 +64,7 @@ class GeoVolume {
     Position position;
 };
 
+// Specialised detector geometry volume to represent any 3D box.
 class BoxVolume : public GeoVolume {
   public:
     static const int ARG_COUNT = 3;
@@ -85,9 +93,11 @@ class BoxVolume : public GeoVolume {
 // TODO: Extend geometry model to include lines, sphere, cylinder etc.
 enum VolumeType { BOX, LINE, SPHERE, CYLINDER };
 
-using Volumes = std::vector<GeoVolume *>;
+using Volumes = std::vector<GeoVolume*>;
 using VolumeMap = std::map<VolumeType, std::vector<double>>;
 
+// Top-level detector geometry, with a detector being composed of
+// at least one geometry volume.
 class DetectorGeometry {
 
   public:
@@ -108,8 +118,8 @@ class DetectorGeometry {
             case BOX: {
                 if (volume.second.size() - 3 != BoxVolume::ARG_COUNT)
                     throw std::invalid_argument("A box volume needs 6 inputs!");
-                BoxVolume volume(pos, params[3], params[4], params[5]);
-                volumes.push_back(&volume);
+                BoxVolume boxVolume(pos, params[3], params[4], params[5]);
+                volumes.push_back(&boxVolume);
 
                 break;
             }
@@ -140,6 +150,9 @@ class DetectorGeometry {
 
 enum HitType { THREE_D, TWO_D, TRUTH, PRIMARY };
 
+// A hit represents an actual energy deposition in the detector.
+// That is, a position but also information on the sort of hit,
+// and associated energy and timing information.
 class Hit {
   public:
     Hit(const Position &pos, double e = 0, double t = 0) : position(pos), time(t), energy(e) {}
@@ -197,6 +210,7 @@ class Hit {
 };
 using Hits = std::vector<Hit>;
 
+// Convenience constructor for MC hits.
 class MCHit : public Hit {
   public:
     MCHit(const Position &pos, double t = 0, double energy = 0) : Hit(pos, t, energy) {
@@ -208,11 +222,16 @@ class MCHit : public Hit {
 };
 using MCHits = std::vector<MCHit>;
 
-class HttpEventDisplayServer {
+// Top level HepEVD server.
+//
+// Once constructed and given a detector geometry and hits,
+// running the server will spin up the event display on
+// localhost::CPPHEP_EVD_PORT.
+class HepEVDServer {
   public:
-    HttpEventDisplayServer(const DetectorGeometry &geo, const Hits &hits)
-        : geometry(geo), hits(hits), mcHits({}), mcTruth("") {}
-    HttpEventDisplayServer(const DetectorGeometry &geo, const Hits &hits, const MCHits &mc)
+    HepEVDServer(const DetectorGeometry &geo) : geometry(geo), hits({}), mcHits({}), mcTruth("") {}
+    HepEVDServer(const DetectorGeometry &geo, const Hits &hits) : geometry(geo), hits(hits), mcHits({}), mcTruth("") {}
+    HepEVDServer(const DetectorGeometry &geo, const Hits &hits, const MCHits &mc)
         : geometry(geo), hits(hits), mcHits(mc), mcTruth("") {}
 
     // Start the event display server, blocking until exit is called by the
@@ -221,21 +240,21 @@ class HttpEventDisplayServer {
 
     // Pass over the required event information.
     // TODO: Verify the information passed over.
-    bool addHits(const Hits &hits) {
+    bool addHits(const Hits &inputHits) {
 
-        if (this->hits.has_value()) {
-            this->hits = hits;
+        if (this->hits.size() == 0) {
+            this->hits = inputHits;
             return true;
         }
 
-        Hits newHits = this->hits.value();
-        newHits.insert(newHits.end(), hits.begin(), hits.end());
+        Hits newHits = this->hits;
+        newHits.insert(newHits.end(), inputHits.begin(), inputHits.end());
         this->hits = newHits;
 
         return true;
     }
-    bool addTruth(const MCHits &mcHits, const std::string truth = "") {
-        this->mcHits = mcHits;
+    bool addTruth(const MCHits &inputMC, const std::string truth = "") {
+        this->mcHits = inputMC;
         this->mcTruth = truth;
         return true;
     }
@@ -246,13 +265,14 @@ class HttpEventDisplayServer {
 
     httplib::Server server;
 
-    std::optional<DetectorGeometry> geometry;
-    std::optional<Hits> hits;
-    std::optional<MCHits> mcHits;
-    std::optional<std::string> mcTruth;
+    DetectorGeometry geometry;
+    Hits hits;
+    MCHits mcHits;
+    std::string mcTruth;
 };
 
-template <typename T> inline std::string HttpEventDisplayServer::jsonify(const std::vector<T> &data) {
+// Produce a full JSON representation of the given items.
+template <typename T> inline std::string HepEVDServer::jsonify(const std::vector<T> &data) {
 
     if (data.size() == 0) {
         return "";
@@ -273,22 +293,24 @@ template <typename T> inline std::string HttpEventDisplayServer::jsonify(const s
     return json_string.str();
 }
 
-template <typename T> inline std::string HttpEventDisplayServer::jsonify(const T &data) {
-    return HttpEventDisplayServer::jsonify(std::vector<T>({data}));
+template <typename T> inline std::string HepEVDServer::jsonify(const T &data) {
+    return HepEVDServer::jsonify(std::vector<T>({data}));
 }
 
-inline void HttpEventDisplayServer::startServer() {
+// Run the actual server, spinning up the API endpoints and serving the
+// HTML/JS required for the event display.
+inline void HepEVDServer::startServer() {
     using namespace httplib;
 
     // Simple commands to return the currently understood server state.
     this->server.Get("/hits", [&](const Request &, Response &res) {
-        res.set_content(this->jsonify<Hit>(this->hits.value()), "application/json");
+        res.set_content(this->jsonify<Hit>(this->hits), "application/json");
     });
     this->server.Get("/mcHits", [&](const Request &, Response &res) {
-        res.set_content(this->jsonify<MCHit>(this->mcHits.value()), "application/json");
+        res.set_content(this->jsonify<MCHit>(this->mcHits), "application/json");
     });
     this->server.Get("/geometry", [&](const Request &, Response &res) {
-        res.set_content(this->jsonify<DetectorGeometry>(this->geometry.value()), "application/json");
+        res.set_content(this->jsonify<DetectorGeometry>(this->geometry), "application/json");
     });
 
     // Management controls...
@@ -304,6 +326,51 @@ inline void HttpEventDisplayServer::startServer() {
     this->server.listen("localhost", CPPHEP_EVD_PORT);
     std::cout << "Server closed, continuing..." << std::endl;
 }
+
+// High-level helper to convert Pandora objects into HEAVED ones.
+#ifdef CPPHEP_EVD_PANDORA_HELPERS
+namespace PandoraHelpers {
+
+#include "Geometry/LArTPC.h"
+#include "Managers/GeometryManager.h"
+#include "Objects/CaloHit.h"
+
+using HepHitMap = std::map<const pandora::CaloHit*, Hit>;
+
+DetectorGeometry getHepEVDGeometry(const pandora::GeometryManager *manager) {
+
+    Volumes volumes;
+
+    for (const auto &tpcIndexPair : manager->GetLArTPCMap()) {
+        const auto &lartpc = *(tpcIndexPair.second);
+        BoxVolume *larTPCVolume = new BoxVolume(Position({lartpc.GetCenterX(), lartpc.GetCenterY(), lartpc.GetCenterZ()}),
+                               lartpc.GetWidthX(), lartpc.GetWidthY(), lartpc.GetWidthZ());
+        volumes.push_back(larTPCVolume);
+    }
+
+    return DetectorGeometry(volumes);
+}
+
+Hits getHepEVDHits(const pandora::CaloHitList *caloHits, std::string label = "", HepHitMap pandoraToCaloMap = {}) {
+
+    Hits hits;
+
+    for (const pandora::CaloHit *const pCaloHit : *caloHits) {
+        const auto pos = pCaloHit->GetPositionVector();
+        Hit hit({pos.GetX(), pos.GetY(), pos.GetZ()}, pCaloHit->GetMipEquivalentEnergy());
+
+        if (label != "")
+            hit.setLabel(label);
+
+        hits.push_back(hit);
+        pandoraToCaloMap.insert({pCaloHit, hit});
+    }
+
+    return hits;
+}
+
+}; // namespace PandoraHelpers
+#endif
 
 }; // namespace HepEVD
 

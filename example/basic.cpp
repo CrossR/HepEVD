@@ -1,4 +1,4 @@
-#include "hep_evd.hpp"
+#include "hep_evd.h"
 
 #include <random>
 
@@ -61,7 +61,7 @@ int main(void) {
         mcHits.push_back(mcHit);
     }
 
-    HttpEventDisplayServer server(
+    HepEVDServer server(
         DetectorGeometry(vols), hits, mcHits
     );
 
