@@ -131,10 +131,11 @@ function drawThreeDHits(
     properties.set(index, hitPropMap.get(hit).get(colourProp));
   });
 
-  const usingColour =
+  let usingColour =
     useColour &&
     properties.size > 0 &&
     [...properties.values()][0].constructor == Number;
+  const usingProperties = properties.size > 0;
 
   if (usingColour) {
     let minColourValue = Infinity;
@@ -144,20 +145,22 @@ function drawThreeDHits(
       if (value > maxColourValue) maxColourValue = value;
     });
     energyLut.setMax(maxColourValue);
+
+    if (maxColourValue == minColourValue)
+        usingColour = false;
   }
 
   hits.forEach(function (hit, index) {
     dummyObject.position.set(hit.x, hit.y, hit.z);
     dummyObject.updateMatrix();
 
-    if (usingColour && ! properties.has(index)) {
+    if (usingProperties && ! properties.has(index)) {
       return;
     }
 
     hitMesh.setMatrixAt(index, dummyObject.matrix);
 
     if (usingColour) {
-      console.log(properties.get(index));
       hitMesh.setColorAt(index, energyLut.getColor(properties.get(index)));
     } else {
       hitMesh.setColorAt(index, new THREE.Color("gray"));
