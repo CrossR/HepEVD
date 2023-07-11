@@ -393,6 +393,8 @@ Hits getHepEVD2DHits(const pandora::CaloHitList *caloHits, std::string label, He
         if (label != "")
             hit->setLabel(label);
 
+        hit->setHitType(HitType::TWO_D);
+
         switch (pCaloHit->GetHitType()) {
             case pandora::HitType::TPC_VIEW_U:
                 hit->setHitClass(HitClass::TWO_D_U);
