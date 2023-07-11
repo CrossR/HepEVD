@@ -173,7 +173,9 @@ class Hit {
 
     friend std::ostream &operator<<(std::ostream &os, Hit const &hit) {
         os << "{"
-           << "\"type\": \"" << Hit::hitTypeToString(hit.hitType) << "\"," << hit.position << ","
+           << "\"type\": \"" << Hit::hitTypeToString(hit.hitType) << "\","
+           << "\"class\": \"" << Hit::hitClassToString(hit.hitClass) << "\","
+           << hit.position << ","
            << "\"time\": " << hit.time << ","
            << "\"energy\": " << hit.energy;
 
