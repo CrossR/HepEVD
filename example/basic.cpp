@@ -25,7 +25,6 @@ int main(void) {
     std::uniform_real_distribution<float> disX(-350, 350);
     std::uniform_real_distribution<float> disY(-600, 600);
     std::uniform_real_distribution<float> disZ(0, 1300);
-    std::uniform_real_distribution<float> disE(0, 10);
 
     std::uniform_real_distribution<float> disProb(0, 1);
 
@@ -34,7 +33,7 @@ int main(void) {
         const double x = disX(gen);
         const double y = disY(gen);
         const double z = disZ(gen);
-        const double e = disX(gen);
+        const double e = x + y + z;
 
         Hit hit({x, y, z}, e);
         MCHit mcHit({disX(gen), disY(gen), disZ(gen)});
