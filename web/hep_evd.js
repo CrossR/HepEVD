@@ -52,22 +52,27 @@ function fitSceneInCamera(camera, controls, detectorGeometry) {
   }
 }
 
-// Build up a map between a property name and a property.
+// Build up a map between a property name and a property for
+// each sort of hit (3D, 2D).
 //
 // This should mean that any property can be easily drawn without
 // needing to worry about the specific location of a property.
 function getHitProperties(hits) {
-  const hitPropMap = new Map();
+
+  const hitPropMaps = new Map();
+
+  hitPropMaps.set("3D", new Map());
+  hitPropMaps.set("2D", new Map());
 
   // Every hit should have an energy property, but there is
   // then two additional cases where a hit can be grouped:
   //  - If a hit is labelled.
   //  - If a hit has a property map associated.
   hits.forEach((hit) => {
-    hitPropMap.set(hit, new Map([["energy", hit.energy]]));
+    hitPropMaps.get(hit.type).set(hit, new Map([["energy", hit.energy]]));
 
     if (Object.hasOwn(hit, "label")) {
-      hitPropMap.get(hit).set(hit.label, 1.0);
+      hitPropMaps.get(hit.type).get(hit).set(hit.label, 1.0);
     }
 
     if (Object.hasOwn(hit, "properties")) {
@@ -75,12 +80,12 @@ function getHitProperties(hits) {
         const key = Object.keys(prop)[0];
         const value = Object.values(prop)[0];
 
-        hitPropMap.get(hit).set(key, value);
+        hitPropMaps.get(hit.label).get(hit).set(key, value);
       });
     }
   });
 
-  return hitPropMap;
+  return hitPropMaps;
 }
 
 // ============================================================================
@@ -103,7 +108,7 @@ function drawBoxVolume(group, material, box) {
 // performance.
 //
 // Optionally, colour the hits based on some property value.
-function drawThreeDHits(
+function drawHits(
   group,
   material,
   hits,
@@ -112,6 +117,10 @@ function drawThreeDHits(
   colourProp = "",
   hitSize = 3
 ) {
+
+  if (hits.length == 0)
+    return;
+
   const hitGeometry = new THREE.BoxGeometry(hitSize, hitSize, hitSize);
   const hitMesh = new THREE.InstancedMesh(hitGeometry, material, hits.length);
 
@@ -183,15 +192,16 @@ function animate() {
 // GUI Functions
 // ============================================================================
 
-function threeDHitsToggle(hits, threeDHitGroupMap, hitPropMap, toggleTarget) {
+function hitsToggle(hits, hitGroupMap, hitPropMap, toggleTarget) {
+
   if (toggleTarget === "none") {
-    threeDHitGroupMap.forEach((group) => (group.visible = false));
+    hitGroupMap.forEach((group) => (group.visible = false));
     return;
   }
 
   // If it does exist, then just toggle its visibility.
-  if (threeDHitGroupMap.has(toggleTarget) === true) {
-    const threeDHitGroup = threeDHitGroupMap.get(toggleTarget);
+  if (hitGroupMap.has(toggleTarget) === true) {
+    const threeDHitGroup = hitGroupMap.get(toggleTarget);
     threeDHitGroup.visible = !threeDHitGroup.visible;
 
     return;
@@ -200,15 +210,20 @@ function threeDHitsToggle(hits, threeDHitGroupMap, hitPropMap, toggleTarget) {
   // Otherwise, we need to make a new group, populate it and store it for later.
   const newGroup = new THREE.Group();
   scene.add(newGroup);
-  drawThreeDHits(newGroup, materialHit, hits, hitPropMap, true, toggleTarget);
-  threeDHitGroupMap.set(toggleTarget, newGroup);
+  drawHits(newGroup, materialHit, hits, hitPropMap, true, toggleTarget);
+  hitGroupMap.set(toggleTarget, newGroup);
 
   return;
 }
 
 // Given a drop down,
-function populateDropdown(className, dropdownID, entries, onClick = (_) => {}) {
-  const dropDown = document.getElementById(dropdownID);
+function populateDropdown(className, hitPropMap, onClick = (_) => {}) {
+
+  const dropDown = document.getElementById(`${className}_dropdown`);
+  const entries = new Set();
+  hitPropMap.forEach((properties, _) => {
+      properties.forEach((_, propString) => entries.add(propString));
+  });
 
   entries.forEach((entry) => {
     const newButton = document.createElement("button");
@@ -233,6 +248,33 @@ function toggleButton(className, ID) {
     button.style.color = "white";
   }
 }
+
+// Swap to 2D controls.
+function setupTwoDControls(controls) {
+    controls.screenSpacePanning = true;
+    controls.enableRotate = false;
+    controls.mouseButtons = {
+        LEFT: THREE.MOUSE.PAN,
+        MIDDLE: THREE.MOUSE.DOLLY,
+        RIGHT: NULL
+    };
+
+    controls.update();
+}
+
+// Swap to 3D controls.
+function setupThreeDControls(controls) {
+    controls.screenSpacePanning = true;
+    controls.enableRotate = true;
+    controls.mouseButtons = {
+        LEFT: THREE.MOUSE.ROTATE,
+        MIDDLE: THREE.MOUSE.DOLLY,
+        RIGHT: THREE.MOUSE.PAN
+    };
+
+    controls.update();
+}
+
 
 // ============================================================================
 // HepEVD
@@ -282,7 +324,9 @@ const detectorGeometry = await fetch("geometry").then((response) =>
   response.json()
 );
 const hits = await fetch("hits").then((response) => response.json());
-const hitPropMap = getHitProperties(hits);
+const twoDHits = hits.filter((hit) => hit.type.includes("2D"));
+const threeDHits = hits.filter((hit) => hit.type === "3D");
+const hitPropMaps = getHitProperties(hits);
 
 // Time to start the actual rendering.
 detectorGeometry
@@ -290,31 +334,40 @@ detectorGeometry
   .forEach((box) =>
     drawBoxVolume(detectorGeometryGroup, materialGeometry, box)
   );
-drawThreeDHits(
+drawHits(
   threeDHitGroup,
   materialHit,
   hits.filter((hit) => hit.type === "3D"),
-  hitPropMap
+  hitPropMaps.get("3D")
 );
 
 // Populate the UI properly.
 // This includes functions that the GUI uses, and filling in the various dropdowns.
+
+// Start with 3D hits...
 let threeDHitsDropDownOnClick = (toggleTarget) => {
-  threeDHitsToggle(hits, threeDHitGroupMap, hitPropMap, toggleTarget);
+  hitsToggle(hits, threeDHitGroupMap, hitPropMaps.get("3D"), toggleTarget);
   toggleButton("threeD", toggleTarget);
 };
-const threeDHitProperties = new Set();
-hitPropMap.forEach((properties, _) => {
-  properties.forEach((_, propString) => threeDHitProperties.add(propString));
-});
-document.threeDHitsToggle = threeDHitsDropDownOnClick;
+document.hitsToggle = threeDHitsDropDownOnClick;
 populateDropdown(
   "threeD",
-  "threeD_dropdown",
-  threeDHitProperties,
+  hitPropMaps.get("3D"),
   threeDHitsDropDownOnClick
 );
 toggleButton("threeD", "default");
+
+// Repeat with 2D hits...
+let twoDHitsDropDownOnClick = (toggleTarget) => {
+  hitsToggle(hits, threeDHitGroupMap, hitPropMaps.get("2D"), toggleTarget);
+  toggleButton("twoD", toggleTarget);
+};
+populateDropdown(
+  "twoD",
+  hitPropMaps.get("2D"),
+  twoDHitsDropDownOnClick
+);
+toggleButton("twoD", "default");
 
 // Start the final rendering of the event.
 
