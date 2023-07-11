@@ -148,7 +148,8 @@ class DetectorGeometry {
     Volumes volumes;
 };
 
-enum HitType { THREE_D, TWO_D, TRUTH, PRIMARY };
+enum HitType { THREE_D, TWO_D };
+enum HitClass { GENERAL, TWO_D_U, TWO_D_V, TWO_D_W, TRUTH };
 
 // A hit represents an actual energy deposition in the detector.
 // That is, a position but also information on the sort of hit,
@@ -158,9 +159,9 @@ class Hit {
     Hit(const Position &pos, double e = 0, double t = 0) : position(pos), time(t), energy(e) {}
     Hit(const std::array<double, 3> &pos, double e = 0, double t = 0) : position(pos), time(t), energy(e) {}
 
-    void setHitType(const HitType &type) { hitType = type; }
-
-    void setLabel(const std::string &str) { label = str; }
+    void setHitType(const HitType &hitType) { this->hitType = hitType; }
+    void setHitClass(const HitClass &hitClass) { this->hitClass = hitClass; }
+    void setLabel(const std::string &str) { this->label = str; }
 
     // TODO: This may want to be extensible. I.e. string -> double + other properties (CATEGORIC, NUMERIC) etc;
     void addProperties(std::map<std::string, double> props) {
@@ -198,18 +199,31 @@ class Hit {
             return "3D";
         case TWO_D:
             return "2D";
-        case TRUTH:
-            return "TRUTH";
-        case PRIMARY:
-            return "PRIMARY";
         }
         throw std::invalid_argument("Unknown hit type!");
+    }
+
+    static std::string hitClassToString(const HitClass &hit) {
+        switch (hit) {
+        case GENERAL:
+            return "GENERAL";
+        case TWO_D_U:
+            return "2D_U";
+        case TWO_D_V:
+            return "2D_V";
+        case TWO_D_W:
+            return "2D_W";
+        case TRUTH:
+            return "TRUTH";
+        }
+        throw std::invalid_argument("Unknown hit class!");
     }
 
   protected:
     Position position;
     double time, energy;
     HitType hitType = HitType::THREE_D;
+    HitClass hitClass = HitClass::GENERAL;
     std::string label;
     std::map<std::string, double> properties;
 };
@@ -219,10 +233,10 @@ using Hits = std::vector<Hit*>;
 class MCHit : public Hit {
   public:
     MCHit(const Position &pos, double t = 0, double energy = 0) : Hit(pos, t, energy) {
-        this->hitType = HitType::TRUTH;
+        this->hitClass = HitClass::TRUTH;
     }
     MCHit(const std::array<double, 3> &pos, double t = 0, double energy = 0) : Hit(pos, t, energy) {
-        this->hitType = HitType::TRUTH;
+        this->hitClass = HitClass::TRUTH;
     }
 };
 using MCHits = std::vector<MCHit*>;
@@ -379,7 +393,17 @@ Hits getHepEVD2DHits(const pandora::CaloHitList *caloHits, std::string label, He
         if (label != "")
             hit->setLabel(label);
 
-        hit->setHitType(HitType::TWO_D);
+        switch (pCaloHit->GetHitType()) {
+            case pandora::HitType::TPC_VIEW_U:
+                hit->setHitClass(HitClass::TWO_D_U);
+                break;
+            case pandora::HitType::TPC_VIEW_V:
+                hit->setHitClass(HitClass::TWO_D_V);
+                break;
+            case pandora::HitType::TPC_VIEW_W:
+                hit->setHitClass(HitClass::TWO_D_W);
+                break;
+        }
 
         hits.push_back(hit);
         pandoraToCaloMap.insert({pCaloHit, hit});
