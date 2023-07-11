@@ -32,8 +32,8 @@
     <div class="dropdown">
       <button>Labels...</button>
       <div class="dropdown-content" id="labels_dropdown">
-        <button onclick="NoAxes()">None</button>
-        <button onclick="EnablesAxes()">Enabled</button>
+        <button id="label_none" onclick="NoAxes()">None</button>
+        <button id="label_on" onclick="EnablesAxes()">Enabled</button>
       </div>
 
     </div>
@@ -48,30 +48,22 @@
 
     <div class="dropdown">
       <button>2D Hits...</button>
-      <div class="dropdown-content" id="twoD_dropdown">
-        <button id="twoD_none" onclick="twoDHitsToggle('none')">None</button>
-        <button id="twoD_default" onclick="twoDHitsToggle('default')">Default</button>
-      </div>
+      <div class="dropdown-content" id="twoD_dropdown"></div>
     </div>
 
     <div class="dropdown">
       <button>3D Hits...</button>
-      <div class="dropdown-content" id="threeD_dropdown">
-        <button id="threeD_none" onclick="threeDHitsToggle('none')">None</button>
-        <button id="threeD_default" onclick="threeDHitsToggle('default')">Default</button>
-      </div>
+      <div class="dropdown-content" id="threeD_dropdown"></div>
     </div>
 
     <div class="dropdown">
       <button>Vertices...</button>
-      <div class="dropdown-content" id="vertices_dropdown">
-      </div>
+      <div class="dropdown-content" id="vertices_dropdown"></div>
     </div>
 
     <div class="dropdown">
       <button>MC Truth...</button>
-      <div class="dropdown-content" id="truth_dropdown">
-      </div>
+      <div class="dropdown-content" id="mc_dropdown"></div>
     </div>
 
   </div> <!-- position:absolute -->

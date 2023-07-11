@@ -194,7 +194,7 @@ function animate() {
 
 function hitsToggle(hits, hitGroupMap, hitPropMap, toggleTarget) {
 
-  if (toggleTarget === "none") {
+  if (toggleTarget === "None") {
     hitGroupMap.forEach((group) => (group.visible = false));
     return;
   }
@@ -216,11 +216,24 @@ function hitsToggle(hits, hitGroupMap, hitPropMap, toggleTarget) {
   return;
 }
 
+// Mock enum for the default button classes.
+const DefaultButtonID = {
+    None: "None",
+    All: "All"
+}
+
 // Given a drop down,
 function populateDropdown(className, hitPropMap, onClick = (_) => {}) {
 
   const dropDown = document.getElementById(`${className}_dropdown`);
   const entries = new Set();
+
+  // Add the default "None" option.
+  entries.add(DefaultButtonID.None);
+
+  if (hitPropMap.size != 0)
+    entries.add(DefaultButtonID.All);
+
   hitPropMap.forEach((properties, _) => {
       properties.forEach((_, propString) => entries.add(propString));
   });
@@ -236,16 +249,36 @@ function populateDropdown(className, hitPropMap, onClick = (_) => {}) {
   return;
 }
 
-// Toggle active state of a given button
+// Toggle active state of a given button.
+//
+// If that button is the "None" button, we should also
+// toggle the state of every other button in that dropdown.
+// Similarly, if its not that none button, toggle the none
+// button off.
 function toggleButton(className, ID) {
   const button = document.getElementById(`${className}_${ID}`);
 
-  const isActive = button.style.color === "white";
+  let isActive = button.style.color === "white";
 
   if (isActive) {
     button.style.color = "green";
+    isActive = false;
   } else {
     button.style.color = "white";
+    isActive = true;
+  }
+
+  if (ID == DefaultButtonID.None && isActive) {
+    const dropDown = document.getElementById(`${className}_dropdown`);
+
+    Array.from(dropDown.childNodes).filter((elem) =>
+      elem.nodeName != "#text" && elem != button && elem.tagName.toLowerCase() === "button"
+    ).forEach((elem) => {
+      elem.style.color = "green";
+    });
+  } else if (ID != DefaultButtonID.None && isActive) {
+    const button = document.getElementById(`${className}_${DefaultButtonID.None}`);
+    button.style.color = "green";
   }
 }
 
@@ -313,11 +346,19 @@ const materialHit = new THREE.MeshBasicMaterial({
 const detectorGeometryGroup = new THREE.Group();
 scene.add(detectorGeometryGroup);
 
-// 3D hits are stored in multiple groups, such that they can be toggled independantly.
-const threeDHitGroupMap = new Map();
+// Hits are stored in multiple groups, such that they can be toggled independently.
+const hitGroupMap = new Map();
+hitGroupMap.set("3D", new Map());
+hitGroupMap.set("2D", new Map());
+
+// Default hit groups for the "All" case.
 const threeDHitGroup = new THREE.Group();
 scene.add(threeDHitGroup);
-threeDHitGroupMap.set("default", threeDHitGroup);
+hitGroupMap.get("3D").set(DefaultButtonID.All, threeDHitGroup);
+
+const twoDHitGroup = new THREE.Group();
+scene.add(twoDHitGroup);
+hitGroupMap.get("2D").set(DefaultButtonID.All, twoDHitGroup);
 
 // Finally, start pulling in data about the event.
 const detectorGeometry = await fetch("geometry").then((response) =>
@@ -334,40 +375,33 @@ detectorGeometry
   .forEach((box) =>
     drawBoxVolume(detectorGeometryGroup, materialGeometry, box)
   );
-drawHits(
-  threeDHitGroup,
-  materialHit,
-  hits.filter((hit) => hit.type === "3D"),
-  hitPropMaps.get("3D")
-);
+
+// Prefer drawing 3D hits, but draw 2D if only option.
+if (threeDHits.length != 0) {
+ drawHits(threeDHitGroup, materialHit, threeDHits, hitPropMaps.get("3D"));
+} else {
+ drawHits(twoDHitGroup, materialHit, twoDHits, hitPropMaps.get("2D"));
+}
 
 // Populate the UI properly.
 // This includes functions that the GUI uses, and filling in the various dropdowns.
 
-// Start with 3D hits...
-let threeDHitsDropDownOnClick = (toggleTarget) => {
-  hitsToggle(hits, threeDHitGroupMap, hitPropMaps.get("3D"), toggleTarget);
+// First, setup all the button on click events.
+let toggleHits3D = (toggleTarget) => {
+  hitsToggle(threeDHits, hitGroupMap.get("3D"), hitPropMaps.get("3D"), toggleTarget);
   toggleButton("threeD", toggleTarget);
 };
-document.hitsToggle = threeDHitsDropDownOnClick;
-populateDropdown(
-  "threeD",
-  hitPropMaps.get("3D"),
-  threeDHitsDropDownOnClick
-);
-toggleButton("threeD", "default");
-
-// Repeat with 2D hits...
-let twoDHitsDropDownOnClick = (toggleTarget) => {
-  hitsToggle(hits, threeDHitGroupMap, hitPropMaps.get("2D"), toggleTarget);
+let toggleHits2D = (toggleTarget) => {
+  hitsToggle(twoDHits, hitGroupMap.get("2D"), hitPropMaps.get("2D"), toggleTarget);
   toggleButton("twoD", toggleTarget);
 };
-populateDropdown(
-  "twoD",
-  hitPropMaps.get("2D"),
-  twoDHitsDropDownOnClick
-);
-toggleButton("twoD", "default");
+
+populateDropdown("threeD", hitPropMaps.get("3D"), toggleHits3D);
+populateDropdown("twoD", hitPropMaps.get("2D"), toggleHits2D);
+
+// Toggle on the default rendering.
+const defaultRenderClass = threeDHits.length != 0 ? "threeD" : "twoD";
+toggleButton(defaultRenderClass, DefaultButtonID.All);
 
 // Start the final rendering of the event.
 
