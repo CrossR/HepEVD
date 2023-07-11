@@ -1,5 +1,4 @@
-#CXX = clang++
-CXXFLAGS = -O2 -std=c++17 -I.. -Wall -Wextra
+CXXFLAGS = -O2 -std=c++17 -I.. -Wall -Wextra -pthread
 
 all: basic
 

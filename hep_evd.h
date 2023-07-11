@@ -99,6 +99,10 @@ class DetectorGeometry {
   public:
     DetectorGeometry(Volumes &vols) : volumes(vols) {}
 
+    ~DetectorGeometry() {
+        this->volumes.clear();
+    }
+
     DetectorGeometry(VolumeMap &volumeMap) {
         for (const auto &volume : volumeMap) {
 
@@ -230,6 +234,11 @@ class HepEVDServer {
     HepEVDServer(const DetectorGeometry &geo, const Hits &hits, const MCHits &mc)
         : geometry(geo), hits(hits), mcHits(mc), mcTruth("") {}
 
+    ~HepEVDServer() {
+        this->hits.clear();
+        this->mcHits.clear();
+    }
+
     // Start the event display server, blocking until exit is called by the
     // server.
     void startServer();
@@ -318,7 +327,6 @@ inline void HepEVDServer::startServer() {
     // Finally, mount the www folder, which contains the actual HepEVD JS code.
     const std::string headerFilePath(__FILE__);
     const std::string rootFolder(headerFilePath.substr(0, headerFilePath.rfind("/")));
-    std::cout << "The root folder is " << rootFolder << std::endl;
     this->server.set_mount_point("/", rootFolder + "/web/");
 
     std::cout << "Starting a server on http://localhost:" << CPPHEP_EVD_PORT << "..." << std::endl;

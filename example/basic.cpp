@@ -55,9 +55,9 @@ int main(void) {
         if (z > 1200.0)
             properties["Back"] = 1.0f;
 
-        hit.setProperties(properties);
-        hits.push_back(hit);
-        mcHits.push_back(mcHit);
+        hit.addProperties(properties);
+        hits.push_back(&hit);
+        mcHits.push_back(&mcHit);
     }
 
     HepEVDServer server(
