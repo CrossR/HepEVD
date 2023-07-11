@@ -35,8 +35,8 @@ int main(void) {
         const double z = disZ(gen);
         const double e = x + y + z;
 
-        Hit hit({x, y, z}, e);
-        MCHit mcHit({disX(gen), disY(gen), disZ(gen)});
+        Hit* hit = new Hit({x, y, z}, e);
+        MCHit* mcHit = new MCHit({disX(gen), disY(gen), disZ(gen)});
 
         std::map<std::string, double> properties;
 
@@ -55,9 +55,9 @@ int main(void) {
         if (z > 1200.0)
             properties["Back"] = 1.0f;
 
-        hit.addProperties(properties);
-        hits.push_back(&hit);
-        mcHits.push_back(&mcHit);
+        hit->addProperties(properties);
+        hits.push_back(hit);
+        mcHits.push_back(mcHit);
     }
 
     HepEVDServer server(

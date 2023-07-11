@@ -1,5 +1,5 @@
 //
-// hep_evd.hpp
+// hep_evd.h
 //
 // Copyright (c) 2023 Ryan Cross. All rights reserved.
 // MIT License
