@@ -12,10 +12,6 @@
 #define CPPHEP_EVD_PORT 5555
 #endif
 
-#ifndef CPPHEP_EVD_PANDORA_HELPERS
-#define CPPHEP_EVD_PANDORA_HELPERS 1
-#endif
-
 #define CPPHEP_EVD_VERSION "0.0.1"
 
 #include <iostream>
