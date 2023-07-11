@@ -79,7 +79,7 @@ function getHitProperties(hits) {
         const key = Object.keys(prop)[0];
         const value = Object.values(prop)[0];
 
-        hitPropMaps.get(hit.label).get(hit).set(key, value);
+        hitPropMaps.get(hit.type).get(hit).set(key, value);
       });
     }
   });
