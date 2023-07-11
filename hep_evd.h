@@ -163,7 +163,12 @@ class Hit {
     void setLabel(const std::string &str) { label = str; }
 
     // TODO: This may want to be extensible. I.e. string -> double + other properties (CATEGORIC, NUMERIC) etc;
-    void setProperties(std::map<std::string, double> props) { properties = props; }
+    void addProperties(std::map<std::string, double> props) {
+        for (const auto &propValuePair : props)
+            this->properties.insert({propValuePair});
+
+        return;
+    }
 
     friend std::ostream &operator<<(std::ostream &os, Hit const &hit) {
         os << "{"
@@ -171,10 +176,10 @@ class Hit {
            << "\"time\": " << hit.time << ","
            << "\"energy\": " << hit.energy;
 
-        if (!hit.label.empty())
+        if (hit.label != "")
             os << ", \"label\": \"" << hit.label << "\"";
 
-        if (!hit.properties.empty()) {
+        if (hit.properties.size() != 0) {
             os << ", \"properties\": [";
             for (const auto &propValuePair : hit.properties)
                 os << "{\"" << propValuePair.first << "\": " << propValuePair.second << "},";
@@ -208,7 +213,7 @@ class Hit {
     std::string label;
     std::map<std::string, double> properties;
 };
-using Hits = std::vector<Hit>;
+using Hits = std::vector<Hit*>;
 
 // Convenience constructor for MC hits.
 class MCHit : public Hit {
@@ -220,7 +225,7 @@ class MCHit : public Hit {
         this->hitType = HitType::TRUTH;
     }
 };
-using MCHits = std::vector<MCHit>;
+using MCHits = std::vector<MCHit*>;
 
 // Top level HepEVD server.
 //
@@ -258,6 +263,7 @@ class HepEVDServer {
 
         return true;
     }
+
     bool addTruth(const MCHits &inputMC, const std::string truth = "") {
         this->mcHits = inputMC;
         this->mcTruth = truth;
@@ -287,7 +293,10 @@ template <typename T> inline std::string HepEVDServer::jsonify(const std::vector
     json_string << "[";
 
     for (const auto &dataPoint : data) {
-        json_string << dataPoint << ",";
+        if constexpr (std::is_pointer<T>::value)
+            json_string << *dataPoint << ",";
+        else
+            json_string << dataPoint << ",";
     }
 
     // Move the stringstream write head back one char,
@@ -309,10 +318,10 @@ inline void HepEVDServer::startServer() {
 
     // Simple commands to return the currently understood server state.
     this->server.Get("/hits", [&](const Request &, Response &res) {
-        res.set_content(this->jsonify<Hit>(this->hits), "application/json");
+        res.set_content(this->jsonify<Hit*>(this->hits), "application/json");
     });
     this->server.Get("/mcHits", [&](const Request &, Response &res) {
-        res.set_content(this->jsonify<MCHit>(this->mcHits), "application/json");
+        res.set_content(this->jsonify<MCHit*>(this->mcHits), "application/json");
     });
     this->server.Get("/geometry", [&](const Request &, Response &res) {
         res.set_content(this->jsonify<DetectorGeometry>(this->geometry), "application/json");
@@ -342,7 +351,7 @@ namespace PandoraHelpers {
 #include "Managers/GeometryManager.h"
 #include "Objects/CaloHit.h"
 
-using HepHitMap = std::map<const pandora::CaloHit *, Hit>;
+using HepHitMap = std::map<const pandora::CaloHit *, Hit*>;
 
 DetectorGeometry getHepEVDGeometry(const pandora::GeometryManager *manager) {
 
@@ -359,18 +368,18 @@ DetectorGeometry getHepEVDGeometry(const pandora::GeometryManager *manager) {
     return DetectorGeometry(volumes);
 }
 
-Hits getHepEVD2DHits(const pandora::CaloHitList *caloHits, std::string label = "", HepHitMap pandoraToCaloMap = {}) {
+Hits getHepEVD2DHits(const pandora::CaloHitList *caloHits, std::string label, HepHitMap &pandoraToCaloMap) {
 
     Hits hits;
 
     for (const pandora::CaloHit *const pCaloHit : *caloHits) {
         const auto pos = pCaloHit->GetPositionVector();
-        Hit hit({pos.GetX(), pos.GetY(), pos.GetZ()}, pCaloHit->GetMipEquivalentEnergy());
+        Hit* hit = new Hit({pos.GetX(), pos.GetY(), pos.GetZ()}, pCaloHit->GetMipEquivalentEnergy(), pCaloHit->GetTime());
 
         if (label != "")
-            hit.setLabel(label);
+            hit->setLabel(label);
 
-        hit.setHitType(HitType::TWO_D);
+        hit->setHitType(HitType::TWO_D);
 
         hits.push_back(hit);
         pandoraToCaloMap.insert({pCaloHit, hit});
