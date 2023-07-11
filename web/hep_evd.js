@@ -58,7 +58,6 @@ function fitSceneInCamera(camera, controls, detectorGeometry) {
 // This should mean that any property can be easily drawn without
 // needing to worry about the specific location of a property.
 function getHitProperties(hits) {
-
   const hitPropMaps = new Map();
 
   hitPropMaps.set("3D", new Map());
@@ -115,11 +114,9 @@ function drawHits(
   hitPropMap,
   useColour = false,
   colourProp = "",
-  hitSize = 3
+  hitSize = 3,
 ) {
-
-  if (hits.length == 0)
-    return;
+  if (hits.length == 0) return;
 
   const hitGeometry = new THREE.BoxGeometry(hitSize, hitSize, hitSize);
   const hitMesh = new THREE.InstancedMesh(hitGeometry, material, hits.length);
@@ -155,15 +152,14 @@ function drawHits(
     });
     energyLut.setMax(maxColourValue);
 
-    if (maxColourValue == minColourValue)
-        usingColour = false;
+    if (maxColourValue == minColourValue) usingColour = false;
   }
 
   hits.forEach(function (hit, index) {
     dummyObject.position.set(hit.x, hit.y, hit.z);
     dummyObject.updateMatrix();
 
-    if (usingProperties && ! properties.has(index)) {
+    if (usingProperties && !properties.has(index)) {
       return;
     }
 
@@ -193,7 +189,6 @@ function animate() {
 // ============================================================================
 
 function hitsToggle(hits, hitGroupMap, hitPropMap, toggleTarget) {
-
   if (toggleTarget === "None") {
     hitGroupMap.forEach((group) => (group.visible = false));
     return;
@@ -218,30 +213,28 @@ function hitsToggle(hits, hitGroupMap, hitPropMap, toggleTarget) {
 
 // Mock enum for the default button classes.
 const DefaultButtonID = {
-    None: "None",
-    All: "All"
-}
+  None: "None",
+  All: "All",
+};
 
 // Given a drop down,
 function populateDropdown(className, hitPropMap, onClick = (_) => {}) {
-
   const dropDown = document.getElementById(`${className}_dropdown`);
   const entries = new Set();
 
   // Add the default "None" option.
   entries.add(DefaultButtonID.None);
 
-  if (hitPropMap.size != 0)
-    entries.add(DefaultButtonID.All);
+  if (hitPropMap.size != 0) entries.add(DefaultButtonID.All);
 
   hitPropMap.forEach((properties, _) => {
-      properties.forEach((_, propString) => entries.add(propString));
+    properties.forEach((_, propString) => entries.add(propString));
   });
 
   entries.forEach((entry) => {
     const newButton = document.createElement("button");
     newButton.innerText = entry;
-    newButton.id = `${className}_${entry}`
+    newButton.id = `${className}_${entry}`;
     newButton.addEventListener("click", () => onClick(entry));
     dropDown.appendChild(newButton);
   });
@@ -271,43 +264,49 @@ function toggleButton(className, ID) {
   if (ID == DefaultButtonID.None && isActive) {
     const dropDown = document.getElementById(`${className}_dropdown`);
 
-    Array.from(dropDown.childNodes).filter((elem) =>
-      elem.nodeName != "#text" && elem != button && elem.tagName.toLowerCase() === "button"
-    ).forEach((elem) => {
-      elem.style.color = "green";
-    });
+    Array.from(dropDown.childNodes)
+      .filter(
+        (elem) =>
+          elem.nodeName != "#text" &&
+          elem != button &&
+          elem.tagName.toLowerCase() === "button",
+      )
+      .forEach((elem) => {
+        elem.style.color = "green";
+      });
   } else if (ID != DefaultButtonID.None && isActive) {
-    const button = document.getElementById(`${className}_${DefaultButtonID.None}`);
+    const button = document.getElementById(
+      `${className}_${DefaultButtonID.None}`,
+    );
     button.style.color = "green";
   }
 }
 
 // Swap to 2D controls.
 function setupTwoDControls(controls) {
-    controls.screenSpacePanning = true;
-    controls.enableRotate = false;
-    controls.mouseButtons = {
-        LEFT: THREE.MOUSE.PAN,
-        MIDDLE: THREE.MOUSE.DOLLY,
-        RIGHT: NULL
-    };
+  controls.screenSpacePanning = true;
+  controls.enableRotate = false;
+  controls.mouseButtons = {
+    LEFT: THREE.MOUSE.PAN,
+    MIDDLE: THREE.MOUSE.DOLLY,
+    RIGHT: NULL,
+  };
 
-    controls.update();
+  controls.update();
 }
 
 // Swap to 3D controls.
 function setupThreeDControls(controls) {
-    controls.screenSpacePanning = true;
-    controls.enableRotate = true;
-    controls.mouseButtons = {
-        LEFT: THREE.MOUSE.ROTATE,
-        MIDDLE: THREE.MOUSE.DOLLY,
-        RIGHT: THREE.MOUSE.PAN
-    };
+  controls.screenSpacePanning = true;
+  controls.enableRotate = true;
+  controls.mouseButtons = {
+    LEFT: THREE.MOUSE.ROTATE,
+    MIDDLE: THREE.MOUSE.DOLLY,
+    RIGHT: THREE.MOUSE.PAN,
+  };
 
-    controls.update();
+  controls.update();
 }
-
 
 // ============================================================================
 // HepEVD
@@ -321,9 +320,9 @@ const camera = new THREE.PerspectiveCamera(
   50,
   window.innerWidth / window.innerHeight,
   0.1,
-  1e6
+  1e6,
 );
-const renderer = new THREE.WebGLRenderer();
+const renderer = new THREE.WebGLRenderer({alpha: true, antialias: true});
 const controls = new OrbitControls(camera, renderer.domElement);
 const stats = new Stats();
 renderer.setSize(window.innerWidth, window.innerHeight);
@@ -331,8 +330,6 @@ renderer.setSize(window.innerWidth, window.innerHeight);
 if (document.body.className === "lighttheme") renderer.setClearColor("white");
 else renderer.setClearColor("black");
 
-renderer.alpha = true;
-renderer.antialias = false;
 document.body.appendChild(renderer.domElement);
 document.body.appendChild(stats.dom);
 
@@ -362,50 +359,55 @@ hitGroupMap.get("2D").set(DefaultButtonID.All, twoDHitGroup);
 
 // Finally, start pulling in data about the event.
 const detectorGeometry = await fetch("geometry").then((response) =>
-  response.json()
+  response.json(),
 );
 const hits = await fetch("hits").then((response) => response.json());
-const twoDHits = hits.filter((hit) => hit.type.includes("2D"));
-const threeDHits = hits.filter((hit) => hit.type === "3D");
+const hitMap = new Map([
+  ["3D", hits.filter((hit) => hit.type === "3D")],
+  ["2D", hits.filter((hit) => hit.type.includes("2D"))],
+]);
 const hitPropMaps = getHitProperties(hits);
 
 // Time to start the actual rendering.
 detectorGeometry
   .filter((volume) => volume.type === "box")
   .forEach((box) =>
-    drawBoxVolume(detectorGeometryGroup, materialGeometry, box)
+    drawBoxVolume(detectorGeometryGroup, materialGeometry, box),
   );
 
 // Prefer drawing 3D hits, but draw 2D if only option.
-if (threeDHits.length != 0) {
- drawHits(threeDHitGroup, materialHit, threeDHits, hitPropMaps.get("3D"));
-} else {
- drawHits(twoDHitGroup, materialHit, twoDHits, hitPropMaps.get("2D"));
-}
+const defaultDraw = hitMap.get("3D").length != 0 ? "3D" : "2D";
+drawHits(
+  hitGroupMap.get(defaultDraw).get(DefaultButtonID.All),
+  materialHit,
+  hitMap.get(defaultDraw),
+  hitPropMaps.get(defaultDraw),
+);
 
 // Populate the UI properly.
 // This includes functions that the GUI uses, and filling in the various dropdowns.
 
 // First, setup all the button on click events.
-let toggleHits3D = (toggleTarget) => {
-  hitsToggle(threeDHits, hitGroupMap.get("3D"), hitPropMaps.get("3D"), toggleTarget);
-  toggleButton("threeD", toggleTarget);
-};
-let toggleHits2D = (toggleTarget) => {
-  hitsToggle(twoDHits, hitGroupMap.get("2D"), hitPropMaps.get("2D"), toggleTarget);
-  toggleButton("twoD", toggleTarget);
+let toggleHits = (hitType) => (toggleTarget) => {
+  hitsToggle(
+    hitMap.get(hitType),
+    hitGroupMap.get(hitType),
+    hitPropMaps.get(hitType),
+    toggleTarget,
+  );
+  toggleButton(hitType, toggleTarget);
 };
 
-populateDropdown("threeD", hitPropMaps.get("3D"), toggleHits3D);
-populateDropdown("twoD", hitPropMaps.get("2D"), toggleHits2D);
+// Populate all the dropdowns.
+populateDropdown("3D", hitPropMaps.get("3D"), toggleHits("3D"));
+populateDropdown("2D", hitPropMaps.get("2D"), toggleHits("2D"));
 
 // Toggle on the default rendering.
-const defaultRenderClass = threeDHits.length != 0 ? "threeD" : "twoD";
-toggleButton(defaultRenderClass, DefaultButtonID.All);
+toggleButton(defaultDraw, DefaultButtonID.All);
 
 // Start the final rendering of the event.
 
-// Irient the camera to the middle of the scene.
+// Orient the camera to the middle of the scene.
 fitSceneInCamera(camera, controls, detectorGeometryGroup);
 
 // Finally, animate the scene!

@@ -93,7 +93,7 @@ class BoxVolume : public GeoVolume {
 // TODO: Extend geometry model to include lines, sphere, cylinder etc.
 enum VolumeType { BOX, LINE, SPHERE, CYLINDER };
 
-using Volumes = std::vector<GeoVolume*>;
+using Volumes = std::vector<GeoVolume *>;
 using VolumeMap = std::map<VolumeType, std::vector<double>>;
 
 // Top-level detector geometry, with a detector being composed of
@@ -335,7 +335,7 @@ namespace PandoraHelpers {
 #include "Managers/GeometryManager.h"
 #include "Objects/CaloHit.h"
 
-using HepHitMap = std::map<const pandora::CaloHit*, Hit>;
+using HepHitMap = std::map<const pandora::CaloHit *, Hit>;
 
 DetectorGeometry getHepEVDGeometry(const pandora::GeometryManager *manager) {
 
@@ -343,8 +343,9 @@ DetectorGeometry getHepEVDGeometry(const pandora::GeometryManager *manager) {
 
     for (const auto &tpcIndexPair : manager->GetLArTPCMap()) {
         const auto &lartpc = *(tpcIndexPair.second);
-        BoxVolume *larTPCVolume = new BoxVolume(Position({lartpc.GetCenterX(), lartpc.GetCenterY(), lartpc.GetCenterZ()}),
-                               lartpc.GetWidthX(), lartpc.GetWidthY(), lartpc.GetWidthZ());
+        BoxVolume *larTPCVolume =
+            new BoxVolume(Position({lartpc.GetCenterX(), lartpc.GetCenterY(), lartpc.GetCenterZ()}), lartpc.GetWidthX(),
+                          lartpc.GetWidthY(), lartpc.GetWidthZ());
         volumes.push_back(larTPCVolume);
     }
 
