@@ -351,7 +351,7 @@ DetectorGeometry getHepEVDGeometry(const pandora::GeometryManager *manager) {
     return DetectorGeometry(volumes);
 }
 
-Hits getHepEVDHits(const pandora::CaloHitList *caloHits, std::string label = "", HepHitMap pandoraToCaloMap = {}) {
+Hits getHepEVD2DHits(const pandora::CaloHitList *caloHits, std::string label = "", HepHitMap pandoraToCaloMap = {}) {
 
     Hits hits;
 
@@ -361,6 +361,8 @@ Hits getHepEVDHits(const pandora::CaloHitList *caloHits, std::string label = "",
 
         if (label != "")
             hit.setLabel(label);
+
+        hit.setHitType(HitType::TWO_D);
 
         hits.push_back(hit);
         pandoraToCaloMap.insert({pCaloHit, hit});
