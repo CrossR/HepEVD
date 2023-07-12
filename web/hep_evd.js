@@ -8,14 +8,17 @@ import Stats from "three/addons/libs/stats.module.js";
 
 import { DefaultButtonID, materialGeometry, materialHit, materialLine } from "./constants.js";
 import { getHitProperties } from "./helpers.js";
-import { drawHits, setupThreeDControls, setupTwoDControls } from "./hits.js";
+import { drawHits, setupControls, setupThreeDControls, setupTwoDControls } from "./hits.js";
 import { animate, drawBoxVolume, fitSceneInCamera } from "./rendering.js";
 import { hitsToggle, populateDropdown, toggleButton } from "./ui.js";
 
 // First, do the initial threejs setup.
 // That is the scene/camera/renderer/controls, and some basic properties of each.
 // Once complete, add to the actual web page.
-const scene = new THREE.Scene();
+const scenes = new Map();
+scenes.set("3D", new THREE.Scene());
+scenes.set("2D", new THREE.Scene());
+
 const camera = new THREE.PerspectiveCamera(
   50,
   window.innerWidth / window.innerHeight,
@@ -35,7 +38,7 @@ document.body.appendChild(stats.dom);
 
 // Then, setup some basic data structures the rest of the renderer can use.
 const detectorGeometryGroup = new THREE.Group();
-scene.add(detectorGeometryGroup);
+scenes.get("3D").add(detectorGeometryGroup);
 
 const hitGroupMap = new Map();
 hitGroupMap.set("3D", new Map());
@@ -43,11 +46,11 @@ hitGroupMap.set("2D", new Map());
 
 // Default hit groups for the "All" case.
 const threeDHitGroup = new THREE.Group();
-scene.add(threeDHitGroup);
+scenes.get("3D").add(threeDHitGroup);
 hitGroupMap.get("3D").set(DefaultButtonID.All, threeDHitGroup);
 
 const twoDHitGroup = new THREE.Group();
-scene.add(twoDHitGroup);
+scenes.get("3D").add(twoDHitGroup);
 hitGroupMap.get("2D").set(DefaultButtonID.All, twoDHitGroup);
 
 // Finally, start pulling in data about the event.
@@ -99,7 +102,7 @@ let toggleHits = (hitType) => (toggleTarget) => {
     hitPropMaps.get(hitType),
     toggleTarget,
   );
-  if (newScene) scene.add(newScene);
+  if (newScene) scenes.get(hitType).add(newScene);
   toggleButton(hitType, toggleTarget);
 };
 
@@ -112,12 +115,11 @@ toggleButton(defaultDraw, DefaultButtonID.All);
 
 // Start the final rendering of the event.
 // Orient the camera to the middle of the scene.
+if (defaultDraw == "3D") scenes.get("2D").visible = false;
+if (defaultDraw == "2D") scenes.get("3D").visible = false;
 fitSceneInCamera(camera, controls, detectorGeometryGroup);
+setupControls(defaultDraw, controls);
 
 // Finally, animate the scene!
-animate(renderer, scene, camera, stats);
+animate(renderer, scenes, camera, stats);
 
-// Once run once, we can disable these to help with performance.
-// Noting is animated in our scene, so not needed.
-scene.matrixAutoUpdate = false;
-scene.autoUpdate = false;

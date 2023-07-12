@@ -17,9 +17,14 @@ export function drawBoxVolume(group, material, box) {
 }
 
 // Actual rendering animation function, called each frame.
-export function animate(renderer, scene, camera, stats) {
-  requestAnimationFrame(() => animate(renderer, scene, camera, stats));
-  renderer.render(scene, camera);
+export function animate(renderer, scenes, camera, stats) {
+  requestAnimationFrame(() => animate(renderer, scenes, camera, stats));
+  [...scenes.values()].filter((scene) => scene.visible
+  ).forEach((scene) => {
+    renderer.render(scene, camera);
+    scene.matrixAutoUpdate = false;
+    scene.autoUpdate = false;
+  });
   stats.update();
 }
 

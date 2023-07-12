@@ -2,10 +2,12 @@
 // Useful helper functions.
 //
 
+import * as THREE from "three";
+
 import { DefaultButtonID } from "./constants.js";
 
 // Convert a JS position object to threejs.
-function positionToVector(position) {
+export function positionToVector(position) {
   return new THREE.Vector3(position.x, position.y, position.z);
 }
 

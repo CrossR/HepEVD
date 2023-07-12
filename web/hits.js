@@ -94,6 +94,14 @@ export function drawHits(
   group.add(hitMesh);
 }
 
+// Setup the correct controls per context.
+export function setupControls(viewType, controls) {
+  if (viewType === "3D")
+    setupThreeDControls(controls);
+  else
+    setupTwoDControls(controls);
+}
+
 // Swap to 2D controls.
 export function setupTwoDControls(controls) {
   controls.screenSpacePanning = true;
