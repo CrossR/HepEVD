@@ -6,11 +6,22 @@ import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import Stats from "three/addons/libs/stats.module.js";
 
-import { DefaultButtonID, materialGeometry, materialHit, materialLine } from "./constants.js";
+import { DefaultButtonID, materialGeometry, materialHit } from "./constants.js";
 import { getHitProperties } from "./helpers.js";
-import { drawHits, setupControls, setupThreeDControls, setupTwoDControls } from "./hits.js";
-import { animate, drawBoxVolume, fitSceneInCamera, toggleScene, isSceneActive } from "./rendering.js";
-import { hitsToggle, populateDropdown, isButtonActive, toggleButton } from "./ui.js";
+import { drawHits, setupControls } from "./hits.js";
+import {
+  animate,
+  drawBoxVolume,
+  fitSceneInCamera,
+  isSceneActive,
+  toggleScene,
+} from "./rendering.js";
+import {
+  hitsToggle,
+  isButtonActive,
+  populateDropdown,
+  toggleButton,
+} from "./ui.js";
 
 // First, do the initial threejs setup.
 // That is the scene/camera/renderer/controls, and some basic properties of each.
@@ -81,9 +92,7 @@ const tempMat = new THREE.LineBasicMaterial({
 });
 detectorGeometry
   .filter((volume) => volume.type === "box")
-  .forEach((box) =>
-    drawBoxVolume(detectorGeometryMap.get("2D"), tempMat, box),
-  );
+  .forEach((box) => drawBoxVolume(detectorGeometryMap.get("2D"), tempMat, box));
 
 // Prefer drawing 3D hits, but draw 2D if only option.
 const defaultDraw = hitMap.get("3D").length != 0 ? "3D" : "2D";
@@ -111,8 +120,10 @@ drawHits(
 
 // First, setup all the button on click events.
 let toggleHits = (hitType) => (toggleTarget) => {
-
-  if (isButtonActive(hitType, toggleTarget) && ! isSceneActive(scenes, hitType)) {
+  if (
+    isButtonActive(hitType, toggleTarget) &&
+    !isSceneActive(scenes, hitType)
+  ) {
     toggleScene(scenes, hitType);
     return;
   }
@@ -145,4 +156,3 @@ setupControls(defaultDraw, controls);
 
 // Finally, animate the scene!
 animate(renderer, scenes, camera, stats);
-

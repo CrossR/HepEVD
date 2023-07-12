@@ -96,10 +96,8 @@ export function drawHits(
 
 // Setup the correct controls per context.
 export function setupControls(viewType, controls) {
-  if (viewType === "3D")
-    setupThreeDControls(controls);
-  else
-    setupTwoDControls(controls);
+  if (viewType === "3D") setupThreeDControls(controls);
+  else setupTwoDControls(controls);
 }
 
 // Swap to 2D controls.
