@@ -146,3 +146,9 @@ export function toggleButton(className, ID) {
     button.style.color = "green";
   }
 }
+
+// Is the given button active?
+export function isButtonActive(className, ID) {
+  const button = document.getElementById(`${className}_${ID}`);
+  return button.style.color === "white";
+}

@@ -66,3 +66,19 @@ export function fitSceneInCamera(camera, controls, detectorGeometry) {
     camera.lookAt(center);
   }
 }
+
+// Show the correct scene based on the current render target (2D/3D).
+export function toggleScene(scenes, renderTarget) {
+  if (renderTarget === "2D") {
+    scenes.get("2D").visible = true;
+    scenes.get("3D").visible = false;
+  } else {
+    scenes.get("3D").visible = true;
+    scenes.get("2D").visible = false;
+  }
+}
+
+// Show the correct scene based on the current render target (2D/3D).
+export function isSceneActive(scenes, renderTarget) {
+  return scenes.get(renderTarget).visible;
+}

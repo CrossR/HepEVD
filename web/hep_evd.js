@@ -9,15 +9,16 @@ import Stats from "three/addons/libs/stats.module.js";
 import { DefaultButtonID, materialGeometry, materialHit, materialLine } from "./constants.js";
 import { getHitProperties } from "./helpers.js";
 import { drawHits, setupControls, setupThreeDControls, setupTwoDControls } from "./hits.js";
-import { animate, drawBoxVolume, fitSceneInCamera } from "./rendering.js";
-import { hitsToggle, populateDropdown, toggleButton } from "./ui.js";
+import { animate, drawBoxVolume, fitSceneInCamera, toggleScene, isSceneActive } from "./rendering.js";
+import { hitsToggle, populateDropdown, isButtonActive, toggleButton } from "./ui.js";
 
 // First, do the initial threejs setup.
 // That is the scene/camera/renderer/controls, and some basic properties of each.
 // Once complete, add to the actual web page.
-const scenes = new Map();
-scenes.set("3D", new THREE.Scene());
-scenes.set("2D", new THREE.Scene());
+const scenes = new Map([
+  ["3D", new THREE.Scene()],
+  ["2D", new THREE.Scene()],
+]);
 
 const camera = new THREE.PerspectiveCamera(
   50,
@@ -37,21 +38,15 @@ document.body.appendChild(renderer.domElement);
 document.body.appendChild(stats.dom);
 
 // Then, setup some basic data structures the rest of the renderer can use.
-const detectorGeometryGroup = new THREE.Group();
-scenes.get("3D").add(detectorGeometryGroup);
+const detectorGeometryMap = new Map([
+  ["3D", new THREE.Group()],
+  ["2D", new THREE.Group()],
+]);
 
-const hitGroupMap = new Map();
-hitGroupMap.set("3D", new Map());
-hitGroupMap.set("2D", new Map());
-
-// Default hit groups for the "All" case.
-const threeDHitGroup = new THREE.Group();
-scenes.get("3D").add(threeDHitGroup);
-hitGroupMap.get("3D").set(DefaultButtonID.All, threeDHitGroup);
-
-const twoDHitGroup = new THREE.Group();
-scenes.get("3D").add(twoDHitGroup);
-hitGroupMap.get("2D").set(DefaultButtonID.All, twoDHitGroup);
+const hitGroupMap = new Map([
+  ["3D", new Map()],
+  ["2D", new Map()],
+]);
 
 // Finally, start pulling in data about the event.
 const detectorGeometry = await fetch("geometry").then((response) =>
@@ -63,7 +58,7 @@ const hits = await fetch("hits").then((response) => response.json());
 // First, just a basic one to store all the 3D/2D hits.
 const hitMap = new Map([
   ["3D", hits.filter((hit) => hit.type === "3D")],
-  ["2D", hits.filter((hit) => hit.type.includes("2D"))],
+  ["2D", hits.filter((hit) => hit.type === "2D")],
 ]);
 // Next, one stores the hits being actively rendered.
 const activeHitMap = new Map([
@@ -74,15 +69,36 @@ const activeHitMap = new Map([
 const hitPropMaps = getHitProperties(hits);
 
 // Time to start the actual rendering.
+
+// 3D and 2D geometry drawn individually.
 detectorGeometry
   .filter((volume) => volume.type === "box")
   .forEach((box) =>
-    drawBoxVolume(detectorGeometryGroup, materialGeometry, box),
+    drawBoxVolume(detectorGeometryMap.get("3D"), materialGeometry, box),
+  );
+const tempMat = new THREE.LineBasicMaterial({
+  color: "darkgreen",
+});
+detectorGeometry
+  .filter((volume) => volume.type === "box")
+  .forEach((box) =>
+    drawBoxVolume(detectorGeometryMap.get("2D"), tempMat, box),
   );
 
 // Prefer drawing 3D hits, but draw 2D if only option.
 const defaultDraw = hitMap.get("3D").length != 0 ? "3D" : "2D";
+
+// Add detector geometry to the relevant scene...
+["3D", "2D"].forEach((hitType) => {
+  scenes.get(hitType).add(detectorGeometryMap.get(hitType));
+});
+
+// Add a default render group to the current target, and render into it.
+const defaultHitGroup = new THREE.Group();
+scenes.get(defaultDraw).add(defaultHitGroup);
+hitGroupMap.get(defaultDraw).set(DefaultButtonID.All, defaultHitGroup);
 activeHitMap.get(defaultDraw).set(DefaultButtonID.All, hitMap.get(defaultDraw));
+
 drawHits(
   hitGroupMap.get(defaultDraw).get(DefaultButtonID.All),
   materialHit,
@@ -95,6 +111,12 @@ drawHits(
 
 // First, setup all the button on click events.
 let toggleHits = (hitType) => (toggleTarget) => {
+
+  if (isButtonActive(hitType, toggleTarget) && ! isSceneActive(scenes, hitType)) {
+    toggleScene(scenes, hitType);
+    return;
+  }
+
   let newScene = hitsToggle(
     hitMap.get(hitType),
     activeHitMap.get(hitType),
@@ -102,8 +124,10 @@ let toggleHits = (hitType) => (toggleTarget) => {
     hitPropMaps.get(hitType),
     toggleTarget,
   );
-  if (newScene) scenes.get(hitType).add(newScene);
   toggleButton(hitType, toggleTarget);
+
+  if (newScene) scenes.get(hitType).add(newScene);
+  toggleScene(scenes, hitType);
 };
 
 // Populate all the dropdowns.
@@ -115,9 +139,8 @@ toggleButton(defaultDraw, DefaultButtonID.All);
 
 // Start the final rendering of the event.
 // Orient the camera to the middle of the scene.
-if (defaultDraw == "3D") scenes.get("2D").visible = false;
-if (defaultDraw == "2D") scenes.get("3D").visible = false;
-fitSceneInCamera(camera, controls, detectorGeometryGroup);
+toggleScene(scenes, defaultDraw);
+fitSceneInCamera(camera, controls, detectorGeometryMap.get(defaultDraw));
 setupControls(defaultDraw, controls);
 
 // Finally, animate the scene!
