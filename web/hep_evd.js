@@ -110,13 +110,17 @@ function drawBoxVolume(group, material, box) {
 function drawHits(
   group,
   material,
-  hits,
+  activeHits,
   hitPropMap,
   useColour = false,
-  colourProp = "",
   hitSize = 3,
 ) {
-  if (hits.length == 0) return;
+  // Produce arrays containing all the input hits, and the required
+  // hit properties.
+  const hits = [...activeHits.values()].flat();
+  const allColourProps = [...activeHits.keys()];
+
+  if (hits.length === 0) return;
 
   const hitGeometry = new THREE.BoxGeometry(hitSize, hitSize, hitSize);
   const hitMesh = new THREE.InstancedMesh(hitGeometry, material, hits.length);
@@ -130,17 +134,21 @@ function drawHits(
       return;
     }
 
-    if (!hitPropMap.get(hit).has(colourProp)) {
-      return;
-    }
+    allColourProps.forEach((colourProp) => {
+      if (!hitPropMap.get(hit).has(colourProp)) {
+        return;
+      }
 
-    properties.set(index, hitPropMap.get(hit).get(colourProp));
+      // TODO: Need to decide the best way to pick which property to use if
+      //       there are many.
+      properties.set(index, hitPropMap.get(hit).get(colourProp));
+    })
   });
 
   let usingColour =
     useColour &&
     properties.size > 0 &&
-    [...properties.values()][0].constructor == Number;
+    [...properties.values()][0].constructor === Number;
   const usingProperties = properties.size > 0;
 
   if (usingColour) {
@@ -152,7 +160,7 @@ function drawHits(
     });
     energyLut.setMax(maxColourValue);
 
-    if (maxColourValue == minColourValue) usingColour = false;
+    if (maxColourValue === minColourValue) usingColour = false;
   }
 
   hits.forEach(function (hit, index) {
@@ -188,34 +196,81 @@ function animate() {
 // GUI Functions
 // ============================================================================
 
-function hitsToggle(hits, hitGroupMap, hitPropMap, toggleTarget) {
-  if (toggleTarget === "None") {
+// Mock enum for the default button classes.
+const DefaultButtonID = {
+  None: "None",
+  All: "All",
+};
+
+// Given a new hit-based property to toggle (toggleTarget), either
+// toggle it's visibility, or render a new group for it.
+// If the button is the none button, instead set all the groups off.
+//
+// We have to be a bit creative in how we do the rendering. Rendering of so
+// many (order thousands) of tiny cubes is only fast due to using the
+// THREE.InstancedMesh. However, we ideally want a singular instanced mesh
+// with every single hit in, rather than many instanced meshes.
+//
+// For that reason, we build up a superset based on all the currently active
+// targets, and then render out a single InstancedMesh that contains all the
+// hits from all currently active properties.
+//
+// Builds up a cache string based on all the currently active properties
+// to utilise older InstancedMesh instances.
+function hitsToggle(allHits, activeHits, hitGroupMap, hitPropMap, toggleTarget) {
+  if (toggleTarget === DefaultButtonID.None) {
     hitGroupMap.forEach((group) => (group.visible = false));
     return;
   }
 
-  // If it does exist, then just toggle its visibility.
-  if (hitGroupMap.has(toggleTarget) === true) {
-    const threeDHitGroup = hitGroupMap.get(toggleTarget);
-    threeDHitGroup.visible = !threeDHitGroup.visible;
+  const currentKey = [...activeHits.keys()].sort().join("_");
 
+  if (hitGroupMap.has(currentKey)) {
+    const threeDHitGroup = hitGroupMap.get(currentKey);
+    threeDHitGroup.visible = false;
+  }
+
+  // Add/Remove the hits from the activeHits map as needed.
+  if (activeHits.has(toggleTarget)) {
+    activeHits.delete(toggleTarget);
+  } else {
+    const newHitsToRender = [];
+    hits.forEach((hit) => {
+        if (!hitPropMap.has(hit)) {
+            return;
+        }
+
+        if (!hitPropMap.get(hit).has(toggleTarget)) {
+            return;
+        }
+
+        newHitsToRender.push(hit);
+    });
+    activeHits.set(toggleTarget, newHitsToRender);
+  }
+
+  const newKey = [...activeHits.keys()].sort().join("_");
+
+  if (newKey.length === 0) {
+    return;
+  }
+
+  // If the current combination exists, just toggle it and return.
+  if (hitGroupMap.has(newKey)) {
+    console.log("This combination already exists!")
+    const threeDHitGroup = hitGroupMap.get(newKey);
+    threeDHitGroup.visible = true;
     return;
   }
 
   // Otherwise, we need to make a new group, populate it and store it for later.
   const newGroup = new THREE.Group();
   scene.add(newGroup);
-  drawHits(newGroup, materialHit, hits, hitPropMap, true, toggleTarget);
-  hitGroupMap.set(toggleTarget, newGroup);
+  drawHits(newGroup, materialHit, activeHits, hitPropMap, true);
+  hitGroupMap.set(newKey, newGroup);
 
   return;
 }
-
-// Mock enum for the default button classes.
-const DefaultButtonID = {
-  None: "None",
-  All: "All",
-};
 
 // Given a drop down,
 function populateDropdown(className, hitPropMap, onClick = (_) => {}) {
@@ -261,7 +316,7 @@ function toggleButton(className, ID) {
     isActive = true;
   }
 
-  if (ID == DefaultButtonID.None && isActive) {
+  if (ID === DefaultButtonID.None && isActive) {
     const dropDown = document.getElementById(`${className}_dropdown`);
 
     Array.from(dropDown.childNodes)
@@ -343,7 +398,11 @@ const materialHit = new THREE.MeshBasicMaterial({
 const detectorGeometryGroup = new THREE.Group();
 scene.add(detectorGeometryGroup);
 
-// Hits are stored in multiple groups, such that they can be toggled independently.
+// Hits are stored in multiple groups, such that they can be toggled
+// independently.
+//
+// We want the keys as arrays, so we can tell what properties make
+// up a group more easily.
 const hitGroupMap = new Map();
 hitGroupMap.set("3D", new Map());
 hitGroupMap.set("2D", new Map());
@@ -362,10 +421,16 @@ const detectorGeometry = await fetch("geometry").then((response) =>
   response.json(),
 );
 const hits = await fetch("hits").then((response) => response.json());
+
+// Populate various maps we need for fast lookups.
+// First, just a basic one to store all the 3D/2D hits.
 const hitMap = new Map([
   ["3D", hits.filter((hit) => hit.type === "3D")],
   ["2D", hits.filter((hit) => hit.type.includes("2D"))],
 ]);
+// Next, one stores the hits being actively rendered.
+const activeHitMap = new Map([["3D", new Map()], ["2D", new Map()]]);
+// Finally, store a mapping between each hit and the properties of that hit.
 const hitPropMaps = getHitProperties(hits);
 
 // Time to start the actual rendering.
@@ -377,10 +442,13 @@ detectorGeometry
 
 // Prefer drawing 3D hits, but draw 2D if only option.
 const defaultDraw = hitMap.get("3D").length != 0 ? "3D" : "2D";
+activeHitMap.get(defaultDraw).set(
+    DefaultButtonID.All, hitMap.get(defaultDraw)
+);
 drawHits(
   hitGroupMap.get(defaultDraw).get(DefaultButtonID.All),
   materialHit,
-  hitMap.get(defaultDraw),
+  activeHitMap.get(defaultDraw),
   hitPropMaps.get(defaultDraw),
 );
 
@@ -391,6 +459,7 @@ drawHits(
 let toggleHits = (hitType) => (toggleTarget) => {
   hitsToggle(
     hitMap.get(hitType),
+    activeHitMap.get(hitType),
     hitGroupMap.get(hitType),
     hitPropMaps.get(hitType),
     toggleTarget,

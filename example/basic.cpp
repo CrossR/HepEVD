@@ -28,7 +28,7 @@ int main(void) {
 
     std::uniform_real_distribution<float> disProb(0, 1);
 
-    for (unsigned int i = 0; i < 10000; ++i) {
+    for (unsigned int i = 0; i < 50000; ++i) {
 
         const double x = disX(gen);
         const double y = disY(gen);
