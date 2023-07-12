@@ -224,6 +224,7 @@ const DefaultButtonID = {
 function hitsToggle(allHits, activeHits, hitGroupMap, hitPropMap, toggleTarget) {
   if (toggleTarget === DefaultButtonID.None) {
     hitGroupMap.forEach((group) => (group.visible = false));
+    activeHits.clear();
     return;
   }
 
