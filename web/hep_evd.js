@@ -254,7 +254,7 @@ function hitsToggle(allHits, activeHits, hitGroupMap, hitPropMap, toggleTarget) 
     activeHits.set(toggleTarget, newHitsToRender);
   }
 
-  const newKey = [...activeHits.keys()].join("_");
+  const newKey = [...activeHits.keys()].sort().join("_");
 
   if (newKey.length === 0) {
     return;
