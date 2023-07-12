@@ -68,7 +68,9 @@ function getHitProperties(hits) {
   //  - If a hit is labelled.
   //  - If a hit has a property map associated.
   hits.forEach((hit) => {
-    hitPropMaps.get(hit.type).set(hit, new Map([["energy", hit.energy]]));
+
+    hitPropMaps.get(hit.type).set(hit, new Map([[DefaultButtonID.All, 0.0]]));
+    hitPropMaps.get(hit.type).get(hit).set("energy", hit.energy);
 
     if (Object.hasOwn(hit, "label")) {
       hitPropMaps.get(hit.type).get(hit).set(hit.label, 1.0);
@@ -117,8 +119,9 @@ function drawHits(
 ) {
   // Produce arrays containing all the input hits, and the required
   // hit properties.
-  const hits = [...activeHits.values()].flat();
   const allColourProps = [...activeHits.keys()];
+  const renderingAll = allColourProps.includes(DefaultButtonID.All);
+  const hits = renderingAll ? activeHits.get(DefaultButtonID.All) : [...activeHits.values()].flat();
 
   if (hits.length === 0) return;
 
@@ -141,7 +144,8 @@ function drawHits(
 
       // TODO: Need to decide the best way to pick which property to use if
       //       there are many.
-      properties.set(index, hitPropMap.get(hit).get(colourProp));
+      const hitProp = hitPropMap.get(hit).get(colourProp);
+      properties.set(index, hitProp);
     })
   });
 
@@ -249,7 +253,7 @@ function hitsToggle(allHits, activeHits, hitGroupMap, hitPropMap, toggleTarget) 
     activeHits.set(toggleTarget, newHitsToRender);
   }
 
-  const newKey = [...activeHits.keys()].sort().join("_");
+  const newKey = [...activeHits.keys()].join("_");
 
   if (newKey.length === 0) {
     return;
@@ -257,7 +261,6 @@ function hitsToggle(allHits, activeHits, hitGroupMap, hitPropMap, toggleTarget) 
 
   // If the current combination exists, just toggle it and return.
   if (hitGroupMap.has(newKey)) {
-    console.log("This combination already exists!")
     const threeDHitGroup = hitGroupMap.get(newKey);
     threeDHitGroup.visible = true;
     return;
