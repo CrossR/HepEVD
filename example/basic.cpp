@@ -28,7 +28,7 @@ int main(void) {
 
     std::uniform_real_distribution<float> disProb(0, 1);
 
-    for (unsigned int i = 0; i < 50000; ++i) {
+    for (unsigned int i = 0; i < 25000; ++i) {
 
         const double x = disX(gen);
         const double y = disY(gen);
@@ -58,6 +58,24 @@ int main(void) {
         hit->addProperties(properties);
         hits.push_back(hit);
         mcHits.push_back(mcHit);
+    }
+
+    // Repeat for the 2D views
+    disX = std::uniform_real_distribution<float>(-350, 350);
+    disZ = std::uniform_real_distribution<float>(0, 1300);
+    std::array<HitClass, 3> views({TWO_D_U, TWO_D_V, TWO_D_W});
+
+    for (unsigned int i = 0; i < 3; ++i) {
+        for (unsigned int j = 0; j < 5000; ++j) {
+            const double x = disX(gen);
+            const double z = disZ(gen);
+            const double e = x + z;
+
+            Hit* hit = new Hit({x, 0.f, z}, e);
+            hit->setHitType(TWO_D);
+            hit->setHitClass(views[i]);
+            hits.push_back(hit);
+        }
     }
 
     HepEVDServer server(
