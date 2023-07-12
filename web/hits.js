@@ -107,7 +107,7 @@ export function setupTwoDControls(controls) {
   controls.mouseButtons = {
     LEFT: THREE.MOUSE.PAN,
     MIDDLE: THREE.MOUSE.DOLLY,
-    RIGHT: NULL,
+    RIGHT: null,
   };
 
   controls.update();

@@ -37,8 +37,15 @@ const camera = new THREE.PerspectiveCamera(
   0.1,
   1e6,
 );
+const cameras = new Map([
+  ["3D", camera.clone()],
+  ["2D", camera.clone()],
+]);
 const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
-const controls = new OrbitControls(camera, renderer.domElement);
+const controls = new Map([
+  ["3D", new OrbitControls(cameras.get("3D"), renderer.domElement)],
+  ["2D", new OrbitControls(cameras.get("2D"), renderer.domElement)],
+]);
 const stats = new Stats();
 renderer.setSize(window.innerWidth, window.innerHeight);
 
@@ -138,7 +145,7 @@ let toggleHits = (hitType) => (toggleTarget) => {
   toggleButton(hitType, toggleTarget);
 
   if (newScene) scenes.get(hitType).add(newScene);
-  toggleScene(scenes, hitType);
+  toggleScene(scenes, controls, hitType);
 };
 
 // Populate all the dropdowns.
@@ -150,9 +157,11 @@ toggleButton(defaultDraw, DefaultButtonID.All);
 
 // Start the final rendering of the event.
 // Orient the camera to the middle of the scene.
-toggleScene(scenes, defaultDraw);
-fitSceneInCamera(camera, controls, detectorGeometryMap.get(defaultDraw));
-setupControls(defaultDraw, controls);
+toggleScene(scenes, controls, defaultDraw);
+["3D", "2D"].forEach((hitType) => {
+  fitSceneInCamera(cameras.get(hitType), controls.get(hitType), detectorGeometryMap.get(hitType));
+  setupControls(hitType, controls.get(hitType));
+});
 
 // Finally, animate the scene!
-animate(renderer, scenes, camera, stats);
+animate(renderer, scenes, cameras, stats);

@@ -17,15 +17,14 @@ export function drawBoxVolume(group, material, box) {
 }
 
 // Actual rendering animation function, called each frame.
-export function animate(renderer, scenes, camera, stats) {
-  requestAnimationFrame(() => animate(renderer, scenes, camera, stats));
-  [...scenes.values()]
-    .filter((scene) => scene.visible)
-    .forEach((scene) => {
-      renderer.render(scene, camera);
-      scene.matrixAutoUpdate = false;
-      scene.autoUpdate = false;
-    });
+export function animate(renderer, scenes, cameras, stats) {
+  requestAnimationFrame(() => animate(renderer, scenes, cameras, stats));
+  scenes.forEach((scene, hitType) => {
+    if (! scene.visible) return;
+    renderer.render(scene, cameras.get(hitType));
+    scene.matrixAutoUpdate = false;
+    scene.autoUpdate = false;
+  });
   stats.update();
 }
 
@@ -69,14 +68,11 @@ export function fitSceneInCamera(camera, controls, detectorGeometry) {
 }
 
 // Show the correct scene based on the current render target (2D/3D).
-export function toggleScene(scenes, renderTarget) {
-  if (renderTarget === "2D") {
-    scenes.get("2D").visible = true;
-    scenes.get("3D").visible = false;
-  } else {
-    scenes.get("3D").visible = true;
-    scenes.get("2D").visible = false;
-  }
+export function toggleScene(scenes, controls, renderTarget) {
+  ["2D", "3D"].forEach((hitType) => {
+    scenes.get(hitType).visible = hitType === renderTarget;
+    controls.get(hitType).enabled = hitType === renderTarget;
+  });
 }
 
 // Show the correct scene based on the current render target (2D/3D).
