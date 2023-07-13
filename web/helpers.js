@@ -4,11 +4,28 @@
 
 import * as THREE from "three";
 
-import { DefaultButtonID } from "./constants.js";
+import { BUTTON_ID } from "./constants.js";
 
 // Convert a JS position object to threejs.
 export function positionToVector(position) {
   return new THREE.Vector3(position.x, position.y, position.z);
+}
+
+export function getMinMax(arr, prop) {
+    return arr.reduce(
+        (acc, value) => {
+            return [
+                Math.min(value[prop], acc[0]),
+                Math.max(value[prop], acc[1])
+            ];
+        }, [Number.POSITIVE_INFINITY, Number.NEGATIVE_INFINITY]
+    );
+}
+
+export function getWidth(arr, prop) {
+    const minMax = getMinMax(arr, prop);
+
+    return Math.abs(minMax[0] - minMax[1]);
 }
 
 // Build up a map between a property name and a property for
@@ -27,7 +44,7 @@ export function getHitProperties(hits) {
   //  - If a hit is labelled.
   //  - If a hit has a property map associated.
   hits.forEach((hit) => {
-    hitPropMaps.get(hit.type).set(hit, new Map([[DefaultButtonID.All, 0.0]]));
+    hitPropMaps.get(hit.type).set(hit, new Map([[BUTTON_ID.All, 0.0]]));
     hitPropMaps.get(hit.type).get(hit).set("energy", hit.energy);
 
     if (Object.hasOwn(hit, "label")) {
