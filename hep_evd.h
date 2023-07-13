@@ -159,7 +159,14 @@ class Hit {
     Hit(const Position &pos, double e = 0, double t = 0) : position(pos), time(t), energy(e) {}
     Hit(const std::array<double, 3> &pos, double e = 0, double t = 0) : position(pos), time(t), energy(e) {}
 
-    void setHitType(const HitType &hitType) { this->hitType = hitType; }
+    void setHitType(const HitType &hitType) {
+        this->hitType = hitType;
+
+        if (hitType == TWO_D && (this->position.y == 0 && this->position.z != 0)) {
+            this->position.y = this->position.z;
+            this->position.z = this->position.y;
+        }
+    }
     void setHitClass(const HitClass &hitClass) { this->hitClass = hitClass; }
     void setLabel(const std::string &str) { this->label = str; }
 

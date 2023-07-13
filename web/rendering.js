@@ -30,7 +30,7 @@ export function animate(renderer, scenes, cameras, stats) {
 
 // Given a geometry object, fit the camera to the center of it, such that the
 // whole object can be seen.
-export function fitSceneInCamera(camera, controls, detectorGeometry) {
+export function fitSceneInCamera(camera, controls, detectorGeometry, cameraType) {
   const offset = 1.5; // Padding factor.
 
   // Get the bounding box of the detector geometry.

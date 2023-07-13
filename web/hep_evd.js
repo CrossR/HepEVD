@@ -31,15 +31,23 @@ const scenes = new Map([
   ["2D", new THREE.Scene()],
 ]);
 
-const camera = new THREE.PerspectiveCamera(
+const threeDCamera = new THREE.PerspectiveCamera(
   50,
   window.innerWidth / window.innerHeight,
   0.1,
   1e6,
 );
+const twoDCamera = new THREE.OrthographicCamera(
+  window.innerWidth / -2,
+  window.innerWidth / 2,
+  window.innerHeight / 2,
+  window.innerHeight / -2,
+  -1,
+  1e6,
+);
 const cameras = new Map([
-  ["3D", camera.clone()],
-  ["2D", camera.clone()],
+  ["3D", threeDCamera],
+  ["2D", twoDCamera],
 ]);
 const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
 const controls = new Map([
@@ -126,12 +134,12 @@ drawHits(
 // This includes functions that the GUI uses, and filling in the various dropdowns.
 
 // First, setup all the button on click events.
-let toggleHits = (hitType) => (toggleTarget) => {
+let hitButtonClick = (hitType) => (toggleTarget) => {
   if (
     isButtonActive(hitType, toggleTarget) &&
     !isSceneActive(scenes, hitType)
   ) {
-    toggleScene(scenes, hitType);
+    toggleScene(scenes, controls, hitType);
     return;
   }
 
@@ -142,15 +150,16 @@ let toggleHits = (hitType) => (toggleTarget) => {
     hitPropMaps.get(hitType),
     toggleTarget,
   );
-  toggleButton(hitType, toggleTarget);
 
   if (newScene) scenes.get(hitType).add(newScene);
+
+  toggleButton(hitType, toggleTarget);
   toggleScene(scenes, controls, hitType);
 };
 
 // Populate all the dropdowns.
-populateDropdown("3D", hitPropMaps.get("3D"), toggleHits("3D"));
-populateDropdown("2D", hitPropMaps.get("2D"), toggleHits("2D"));
+populateDropdown("3D", hitPropMaps.get("3D"), hitButtonClick("3D"));
+populateDropdown("2D", hitPropMaps.get("2D"), hitButtonClick("2D"));
 
 // Toggle on the default rendering.
 toggleButton(defaultDraw, DefaultButtonID.All);
@@ -159,8 +168,14 @@ toggleButton(defaultDraw, DefaultButtonID.All);
 // Orient the camera to the middle of the scene.
 toggleScene(scenes, controls, defaultDraw);
 ["3D", "2D"].forEach((hitType) => {
-  fitSceneInCamera(cameras.get(hitType), controls.get(hitType), detectorGeometryMap.get(hitType));
+  fitSceneInCamera(
+    cameras.get(hitType),
+    controls.get(hitType),
+    detectorGeometryMap.get(hitType),
+    hitType
+  );
   setupControls(hitType, controls.get(hitType));
+  scenes.get(hitType).add(cameras.get(hitType));
 });
 
 // Finally, animate the scene!
