@@ -12,6 +12,7 @@ import { drawHits, setupControls } from "./hits.js";
 import {
   animate,
   drawBoxVolume,
+  drawTwoDBoxVolume,
   fitSceneInCamera,
   isSceneActive,
   toggleScene,
@@ -97,17 +98,18 @@ const hitPropMaps = getHitProperties(hits);
 // Time to start the actual rendering.
 
 // 3D and 2D geometry drawn individually.
-detectorGeometry
-  .filter((volume) => volume.type === "box")
-  .forEach((box) =>
+const boxVolumes = detectorGeometry
+    .filter((volume) => volume.type === "box");
+
+boxVolumes.forEach((box) =>
     drawBoxVolume(detectorGeometryMap.get("3D"), materialGeometry, box),
   );
 const tempMat = new THREE.LineBasicMaterial({
   color: "darkgreen",
 });
-detectorGeometry
-  .filter((volume) => volume.type === "box")
-  .forEach((box) => drawBoxVolume(detectorGeometryMap.get("2D"), tempMat, box));
+boxVolumes.forEach((box) =>
+    drawBoxVolume(detectorGeometryMap.get("2D"), tempMat, box),
+  );
 
 // Prefer drawing 3D hits, but draw 2D if only option.
 const defaultDraw = hitMap.get("3D").length != 0 ? "3D" : "2D";

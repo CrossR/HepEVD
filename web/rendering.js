@@ -16,11 +16,23 @@ export function drawBoxVolume(group, material, box) {
   group.add(boxLines);
 }
 
+// Given a box based detector volume, draw 2D axes.
+export function drawTwoDBoxVolume(group, material, box) {
+  const boxGeometry = new THREE.BoxGeometry(box.xWidth, box.yWidth, box.zWidth);
+  const boxEdges = new THREE.EdgesGeometry(boxGeometry);
+  const boxLines = new THREE.LineSegments(boxEdges, material);
+
+  boxLines.position.set(box.x, box.y, box.z);
+  boxLines.updateMatrixWorld();
+
+  group.add(boxLines);
+}
+
 // Actual rendering animation function, called each frame.
 export function animate(renderer, scenes, cameras, stats) {
   requestAnimationFrame(() => animate(renderer, scenes, cameras, stats));
   scenes.forEach((scene, hitType) => {
-    if (! scene.visible) return;
+    if (!scene.visible) return;
     renderer.render(scene, cameras.get(hitType));
     scene.matrixAutoUpdate = false;
     scene.autoUpdate = false;
