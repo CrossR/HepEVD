@@ -5,7 +5,7 @@
 import * as THREE from "three";
 import { Lut } from "three/addons/math/Lut.js";
 
-import { DefaultButtonID } from "./constants.js";
+import { BUTTON_ID } from "./constants.js";
 
 // Draw an array of 3D hits to the screen, utilising an InstancedMesh for
 // performance.
@@ -17,18 +17,19 @@ export function drawHits(
   activeHits,
   hitPropMap,
   useColour = false,
-  hitSize = 3,
+  hitConfig = {},
 ) {
   // Produce arrays containing all the input hits, and the required
   // hit properties.
   const allColourProps = [...activeHits.keys()];
-  const renderingAll = allColourProps.includes(DefaultButtonID.All);
+  const renderingAll = allColourProps.includes(BUTTON_ID.All);
   const hits = renderingAll
-    ? activeHits.get(DefaultButtonID.All)
+    ? activeHits.get(BUTTON_ID.All)
     : [...activeHits.values()].flat();
 
   if (hits.length === 0) return;
 
+  const hitSize = hitConfig.hitSize;
   const hitGeometry = new THREE.BoxGeometry(hitSize, hitSize, hitSize);
   const hitMesh = new THREE.InstancedMesh(hitGeometry, material, hits.length);
 

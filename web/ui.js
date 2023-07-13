@@ -4,7 +4,7 @@
 
 import * as THREE from "three";
 
-import { DefaultButtonID, materialHit } from "./constants.js";
+import { BUTTON_ID, HIT_CONFIG, materialHit } from "./constants.js";
 import { drawHits } from "./hits.js";
 
 // Given a new hit-based property to toggle (toggleTarget), either
@@ -27,9 +27,10 @@ export function hitsToggle(
   activeHits,
   hitGroupMap,
   hitPropMap,
+  hitConfig,
   toggleTarget,
 ) {
-  if (toggleTarget === DefaultButtonID.None) {
+  if (toggleTarget === BUTTON_ID.None) {
     hitGroupMap.forEach((group) => (group.visible = false));
     activeHits.clear();
     return;
@@ -76,7 +77,7 @@ export function hitsToggle(
 
   // Otherwise, we need to make a new group, populate it and store it for later.
   const newGroup = new THREE.Group();
-  drawHits(newGroup, materialHit, activeHits, hitPropMap, true);
+  drawHits(newGroup, materialHit, activeHits, hitPropMap, true, hitConfig);
   hitGroupMap.set(newKey, newGroup);
 
   return newGroup;
@@ -88,9 +89,9 @@ export function populateDropdown(className, hitPropMap, onClick = (_) => {}) {
   const entries = new Set();
 
   // Add the default "None" option.
-  entries.add(DefaultButtonID.None);
+  entries.add(BUTTON_ID.None);
 
-  if (hitPropMap.size != 0) entries.add(DefaultButtonID.All);
+  if (hitPropMap.size != 0) entries.add(BUTTON_ID.All);
 
   hitPropMap.forEach((properties, _) => {
     properties.forEach((_, propString) => entries.add(propString));
@@ -126,7 +127,7 @@ export function toggleButton(className, ID) {
     isActive = true;
   }
 
-  if (ID === DefaultButtonID.None && isActive) {
+  if (ID === BUTTON_ID.None && isActive) {
     const dropDown = document.getElementById(`${className}_dropdown`);
 
     Array.from(dropDown.childNodes)
@@ -139,9 +140,9 @@ export function toggleButton(className, ID) {
       .forEach((elem) => {
         elem.style.color = "green";
       });
-  } else if (ID != DefaultButtonID.None && isActive) {
+  } else if (ID != BUTTON_ID.None && isActive) {
     const button = document.getElementById(
-      `${className}_${DefaultButtonID.None}`,
+      `${className}_${BUTTON_ID.None}`,
     );
     button.style.color = "green";
   }

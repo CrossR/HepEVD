@@ -6,7 +6,7 @@ import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import Stats from "three/addons/libs/stats.module.js";
 
-import { DefaultButtonID, materialGeometry, materialHit } from "./constants.js";
+import { BUTTON_ID, HIT_CONFIG, materialGeometry, materialHit } from "./constants.js";
 import { getHitProperties } from "./helpers.js";
 import { drawHits, setupControls } from "./hits.js";
 import {
@@ -122,19 +122,31 @@ const defaultDraw = hitMap.get("3D").length != 0 ? "3D" : "2D";
 // Add a default render group to the current target, and render into it.
 const defaultHitGroup = new THREE.Group();
 scenes.get(defaultDraw).add(defaultHitGroup);
-hitGroupMap.get(defaultDraw).set(DefaultButtonID.All, defaultHitGroup);
-activeHitMap.get(defaultDraw).set(DefaultButtonID.All, hitMap.get(defaultDraw));
+hitGroupMap.get(defaultDraw).set(BUTTON_ID.All, defaultHitGroup);
+activeHitMap.get(defaultDraw).set(BUTTON_ID.All, hitMap.get(defaultDraw));
 
 drawHits(
-  hitGroupMap.get(defaultDraw).get(DefaultButtonID.All),
+  hitGroupMap.get(defaultDraw).get(BUTTON_ID.All),
   materialHit,
   activeHitMap.get(defaultDraw),
   hitPropMaps.get(defaultDraw),
+  false,
+  HIT_CONFIG[defaultDraw]
 );
+
+// Delay drawing of the 2D geometry, so we can base it on the hits bounding box.
+const tempMat = new THREE.LineBasicMaterial({
+  color: "darkgreen",
+});
+drawTwoDBoxVolume(
+    hitMap.get("2D"),
+    hitGroupMap.get("2D").get(BUTTON_ID.All),
+    detectorGeometryMap.get("2D"),
+    tempMat,
+)
 
 // Populate the UI properly.
 // This includes functions that the GUI uses, and filling in the various dropdowns.
-
 // First, setup all the button on click events.
 let hitButtonClick = (hitType) => (toggleTarget) => {
   if (
@@ -150,6 +162,7 @@ let hitButtonClick = (hitType) => (toggleTarget) => {
     activeHitMap.get(hitType),
     hitGroupMap.get(hitType),
     hitPropMaps.get(hitType),
+    HIT_CONFIG[hitType],
     toggleTarget,
   );
 
@@ -164,7 +177,7 @@ populateDropdown("3D", hitPropMaps.get("3D"), hitButtonClick("3D"));
 populateDropdown("2D", hitPropMaps.get("2D"), hitButtonClick("2D"));
 
 // Toggle on the default rendering.
-toggleButton(defaultDraw, DefaultButtonID.All);
+toggleButton(defaultDraw, BUTTON_ID.All);
 
 // Start the final rendering of the event.
 // Orient the camera to the middle of the scene.
