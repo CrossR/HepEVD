@@ -159,14 +159,7 @@ class Hit {
     Hit(const Position &pos, double e = 0, double t = 0) : position(pos), time(t), energy(e) {}
     Hit(const std::array<double, 3> &pos, double e = 0, double t = 0) : position(pos), time(t), energy(e) {}
 
-    void setHitType(const HitType &hitType) {
-        this->hitType = hitType;
-
-        if (hitType == TWO_D && (this->position.y == 0 && this->position.z != 0)) {
-            this->position.y = this->position.z;
-            this->position.z = this->position.y;
-        }
-    }
+    void setHitType(const HitType &hitType) { this->hitType = hitType; }
     void setHitClass(const HitClass &hitClass) { this->hitClass = hitClass; }
     void setLabel(const std::string &str) { this->label = str; }
 
@@ -179,10 +172,19 @@ class Hit {
     }
 
     friend std::ostream &operator<<(std::ostream &os, Hit const &hit) {
+
+        auto hitPosition(hit.position);
+
+        // If this is a 2D hit, its easier in the EVD to consider XY, not XZ.
+        if (hit.hitType == TWO_D) {
+            hitPosition.y = hit.position.z;
+            hitPosition.z = 0;
+        }
+
         os << "{"
            << "\"type\": \"" << Hit::hitTypeToString(hit.hitType) << "\","
            << "\"class\": \"" << Hit::hitClassToString(hit.hitClass) << "\","
-           << hit.position << ","
+           << hitPosition << ","
            << "\"time\": " << hit.time << ","
            << "\"energy\": " << hit.energy;
 
