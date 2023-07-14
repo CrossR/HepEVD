@@ -25,17 +25,19 @@ export function drawBoxVolume(group, material, box) {
 export function drawTwoDBoxVolume(hits, hitGroup, group) {
 
   const xProps = getHitBoundaries(hits, "x");
-  const xPoints = [xProps.min, 0.0, 0.0, xProps.max, 0.0, 0.0];
+  const yProps = getHitBoundaries(hits, "y");
+
+  // Points for the two axes lines.
+  // X is from xMin to xMax, all at the minimum Y.
+  // Y is from yMin to yMax, all at the minimum X.
+  const xPoints = [xProps.min, yProps.min, 0.0, xProps.max, yProps.min, 0.0];
+  const yPoints = [xProps.min, yProps.min, 0.0, xProps.min, yProps.max, 0.0];
 
   const xAxesGeo = new LineGeometry().setPositions(xPoints);
   const xAxes = new Line2(xAxesGeo, twoDXMat);
   xAxes.computeLineDistances();
   xAxes.scale.set(1,1,1);
   group.add(xAxes);
-
-  // Repeat for Y axes, but the line is drawn at the maxX value.
-  const yProps = getHitBoundaries(hits, "y");
-  const yPoints = [xProps.min, yProps.min, 0.0, xProps.min, yProps.max, 0.0];
 
   const yAxesGeo = new LineGeometry().setPositions(yPoints);
   const yAxes = new Line2(yAxesGeo, twoDYMat);
