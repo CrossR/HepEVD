@@ -6,7 +6,7 @@ import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import Stats from "three/addons/libs/stats.module.js";
 
-import { BUTTON_ID, HIT_CONFIG, materialGeometry, materialHit } from "./constants.js";
+import { BUTTON_ID, HIT_CONFIG, threeDGeoMat, materialHit } from "./constants.js";
 import { getHitProperties } from "./helpers.js";
 import { drawHits, setupControls } from "./hits.js";
 import {
@@ -100,15 +100,8 @@ const hitPropMaps = getHitProperties(hits);
 // 3D and 2D geometry drawn individually.
 const boxVolumes = detectorGeometry
     .filter((volume) => volume.type === "box");
-
 boxVolumes.forEach((box) =>
-    drawBoxVolume(detectorGeometryMap.get("3D"), materialGeometry, box),
-  );
-const tempMat = new THREE.LineBasicMaterial({
-  color: "darkgreen",
-});
-boxVolumes.forEach((box) =>
-    drawBoxVolume(detectorGeometryMap.get("2D"), tempMat, box),
+    drawBoxVolume(detectorGeometryMap.get("3D"), threeDGeoMat, box),
   );
 
 // Prefer drawing 3D hits, but draw 2D if only option.
@@ -135,14 +128,10 @@ drawHits(
 );
 
 // Delay drawing of the 2D geometry, so we can base it on the hits bounding box.
-const tempMat = new THREE.LineBasicMaterial({
-  color: "darkgreen",
-});
 drawTwoDBoxVolume(
     hitMap.get("2D"),
     hitGroupMap.get("2D").get(BUTTON_ID.All),
-    detectorGeometryMap.get("2D"),
-    tempMat,
+    detectorGeometryMap.get("2D")
 )
 
 // Populate the UI properly.

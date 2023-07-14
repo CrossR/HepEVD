@@ -22,10 +22,13 @@ export function getMinMax(arr, prop) {
     );
 }
 
-export function getWidth(arr, prop) {
-    const minMax = getMinMax(arr, prop);
+export function getHitBoundaries(hits, axis) {
+  const minMax = getMinMax(hits, axis);
 
-    return Math.abs(minMax[0] - minMax[1]);
+  const center = ((minMax[0] + minMax[1]) / 2) ?? 0.0;
+  const width = Math.abs(minMax[0] - minMax[1]);
+
+  return {center: center, width: width, min: minMax[0], max: minMax[1]};
 }
 
 // Build up a map between a property name and a property for

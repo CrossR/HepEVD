@@ -3,6 +3,11 @@
 //
 
 import * as THREE from "three";
+import { Line2 } from "three/addons/lines/Line2.js";
+import { LineGeometry } from "three/addons/lines/LineGeometry.js";
+
+import { getHitBoundaries } from "./helpers.js";
+import { twoDXMat, twoDYMat } from "./constants.js";
 
 // Given a box based detector volume, draw its wireframe.
 export function drawBoxVolume(group, material, box) {
@@ -17,15 +22,26 @@ export function drawBoxVolume(group, material, box) {
 }
 
 // Given a box based detector volume, draw 2D axes.
-export function drawTwoDBoxVolume(group, material, box) {
-  const boxGeometry = new THREE.BoxGeometry(box.xWidth, box.yWidth, box.zWidth);
-  const boxEdges = new THREE.EdgesGeometry(boxGeometry);
-  const boxLines = new THREE.LineSegments(boxEdges, material);
+export function drawTwoDBoxVolume(hits, hitGroup, group) {
 
-  boxLines.position.set(box.x, box.y, box.z);
-  boxLines.updateMatrixWorld();
+  const xProps = getHitBoundaries(hits, "x");
+  const xPoints = [xProps.min, 0.0, 0.0, xProps.max, 0.0, 0.0];
 
-  group.add(boxLines);
+  const xAxesGeo = new LineGeometry().setPositions(xPoints);
+  const xAxes = new Line2(xAxesGeo, twoDXMat);
+  xAxes.computeLineDistances();
+  xAxes.scale.set(1,1,1);
+  group.add(xAxes);
+
+  // Repeat for Y axes, but the line is drawn at the maxX value.
+  const yProps = getHitBoundaries(hits, "y");
+  const yPoints = [xProps.min, yProps.min, 0.0, xProps.min, yProps.max, 0.0];
+
+  const yAxesGeo = new LineGeometry().setPositions(yPoints);
+  const yAxes = new Line2(yAxesGeo, twoDYMat);
+  yAxes.computeLineDistances();
+  yAxes.scale.set(1,1,1);
+  group.add(yAxes);
 }
 
 // Actual rendering animation function, called each frame.
