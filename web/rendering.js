@@ -70,31 +70,36 @@ export function fitSceneInCamera(camera, controls, detectorGeometry, cameraType)
   const size = boundingBox.getSize(new THREE.Vector3());
   const center = boundingBox.getCenter(new THREE.Vector3());
 
-  // Get the maximum dimension of the bounding box...
-  const maxDim = Math.max(size.x, size.y, size.z);
-  const cameraFOV = camera.fov * (Math.PI / 180);
-  let cameraZ = Math.abs((maxDim / 4) * Math.tan(cameraFOV * 2));
+  if (cameraType == "3D") {
+    // Get the maximum dimension of the bounding box...
+    const maxDim = Math.max(size.x, size.y, size.z);
+    const cameraFOV = camera.fov * (Math.PI / 180);
+    let cameraZ = Math.abs((maxDim / 4) * Math.tan(cameraFOV * 2));
 
-  // Zoom out a bit, according to the padding factor...
-  cameraZ *= offset;
-  camera.position.z = cameraZ;
+    // Zoom out a bit, according to the padding factor...
+    cameraZ *= offset;
+    camera.position.z = cameraZ;
 
-  // Apply limits to the camera...
-  const minZ = boundingBox.min.z;
-  const cameraToFarEdge = minZ < 0 ? -minZ + cameraZ : cameraZ - minZ;
-  camera.far = cameraToFarEdge * 3;
+    // Apply limits to the camera...
+    const minZ = boundingBox.min.z;
+    const cameraToFarEdge = minZ < 0 ? -minZ + cameraZ : cameraZ - minZ;
+    camera.far = cameraToFarEdge * 3;
 
-  // Update the camera with this new zoom position.
-  camera.updateProjectionMatrix();
-
-  // And if required, update the controls.
-  if (controls) {
     controls.target = center;
     controls.maxDistance = cameraToFarEdge;
-    controls.saveState();
   } else {
-    camera.lookAt(center);
+    // camera.lookAt(center);
+    // camera.position.y = center.y;
+    camera.name = "2D";
+    camera.translateZ(50);
+    camera.zoom = 0.5;
   }
+
+  // Update the camera + controls with these new parameters.
+  controls.saveState();
+  controls.update();
+  camera.updateProjectionMatrix();
+  camera.updateMatrix();
 }
 
 // Show the correct scene based on the current render target (2D/3D).
