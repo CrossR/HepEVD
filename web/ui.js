@@ -153,25 +153,27 @@ export function isButtonActive(className, ID) {
 }
 
 export function saveEvd(renderer) {
-    const imageData = renderer.domElement.toDataURL('image/jpeg', 1.0);
-    const contentType = 'image/jpeg';
+  const imageData = renderer.domElement.toDataURL("image/jpeg", 1.0);
+  const contentType = "image/jpeg";
 
-    const byteCharacters = atob(imageData.substr(`data:${contentType};base64,`.length));
-    const bytes = [];
+  const byteCharacters = atob(
+    imageData.substr(`data:${contentType};base64,`.length),
+  );
+  const bytes = [];
 
-    for (let offset = 0; offset < byteCharacters.length; offset += 1024) {
-      const slice = byteCharacters.slice(offset, offset + 1024);
-      const byteNumbers = new Array(slice.length);
-      for (let i = 0; i < slice.length; i++) {
-        byteNumbers[i] = slice.charCodeAt(i);
-      }
-
-      const byteArray = new Uint8Array(byteNumbers);
-      bytes.push(byteArray);
+  for (let offset = 0; offset < byteCharacters.length; offset += 1024) {
+    const slice = byteCharacters.slice(offset, offset + 1024);
+    const byteNumbers = new Array(slice.length);
+    for (let i = 0; i < slice.length; i++) {
+      byteNumbers[i] = slice.charCodeAt(i);
     }
 
-    const blob = new Blob(bytes, {type: contentType});
-    const blobUrl = URL.createObjectURL(blob);
+    const byteArray = new Uint8Array(byteNumbers);
+    bytes.push(byteArray);
+  }
 
-    window.open(blobUrl, "_blank");
+  const blob = new Blob(bytes, { type: contentType });
+  const blobUrl = URL.createObjectURL(blob);
+
+  window.open(blobUrl, "_blank");
 }

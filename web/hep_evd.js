@@ -27,7 +27,7 @@ import {
   isButtonActive,
   populateDropdown,
   toggleButton,
-  saveEvd
+  saveEvd,
 } from "./ui.js";
 
 // First, do the initial threejs setup.
@@ -56,7 +56,11 @@ const cameras = new Map([
   ["3D", threeDCamera],
   ["2D", twoDCamera],
 ]);
-const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true, preserveDrawingBuffer: true });
+const renderer = new THREE.WebGLRenderer({
+  alpha: true,
+  antialias: true,
+  preserveDrawingBuffer: true,
+});
 const controls = new Map([
   ["3D", new OrbitControls(cameras.get("3D"), renderer.domElement)],
   ["2D", new OrbitControls(cameras.get("2D"), renderer.domElement)],
@@ -133,10 +137,7 @@ drawHits(
 );
 
 // Delay drawing of the 2D geometry, so we can base it on the hits bounding box.
-drawTwoDBoxVolume(
-  hitMap.get("2D"),
-  detectorGeometryMap.get("2D"),
-);
+drawTwoDBoxVolume(hitMap.get("2D"), detectorGeometryMap.get("2D"));
 
 // Populate the UI properly.
 // This includes functions that the GUI uses, and filling in the various dropdowns.
