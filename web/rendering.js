@@ -22,7 +22,7 @@ export function drawBoxVolume(group, material, box) {
 }
 
 // Given a box based detector volume, draw 2D axes.
-export function drawTwoDBoxVolume(hits, hitGroup, group) {
+export function drawTwoDBoxVolume(hits, hitGroup, group, camera) {
 
   const xProps = getHitBoundaries(hits, "x");
   const yProps = getHitBoundaries(hits, "y");
@@ -44,6 +44,16 @@ export function drawTwoDBoxVolume(hits, hitGroup, group) {
   yAxes.computeLineDistances();
   yAxes.scale.set(1,1,1);
   group.add(yAxes);
+
+  const yOffset = 0 - yProps.center / 2;
+  camera.setViewOffset(
+        window.innerWidth,
+        window.innerHeight,
+        0.0,
+        yOffset,
+        window.innerWidth,
+        window.innerHeight
+   );
 }
 
 // Actual rendering animation function, called each frame.
@@ -88,10 +98,7 @@ export function fitSceneInCamera(camera, controls, detectorGeometry, cameraType)
     controls.target = center;
     controls.maxDistance = cameraToFarEdge;
   } else {
-    // camera.lookAt(center);
-    // camera.position.y = center.y;
-    camera.name = "2D";
-    camera.translateZ(50);
+    // TODO: Calculate this more intelligently.
     camera.zoom = 0.5;
   }
 

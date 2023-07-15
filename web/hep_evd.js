@@ -131,7 +131,8 @@ drawHits(
 drawTwoDBoxVolume(
     hitMap.get("2D"),
     hitGroupMap.get("2D").get(BUTTON_ID.All),
-    detectorGeometryMap.get("2D")
+    detectorGeometryMap.get("2D"),
+    cameras.get("2D"),
 )
 
 // Populate the UI properly.
