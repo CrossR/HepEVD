@@ -99,9 +99,7 @@ class DetectorGeometry {
   public:
     DetectorGeometry(Volumes &vols) : volumes(vols) {}
 
-    ~DetectorGeometry() {
-        this->volumes.clear();
-    }
+    ~DetectorGeometry() { this->volumes.clear(); }
 
     DetectorGeometry(VolumeMap &volumeMap) {
         for (const auto &volume : volumeMap) {
@@ -183,8 +181,7 @@ class Hit {
 
         os << "{"
            << "\"type\": \"" << Hit::hitTypeToString(hit.hitType) << "\","
-           << "\"class\": \"" << Hit::hitClassToString(hit.hitClass) << "\","
-           << hitPosition << ","
+           << "\"class\": \"" << Hit::hitClassToString(hit.hitClass) << "\"," << hitPosition << ","
            << "\"time\": " << hit.time << ","
            << "\"energy\": " << hit.energy;
 
@@ -238,7 +235,7 @@ class Hit {
     std::string label;
     std::map<std::string, double> properties;
 };
-using Hits = std::vector<Hit*>;
+using Hits = std::vector<Hit *>;
 
 // Convenience constructor for MC hits.
 class MCHit : public Hit {
@@ -250,7 +247,7 @@ class MCHit : public Hit {
         this->hitClass = HitClass::TRUTH;
     }
 };
-using MCHits = std::vector<MCHit*>;
+using MCHits = std::vector<MCHit *>;
 
 // Top level HepEVD server.
 //
@@ -343,10 +340,10 @@ inline void HepEVDServer::startServer() {
 
     // Simple commands to return the currently understood server state.
     this->server.Get("/hits", [&](const Request &, Response &res) {
-        res.set_content(this->jsonify<Hit*>(this->hits), "application/json");
+        res.set_content(this->jsonify<Hit *>(this->hits), "application/json");
     });
     this->server.Get("/mcHits", [&](const Request &, Response &res) {
-        res.set_content(this->jsonify<MCHit*>(this->mcHits), "application/json");
+        res.set_content(this->jsonify<MCHit *>(this->mcHits), "application/json");
     });
     this->server.Get("/geometry", [&](const Request &, Response &res) {
         res.set_content(this->jsonify<DetectorGeometry>(this->geometry), "application/json");
@@ -376,7 +373,7 @@ namespace PandoraHelpers {
 #include "Managers/GeometryManager.h"
 #include "Objects/CaloHit.h"
 
-using HepHitMap = std::map<const pandora::CaloHit *, Hit*>;
+using HepHitMap = std::map<const pandora::CaloHit *, Hit *>;
 
 DetectorGeometry getHepEVDGeometry(const pandora::GeometryManager *manager) {
 
@@ -399,7 +396,8 @@ Hits getHepEVD2DHits(const pandora::CaloHitList *caloHits, HepHitMap &pandoraToC
 
     for (const pandora::CaloHit *const pCaloHit : *caloHits) {
         const auto pos = pCaloHit->GetPositionVector();
-        Hit* hit = new Hit({pos.GetX(), pos.GetY(), pos.GetZ()}, pCaloHit->GetMipEquivalentEnergy(), pCaloHit->GetTime());
+        Hit *hit =
+            new Hit({pos.GetX(), pos.GetY(), pos.GetZ()}, pCaloHit->GetMipEquivalentEnergy(), pCaloHit->GetTime());
 
         if (label != "")
             hit->setLabel(label);
@@ -407,15 +405,15 @@ Hits getHepEVD2DHits(const pandora::CaloHitList *caloHits, HepHitMap &pandoraToC
         hit->setHitType(HitType::TWO_D);
 
         switch (pCaloHit->GetHitType()) {
-            case pandora::HitType::TPC_VIEW_U:
-                hit->setHitClass(HitClass::TWO_D_U);
-                break;
-            case pandora::HitType::TPC_VIEW_V:
-                hit->setHitClass(HitClass::TWO_D_V);
-                break;
-            case pandora::HitType::TPC_VIEW_W:
-                hit->setHitClass(HitClass::TWO_D_W);
-                break;
+        case pandora::HitType::TPC_VIEW_U:
+            hit->setHitClass(HitClass::TWO_D_U);
+            break;
+        case pandora::HitType::TPC_VIEW_V:
+            hit->setHitClass(HitClass::TWO_D_V);
+            break;
+        case pandora::HitType::TPC_VIEW_W:
+            hit->setHitClass(HitClass::TWO_D_W);
+            break;
         }
 
         hits.push_back(hit);

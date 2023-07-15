@@ -13,10 +13,10 @@ export const BUTTON_ID = {
 
 export const HIT_CONFIG = {
   "2D": {
-    "hitSize" : 3
+    hitSize: 3,
   },
   "3D": {
-    "hitSize" : 3
+    hitSize: 3,
   },
 };
 

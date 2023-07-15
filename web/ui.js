@@ -141,9 +141,7 @@ export function toggleButton(className, ID) {
         elem.style.color = "green";
       });
   } else if (ID != BUTTON_ID.None && isActive) {
-    const button = document.getElementById(
-      `${className}_${BUTTON_ID.None}`,
-    );
+    const button = document.getElementById(`${className}_${BUTTON_ID.None}`);
     button.style.color = "green";
   }
 }

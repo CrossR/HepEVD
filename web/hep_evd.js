@@ -6,7 +6,12 @@ import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import Stats from "three/addons/libs/stats.module.js";
 
-import { BUTTON_ID, HIT_CONFIG, threeDGeoMat, materialHit } from "./constants.js";
+import {
+  BUTTON_ID,
+  HIT_CONFIG,
+  threeDGeoMat,
+  materialHit,
+} from "./constants.js";
 import { getHitProperties } from "./helpers.js";
 import { drawHits, setupControls } from "./hits.js";
 import {
@@ -98,11 +103,10 @@ const hitPropMaps = getHitProperties(hits);
 // Time to start the actual rendering.
 
 // 3D and 2D geometry drawn individually.
-const boxVolumes = detectorGeometry
-    .filter((volume) => volume.type === "box");
+const boxVolumes = detectorGeometry.filter((volume) => volume.type === "box");
 boxVolumes.forEach((box) =>
-    drawBoxVolume(detectorGeometryMap.get("3D"), threeDGeoMat, box),
-  );
+  drawBoxVolume(detectorGeometryMap.get("3D"), threeDGeoMat, box),
+);
 
 // Prefer drawing 3D hits, but draw 2D if only option.
 const defaultDraw = hitMap.get("3D").length != 0 ? "3D" : "2D";
@@ -124,16 +128,15 @@ drawHits(
   activeHitMap.get(defaultDraw),
   hitPropMaps.get(defaultDraw),
   false,
-  HIT_CONFIG[defaultDraw]
+  HIT_CONFIG[defaultDraw],
 );
 
 // Delay drawing of the 2D geometry, so we can base it on the hits bounding box.
 drawTwoDBoxVolume(
-    hitMap.get("2D"),
-    hitGroupMap.get("2D").get(BUTTON_ID.All),
-    detectorGeometryMap.get("2D"),
-    cameras.get("2D"),
-)
+  hitMap.get("2D"),
+  hitGroupMap.get("2D").get(BUTTON_ID.All),
+  detectorGeometryMap.get("2D"),
+);
 
 // Populate the UI properly.
 // This includes functions that the GUI uses, and filling in the various dropdowns.
@@ -177,7 +180,7 @@ toggleScene(scenes, controls, defaultDraw);
     cameras.get(hitType),
     controls.get(hitType),
     detectorGeometryMap.get(hitType),
-    hitType
+    hitType,
   );
   setupControls(hitType, controls.get(hitType));
   scenes.get(hitType).add(cameras.get(hitType));

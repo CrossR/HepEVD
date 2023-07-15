@@ -12,23 +12,21 @@ export function positionToVector(position) {
 }
 
 export function getMinMax(arr, prop) {
-    return arr.reduce(
-        (acc, value) => {
-            return [
-                Math.min(value[prop], acc[0]),
-                Math.max(value[prop], acc[1])
-            ];
-        }, [Number.POSITIVE_INFINITY, Number.NEGATIVE_INFINITY]
-    );
+  return arr.reduce(
+    (acc, value) => {
+      return [Math.min(value[prop], acc[0]), Math.max(value[prop], acc[1])];
+    },
+    [Number.POSITIVE_INFINITY, Number.NEGATIVE_INFINITY],
+  );
 }
 
 export function getHitBoundaries(hits, axis) {
   const minMax = getMinMax(hits, axis);
 
-  const center = ((minMax[0] + minMax[1]) / 2) ?? 0.0;
+  const center = (minMax[0] + minMax[1]) / 2 ?? 0.0;
   const width = Math.abs(minMax[0] - minMax[1]);
 
-  return {center: center, width: width, min: minMax[0], max: minMax[1]};
+  return { center: center, width: width, min: minMax[0], max: minMax[1] };
 }
 
 // Build up a map between a property name and a property for
