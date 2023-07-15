@@ -92,9 +92,7 @@ export function fitSceneInCamera(
     controls.target = center;
     controls.maxDistance = cameraToFarEdge;
   } else {
-    // INFO: 75 is just a fudge factor. We calc everything for the full
-    // window size, not accounting for the top having a toolbar there.
-    const yOffset = 0 - center.y / 2 - 75;
+    const yOffset = 0 - center.y / 2 - 50;
     camera.setViewOffset(
       window.innerWidth,
       window.innerHeight,
@@ -107,7 +105,7 @@ export function fitSceneInCamera(
       Math.min(
         window.innerWidth / (boundingBox.max.x - boundingBox.min.x),
         window.innerHeight / (boundingBox.max.y - boundingBox.min.y),
-      ) * 0.9;
+      ) * 0.85;
     camera.zoom = zoomAmount;
   }
 

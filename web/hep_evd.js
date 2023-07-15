@@ -134,7 +134,6 @@ drawHits(
 // Delay drawing of the 2D geometry, so we can base it on the hits bounding box.
 drawTwoDBoxVolume(
   hitMap.get("2D"),
-  hitGroupMap.get("2D").get(BUTTON_ID.All),
   detectorGeometryMap.get("2D"),
 );
 
