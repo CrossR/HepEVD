@@ -27,6 +27,7 @@ import {
   isButtonActive,
   populateDropdown,
   toggleButton,
+  saveEvd
 } from "./ui.js";
 
 // First, do the initial threejs setup.
@@ -55,7 +56,7 @@ const cameras = new Map([
   ["3D", threeDCamera],
   ["2D", twoDCamera],
 ]);
-const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true, preserveDrawingBuffer: true });
 const controls = new Map([
   ["3D", new OrbitControls(cameras.get("3D"), renderer.domElement)],
   ["2D", new OrbitControls(cameras.get("2D"), renderer.domElement)],
@@ -164,9 +165,10 @@ let hitButtonClick = (hitType) => (toggleTarget) => {
   toggleScene(scenes, controls, hitType);
 };
 
-// Populate all the dropdowns.
+// Populate all the dropdowns and setup any buttons.
 populateDropdown("3D", hitPropMaps.get("3D"), hitButtonClick("3D"));
 populateDropdown("2D", hitPropMaps.get("2D"), hitButtonClick("2D"));
+document.saveEvd = () => saveEvd(renderer);
 
 // Toggle on the default rendering.
 toggleButton(defaultDraw, BUTTON_ID.All);

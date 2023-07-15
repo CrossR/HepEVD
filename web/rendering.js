@@ -92,7 +92,7 @@ export function fitSceneInCamera(
     controls.target = center;
     controls.maxDistance = cameraToFarEdge;
   } else {
-    const yOffset = 0 - center.y / 2 - 50;
+    const yOffset = 0 - center.y / 2 - 25;
     camera.setViewOffset(
       window.innerWidth,
       window.innerHeight,
@@ -105,7 +105,7 @@ export function fitSceneInCamera(
       Math.min(
         window.innerWidth / (boundingBox.max.x - boundingBox.min.x),
         window.innerHeight / (boundingBox.max.y - boundingBox.min.y),
-      ) * 0.85;
+      ) * 0.9;
     camera.zoom = zoomAmount;
   }
 
