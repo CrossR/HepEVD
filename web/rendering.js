@@ -22,8 +22,7 @@ export function drawBoxVolume(group, material, box) {
 }
 
 // Given a box based detector volume, draw 2D axes.
-export function drawTwoDBoxVolume(hits, hitGroup, group, camera) {
-
+export function drawTwoDBoxVolume(hits, group) {
   const xProps = getHitBoundaries(hits, "x");
   const yProps = getHitBoundaries(hits, "y");
 
@@ -36,24 +35,14 @@ export function drawTwoDBoxVolume(hits, hitGroup, group, camera) {
   const xAxesGeo = new LineGeometry().setPositions(xPoints);
   const xAxes = new Line2(xAxesGeo, twoDXMat);
   xAxes.computeLineDistances();
-  xAxes.scale.set(1,1,1);
+  xAxes.scale.set(1, 1, 1);
   group.add(xAxes);
 
   const yAxesGeo = new LineGeometry().setPositions(yPoints);
   const yAxes = new Line2(yAxesGeo, twoDYMat);
   yAxes.computeLineDistances();
-  yAxes.scale.set(1,1,1);
+  yAxes.scale.set(1, 1, 1);
   group.add(yAxes);
-
-  const yOffset = 0 - yProps.center / 2;
-  camera.setViewOffset(
-        window.innerWidth,
-        window.innerHeight,
-        0.0,
-        yOffset,
-        window.innerWidth,
-        window.innerHeight
-   );
 }
 
 // Actual rendering animation function, called each frame.
@@ -70,7 +59,12 @@ export function animate(renderer, scenes, cameras, stats) {
 
 // Given a geometry object, fit the camera to the center of it, such that the
 // whole object can be seen.
-export function fitSceneInCamera(camera, controls, detectorGeometry, cameraType) {
+export function fitSceneInCamera(
+  camera,
+  controls,
+  detectorGeometry,
+  cameraType,
+) {
   const offset = 1.5; // Padding factor.
 
   // Get the bounding box of the detector geometry.
@@ -98,8 +92,23 @@ export function fitSceneInCamera(camera, controls, detectorGeometry, cameraType)
     controls.target = center;
     controls.maxDistance = cameraToFarEdge;
   } else {
-    // TODO: Calculate this more intelligently.
-    camera.zoom = 0.5;
+    // INFO: 75 is just a fudge factor. We calc everything for the full
+    // window size, not accounting for the top having a toolbar there.
+    const yOffset = 0 - center.y / 2 - 75;
+    camera.setViewOffset(
+      window.innerWidth,
+      window.innerHeight,
+      0.0,
+      yOffset,
+      window.innerWidth,
+      window.innerHeight,
+    );
+    const zoomAmount =
+      Math.min(
+        window.innerWidth / (boundingBox.max.x - boundingBox.min.x),
+        window.innerHeight / (boundingBox.max.y - boundingBox.min.y),
+      ) * 0.9;
+    camera.zoom = zoomAmount;
   }
 
   // Update the camera + controls with these new parameters.
