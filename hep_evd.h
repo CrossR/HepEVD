@@ -214,15 +214,15 @@ class Hit {
     static std::string hitClassToString(const HitClass &hit) {
         switch (hit) {
         case GENERAL:
-            return "GENERAL";
+            return "Hit";
         case TWO_D_U:
-            return "2D_U";
+            return "U View";
         case TWO_D_V:
-            return "2D_V";
+            return "V View";
         case TWO_D_W:
-            return "2D_W";
+            return "W View";
         case TRUTH:
-            return "TRUTH";
+            return "MC Truth";
         }
         throw std::invalid_argument("Unknown hit class!");
     }
