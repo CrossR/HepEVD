@@ -83,7 +83,8 @@ export function hitsToggle(
   return newGroup;
 }
 
-// Given a drop down,
+// Given a drop down, populate it with all the available options for that
+// renderer. Options are based on the labels and properties of the hits.
 export function populateDropdown(className, hitPropMap, onClick = (_) => {}) {
   const dropDown = document.getElementById(`${className}_dropdown`);
   const entries = new Set();
@@ -103,6 +104,31 @@ export function populateDropdown(className, hitPropMap, onClick = (_) => {}) {
     newButton.id = `${className}_${entry}`;
     newButton.addEventListener("click", () => onClick(entry));
     dropDown.appendChild(newButton);
+  });
+
+  return;
+}
+
+// Populate and enable the hit class toggles.
+// This is based on the hit class (say MC vs Normal, or different 2D projections),
+// rather than any labels.
+export function populateClassToggle(className, hits, onClick = (_) => {}) {
+  const classDiv = document.getElementById(`classes_${className}`);
+  const entries = new Set();
+
+  hits.forEach((hit, _) => entries.add(hit.class));
+
+  // If there is no entries, or only the default "Hit" class, don't bother.
+  if (entries.size <= 1) {
+    return;
+  }
+
+  entries.forEach((entry) => {
+    const newButton = document.createElement("button");
+    newButton.innerText = entry;
+    newButton.id = `${className}_${entry}`;
+    newButton.addEventListener("click", () => onClick(entry));
+    classDiv.appendChild(newButton);
   });
 
   return;
@@ -150,6 +176,21 @@ export function toggleButton(className, ID) {
 export function isButtonActive(className, ID) {
   const button = document.getElementById(`${className}_${ID}`);
   return button.style.color === "white";
+}
+
+// Update the UI for swapping between any options.
+export function updateUI(className, toggleTarget) {
+  const toggleOptions = document.getElementById("all_toggle_options");
+  Array.from(toggleOptions.childNodes)
+    .filter((elem) => elem.nodeName != "#text")
+    .forEach((elem) => {
+      // Toggle visibility for the new class.
+      if (elem.id === `classes_${className}`) {
+        elem.style.display = "block";
+      } else {
+        elem.style.display = "none";
+      }
+    });
 }
 
 export function saveEvd(renderer) {
