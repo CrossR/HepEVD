@@ -50,22 +50,15 @@ as possible.
 
 ## Future Work
 
- - Can / should we compile to a truly single-header solution, bundling in HTTPLib,
-   assuming the license allows it? (Its MIT so I'd guess so). Could likely have that as
-   a build step on GitHub Actions.
-   - HTML/JS/CSS files kinda mess that up, so maybe a better solution would be a
-   single folder that can just be stuck next to a file / in a system-wide
-   include location, for simple usage.
-  
  - UI needs to be able to pick between multiple sets of 2D / 3D hits:
   - That is, say 3D hits, 3D hits with energy colouring, 3D hits with a score
     applied etcetc.
 
  - Start populating and passing over the other menu entries (vertices, 2D hits).
 
- - Add a basic 2D render view.
-
- - Toggle rendering / show multiple entries at once.
- 
  - Helper functions for Pandora, LArSoft + more to convert bits.
 
+ - Setup a client mode -> I.e. post JSON objects to it to add them to the state.
+  - That would allow hits to be added to the server from anywhere, including
+    different functions, classes, methods etcetc. This would require using a more
+    sensible way of producing/understanding JSON.
