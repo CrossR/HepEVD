@@ -9,8 +9,8 @@ import Stats from "three/addons/libs/stats.module.js";
 import {
   BUTTON_ID,
   HIT_CONFIG,
-  threeDGeoMat,
   materialHit,
+  threeDGeoMat,
 } from "./constants.js";
 import { getHitProperties } from "./helpers.js";
 import { drawHits, setupControls } from "./hits.js";
@@ -25,9 +25,11 @@ import {
 import {
   hitsToggle,
   isButtonActive,
+  populateClassToggle,
   populateDropdown,
-  toggleButton,
   saveEvd,
+  toggleButton,
+  updateUI,
 } from "./ui.js";
 
 // First, do the initial threejs setup.
@@ -164,15 +166,21 @@ let hitButtonClick = (hitType) => (toggleTarget) => {
 
   toggleButton(hitType, toggleTarget);
   toggleScene(scenes, controls, hitType);
+
+  updateUI(hitType, toggleTarget);
 };
 
 // Populate all the dropdowns and setup any buttons.
-populateDropdown("3D", hitPropMaps.get("3D"), hitButtonClick("3D"));
 populateDropdown("2D", hitPropMaps.get("2D"), hitButtonClick("2D"));
+populateDropdown("3D", hitPropMaps.get("3D"), hitButtonClick("3D"));
+
+populateClassToggle("2D", hitMap.get("2D"), (e) => console.log(e));
+populateClassToggle("3D", hitMap.get("3D"), (e) => console.log(e));
 document.saveEvd = () => saveEvd(renderer);
 
 // Toggle on the default rendering.
 toggleButton(defaultDraw, BUTTON_ID.All);
+updateUI(defaultDraw, BUTTON_ID.All);
 
 // Start the final rendering of the event.
 // Orient the camera to the middle of the scene.
