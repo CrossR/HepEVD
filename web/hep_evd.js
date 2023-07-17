@@ -146,12 +146,13 @@ drawTwoDBoxVolume(hitMap.get("2D"), detectorGeometryMap.get("2D"));
 // Populate the UI properly.
 // This includes functions that the GUI uses, and filling in the various dropdowns.
 // First, setup all the button on click events.
-let hitButtonClick = (hitType) => (toggleTarget) => {
+const hitButtonClick = (hitType) => (toggleTarget) => {
   if (
     isButtonActive(hitType, toggleTarget) &&
     !isSceneActive(scenes, hitType)
   ) {
     toggleScene(scenes, controls, hitType);
+    updateUI(hitType, toggleTarget);
     return;
   }
 

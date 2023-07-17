@@ -74,6 +74,13 @@ export function getHitClasses(hits) {
     classFilterMap.get(hitType).set(BUTTON_ID.All, (_) => {return true;});
   });
 
+  hits.forEach((hit) => {
+    if (Object.hasOwn(hit, "class") && hit.class !== "General") {
+      const currentHitClass = hit.class;
+      classFilterMap.get(hit.type).set(hit.class, (hit) => { return hit.class === currentHitClass; });
+    }
+  });
+
   return classFilterMap;
 }
 
