@@ -23,26 +23,25 @@ export function drawBoxVolume(group, material, box) {
 
 // Given a box based detector volume, draw 2D axes.
 export function drawTwoDBoxVolume(hits, group) {
+
+  const createLine = (points, material) => {
+    const axesGeo = new LineGeometry().setPositions(points);
+    const axes = new Line2(axesGeo, material);
+    axes.computeLineDistances();
+    axes.scale.set(1, 1, 1);
+    return axes;
+  }
+
   const xProps = getHitBoundaries(hits, "x");
   const yProps = getHitBoundaries(hits, "y");
 
-  // Points for the two axes lines.
-  // X is from xMin to xMax, all at the minimum Y.
-  // Y is from yMin to yMax, all at the minimum X.
   const xPoints = [xProps.min, yProps.min, 0.0, xProps.max, yProps.min, 0.0];
   const yPoints = [xProps.min, yProps.min, 0.0, xProps.min, yProps.max, 0.0];
 
-  const xAxesGeo = new LineGeometry().setPositions(xPoints);
-  const xAxes = new Line2(xAxesGeo, twoDXMat);
-  xAxes.computeLineDistances();
-  xAxes.scale.set(1, 1, 1);
-  group.add(xAxes);
+  const xAxes = createLine(xPoints, twoDXMat);
+  const yAxes = createLine(yPoints, twoDYMat);
 
-  const yAxesGeo = new LineGeometry().setPositions(yPoints);
-  const yAxes = new Line2(yAxesGeo, twoDYMat);
-  yAxes.computeLineDistances();
-  yAxes.scale.set(1, 1, 1);
-  group.add(yAxes);
+  group.add(xAxes, yAxes);
 }
 
 // Actual rendering animation function, called each frame.
