@@ -18,6 +18,7 @@ export function drawHits(
   hitPropMap,
   useColour = false,
   hitConfig = {},
+  activeHitFilter = (_) => { return true; },
 ) {
   // Produce arrays containing all the input hits, and the required
   // hit properties.
@@ -29,18 +30,23 @@ export function drawHits(
 
   if (hits.length === 0) return;
 
+  // Setup some basic THREE js properties for later use.
   const hitSize = hitConfig.hitSize;
   const hitGeometry = new THREE.BoxGeometry(hitSize, hitSize, hitSize);
-  const hitMesh = new THREE.InstancedMesh(hitGeometry, material, hits.length);
 
   const dummyObject = new THREE.Object3D();
   const energyLut = new Lut("rainbow", 512);
 
+  // Build up an easily parseable map of hit -> property to use for rendering.
   const properties = new Map();
+  let numberOfHits = 0;
+
   hits.forEach((hit, index) => {
     if (!hitPropMap.has(hit)) {
       return;
     }
+
+    numberOfHits += 1;
 
     allColourProps.forEach((colourProp) => {
       if (!hitPropMap.get(hit).has(colourProp)) {
@@ -48,7 +54,7 @@ export function drawHits(
       }
 
       // TODO: Need to decide the best way to pick which property to use if
-      //       there are many.
+      //       there are multiple. Right now, its always latest.
       const hitProp = hitPropMap.get(hit).get(colourProp);
       properties.set(index, hitProp);
     });
@@ -72,13 +78,23 @@ export function drawHits(
     if (maxColourValue === minColourValue) usingColour = false;
   }
 
-  hits.forEach(function (hit, index) {
-    dummyObject.position.set(hit.x, hit.y, hit.z);
-    dummyObject.updateMatrix();
+  // Finally, start building the mesh.
+  const hitMesh = new THREE.InstancedMesh(hitGeometry, material, numberOfHits);
 
+  hits.forEach(function (hit, index) {
+
+    // Don't render if we are missing the property.
     if (usingProperties && !properties.has(index)) {
       return;
     }
+
+    // Don't render if its being skipped by the active filter.
+    if (!activeHitFilter(hit)) {
+      return;
+    }
+
+    dummyObject.position.set(hit.x, hit.y, hit.z);
+    dummyObject.updateMatrix();
 
     hitMesh.setMatrixAt(index, dummyObject.matrix);
 

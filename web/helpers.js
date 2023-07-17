@@ -64,3 +64,25 @@ export function getHitProperties(hits) {
 
   return hitPropMaps;
 }
+
+// Build up a map between a hit class and a filter for that class.
+export function getHitClasses(hits) {
+  const classFilterMap = new Map();
+
+  ["2D", "3D"].forEach((hitType) => {
+    classFilterMap.set(hitType, new Map());
+    classFilterMap.get(hitType).set(BUTTON_ID.All, (_) => {return true;});
+  });
+
+  return classFilterMap;
+}
+
+// Initialise the default hit filters -> Nothing! Just always return true.
+export function getDefaultFilters(classFilters) {
+  const activeHitFilterMap = new Map();
+
+  activeHitFilterMap.set("3D", classFilters.get("3D").get(BUTTON_ID.All));
+  activeHitFilterMap.set("2D", classFilters.get("2D").get(BUTTON_ID.All));
+
+  return activeHitFilterMap;
+}

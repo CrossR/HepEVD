@@ -12,7 +12,7 @@ import {
   materialHit,
   threeDGeoMat,
 } from "./constants.js";
-import { getHitProperties } from "./helpers.js";
+import { getHitProperties, getHitClasses, getDefaultFilters } from "./helpers.js";
 import { drawHits, setupControls } from "./hits.js";
 import {
   animate,
@@ -104,8 +104,10 @@ const activeHitMap = new Map([
   ["3D", new Map()],
   ["2D", new Map()],
 ]);
-// Finally, store a mapping between each hit and the properties of that hit.
+// Finally, build up useful maps for storing properties / classes.
 const hitPropMaps = getHitProperties(hits);
+const classFilterMap = getHitClasses(hits);
+const activeHitFilterMap = getDefaultFilters(classFilterMap);
 
 // Time to start the actual rendering.
 
@@ -158,6 +160,7 @@ let hitButtonClick = (hitType) => (toggleTarget) => {
     activeHitMap.get(hitType),
     hitGroupMap.get(hitType),
     hitPropMaps.get(hitType),
+    activeHitFilterMap.get(hitType),
     HIT_CONFIG[hitType],
     toggleTarget,
   );

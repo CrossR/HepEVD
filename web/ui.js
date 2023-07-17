@@ -27,6 +27,7 @@ export function hitsToggle(
   activeHits,
   hitGroupMap,
   hitPropMap,
+  classFilter,
   hitConfig,
   toggleTarget,
 ) {
@@ -77,7 +78,7 @@ export function hitsToggle(
 
   // Otherwise, we need to make a new group, populate it and store it for later.
   const newGroup = new THREE.Group();
-  drawHits(newGroup, materialHit, activeHits, hitPropMap, true, hitConfig);
+  drawHits(newGroup, materialHit, activeHits, hitPropMap, true, hitConfig, classFilter);
   hitGroupMap.set(newKey, newGroup);
 
   return newGroup;
