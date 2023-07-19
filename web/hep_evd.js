@@ -174,23 +174,22 @@ const hitButtonClick = (hitType) => (toggleTarget) => {
   updateUI(hitType, toggleTarget);
 };
 const hitClassButtonClick = (hitType) => (hitClass) => {
-  console.log(hitClass);
-
   // The button was already active, drop the hit map, and fix the array if
   // needed.
   if (isButtonActive("classes", hitClass)) {
-    console.log("Was active, remove!");
     const index = activeHitFilterMap.get(hitType).indexOf(
         classFilterMap.get(hitType).get(hitClass)
     );
     activeHitFilterMap.get(hitType).splice(index, 1);
     toggleButton("classes", hitClass, false);
     fixFilters(activeHitFilterMap.get(hitType), classFilterMap.get(hitType), false);
-    console.log(activeHitFilterMap.get(hitType));
+    const currentKey = [...activeHitMap.get(hitType).keys()].sort().join("_");
+    hitGroupMap.get(hitType).get(currentKey).visible = true;
     return;
   }
 
   activeHitFilterMap.get(hitType).push(classFilterMap.get(hitType).get(hitClass));
+  fixFilters(activeHitFilterMap.get(hitType), classFilterMap.get(hitType), true);
 
   const newScene = new THREE.Group();
   drawHits(
@@ -208,8 +207,6 @@ const hitClassButtonClick = (hitType) => (hitClass) => {
   hitGroupMap.get(hitType).get(currentKey).visible = false;
 
   toggleButton("classes", hitClass, false);
-  fixFilters(activeHitFilterMap.get(hitType), classFilterMap.get(hitType), true);
-  console.log(activeHitFilterMap.get(hitType));
 }
 
 // Populate all the dropdowns and setup any buttons.

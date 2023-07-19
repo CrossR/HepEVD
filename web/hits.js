@@ -27,6 +27,7 @@ export function drawHits(
   const hits = renderingAll
     ? activeHits.get(BUTTON_ID.All)
     : [...activeHits.values()].flat();
+  let passedHits = []; // Active hits as above, but that pass the hit filters.
 
   if (hits.length === 0) return;
 
@@ -39,19 +40,16 @@ export function drawHits(
 
   // Build up an easily parseable map of hit -> property to use for rendering.
   const properties = new Map();
-  let numberOfHits = 0;
-
   hits.forEach((hit, index) => {
     if (!hitPropMap.has(hit)) {
       return;
     }
 
-    if (!activeHitFilters.some((func, hit) => { return func(hit);})) {
-      console.log("Skipping hit!");
+    if (!activeHitFilters.some((func) => { return func(hit);})) {
       return;
     }
 
-    numberOfHits += 1;
+    passedHits.push(hit);
 
     allColourProps.forEach((colourProp) => {
       if (!hitPropMap.get(hit).has(colourProp)) {
@@ -84,9 +82,9 @@ export function drawHits(
   }
 
   // Finally, start building the mesh.
-  const hitMesh = new THREE.InstancedMesh(hitGeometry, material, numberOfHits);
+  const hitMesh = new THREE.InstancedMesh(hitGeometry, material, passedHits.length);
 
-  hits.forEach(function (hit, index) {
+  passedHits.forEach(function (hit, index) {
 
     // Don't render if we are missing the property.
     if (usingProperties && !properties.has(index)) {
@@ -94,7 +92,7 @@ export function drawHits(
     }
 
     // Don't render if its being skipped by the active filter.
-    if (!activeHitFilters.some((func, hit) => { return func(hit);})) {
+    if (!activeHitFilters.some((func) => { return func(hit);})) {
       return;
     }
 
