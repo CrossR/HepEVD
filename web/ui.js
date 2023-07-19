@@ -127,7 +127,7 @@ export function populateClassToggle(className, hits, onClick = (_) => {}) {
   entries.forEach((entry) => {
     const newButton = document.createElement("button");
     newButton.innerText = entry;
-    newButton.id = `${className}_${entry}`;
+    newButton.id = `classes_${entry}`;
     newButton.addEventListener("click", () => onClick(entry));
     classDiv.appendChild(newButton);
   });
@@ -141,7 +141,7 @@ export function populateClassToggle(className, hits, onClick = (_) => {}) {
 // toggle the state of every other button in that dropdown.
 // Similarly, if its not that none button, toggle the none
 // button off.
-export function toggleButton(className, ID) {
+export function toggleButton(className, ID, fixNoneButton = true) {
   const button = document.getElementById(`${className}_${ID}`);
 
   let isActive = button.style.color === "white";
@@ -153,6 +153,9 @@ export function toggleButton(className, ID) {
     button.style.color = "white";
     isActive = true;
   }
+
+  if (!fixNoneButton)
+    return;
 
   if (ID === BUTTON_ID.None && isActive) {
     const dropDown = document.getElementById(`${className}_dropdown`);
@@ -167,7 +170,7 @@ export function toggleButton(className, ID) {
       .forEach((elem) => {
         elem.style.color = "green";
       });
-  } else if (ID != BUTTON_ID.None && isActive) {
+  } else if (ID !== BUTTON_ID.None && isActive) {
     const button = document.getElementById(`${className}_${BUTTON_ID.None}`);
     button.style.color = "green";
   }

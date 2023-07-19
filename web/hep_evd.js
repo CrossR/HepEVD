@@ -12,7 +12,7 @@ import {
   materialHit,
   threeDGeoMat,
 } from "./constants.js";
-import { getHitProperties, getHitClasses, getDefaultFilters } from "./helpers.js";
+import { getHitProperties, getHitClasses, getDefaultFilters, fixFilters } from "./helpers.js";
 import { drawHits, setupControls } from "./hits.js";
 import {
   animate,
@@ -173,13 +173,51 @@ const hitButtonClick = (hitType) => (toggleTarget) => {
 
   updateUI(hitType, toggleTarget);
 };
+const hitClassButtonClick = (hitType) => (hitClass) => {
+  console.log(hitClass);
+
+  // The button was already active, drop the hit map, and fix the array if
+  // needed.
+  if (isButtonActive("classes", hitClass)) {
+    console.log("Was active, remove!");
+    const index = activeHitFilterMap.get(hitType).indexOf(
+        classFilterMap.get(hitType).get(hitClass)
+    );
+    activeHitFilterMap.get(hitType).splice(index, 1);
+    toggleButton("classes", hitClass, false);
+    fixFilters(activeHitFilterMap.get(hitType), classFilterMap.get(hitType), false);
+    console.log(activeHitFilterMap.get(hitType));
+    return;
+  }
+
+  activeHitFilterMap.get(hitType).push(classFilterMap.get(hitType).get(hitClass));
+
+  const newScene = new THREE.Group();
+  drawHits(
+    newScene,
+    materialHit,
+    activeHitMap.get(hitType),
+    hitPropMaps.get(hitType),
+    true,
+    HIT_CONFIG[hitType],
+    activeHitFilterMap.get(hitType),
+  );
+  scenes.get(hitType).add(newScene);
+
+  const currentKey = [...activeHitMap.get(hitType).keys()].sort().join("_");
+  hitGroupMap.get(hitType).get(currentKey).visible = false;
+
+  toggleButton("classes", hitClass, false);
+  fixFilters(activeHitFilterMap.get(hitType), classFilterMap.get(hitType), true);
+  console.log(activeHitFilterMap.get(hitType));
+}
 
 // Populate all the dropdowns and setup any buttons.
 populateDropdown("2D", hitPropMaps.get("2D"), hitButtonClick("2D"));
 populateDropdown("3D", hitPropMaps.get("3D"), hitButtonClick("3D"));
 
-populateClassToggle("2D", hitMap.get("2D"), (e) => console.log(e));
-populateClassToggle("3D", hitMap.get("3D"), (e) => console.log(e));
+populateClassToggle("2D", hitMap.get("2D"), hitClassButtonClick("2D"));
+populateClassToggle("3D", hitMap.get("3D"), hitClassButtonClick("3D"));
 document.saveEvd = () => saveEvd(renderer);
 
 // Toggle on the default rendering.

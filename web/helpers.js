@@ -88,8 +88,26 @@ export function getHitClasses(hits) {
 export function getDefaultFilters(classFilters) {
   const activeHitFilterMap = new Map();
 
-  activeHitFilterMap.set("3D", classFilters.get("3D").get(BUTTON_ID.All));
-  activeHitFilterMap.set("2D", classFilters.get("2D").get(BUTTON_ID.All));
+  activeHitFilterMap.set("3D", [classFilters.get("3D").get(BUTTON_ID.All)]);
+  activeHitFilterMap.set("2D", [classFilters.get("2D").get(BUTTON_ID.All)]);
 
   return activeHitFilterMap;
+}
+
+// Update the hit filter array, adding or removing the default "Show all"
+// filter as needed.
+export function fixFilters(currentFilters, classFilterMap, hitsAdded) {
+    // Default all filter is present, and shouldn't be.
+    if (hitsAdded) {
+       const index = currentFilters.indexOf(
+            classFilterMap.get(BUTTON_ID.All)
+        );
+        if (index === -1) return;
+       currentFilters.splice(index, 1);
+    } else {
+      // Default all filter is missing! Add it.
+      currentFilters.push(classFilterMap.get(BUTTON_ID.All));
+    }
+
+   return;
 }

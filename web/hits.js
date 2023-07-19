@@ -18,7 +18,7 @@ export function drawHits(
   hitPropMap,
   useColour = false,
   hitConfig = {},
-  activeHitFilter = (_) => { return true; },
+  activeHitFilters = [(_) => { return true; }],
 ) {
   // Produce arrays containing all the input hits, and the required
   // hit properties.
@@ -43,6 +43,11 @@ export function drawHits(
 
   hits.forEach((hit, index) => {
     if (!hitPropMap.has(hit)) {
+      return;
+    }
+
+    if (!activeHitFilters.some((func, hit) => { return func(hit);})) {
+      console.log("Skipping hit!");
       return;
     }
 
@@ -89,7 +94,7 @@ export function drawHits(
     }
 
     // Don't render if its being skipped by the active filter.
-    if (!activeHitFilter(hit)) {
+    if (!activeHitFilters.some((func, hit) => { return func(hit);})) {
       return;
     }
 
