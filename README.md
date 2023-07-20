@@ -62,3 +62,8 @@ as possible.
   - That would allow hits to be added to the server from anywhere, including
     different functions, classes, methods etcetc. This would require using a more
     sensible way of producing/understanding JSON.
+
+ - Dropdown options should be unique (i.e. not multi select), whereas the hit class
+   options should be multi select. Also remove all the caching and grouping code for
+   now, to test performance. Should be better now that a single giant instanced mesh is
+   made.

@@ -174,17 +174,22 @@ const hitButtonClick = (hitType) => (toggleTarget) => {
   updateUI(hitType, toggleTarget);
 };
 const hitClassButtonClick = (hitType) => (hitClass) => {
-  // The button was already active, drop the hit map, and fix the array if
-  // needed.
+
   if (isButtonActive("classes", hitClass)) {
+
+    // Drop the filter for this button and run the fixing.
     const index = activeHitFilterMap.get(hitType).indexOf(
         classFilterMap.get(hitType).get(hitClass)
     );
     activeHitFilterMap.get(hitType).splice(index, 1);
-    toggleButton("classes", hitClass, false);
+
     fixFilters(activeHitFilterMap.get(hitType), classFilterMap.get(hitType), false);
+
+    // Re-enable the general scene, if needed.
     const currentKey = [...activeHitMap.get(hitType).keys()].sort().join("_");
     hitGroupMap.get(hitType).get(currentKey).visible = true;
+
+    toggleButton("classes", hitClass, false);
     return;
   }
 

@@ -36,7 +36,7 @@ export function drawHits(
   const hitGeometry = new THREE.BoxGeometry(hitSize, hitSize, hitSize);
 
   const dummyObject = new THREE.Object3D();
-  const energyLut = new Lut("rainbow", 512);
+  const energyLut = new Lut("cooltowarm", 512);
 
   // Build up an easily parseable map of hit -> property to use for rendering.
   const properties = new Map();
