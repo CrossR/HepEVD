@@ -5,7 +5,7 @@
 import * as THREE from "three";
 import { Lut } from "three/addons/math/Lut.js";
 
-import { BUTTON_ID } from "./constants.js";
+import { BUTTON_ID, materialHit } from "./constants.js";
 
 // Draw an array of 3D hits to the screen, utilising an InstancedMesh for
 // performance.
@@ -13,66 +13,21 @@ import { BUTTON_ID } from "./constants.js";
 // Optionally, colour the hits based on some property value.
 export function drawHits(
   group,
-  material,
-  activeHits,
-  hitPropMap,
-  useColour = false,
+  hits,
+  hitColours,
   hitConfig = {},
-  activeHitFilters = [(_) => { return true; }],
 ) {
-  // Produce arrays containing all the input hits, and the required
-  // hit properties.
-  const allColourProps = [...activeHits.keys()];
-  const renderingAll = allColourProps.includes(BUTTON_ID.All);
-  const hits = renderingAll
-    ? activeHits.get(BUTTON_ID.All)
-    : [...activeHits.values()].flat();
-  let passedHits = []; // Active hits as above, but that pass the hit filters.
 
   if (hits.length === 0) return;
 
-  // Setup some basic THREE js properties for later use.
-  const hitSize = hitConfig.hitSize;
-  const hitGeometry = new THREE.BoxGeometry(hitSize, hitSize, hitSize);
-
-  const dummyObject = new THREE.Object3D();
+  // Check if we are using colour, and set it up if we are.
   const energyLut = new Lut("cooltowarm", 512);
-
-  // Build up an easily parseable map of hit -> property to use for rendering.
-  const properties = new Map();
-  hits.forEach((hit, index) => {
-    if (!hitPropMap.has(hit)) {
-      return;
-    }
-
-    if (!activeHitFilters.some((func) => { return func(hit);})) {
-      return;
-    }
-
-    passedHits.push(hit);
-
-    allColourProps.forEach((colourProp) => {
-      if (!hitPropMap.get(hit).has(colourProp)) {
-        return;
-      }
-
-      // TODO: Need to decide the best way to pick which property to use if
-      //       there are multiple. Right now, its always latest.
-      const hitProp = hitPropMap.get(hit).get(colourProp);
-      properties.set(index, hitProp);
-    });
-  });
-
-  let usingColour =
-    useColour &&
-    properties.size > 0 &&
-    [...properties.values()][0].constructor === Number;
-  const usingProperties = properties.size > 0;
+  let usingColour = hitColours.length === hits.length;
 
   if (usingColour) {
     let minColourValue = Infinity;
     let maxColourValue = Number.NEGATIVE_INFINITY;
-    properties.forEach((value, _) => {
+    hitColours.forEach((value) => {
       if (value < minColourValue) minColourValue = value;
       if (value > maxColourValue) maxColourValue = value;
     });
@@ -81,20 +36,13 @@ export function drawHits(
     if (maxColourValue === minColourValue) usingColour = false;
   }
 
-  // Finally, start building the mesh.
-  const hitMesh = new THREE.InstancedMesh(hitGeometry, material, passedHits.length);
+  // Start building the mesh.
+  const hitSize = hitConfig.hitSize;
+  const hitGeometry = new THREE.BoxGeometry(hitSize, hitSize, hitSize);
+  const dummyObject = new THREE.Object3D();
+  const hitMesh = new THREE.InstancedMesh(hitGeometry, materialHit, hits.length);
 
-  passedHits.forEach(function (hit, index) {
-
-    // Don't render if we are missing the property.
-    if (usingProperties && !properties.has(index)) {
-      return;
-    }
-
-    // Don't render if its being skipped by the active filter.
-    if (!activeHitFilters.some((func) => { return func(hit);})) {
-      return;
-    }
+  hits.forEach(function (hit, index) {
 
     dummyObject.position.set(hit.x, hit.y, hit.z);
     dummyObject.updateMatrix();
@@ -102,7 +50,7 @@ export function drawHits(
     hitMesh.setMatrixAt(index, dummyObject.matrix);
 
     if (usingColour) {
-      hitMesh.setColorAt(index, energyLut.getColor(properties.get(index)));
+      hitMesh.setColorAt(index, energyLut.getColor(hitColours[index]));
     } else {
       hitMesh.setColorAt(index, new THREE.Color("gray"));
     }

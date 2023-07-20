@@ -30,26 +30,23 @@ export function getHitBoundaries(hits, axis) {
 }
 
 // Build up a map between a property name and a property for
-// each sort of hit (3D, 2D).
+// each sort of hit.
 //
 // This should mean that any property can be easily drawn without
 // needing to worry about the specific location of a property.
 export function getHitProperties(hits) {
   const hitPropMaps = new Map();
 
-  hitPropMaps.set("3D", new Map());
-  hitPropMaps.set("2D", new Map());
-
   // Every hit should have an energy property, but there is
   // then two additional cases where a hit can be grouped:
   //  - If a hit is labelled.
   //  - If a hit has a property map associated.
   hits.forEach((hit) => {
-    hitPropMaps.get(hit.type).set(hit, new Map([[BUTTON_ID.All, 0.0]]));
-    hitPropMaps.get(hit.type).get(hit).set("energy", hit.energy);
+    hitPropMaps.set(hit, new Map([[BUTTON_ID.All, 0.0]]));
+    hitPropMaps.get(hit).set("energy", hit.energy);
 
     if (Object.hasOwn(hit, "label")) {
-      hitPropMaps.get(hit.type).get(hit).set(hit.label, 1.0);
+      hitPropMaps.get(hit).set(hit.label, 1.0);
     }
 
     if (Object.hasOwn(hit, "properties")) {
@@ -57,7 +54,7 @@ export function getHitProperties(hits) {
         const key = Object.keys(prop)[0];
         const value = Object.values(prop)[0];
 
-        hitPropMaps.get(hit.type).get(hit).set(key, value);
+        hitPropMaps.get(hit).set(key, value);
       });
     }
   });
@@ -68,16 +65,12 @@ export function getHitProperties(hits) {
 // Build up a map between a hit class and a filter for that class.
 export function getHitClasses(hits) {
   const classFilterMap = new Map();
-
-  ["2D", "3D"].forEach((hitType) => {
-    classFilterMap.set(hitType, new Map());
-    classFilterMap.get(hitType).set(BUTTON_ID.All, (_) => {return true;});
-  });
+  classFilterMap.set(BUTTON_ID.All, (_) => {return true;});
 
   hits.forEach((hit) => {
     if (Object.hasOwn(hit, "class") && hit.class !== "General") {
       const currentHitClass = hit.class;
-      classFilterMap.get(hit.type).set(hit.class, (hit) => { return hit.class === currentHitClass; });
+      classFilterMap.set(hit.class, (hit) => { return hit.class === currentHitClass; });
     }
   });
 

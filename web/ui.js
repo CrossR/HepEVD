@@ -183,7 +183,7 @@ export function isButtonActive(className, ID) {
 }
 
 // Update the UI for swapping between any options.
-export function updateUI(className, toggleTarget) {
+export function updateUI(className) {
   const toggleOptions = document.getElementById("all_toggle_options");
   Array.from(toggleOptions.childNodes)
     .filter((elem) => elem.nodeName != "#text")

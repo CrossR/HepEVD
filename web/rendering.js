@@ -7,13 +7,18 @@ import { Line2 } from "three/addons/lines/Line2.js";
 import { LineGeometry } from "three/addons/lines/LineGeometry.js";
 
 import { getHitBoundaries } from "./helpers.js";
-import { twoDXMat, twoDYMat } from "./constants.js";
+import { twoDXMat, twoDYMat, threeDGeoMat } from "./constants.js";
+
+export function drawBox(hitType, group, hits, box) {
+    if (hitType === "2D") return drawTwoDBoxVolume(group, hits);
+    if (hitType === "3D") return drawBoxVolume(group, box);
+}
 
 // Given a box based detector volume, draw its wireframe.
-export function drawBoxVolume(group, material, box) {
+export function drawBoxVolume(group, box) {
   const boxGeometry = new THREE.BoxGeometry(box.xWidth, box.yWidth, box.zWidth);
   const boxEdges = new THREE.EdgesGeometry(boxGeometry);
-  const boxLines = new THREE.LineSegments(boxEdges, material);
+  const boxLines = new THREE.LineSegments(boxEdges, threeDGeoMat);
 
   boxLines.position.set(box.x, box.y, box.z);
   boxLines.updateMatrixWorld();
@@ -22,7 +27,7 @@ export function drawBoxVolume(group, material, box) {
 }
 
 // Given a box based detector volume, draw 2D axes.
-export function drawTwoDBoxVolume(hits, group) {
+export function drawTwoDBoxVolume(group, hits) {
 
   const createLine = (points, material) => {
     const axesGeo = new LineGeometry().setPositions(points);
@@ -45,13 +50,13 @@ export function drawTwoDBoxVolume(hits, group) {
 }
 
 // Actual rendering animation function, called each frame.
-export function animate(renderer, scenes, cameras, stats) {
-  requestAnimationFrame(() => animate(renderer, scenes, cameras, stats));
-  scenes.forEach((scene, hitType) => {
-    if (!scene.visible) return;
-    renderer.render(scene, cameras.get(hitType));
-    scene.matrixAutoUpdate = false;
-    scene.autoUpdate = false;
+export function animate(renderer, states, stats) {
+  requestAnimationFrame(() => animate(renderer, states, stats));
+  states.forEach((state) => {
+    if (!state.visible) return;
+    renderer.render(state.scene, state.camera);
+    state.scene.matrixAutoUpdate = false;
+    state.scene.autoUpdate = false;
   });
   stats.update();
 }
