@@ -65,12 +65,16 @@ export function getHitProperties(hits) {
 // Build up a map between a hit class and a filter for that class.
 export function getHitClasses(hits) {
   const classFilterMap = new Map();
-  classFilterMap.set(BUTTON_ID.All, (_) => {return true;});
+  classFilterMap.set(BUTTON_ID.All, (_) => {
+    return true;
+  });
 
   hits.forEach((hit) => {
     if (Object.hasOwn(hit, "class") && hit.class !== "General") {
       const currentHitClass = hit.class;
-      classFilterMap.set(hit.class, (hit) => { return hit.class === currentHitClass; });
+      classFilterMap.set(hit.class, (hit) => {
+        return hit.class === currentHitClass;
+      });
     }
   });
 
@@ -90,17 +94,15 @@ export function getDefaultFilters(classFilters) {
 // Update the hit filter array, adding or removing the default "Show all"
 // filter as needed.
 export function fixFilters(currentFilters, classFilterMap, hitsAdded) {
-    // Default all filter is present, and shouldn't be.
-    if (hitsAdded) {
-       const index = currentFilters.indexOf(
-            classFilterMap.get(BUTTON_ID.All)
-        );
-        if (index === -1) return;
-       currentFilters.splice(index, 1);
-    } else {
-      // Default all filter is missing! Add it.
-      currentFilters.push(classFilterMap.get(BUTTON_ID.All));
-    }
+  // Default all filter is present, and shouldn't be.
+  if (hitsAdded) {
+    const index = currentFilters.indexOf(classFilterMap.get(BUTTON_ID.All));
+    if (index === -1) return;
+    currentFilters.splice(index, 1);
+  } else {
+    // Default all filter is missing! Add it.
+    currentFilters.push(classFilterMap.get(BUTTON_ID.All));
+  }
 
-   return;
+  return;
 }

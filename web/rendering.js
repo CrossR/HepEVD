@@ -10,8 +10,8 @@ import { getHitBoundaries } from "./helpers.js";
 import { twoDXMat, twoDYMat, threeDGeoMat } from "./constants.js";
 
 export function drawBox(hitType, group, hits, box) {
-    if (hitType === "2D") return drawTwoDBoxVolume(group, hits);
-    if (hitType === "3D") return drawBoxVolume(group, box);
+  if (hitType === "2D") return drawTwoDBoxVolume(group, hits);
+  if (hitType === "3D") return drawBoxVolume(group, box);
 }
 
 // Given a box based detector volume, draw its wireframe.
@@ -28,14 +28,13 @@ export function drawBoxVolume(group, box) {
 
 // Given a box based detector volume, draw 2D axes.
 export function drawTwoDBoxVolume(group, hits) {
-
   const createLine = (points, material) => {
     const axesGeo = new LineGeometry().setPositions(points);
     const axes = new Line2(axesGeo, material);
     axes.computeLineDistances();
     axes.scale.set(1, 1, 1);
     return axes;
-  }
+  };
 
   const xProps = getHitBoundaries(hits, "x");
   const yProps = getHitBoundaries(hits, "y");
@@ -118,17 +117,4 @@ export function fitSceneInCamera(
   controls.update();
   camera.updateProjectionMatrix();
   camera.updateMatrix();
-}
-
-// Show the correct scene based on the current render target (2D/3D).
-export function toggleScene(scenes, controls, renderTarget) {
-  ["2D", "3D"].forEach((hitType) => {
-    scenes.get(hitType).visible = hitType === renderTarget;
-    controls.get(hitType).enabled = hitType === renderTarget;
-  });
-}
-
-// Show the correct scene based on the current render target (2D/3D).
-export function isSceneActive(scenes, renderTarget) {
-  return scenes.get(renderTarget).visible;
 }

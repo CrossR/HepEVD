@@ -2,87 +2,7 @@
 // GUI Functions
 //
 
-import * as THREE from "three";
-
-import { BUTTON_ID, HIT_CONFIG, materialHit } from "./constants.js";
-import { drawHits } from "./hits.js";
-
-// Given a new hit-based property to toggle (toggleTarget), either
-// toggle it's visibility, or render a new group for it.
-// If the button is the none button, instead set all the groups off.
-//
-// We have to be a bit creative in how we do the rendering. Rendering of so
-// many (order thousands) of tiny cubes is only fast due to using the
-// THREE.InstancedMesh. However, we ideally want a singular instanced mesh
-// with every single hit in, rather than many instanced meshes.
-//
-// For that reason, we build up a superset based on all the currently active
-// targets, and then render out a single InstancedMesh that contains all the
-// hits from all currently active properties.
-//
-// Builds up a cache string based on all the currently active properties
-// to utilise older InstancedMesh instances.
-export function hitsToggle(
-  allHits,
-  activeHits,
-  hitGroupMap,
-  hitPropMap,
-  classFilter,
-  hitConfig,
-  toggleTarget,
-) {
-  if (toggleTarget === BUTTON_ID.None) {
-    hitGroupMap.forEach((group) => (group.visible = false));
-    activeHits.clear();
-    return;
-  }
-
-  const currentKey = [...activeHits.keys()].sort().join("_");
-
-  if (hitGroupMap.has(currentKey)) {
-    const threeDHitGroup = hitGroupMap.get(currentKey);
-    threeDHitGroup.visible = false;
-  }
-
-  // Add/Remove the hits from the activeHits map as needed.
-  if (activeHits.has(toggleTarget)) {
-    activeHits.delete(toggleTarget);
-  } else {
-    const newHitsToRender = [];
-    allHits.forEach((hit) => {
-      if (!hitPropMap.has(hit)) {
-        return;
-      }
-
-      if (!hitPropMap.get(hit).has(toggleTarget)) {
-        return;
-      }
-
-      newHitsToRender.push(hit);
-    });
-    activeHits.set(toggleTarget, newHitsToRender);
-  }
-
-  const newKey = [...activeHits.keys()].sort().join("_");
-
-  if (newKey.length === 0) {
-    return;
-  }
-
-  // If the current combination exists, just toggle it and return.
-  if (hitGroupMap.has(newKey)) {
-    const threeDHitGroup = hitGroupMap.get(newKey);
-    threeDHitGroup.visible = true;
-    return;
-  }
-
-  // Otherwise, we need to make a new group, populate it and store it for later.
-  const newGroup = new THREE.Group();
-  drawHits(newGroup, materialHit, activeHits, hitPropMap, true, hitConfig, classFilter);
-  hitGroupMap.set(newKey, newGroup);
-
-  return newGroup;
-}
+import { BUTTON_ID } from "./constants.js";
 
 // Given a drop down, populate it with all the available options for that
 // renderer. Options are based on the labels and properties of the hits.
@@ -154,8 +74,7 @@ export function toggleButton(className, ID, fixNoneButton = true) {
     isActive = true;
   }
 
-  if (!fixNoneButton)
-    return;
+  if (!fixNoneButton) return;
 
   if (ID === BUTTON_ID.None && isActive) {
     const dropDown = document.getElementById(`${className}_dropdown`);

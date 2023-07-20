@@ -5,34 +5,9 @@
 import * as THREE from "three";
 import Stats from "three/addons/libs/stats.module.js";
 
-import {
-  BUTTON_ID,
-  HIT_CONFIG,
-  materialHit,
-  threeDGeoMat,
-} from "./constants.js";
-import { getHitProperties, getHitClasses, getDefaultFilters, fixFilters } from "./helpers.js";
-import { drawHits, setupControls } from "./hits.js";
-import {
-  animate,
-  drawBoxVolume,
-  drawTwoDBoxVolume,
-  fitSceneInCamera,
-  isSceneActive,
-  toggleScene,
-} from "./rendering.js";
-import {
-  hitsToggle,
-  isButtonActive,
-  populateClassToggle,
-  populateDropdown,
-  saveEvd,
-  toggleButton,
-  updateUI,
-} from "./ui.js";
-import {
-  RenderState
-} from "./render_state.js";
+import { RenderState } from "./render_state.js";
+import { animate } from "./rendering.js";
+import { saveEvd } from "./ui.js";
 
 // Do some initial threejs setup...
 const threeDCamera = new THREE.PerspectiveCamera(
@@ -71,16 +46,24 @@ const hits = await fetch("hits").then((response) => response.json());
 
 // And use that data to setup the initial rendering states.
 const threeDRenderer = new RenderState(
-    "3D", threeDCamera, renderer, hits.filter((hit) => hit.type === "3D"), detectorGeometry
+  "3D",
+  threeDCamera,
+  renderer,
+  hits.filter((hit) => hit.type === "3D"),
+  detectorGeometry,
 );
 const twoDRenderer = new RenderState(
-    "2D", twoDCamera, renderer, hits.filter((hit) => hit.type === "2D"), detectorGeometry
+  "2D",
+  twoDCamera,
+  renderer,
+  hits.filter((hit) => hit.type === "2D"),
+  detectorGeometry,
 );
 threeDRenderer.otherRenderer = twoDRenderer;
 twoDRenderer.otherRenderer = threeDRenderer;
 const renderStates = new Map([
-    ["3D", threeDRenderer],
-    ["2D", twoDRenderer],
+  ["3D", threeDRenderer],
+  ["2D", twoDRenderer],
 ]);
 
 // Prefer drawing 3D hits, but draw 2D if only option.
@@ -130,13 +113,13 @@ const defaultDraw = threeDRenderer.hitSize != 0 ? "3D" : "2D";
 // Start the final rendering of the event.
 // Orient the camera to the middle of the scene.
 renderStates.forEach((state) => {
-    state.renderGeometry();
-    state.renderHits();
-    state.setupUI(defaultDraw);
+  state.renderGeometry();
+  state.renderHits();
+  state.setupUI(defaultDraw);
 });
 
 // Setup the default UI, with the right buttons and options selected.
-updateUI(defaultDraw, BUTTON_ID.All);
+// updateUI(defaultDraw, BUTTON_ID.All);
 document.saveEvd = () => saveEvd(renderer);
 
 // Finally, animate the scene!
