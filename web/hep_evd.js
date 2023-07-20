@@ -76,6 +76,8 @@ const threeDRenderer = new RenderState(
 const twoDRenderer = new RenderState(
     "2D", twoDCamera, renderer, hits.filter((hit) => hit.type === "2D"), detectorGeometry
 );
+threeDRenderer.otherRenderer = twoDRenderer;
+twoDRenderer.otherRenderer = threeDRenderer;
 const renderStates = new Map([
     ["3D", threeDRenderer],
     ["2D", twoDRenderer],
@@ -134,7 +136,6 @@ renderStates.forEach((state) => {
 });
 
 // Setup the default UI, with the right buttons and options selected.
-toggleButton(defaultDraw, BUTTON_ID.All);
 updateUI(defaultDraw, BUTTON_ID.All);
 document.saveEvd = () => saveEvd(renderer);
 

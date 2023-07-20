@@ -50,6 +50,7 @@ export class RenderState {
         this.activeHits = this.hits;
         this.activeHitColours = [];
         this.activeHitProps = new Set([BUTTON_ID.All]);
+        this.otherRenderer = undefined;
     }
 
     // How many hits are there total?
@@ -112,8 +113,6 @@ export class RenderState {
             this.activeHitProps.add(hitProperty);
         }
 
-        console.log(this.activeHitProps);
-
         this.hits.forEach((hit) => {
             this.activeHitProps.forEach((property) => {
                 if (! this.hitProperties.get(hit).has(property)) return;
@@ -139,9 +138,11 @@ export class RenderState {
 
         if (this.uiSetup) return;
 
+        // Fill in any dropdown entries, or hit class toggles.
         populateDropdown(this.name, this.hitProperties, (prop) => this.onHitPropertyChange(prop));
         populateClassToggle(this.name, this.hits, (a) => { console.log(a); });
 
+        // Move the scene/camera around to best fit it in.
         fitSceneInCamera(
             this.camera,
             this.controls,
@@ -151,6 +152,9 @@ export class RenderState {
         setupControls(this.hitType, this.controls);
         this.scene.add(this.camera);
 
+        // Setup the default button.
+        toggleButton(this.hitType, BUTTON_ID.All);
+
         this.toggleScene(renderTarget);
         this.uiSetup = true;
     }
@@ -159,5 +163,8 @@ export class RenderState {
     toggleScene(renderTarget) {
         this.scene.visible = this.hitType === renderTarget;
         this.controls.enabled = this.hitType === renderTarget;
+
+        this.otherRenderer.scene.visible = this.otherRenderer.hitType === renderTarget;
+        this.otherRenderer.controls.enabled = this.otherRenderer.hitType === renderTarget;
     }
 }
