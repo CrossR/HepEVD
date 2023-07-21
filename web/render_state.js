@@ -5,10 +5,11 @@
 import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 
+import { fitSceneInCamera, setupControls } from "./camera_and_controls.js";
 import { BUTTON_ID, HIT_CONFIG } from "./constants.js";
 import { getHitClasses, getHitProperties } from "./helpers.js";
-import { drawHits, setupControls } from "./hits.js";
-import { drawBox, fitSceneInCamera } from "./rendering.js";
+import { drawHits } from "./hits.js";
+import { drawBox } from "./rendering.js";
 import {
   isButtonActive,
   populateClassToggle,
@@ -17,7 +18,10 @@ import {
   updateUI,
 } from "./ui.js";
 
-// Class that stores the render state of the app.
+/**
+ * Represents the state of the rendering process, including the scene, camera,
+ * detector geometry, and hit groups.
+ */
 export class RenderState {
   // Setup some basics, the scenes, camera, detector and hit groups.
   constructor(name, camera, renderer, hits, geometry) {
@@ -49,17 +53,26 @@ export class RenderState {
     this.otherRenderer = undefined;
   }
 
-  // How many hits are there total?
+  /**
+   * Returns the number of hits in the current state.
+   * @returns {number} The number of hits.
+   */
   get hitSize() {
     return this.hits.length;
   }
 
-  // Get the scene visibility state.
+  /**
+   * Returns a boolean indicating whether the scene is currently visible.
+   * @returns {boolean} Whether the scene is visible.
+   */
   get visible() {
     return this.scene.visible;
   }
 
-  // Clear, then render out the various geometries.
+  /**
+   * Renders the detector geometry for the current state. Currently only renders
+   * box geometry.
+   */
   renderGeometry() {
     this.detGeoGroup.clear();
 
@@ -72,7 +85,10 @@ export class RenderState {
     );
   }
 
-  // Clear, then render out the currently active hits.
+  /**
+   * Renders the hits for the current state, based on the active hit classes and properties.
+   * Clears the hit group and then draws the hits with the active hit colours.
+   */
   renderHits() {
     this.hitGroup.clear();
 
@@ -84,7 +100,10 @@ export class RenderState {
     );
   }
 
-  // Regenerate the current list of hits and colours, based on the state
+  /**
+   * Updates the active hits and hit colours based on the current active hit
+   * classes and properties.
+   */
   #updateHitArrays() {
     let newHits = [];
     let newHitColours = [];

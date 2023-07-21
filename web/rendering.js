@@ -9,12 +9,25 @@ import { LineGeometry } from "three/addons/lines/LineGeometry.js";
 import { getHitBoundaries } from "./helpers.js";
 import { twoDXMat, twoDYMat, threeDGeoMat } from "./constants.js";
 
+/**
+ * Draws a box based on the hit type.
+ *
+ * @param {string} hitType - The type of hit, either "2D" or "3D".
+ * @param {THREE.Group} group - The group to add the box to.
+ * @param {Array} hits - The hits to draw.
+ * @param {Object} box - The box to draw.
+ */
 export function drawBox(hitType, group, hits, box) {
   if (hitType === "2D") return drawTwoDBoxVolume(group, hits);
   if (hitType === "3D") return drawBoxVolume(group, box);
 }
 
-// Given a box based detector volume, draw its wireframe.
+/**
+ * Draws a box volume in 3D space.
+ *
+ * @param {THREE.Group} group - The group to add the box to.
+ * @param {Object} box - The box to draw.
+ */
 export function drawBoxVolume(group, box) {
   const boxGeometry = new THREE.BoxGeometry(box.xWidth, box.yWidth, box.zWidth);
   const boxEdges = new THREE.EdgesGeometry(boxGeometry);
@@ -26,7 +39,13 @@ export function drawBoxVolume(group, box) {
   group.add(boxLines);
 }
 
-// Given a box based detector volume, draw 2D axes.
+/**
+ * Draws a box volume in 2D space. In this case, the box is calculated based on
+ * the input hits.
+ *
+ * @param {THREE.Group} group - The group to add the box to.
+ * @param {Object} box - The box to draw.
+ */
 export function drawTwoDBoxVolume(group, hits) {
   const createLine = (points, material) => {
     const axesGeo = new LineGeometry().setPositions(points);
@@ -48,7 +67,13 @@ export function drawTwoDBoxVolume(group, hits) {
   group.add(xAxes, yAxes);
 }
 
-// Actual rendering animation function, called each frame.
+/**
+ * Animates the renderer with the given states and updates the stats.
+ *
+ * @param {THREE.WebGLRenderer} renderer - The renderer to animate.
+ * @param {Array} states - The states to animate.
+ * @param {Stats} stats - The stats to update.
+ */
 export function animate(renderer, states, stats) {
   requestAnimationFrame(() => animate(renderer, states, stats));
   states.forEach((state) => {
@@ -58,63 +83,4 @@ export function animate(renderer, states, stats) {
     state.scene.autoUpdate = false;
   });
   stats.update();
-}
-
-// Given a geometry object, fit the camera to the center of it, such that the
-// whole object can be seen.
-export function fitSceneInCamera(
-  camera,
-  controls,
-  detectorGeometry,
-  cameraType,
-) {
-  const offset = 1.5; // Padding factor.
-
-  // Get the bounding box of the detector geometry.
-  // This should be the group for best results.
-  let boundingBox = new THREE.Box3().setFromObject(detectorGeometry);
-
-  const size = boundingBox.getSize(new THREE.Vector3());
-  const center = boundingBox.getCenter(new THREE.Vector3());
-
-  if (cameraType == "3D") {
-    // Get the maximum dimension of the bounding box...
-    const maxDim = Math.max(size.x, size.y, size.z);
-    const cameraFOV = camera.fov * (Math.PI / 180);
-    let cameraZ = Math.abs((maxDim / 4) * Math.tan(cameraFOV * 2));
-
-    // Zoom out a bit, according to the padding factor...
-    cameraZ *= offset;
-    camera.position.z = cameraZ;
-
-    // Apply limits to the camera...
-    const minZ = boundingBox.min.z;
-    const cameraToFarEdge = minZ < 0 ? -minZ + cameraZ : cameraZ - minZ;
-    camera.far = cameraToFarEdge * 3;
-
-    controls.target = center;
-    controls.maxDistance = cameraToFarEdge;
-  } else {
-    const yOffset = 0 - center.y / 2 - 25;
-    camera.setViewOffset(
-      window.innerWidth,
-      window.innerHeight,
-      0.0,
-      yOffset,
-      window.innerWidth,
-      window.innerHeight,
-    );
-    const zoomAmount =
-      Math.min(
-        window.innerWidth / (boundingBox.max.x - boundingBox.min.x),
-        window.innerHeight / (boundingBox.max.y - boundingBox.min.y),
-      ) * 0.9;
-    camera.zoom = zoomAmount;
-  }
-
-  // Update the camera + controls with these new parameters.
-  controls.saveState();
-  controls.update();
-  camera.updateProjectionMatrix();
-  camera.updateMatrix();
 }

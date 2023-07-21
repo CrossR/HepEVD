@@ -6,11 +6,14 @@ import * as THREE from "three";
 
 import { BUTTON_ID } from "./constants.js";
 
-// Convert a JS position object to threejs.
-export function positionToVector(position) {
-  return new THREE.Vector3(position.x, position.y, position.z);
-}
-
+/**
+ * Returns an array containing the minimum and maximum values of a given
+ * property in an array of objects.
+ *
+ * @param {Array} arr - The array of objects to search through.
+ * @param {string} prop - The name of the property to search for.
+ * @returns {Array} An array containing the minimum and maximum values of the given property.
+ */
 export function getMinMax(arr, prop) {
   return arr.reduce(
     (acc, value) => {
@@ -20,6 +23,14 @@ export function getMinMax(arr, prop) {
   );
 }
 
+/**
+ * Returns an object containing the center, width, minimum and maximum values of
+ * a given axis in an array of hits.
+ *
+ * @param {Array} hits - The array of hits to search through.
+ * @param {string} axis - The name of the axis to search for.
+ * @returns {Object} An object containing the center, width, minimum and maximum values of the given axis.
+ */
 export function getHitBoundaries(hits, axis) {
   const minMax = getMinMax(hits, axis);
 
@@ -29,11 +40,12 @@ export function getHitBoundaries(hits, axis) {
   return { center: center, width: width, min: minMax[0], max: minMax[1] };
 }
 
-// Build up a map between a property name and a property for
-// each sort of hit.
-//
-// This should mean that any property can be easily drawn without
-// needing to worry about the specific location of a property.
+/**
+ * Returns a map of hit properties for each hit in the given array of hits.
+ *
+ * @param {Array} hits - The array of hits to get properties for.
+ * @returns {Map} A map of hit properties for each hit in the given array of hits.
+ */
 export function getHitProperties(hits) {
   const hitPropMaps = new Map();
 
@@ -62,7 +74,12 @@ export function getHitProperties(hits) {
   return hitPropMaps;
 }
 
-// Build up a map between a hit class and a filter for that class.
+/**
+ * Returns a map of hit classes for each hit in the given array of hits.
+ *
+ * @param {Array} hits - The array of hits to get classes for.
+ * @returns {Map} A map of hit classes for each hit in the given array of hits.
+ */
 export function getHitClasses(hits) {
   const classFilterMap = new Map();
   classFilterMap.set(BUTTON_ID.All, (_) => {
@@ -81,28 +98,3 @@ export function getHitClasses(hits) {
   return classFilterMap;
 }
 
-// Initialise the default hit filters -> Nothing! Just always return true.
-export function getDefaultFilters(classFilters) {
-  const activeHitFilterMap = new Map();
-
-  activeHitFilterMap.set("3D", [classFilters.get("3D").get(BUTTON_ID.All)]);
-  activeHitFilterMap.set("2D", [classFilters.get("2D").get(BUTTON_ID.All)]);
-
-  return activeHitFilterMap;
-}
-
-// Update the hit filter array, adding or removing the default "Show all"
-// filter as needed.
-export function fixFilters(currentFilters, classFilterMap, hitsAdded) {
-  // Default all filter is present, and shouldn't be.
-  if (hitsAdded) {
-    const index = currentFilters.indexOf(classFilterMap.get(BUTTON_ID.All));
-    if (index === -1) return;
-    currentFilters.splice(index, 1);
-  } else {
-    // Default all filter is missing! Add it.
-    currentFilters.push(classFilterMap.get(BUTTON_ID.All));
-  }
-
-  return;
-}

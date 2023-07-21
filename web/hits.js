@@ -1,5 +1,5 @@
 //
-// Hit Rendering functions.
+// Hit-based functions.
 //
 
 import * as THREE from "three";
@@ -7,10 +7,14 @@ import { Lut } from "three/addons/math/Lut.js";
 
 import { BUTTON_ID, materialHit } from "./constants.js";
 
-// Draw an array of 3D hits to the screen, utilising an InstancedMesh for
-// performance.
-//
-// Optionally, colour the hits based on some property value.
+/**
+ * Draws a set of hits as a 3D mesh using Three.js.
+ *
+ * @param {THREE.Group} group - The group to which the hit mesh should be added.
+ * @param {Array} hits - An array of hit objects, each with an x, y, and z position.
+ * @param {Array} hitColours - An array of colour values, one for each hit.
+ * @param {Object} hitConfig - An object containing configuration options for the hit mesh.
+ */
 export function drawHits(
   group,
   hits,
@@ -60,36 +64,4 @@ export function drawHits(
   hitMesh.instanceColor.needsUpdate = true;
 
   group.add(hitMesh);
-}
-
-// Setup the correct controls per context.
-export function setupControls(viewType, controls) {
-  if (viewType === "3D") setupThreeDControls(controls);
-  else setupTwoDControls(controls);
-}
-
-// Swap to 2D controls.
-export function setupTwoDControls(controls) {
-  controls.screenSpacePanning = true;
-  controls.enableRotate = false;
-  controls.mouseButtons = {
-    LEFT: THREE.MOUSE.PAN,
-    MIDDLE: THREE.MOUSE.DOLLY,
-    RIGHT: null,
-  };
-
-  controls.update();
-}
-
-// Swap to 3D controls.
-export function setupThreeDControls(controls) {
-  controls.screenSpacePanning = true;
-  controls.enableRotate = true;
-  controls.mouseButtons = {
-    LEFT: THREE.MOUSE.ROTATE,
-    MIDDLE: THREE.MOUSE.DOLLY,
-    RIGHT: THREE.MOUSE.PAN,
-  };
-
-  controls.update();
 }
