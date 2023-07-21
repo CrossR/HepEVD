@@ -308,7 +308,7 @@ class HepEVDServer {
 template <typename T> inline std::string HepEVDServer::jsonify(const std::vector<T> &data) {
 
     if (data.size() == 0) {
-        return "";
+        return "[]";
     }
 
     std::stringstream json_string;
