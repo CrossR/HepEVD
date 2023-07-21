@@ -7,6 +7,7 @@ import { BUTTON_ID } from "./constants.js";
 /**
  * Populates a dropdown menu with buttons based on the given hit property map.
  * Adds a "None" option by default, and an "All" option if the hit property map is not empty.
+ * Finally, add a toggle for that scene on the dropdown itself.
  *
  * @param {string} className - The name of the class to which the dropdown belongs.
  * @param {Map} hitPropMap - A map of hit properties.
@@ -32,6 +33,9 @@ export function populateDropdown(className, hitPropMap, onClick = (_) => {}) {
     newButton.addEventListener("click", () => onClick(entry));
     dropDown.appendChild(newButton);
   });
+
+  // Add dropdown on click to send empty string.
+  dropDown.parentElement.addEventListener("click", () => onClick(""));
 
   return;
 }
