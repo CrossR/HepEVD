@@ -50,10 +50,6 @@ as possible.
 
 ## Future Work
 
- - UI needs to be able to pick between multiple sets of 2D / 3D hits:
-  - That is, say 3D hits, 3D hits with energy colouring, 3D hits with a score
-    applied etcetc.
-
  - Start populating and passing over the other menu entries (vertices, 2D hits).
 
  - Helper functions for Pandora, LArSoft + more to convert bits.
@@ -63,7 +59,3 @@ as possible.
     different functions, classes, methods etcetc. This would require using a more
     sensible way of producing/understanding JSON.
 
- - Dropdown options should be unique (i.e. not multi select), whereas the hit class
-   options should be multi select. Also remove all the caching and grouping code for
-   now, to test performance. Should be better now that a single giant instanced mesh is
-   made.
