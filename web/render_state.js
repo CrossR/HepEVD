@@ -11,6 +11,7 @@ import { getHitClasses, getHitProperties, getMCColouring } from "./helpers.js";
 import { drawHits } from "./hits.js";
 import { drawBox } from "./rendering.js";
 import {
+  enableMCToggle,
   isButtonActive,
   populateClassToggle,
   populateDropdown,
@@ -107,7 +108,7 @@ export class RenderState {
       this.hitGroup,
       this.activeHits,
       this.activeHitColours,
-      HIT_CONFIG[this.name],
+      HIT_CONFIG[this.hitType],
     );
   }
 
@@ -123,6 +124,7 @@ export class RenderState {
     drawHits(
       this.mcHitGroup,
       this.activeMC,
+      mcColours,
       HIT_CONFIG[this.hitType],
     );
   }
@@ -218,23 +220,40 @@ export class RenderState {
     this.renderHits();
   }
 
+  // Finally, a MC-hit based toggle, enabling or disabling as needed.
+  onMCToggle() {
+
+    // Toggle the visibility state.
+    this.mcHitGroup.visible = ! this.mcHitGroup.visible;
+
+    // Now that the internal state is correct, correct the UI.
+    toggleButton("classes_MC_toggle", this.hitType, false);
+
+    // Render out the new hits.
+    this.renderMCHits();
+  }
+
   // Setup the UI, should only be called once.
-  // Populate various dropdowns and buttons based on the state,
+  // Populate various drop downs and buttons based on the state,
   // and then reset the camera.
   setupUI(renderTarget) {
     if (this.uiSetup) return;
 
     this.renderGeometry();
-    // this.renderHits();
+    this.renderHits();
+
+    // Also render out the MC, but its not visible at first.
     this.renderMCHits();
+    this.mcHitGroup.visible = false;
 
     // Fill in any dropdown entries, or hit class toggles.
-    populateDropdown(this.name, this.hitProperties, (prop) =>
+    populateDropdown(this.hitType, this.hitProperties, (prop) =>
       this.onHitPropertyChange(prop),
     );
-    populateClassToggle(this.name, this.hits, (hitClass) =>
+    populateClassToggle(this.hitType, this.hits, (hitClass) =>
       this.onHitClassChange(hitClass),
     );
+    enableMCToggle(this.hitType, this.mcHits, () => this.onMCToggle());
 
     // Move the scene/camera around to best fit it in.
     fitSceneInCamera(

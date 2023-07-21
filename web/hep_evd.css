@@ -16,6 +16,10 @@ body.lighttheme {
   background-color: white;
 }
 
+.top_bar {
+  position: absolute
+}
+
 button {
   font-weight: 800;
   min-height: 2em;
@@ -70,7 +74,16 @@ input {
 .toggle_options {
   position: absolute;
   top: 10%;
-  right: 0;
+  right: 1%;
+  width: 6em;
+  padding: 1em;
+  display: none;
+}
+
+.toggle_options_mc {
+  position: absolute;
+  top: 10%;
+  left: 0;
   width: 6em;
   padding: 1em;
   display: none;

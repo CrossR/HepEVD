@@ -66,6 +66,26 @@ export function populateClassToggle(className, hits, onClick = (_) => {}) {
   return;
 }
 
+export function enableMCToggle(hitType, mcHits, onClick) {
+
+  console.log("Checking...");
+  const classDiv = document.getElementById(`classes_MC_${hitType}`);
+
+  if (mcHits.length === 0) {
+    return;
+  }
+  console.log("Adding...");
+  console.log(classDiv);
+
+  const newButton = document.createElement("button");
+  newButton.innerText = "MC Hits";
+  newButton.id = `classes_MC_toggle_${hitType}`;
+  newButton.addEventListener("click", () => onClick());
+  classDiv.appendChild(newButton);
+
+  return;
+}
+
 /**
  * Toggles the active state of a button with the given ID in the dropdown menu
  * or class toggle section with the given class name. If the button is the
@@ -128,15 +148,15 @@ export function isButtonActive(className, ID) {
 /**
  * Updates the UI by toggling the visibility of the toggle options for the given class name.
  *
- * @param {string} className - The name of the class for which to toggle the visibility of the toggle options.
+ * @param {string} hitType - The name of the hit class for which to toggle the visibility of the toggle options.
  */
-export function updateUI(className) {
+export function updateUI(hitType) {
   const toggleOptions = document.getElementById("all_toggle_options");
   Array.from(toggleOptions.childNodes)
     .filter((elem) => elem.nodeName != "#text")
     .forEach((elem) => {
       // Toggle visibility for the new class.
-      if (elem.id === `classes_${className}`) {
+      if (elem.id.includes(hitType)) {
         elem.style.display = "block";
       } else {
         elem.style.display = "none";
