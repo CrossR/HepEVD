@@ -69,15 +69,15 @@ const renderStates = new Map([
 // Prefer drawing 3D hits, but draw 2D if only option.
 const defaultDraw = threeDRenderer.hitSize != 0 ? "3D" : "2D";
 
-// Start the final rendering of the event.
-// Orient the camera to the middle of the scene.
+// For each of the 2D + 3D renderers, setup and render the geometry and hits,
+// but only show the default one, as picked above.
 renderStates.forEach((state) => {
   state.renderGeometry();
   state.renderHits();
   state.setupUI(defaultDraw);
 });
 
-// Setup the default UI, with the right buttons and options selected.
+// Hook up the save button.
 document.saveEvd = () => saveEvd(renderer);
 
 // Finally, animate the scene!
