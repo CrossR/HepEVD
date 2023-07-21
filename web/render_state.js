@@ -135,9 +135,9 @@ export class RenderState {
    */
   #updateHitArrays() {
 
-    let newHits = [];
-    let newMCHits = [];
-    let newHitColours = [];
+    const newHits = new Set();
+    const newMCHits = [];
+    const newHitColours = [];
 
     // First, do the actual hits...
     this.hits.forEach((hit) => {
@@ -146,9 +146,11 @@ export class RenderState {
         !this.activeHitClasses.has(hit.class)
       )
         return;
-      this.activeHitProps.forEach((property) => {
+      Array.from(this.activeHitProps).reverse().forEach((property) => {
         if (!this.hitProperties.get(hit).has(property)) return;
-        newHits.push(hit);
+        if (newHits.has(hit)) return;
+
+        newHits.add(hit);
         newHitColours.push(this.hitProperties.get(hit).get(property));
       });
     });
@@ -163,7 +165,7 @@ export class RenderState {
       newMCHits.push(hit);
     });
 
-    this.activeHits = newHits;
+    this.activeHits = [...newHits];
     this.activeHitColours = newHitColours;
     this.activeMC = newMCHits;
   }
