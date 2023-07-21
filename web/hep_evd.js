@@ -7,7 +7,7 @@ import Stats from "three/addons/libs/stats.module.js";
 
 import { RenderState } from "./render_state.js";
 import { animate } from "./rendering.js";
-import { saveEvd } from "./ui.js";
+import { saveEvd, quitEvd } from "./ui.js";
 
 // Do some initial threejs setup...
 const threeDCamera = new THREE.PerspectiveCamera(
@@ -79,6 +79,7 @@ renderStates.forEach((state) => {
 
 // Hook up the save button.
 document.saveEvd = () => saveEvd(renderer);
+document.quitEvd = () => quitEvd();
 
 // Finally, animate the scene!
 animate(renderer, renderStates, stats);

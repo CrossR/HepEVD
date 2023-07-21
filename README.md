@@ -50,6 +50,8 @@ as possible.
 
 ## Future Work
 
+ - Add resize and reset view features.
+
  - Start populating and passing over the other menu entries (vertices, 2D hits).
 
  - Helper functions for Pandora, LArSoft + more to convert bits.

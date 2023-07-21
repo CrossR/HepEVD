@@ -18,7 +18,7 @@ body.lighttheme {
 
 button {
   font-weight: 800;
-  height: 2em;
+  min-height: 2em;
   width: 8em;
   text-transform: capitalize;
 }
@@ -74,6 +74,21 @@ input {
   width: 6em;
   padding: 1em;
   display: none;
+}
+
+.quit_message {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  -webkit-transform: translate(-50%, -50%);
+  transform: translate(-50%, -50%);
+  width: 6em;
+  border: 2px green solid;
+  padding: 1em;
+  background-color: black;
+  font-size: 2em;
+  display: none;
+  opacity: 0;
 }
 
 .label {

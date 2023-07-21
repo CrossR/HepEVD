@@ -7,7 +7,7 @@ import { BUTTON_ID } from "./constants.js";
 /**
  * Populates a dropdown menu with buttons based on the given hit property map.
  * Adds a "None" option by default, and an "All" option if the hit property map is not empty.
- * 
+ *
  * @param {string} className - The name of the class to which the dropdown belongs.
  * @param {Map} hitPropMap - A map of hit properties.
  * @param {function} onClick - The function to be called when a button is clicked.
@@ -39,7 +39,7 @@ export function populateDropdown(className, hitPropMap, onClick = (_) => {}) {
 /**
  * Populates a class toggle section with buttons based on the given hits array.
  * Adds a button for each unique class in the hits array.
- * 
+ *
  * @param {string} className - The name of the class to which the toggle section belongs.
  * @param {Array} hits - An array of hit objects.
  * @param {function} onClick - The function to be called when a button is clicked.
@@ -71,13 +71,15 @@ export function populateClassToggle(className, hits, onClick = (_) => {}) {
  * or class toggle section with the given class name. If the button is the
  * "None" button, it also toggles the state of every other button in that
  * dropdown.
- * 
+ *
  * @param {string} className - The name of the class to which the dropdown or toggle section belongs.
  * @param {string} ID - The ID of the button to toggle.
  * @param {boolean} fixNoneButton - Whether or not to fix the state of the "None" button in the dropdown menu. Defaults to true.
  */
 export function toggleButton(className, ID, fixNoneButton = true) {
   const button = document.getElementById(`${className}_${ID}`);
+
+  if (button === null) return;
 
   let isActive = button.style.color === "white";
 
@@ -110,11 +112,10 @@ export function toggleButton(className, ID, fixNoneButton = true) {
   }
 }
 
-
 /**
  * Determines whether a button with the given ID in the dropdown menu or class
  * toggle section with the given class name is currently active.
- * 
+ *
  * @param {string} className - The name of the class to which the dropdown or toggle section belongs.
  * @param {string} ID - The ID of the button to check.
  * @returns {boolean} - True if the button is active (white), false otherwise.
@@ -124,10 +125,9 @@ export function isButtonActive(className, ID) {
   return button.style.color === "white";
 }
 
-
 /**
  * Updates the UI by toggling the visibility of the toggle options for the given class name.
- * 
+ *
  * @param {string} className - The name of the class for which to toggle the visibility of the toggle options.
  */
 export function updateUI(className) {
@@ -146,7 +146,7 @@ export function updateUI(className) {
 
 /**
  * Saves a screenshot of the given renderer as a JPEG image and opens it in a new tab.
- * 
+ *
  * @param {THREE.WebGLRenderer} renderer - The renderer to take a screenshot of.
  */
 export function saveEvd(renderer) {
@@ -173,4 +173,41 @@ export function saveEvd(renderer) {
   const blobUrl = URL.createObjectURL(blob);
 
   window.open(blobUrl, "_blank");
+}
+
+/**
+ * Quit the event display, allowing the server itself to close.
+ */
+export function quitEvd() {
+  const fadeOut = (element, duration) => {
+    (function decrement() {
+      (element.style.opacity -= 0.1) < 0
+        ? (element.style.display = "none")
+        : setTimeout(() => {
+            decrement();
+          }, duration / 10);
+    })();
+  };
+  const fadeInThenOut = (element, inDuration, outDuration) => {
+    (function increment(value = 0) {
+      element.style.opacity = String(value);
+
+      if (window.getComputedStyle(element, null).display === "none")
+        element.style.display = "block";
+
+      if (element.style.opacity !== "1") {
+        setTimeout(() => {
+          increment(value + 0.1);
+        }, inDuration / 10);
+      } else {
+        setTimeout(() => fadeOut(element, outDuration), 1500);
+      }
+    })();
+  };
+
+  const quittingElem = document.getElementById("quit_message");
+  fadeInThenOut(quittingElem, 500, 750);
+
+  // Actually perform the quit, now that the timers are running.
+  fetch("quit");
 }
