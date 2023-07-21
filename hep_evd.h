@@ -238,10 +238,12 @@ using Hits = std::vector<Hit *>;
 // Convenience constructor for MC hits.
 class MCHit : public Hit {
   public:
-    MCHit(const Position &pos, const double pdgCode, const double t = 0, const double energy = 0) : Hit(pos, t, energy) {
+    MCHit(const Position &pos, const double pdgCode, const double t = 0, const double energy = 0)
+        : Hit(pos, t, energy) {
         this->addProperties({{"PDG", pdgCode}});
     }
-    MCHit(const std::array<double, 3> &pos, const double pdgCode, const double t = 0, const double energy = 0) : Hit(pos, t, energy) {
+    MCHit(const std::array<double, 3> &pos, const double pdgCode, const double t = 0, const double energy = 0)
+        : Hit(pos, t, energy) {
         this->addProperties({{"PDG", pdgCode}});
     }
 };
@@ -348,9 +350,7 @@ inline void HepEVDServer::startServer() {
     });
 
     // Management controls...
-    this->server.Get("/quit", [&](const Request &, Response &) {
-        this->server.stop();
-    });
+    this->server.Get("/quit", [&](const Request &, Response &) { this->server.stop(); });
 
     // Finally, mount the www folder, which contains the actual HepEVD JS code.
     const std::string headerFilePath(__FILE__);
@@ -369,6 +369,8 @@ namespace PandoraHelpers {
 #include "Geometry/LArTPC.h"
 #include "Managers/GeometryManager.h"
 #include "Objects/CaloHit.h"
+
+#include "larpandoracontent/LArHelpers/LArMCParticleHelper.h"
 
 using HepHitMap = std::map<const pandora::CaloHit *, Hit *>;
 
@@ -418,6 +420,45 @@ Hits getHepEVD2DHits(const pandora::CaloHitList *caloHits, HepHitMap &pandoraToC
     }
 
     return hits;
+}
+
+MCHits getHepEVDMCHits(const pandora::CaloHitList *caloHitList) {
+
+    MCHits mcHits;
+
+    // Build up the CaloHit to MC Map we need to fill the MC hits.
+    LArMCParticleHelper::MCRelationMap mcToPrimaryMCMap;
+    LArMCParticleHelper::CaloHitToMCMap caloHitToPrimaryMCMap;
+    LArMCParticleHelper::MCContributionMap mcToTrueHitListMap;
+    LArMCParticleHelper::GetMCParticleToCaloHitMatches(caloHitList, mcToPrimaryMCMap, caloHitToPrimaryMCMap,
+                                                       mcToTrueHitListMap);
+
+    for (auto const &caloHitMcPair : caloHitToPrimaryMCMap) {
+        const auto caloHit = caloHitMcPair.first;
+        const auto mcParticle = caloHitMcPair.second;
+
+        const auto pos = caloHit->GetPositionVector();
+        MCHit *mcHit = new MCHit({pos.GetX(), pos.GetY(), pos.GetZ()}, mcParticle->GetParticleId(),
+                                 caloHit->GetMipEquivalentEnergy(), caloHit->GetTime());
+
+        mcHit->setHitType(HitType::TWO_D);
+
+        switch (caloHit->GetHitType()) {
+        case pandora::HitType::TPC_VIEW_U:
+            mcHit->setHitClass(HitClass::TWO_D_U);
+            break;
+        case pandora::HitType::TPC_VIEW_V:
+            mcHit->setHitClass(HitClass::TWO_D_V);
+            break;
+        case pandora::HitType::TPC_VIEW_W:
+            mcHit->setHitClass(HitClass::TWO_D_W);
+            break;
+        }
+
+        mcHits.push_back(mcHit);
+    }
+
+    return mcHits;
 }
 
 }; // namespace PandoraHelpers
