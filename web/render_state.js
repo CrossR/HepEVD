@@ -10,11 +10,11 @@ import { getHitClasses, getHitProperties } from "./helpers.js";
 import { drawHits, setupControls } from "./hits.js";
 import { drawBox, fitSceneInCamera } from "./rendering.js";
 import {
-    isButtonActive,
-    populateClassToggle,
-    populateDropdown,
-    toggleButton,
-    updateUI,
+  isButtonActive,
+  populateClassToggle,
+  populateDropdown,
+  toggleButton,
+  updateUI,
 } from "./ui.js";
 
 // Class that stores the render state of the app.
@@ -45,6 +45,7 @@ export class RenderState {
     this.activeHits = this.hits;
     this.activeHitColours = [];
     this.activeHitProps = new Set([BUTTON_ID.All]);
+    this.activeHitClasses = new Set();
     this.otherRenderer = undefined;
   }
 
@@ -83,33 +84,17 @@ export class RenderState {
     );
   }
 
-  // What to do if the hit property option changes:
-  //  - We want to rebuild the active hits and active hit colours arrays.
-  //  - We need to update any UI around them.
-  //  - Can then re-render the hits out.
-  onHitPropertyChange(hitProperty) {
-    const buttonActive = isButtonActive(this.hitType, hitProperty);
-    const sceneActive = this.scene.visible;
-
-    // If the button is active, but the scene is not, just enable the scene.
-    if (buttonActive && !sceneActive) {
-      this.toggleScene(this.hitType);
-      updateUI();
-      return;
-    }
-
-    // Otherwise, update all the hits to find the superset formed by all
-    // the current active properties.
+  // Regenerate the current list of hits and colours, based on the state
+  #updateHitArrays() {
     let newHits = [];
     let newHitColours = [];
 
-    if (this.activeHitProps.has(hitProperty)) {
-      this.activeHitProps.delete(hitProperty);
-    } else {
-      this.activeHitProps.add(hitProperty);
-    }
-
     this.hits.forEach((hit) => {
+      if (
+        this.activeHitClasses.size > 0 &&
+        !this.activeHitClasses.has(hit.class)
+      )
+        return;
       this.activeHitProps.forEach((property) => {
         if (!this.hitProperties.get(hit).has(property)) return;
         newHits.push(hit);
@@ -119,11 +104,57 @@ export class RenderState {
 
     this.activeHits = newHits;
     this.activeHitColours = newHitColours;
+  }
+
+  // What to do if the hit property option changes:
+  //  - Update the active hit properties list.
+  //  - We need to update any UI around them.
+  //  - Can then re-render the hits out.
+  onHitPropertyChange(hitProperty) {
+    const buttonActive = isButtonActive(this.hitType, hitProperty);
+    const sceneActive = this.scene.visible;
+
+    // If the button is active, but the scene is not, just enable the scene.
+    if (buttonActive && !sceneActive) {
+      this.toggleScene(this.hitType);
+      return;
+    }
+
+    // Add or remove the toggled property as needed...
+    if (this.activeHitProps.has(hitProperty)) {
+      this.activeHitProps.delete(hitProperty);
+    } else {
+      this.activeHitProps.add(hitProperty);
+    }
+
+    // Fix the active hits for this change...
+    this.#updateHitArrays();
 
     // Now that the internal state is correct, correct the UI.
     toggleButton(this.hitType, hitProperty);
     this.toggleScene(this.hitType);
 
+    // Finally, render the new hits!
+    this.renderHits();
+  }
+
+  // Similar to the property change, update the hit class list.
+  onHitClassChange(hitClass) {
+    // Add or remove the toggled class as needed...
+    if (this.activeHitClasses.has(hitClass)) {
+      this.activeHitClasses.delete(hitClass);
+    } else {
+      this.activeHitClasses.add(hitClass);
+    }
+
+    // Fix the active hits for this change...
+    this.#updateHitArrays();
+
+    // Now that the internal state is correct, correct the UI.
+    toggleButton("classes", hitClass, false);
+    this.toggleScene(this.hitType);
+
+    // Finally, render the new hits!
     this.renderHits();
   }
 
@@ -137,9 +168,9 @@ export class RenderState {
     populateDropdown(this.name, this.hitProperties, (prop) =>
       this.onHitPropertyChange(prop),
     );
-    populateClassToggle(this.name, this.hits, (a) => {
-      console.log(a);
-    });
+    populateClassToggle(this.name, this.hits, (hitClass) =>
+      this.onHitClassChange(hitClass),
+    );
 
     // Move the scene/camera around to best fit it in.
     fitSceneInCamera(
@@ -167,5 +198,7 @@ export class RenderState {
       this.otherRenderer.hitType === renderTarget;
     this.otherRenderer.controls.enabled =
       this.otherRenderer.hitType === renderTarget;
+
+    updateUI(renderTarget);
   }
 }

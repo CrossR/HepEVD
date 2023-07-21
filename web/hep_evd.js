@@ -69,47 +69,6 @@ const renderStates = new Map([
 // Prefer drawing 3D hits, but draw 2D if only option.
 const defaultDraw = threeDRenderer.hitSize != 0 ? "3D" : "2D";
 
-// const hitClassButtonClick = (hitType) => (hitClass) => {
-
-//   if (isButtonActive("classes", hitClass)) {
-
-//     // Drop the filter for this button and run the fixing.
-//     const index = activeHitFilterMap.get(hitType).indexOf(
-//         classFilterMap.get(hitType).get(hitClass)
-//     );
-//     activeHitFilterMap.get(hitType).splice(index, 1);
-
-//     fixFilters(activeHitFilterMap.get(hitType), classFilterMap.get(hitType), false);
-
-//     // Re-enable the general scene, if needed.
-//     const currentKey = [...activeHitMap.get(hitType).keys()].sort().join("_");
-//     hitGroupMap.get(hitType).get(currentKey).visible = true;
-
-//     toggleButton("classes", hitClass, false);
-//     return;
-//   }
-
-//   activeHitFilterMap.get(hitType).push(classFilterMap.get(hitType).get(hitClass));
-//   fixFilters(activeHitFilterMap.get(hitType), classFilterMap.get(hitType), true);
-
-//   const newScene = new THREE.Group();
-//   drawHits(
-//     newScene,
-//     materialHit,
-//     activeHitMap.get(hitType),
-//     hitPropMaps.get(hitType),
-//     true,
-//     HIT_CONFIG[hitType],
-//     activeHitFilterMap.get(hitType),
-//   );
-//   scenes.get(hitType).add(newScene);
-
-//   const currentKey = [...activeHitMap.get(hitType).keys()].sort().join("_");
-//   hitGroupMap.get(hitType).get(currentKey).visible = false;
-
-//   toggleButton("classes", hitClass, false);
-// }
-
 // Start the final rendering of the event.
 // Orient the camera to the middle of the scene.
 renderStates.forEach((state) => {
@@ -119,7 +78,6 @@ renderStates.forEach((state) => {
 });
 
 // Setup the default UI, with the right buttons and options selected.
-// updateUI(defaultDraw, BUTTON_ID.All);
 document.saveEvd = () => saveEvd(renderer);
 
 // Finally, animate the scene!
