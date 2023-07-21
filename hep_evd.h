@@ -422,40 +422,52 @@ Hits getHepEVD2DHits(const pandora::CaloHitList *caloHits, HepHitMap &pandoraToC
     return hits;
 }
 
-MCHits getHepEVDMCHits(const pandora::CaloHitList *caloHitList) {
+MCHits getHepEVDMCHits(const pandora::Algorithm &pAlgorithm, const pandora::CaloHitList *pCaloHitList) {
 
     MCHits mcHits;
 
-    // Build up the CaloHit to MC Map we need to fill the MC hits.
-    LArMCParticleHelper::MCRelationMap mcToPrimaryMCMap;
-    LArMCParticleHelper::CaloHitToMCMap caloHitToPrimaryMCMap;
-    LArMCParticleHelper::MCContributionMap mcToTrueHitListMap;
-    LArMCParticleHelper::GetMCParticleToCaloHitMatches(caloHitList, mcToPrimaryMCMap, caloHitToPrimaryMCMap,
-                                                       mcToTrueHitListMap);
+    const pandora::MCParticleList *pMCParticleList(nullptr);
+    try {
+        PandoraContentApi::GetCurrentList(pAlgorithm, pMCParticleList);
+    } catch (pandora::StatusCodeException&) {
+        return mcHits;
+    }
 
-    for (auto const &caloHitMcPair : caloHitToPrimaryMCMap) {
-        const auto caloHit = caloHitMcPair.first;
-        const auto mcParticle = caloHitMcPair.second;
+    LArMCParticleHelper::MCContributionMap mcToHitsMap;
+    std::function<bool(const pandora::MCParticle *const)> getAll = [](const pandora::MCParticle *const) { return true; };
+    LArMCParticleHelper::SelectReconstructableMCParticles(
+        pMCParticleList, pCaloHitList, LArMCParticleHelper::PrimaryParameters(), getAll, mcToHitsMap);
 
-        const auto pos = caloHit->GetPositionVector();
-        MCHit *mcHit = new MCHit({pos.GetX(), pos.GetY(), pos.GetZ()}, mcParticle->GetParticleId(),
-                                 caloHit->GetMipEquivalentEnergy(), caloHit->GetTime());
 
-        mcHit->setHitType(HitType::TWO_D);
+    std::cout << "In: " << pCaloHitList->size() << "/" << pMCParticleList->size() << ", Out: " << mcToHitsMap.size() << std::endl;
 
-        switch (caloHit->GetHitType()) {
-        case pandora::HitType::TPC_VIEW_U:
-            mcHit->setHitClass(HitClass::TWO_D_U);
-            break;
-        case pandora::HitType::TPC_VIEW_V:
-            mcHit->setHitClass(HitClass::TWO_D_V);
-            break;
-        case pandora::HitType::TPC_VIEW_W:
-            mcHit->setHitClass(HitClass::TWO_D_W);
-            break;
+    for (auto const &mcCaloHitListPair : mcToHitsMap) {
+
+        const auto mcParticle = mcCaloHitListPair.first;
+        const auto caloHitList = mcCaloHitListPair.second;
+
+        for (auto const caloHit : caloHitList) {
+
+            const auto pos = caloHit->GetPositionVector();
+            MCHit *mcHit = new MCHit({pos.GetX(), pos.GetY(), pos.GetZ()}, mcParticle->GetParticleId(),
+                                     caloHit->GetMipEquivalentEnergy(), caloHit->GetTime());
+
+            mcHit->setHitType(HitType::TWO_D);
+
+            switch (caloHit->GetHitType()) {
+                case pandora::HitType::TPC_VIEW_U:
+                    mcHit->setHitClass(HitClass::TWO_D_U);
+                    break;
+                case pandora::HitType::TPC_VIEW_V:
+                    mcHit->setHitClass(HitClass::TWO_D_V);
+                    break;
+                case pandora::HitType::TPC_VIEW_W:
+                    mcHit->setHitClass(HitClass::TWO_D_W);
+                    break;
+            }
+
+            mcHits.push_back(mcHit);
         }
-
-        mcHits.push_back(mcHit);
     }
 
     return mcHits;
