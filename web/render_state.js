@@ -173,6 +173,26 @@ export class RenderState {
   //  - We need to update any UI around them.
   //  - Can then re-render the hits out.
   onHitPropertyChange(hitProperty) {
+
+    // If the "None" button is clicked, short-circuit.
+    // Clear everything out, re-render, stop.
+    if (hitProperty === BUTTON_ID.None) {
+        this.activeHitProps.clear();
+        this.#updateHitArrays();
+        toggleButton(this.hitType, hitProperty);
+        this.toggleScene(this.hitType);
+        this.renderHits();
+
+        return;
+    }
+
+    // Similarly, if there was no actual hitProperty, i.e. this
+    // is just a scene toggle, just swap the scene and finish.
+    if (hitProperty === "") {
+        this.toggleScene(this.hitType);
+        return;
+    }
+
     const buttonActive = isButtonActive(this.hitType, hitProperty);
     const sceneActive = this.scene.visible;
 
