@@ -27,8 +27,9 @@ export function drawHits(
   // Check if we are using colour, and set it up if we are.
   const energyLut = new Lut("cooltowarm", 512);
   let usingColour = hitColours.length === hits.length;
+  let usingLut = typeof hitColours[0] === 'number'
 
-  if (usingColour) {
+  if (usingColour && usingLut) {
     let minColourValue = Infinity;
     let maxColourValue = Number.NEGATIVE_INFINITY;
     hitColours.forEach((value) => {
@@ -53,8 +54,10 @@ export function drawHits(
 
     hitMesh.setMatrixAt(index, dummyObject.matrix);
 
-    if (usingColour) {
+    if (usingColour && usingLut) {
       hitMesh.setColorAt(index, energyLut.getColor(hitColours[index]));
+    } else if (usingColour && ! usingLut) {
+      hitMesh.setColorAt(index, new THREE.Color(hitColours[index]));
     } else {
       hitMesh.setColorAt(index, new THREE.Color("gray"));
     }

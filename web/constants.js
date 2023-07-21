@@ -11,6 +11,8 @@ export const BUTTON_ID = {
   All: "All",
 };
 
+export const DEFAULT_HIT_CLASS = "Hit";
+
 export const HIT_CONFIG = {
   "2D": {
     hitSize: 3,
@@ -18,6 +20,13 @@ export const HIT_CONFIG = {
   "3D": {
     hitSize: 3,
   },
+};
+
+export const PDG_TO_COLOUR = {
+  "11":   "skyblue", // Elecron : Light Blue
+  "13":   "green",   // Muon : Green
+  "211":  "orange",  // Pion : Orange
+  "2212": "red",     // Proton : Red
 };
 
 export const threeDGeoMat = new THREE.LineBasicMaterial({
@@ -34,3 +43,4 @@ export const twoDYMat = new LineMaterial({
 export const materialHit = new THREE.MeshBasicMaterial({
   side: THREE.DoubleSide,
 });
+

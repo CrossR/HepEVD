@@ -43,6 +43,7 @@ const detectorGeometry = await fetch("geometry").then((response) =>
   response.json(),
 );
 const hits = await fetch("hits").then((response) => response.json());
+const mcHits = await fetch("mcHits").then((response) => response.json());
 
 // And use that data to setup the initial rendering states.
 const threeDRenderer = new RenderState(
@@ -50,6 +51,7 @@ const threeDRenderer = new RenderState(
   threeDCamera,
   renderer,
   hits.filter((hit) => hit.type === "3D"),
+  mcHits.filter((hit) => hit.type === "3D"),
   detectorGeometry,
 );
 const twoDRenderer = new RenderState(
@@ -57,6 +59,7 @@ const twoDRenderer = new RenderState(
   twoDCamera,
   renderer,
   hits.filter((hit) => hit.type === "2D"),
+  mcHits.filter((hit) => hit.type === "2D"),
   detectorGeometry,
 );
 threeDRenderer.otherRenderer = twoDRenderer;
@@ -72,8 +75,6 @@ const defaultDraw = threeDRenderer.hitSize != 0 ? "3D" : "2D";
 // For each of the 2D + 3D renderers, setup and render the geometry and hits,
 // but only show the default one, as picked above.
 renderStates.forEach((state) => {
-  state.renderGeometry();
-  state.renderHits();
   state.setupUI(defaultDraw);
 });
 

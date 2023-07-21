@@ -4,7 +4,7 @@
 
 import * as THREE from "three";
 
-import { BUTTON_ID } from "./constants.js";
+import { BUTTON_ID, PDG_TO_COLOUR } from "./constants.js";
 
 /**
  * Returns an array containing the minimum and maximum values of a given
@@ -62,7 +62,7 @@ export function getHitProperties(hits) {
     }
 
     if (Object.hasOwn(hit, "properties")) {
-      hit.properties.forEach((prop) => {
+      Object.entries(hit.properties).forEach((prop) => {
         const key = Object.keys(prop)[0];
         const value = Object.values(prop)[0];
 
@@ -96,5 +96,27 @@ export function getHitClasses(hits) {
   });
 
   return classFilterMap;
+}
+
+/**
+ * Get an array of colours for MC hits based on their PDG code.
+ *
+ * @param {Array} mcHits - An array of hit objects, with an associated PDG.
+ * @returns {Array} An array of colour strings, to be used in the hit rendering.
+ */
+export function getMCColouring(mcHits) {
+
+    let mcHitColours = [];
+
+    mcHits.forEach((hit) => {
+        const mcPdg = hit.properties["PDG"];
+        if (Object.hasOwn(PDG_TO_COLOUR, mcPdg)) {
+          mcHitColours.push(PDG_TO_COLOUR[mcPdg]);
+        } else {
+          console.log(mcPdg);
+        }
+    });
+
+    return mcHitColours;
 }
 

@@ -28,6 +28,9 @@ int main(void) {
 
     std::uniform_real_distribution<float> disProb(0, 1);
 
+    const std::vector<double> pdgCodes({11, 13});
+    std::uniform_int_distribution<> disPdg(0, 1);
+
     for (unsigned int i = 0; i < 25000; ++i) {
 
         const double x = disX(gen);
@@ -36,7 +39,7 @@ int main(void) {
         const double e = x + y + z;
 
         Hit* hit = new Hit({x, y, z}, e);
-        MCHit* mcHit = new MCHit({disX(gen), disY(gen), disZ(gen)});
+        MCHit* mcHit = new MCHit({disX(gen), disY(gen), disZ(gen)}, pdgCodes[disPdg(gen)]);
 
         std::map<std::string, double> properties;
 
@@ -75,6 +78,11 @@ int main(void) {
             hit->setHitType(TWO_D);
             hit->setHitClass(views[i]);
             hits.push_back(hit);
+
+            MCHit* mcHit = new MCHit({disX(gen), 0.f, disZ(gen)}, pdgCodes[disPdg(gen)]);
+            mcHit->setHitType(TWO_D);
+            mcHit->setHitClass(views[i]);
+            mcHits.push_back(mcHit);
         }
     }
 

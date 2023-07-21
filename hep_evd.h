@@ -147,7 +147,7 @@ class DetectorGeometry {
 };
 
 enum HitType { THREE_D, TWO_D };
-enum HitClass { GENERAL, TWO_D_U, TWO_D_V, TWO_D_W, TRUTH };
+enum HitClass { GENERAL, TWO_D_U, TWO_D_V, TWO_D_W };
 
 // A hit represents an actual energy deposition in the detector.
 // That is, a position but also information on the sort of hit,
@@ -189,12 +189,12 @@ class Hit {
             os << ", \"label\": \"" << hit.label << "\"";
 
         if (hit.properties.size() != 0) {
-            os << ", \"properties\": [";
+            os << ", \"properties\": {";
             for (const auto &propValuePair : hit.properties)
-                os << "{\"" << propValuePair.first << "\": " << propValuePair.second << "},";
+                os << "\"" << propValuePair.first << "\": " << propValuePair.second << ",";
 
             os.seekp(-1, os.cur);
-            os << "]";
+            os << "}";
         }
         os << "}";
 
@@ -221,8 +221,6 @@ class Hit {
             return "V View";
         case TWO_D_W:
             return "W View";
-        case TRUTH:
-            return "MC Truth";
         }
         throw std::invalid_argument("Unknown hit class!");
     }
@@ -240,11 +238,11 @@ using Hits = std::vector<Hit *>;
 // Convenience constructor for MC hits.
 class MCHit : public Hit {
   public:
-    MCHit(const Position &pos, double t = 0, double energy = 0) : Hit(pos, t, energy) {
-        this->hitClass = HitClass::TRUTH;
+    MCHit(const Position &pos, const double pdgCode, const double t = 0, const double energy = 0) : Hit(pos, t, energy) {
+        this->addProperties({{"PDG", pdgCode}});
     }
-    MCHit(const std::array<double, 3> &pos, double t = 0, double energy = 0) : Hit(pos, t, energy) {
-        this->hitClass = HitClass::TRUTH;
+    MCHit(const std::array<double, 3> &pos, const double pdgCode, const double t = 0, const double energy = 0) : Hit(pos, t, energy) {
+        this->addProperties({{"PDG", pdgCode}});
     }
 };
 using MCHits = std::vector<MCHit *>;
@@ -350,8 +348,7 @@ inline void HepEVDServer::startServer() {
     });
 
     // Management controls...
-    this->server.Get("/quit", [&](const Request &, Response &res) {
-        res.set_content("Goodbye!", "text/plain");
+    this->server.Get("/quit", [&](const Request &, Response &) {
         this->server.stop();
     });
 

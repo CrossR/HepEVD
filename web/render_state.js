@@ -7,7 +7,7 @@ import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 
 import { fitSceneInCamera, setupControls } from "./camera_and_controls.js";
 import { BUTTON_ID, HIT_CONFIG } from "./constants.js";
-import { getHitClasses, getHitProperties } from "./helpers.js";
+import { getHitClasses, getHitProperties, getMCColouring } from "./helpers.js";
 import { drawHits } from "./hits.js";
 import { drawBox } from "./rendering.js";
 import {
@@ -24,32 +24,43 @@ import {
  */
 export class RenderState {
   // Setup some basics, the scenes, camera, detector and hit groups.
-  constructor(name, camera, renderer, hits, geometry) {
+  constructor(name, camera, renderer, hits, mcHits, geometry) {
     this.name = name;
     this.hitType = name;
 
-    // THREE.js Setup
+    // THREE.js Setup...
     this.scene = new THREE.Scene();
     this.camera = camera;
     this.controls = new OrbitControls(this.camera, renderer.domElement);
 
+    // Setup various groups for rendering into...
     this.detGeoGroup = new THREE.Group();
-    this.scene.add(this.detGeoGroup);
     this.hitGroup = new THREE.Group();
-    this.scene.add(this.hitGroup);
+    this.mcHitGroup = new THREE.Group();
 
-    // Data Setup
+    this.scene.add(this.detGeoGroup);
+    this.scene.add(this.hitGroup);
+    this.scene.add(this.mcHitGroup);
+
+    // Data Setup, first the top level static arrays...
+    this.detectorGeometry = geometry;
     this.hits = hits;
+    this.mcHits = mcHits;
+
+    // The generated property lists...
     this.hitProperties = getHitProperties(this.hits);
     this.hitClasses = getHitClasses(this.hits);
-    this.detectorGeometry = geometry;
 
-    // State
+    // Finally, setup the dynamic bits, the state that will change.
     this.uiSetup = false;
+
     this.activeHits = this.hits;
+    this.activeMC = this.mcHits;
     this.activeHitColours = [];
+
     this.activeHitProps = new Set([BUTTON_ID.All]);
     this.activeHitClasses = new Set();
+
     this.otherRenderer = undefined;
   }
 
@@ -101,13 +112,32 @@ export class RenderState {
   }
 
   /**
+   * Renders the hits for the current state, based on the active hit classes and properties.
+   * Clears the hit group and then draws the hits with the active hit colours.
+   */
+  renderMCHits() {
+    this.mcHitGroup.clear();
+
+    const mcColours = getMCColouring(this.activeMC);
+
+    drawHits(
+      this.mcHitGroup,
+      this.activeMC,
+      HIT_CONFIG[this.hitType],
+    );
+  }
+
+  /**
    * Updates the active hits and hit colours based on the current active hit
    * classes and properties.
    */
   #updateHitArrays() {
+
     let newHits = [];
+    let newMCHits = [];
     let newHitColours = [];
 
+    // First, do the actual hits...
     this.hits.forEach((hit) => {
       if (
         this.activeHitClasses.size > 0 &&
@@ -121,8 +151,19 @@ export class RenderState {
       });
     });
 
+    // Then repeat for the MC hits, but skip the hit properties bit.
+    this.mcHits.forEach((hit) => {
+      if (
+        this.activeHitClasses.size > 0 &&
+        !this.activeHitClasses.has(hit.class)
+      )
+        return;
+      newMCHits.push(hit);
+    });
+
     this.activeHits = newHits;
     this.activeHitColours = newHitColours;
+    this.activeMC = newMCHits;
   }
 
   // What to do if the hit property option changes:
@@ -182,6 +223,10 @@ export class RenderState {
   // and then reset the camera.
   setupUI(renderTarget) {
     if (this.uiSetup) return;
+
+    this.renderGeometry();
+    // this.renderHits();
+    this.renderMCHits();
 
     // Fill in any dropdown entries, or hit class toggles.
     populateDropdown(this.name, this.hitProperties, (prop) =>
