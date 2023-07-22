@@ -111,10 +111,10 @@ export function toggleButton(className, ID, fixNoneButton = true) {
 
   if (isActive) {
     button.classList.remove("active");
-    isActive = true;
+    isActive = false;
   } else {
     button.classList.add("active");
-    isActive = false;
+    isActive = true;
   }
 
   if (!fixNoneButton) return;
@@ -123,12 +123,6 @@ export function toggleButton(className, ID, fixNoneButton = true) {
     const dropDown = document.getElementById(`${className}_dropdown`);
 
     Array.from(dropDown.childNodes)
-      .filter(
-        (elem) =>
-          elem.nodeName != "#text" &&
-          elem != button &&
-          elem.tagName.toLowerCase() === "button",
-      )
       .forEach((elem) => {
         elem.classList.remove("active");
       });
