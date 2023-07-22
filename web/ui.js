@@ -27,7 +27,9 @@ export function populateDropdown(className, hitPropMap, onClick = (_) => {}) {
   });
 
   entries.forEach((entry) => {
-    const newButton = document.createElement("button");
+    const newButton = document.createElement("a");
+    newButton.classList.add("dropdown-item");
+    newButton.style.textTransform = "capitalize";
     newButton.innerText = entry;
     newButton.id = `${className}_${entry}`;
     newButton.addEventListener("click", () => onClick(entry));
@@ -35,7 +37,8 @@ export function populateDropdown(className, hitPropMap, onClick = (_) => {}) {
   });
 
   // Add dropdown on click to send empty string.
-  dropDown.parentElement.addEventListener("click", () => onClick(""));
+  const dropDownButton = document.getElementById(`${className}_dropdown_button`);
+  dropDownButton.addEventListener("click", () => onClick(""));
 
   return;
 }
@@ -61,6 +64,8 @@ export function populateClassToggle(className, hits, onClick = (_) => {}) {
 
   entries.forEach((entry) => {
     const newButton = document.createElement("button");
+    newButton.classList.add("btn", "btn-secondary", "m-1");
+    newButton.style.textTransform = "capitalize";
     newButton.innerText = entry;
     newButton.id = `classes_${entry}`;
     newButton.addEventListener("click", () => onClick(entry));
@@ -78,6 +83,7 @@ export function enableMCToggle(hitType, mcHits, onClick) {
   }
 
   const newButton = document.createElement("button");
+  newButton.classList.add("btn", "btn-secondary", "m-1");
   newButton.innerText = "MC Hits";
   newButton.id = `classes_MC_toggle_${hitType}`;
   newButton.addEventListener("click", () => onClick());
@@ -101,14 +107,14 @@ export function toggleButton(className, ID, fixNoneButton = true) {
 
   if (button === null) return;
 
-  let isActive = button.style.color === "white";
+  let isActive = button.classList.contains("active");
 
   if (isActive) {
-    button.style.color = "green";
-    isActive = false;
-  } else {
-    button.style.color = "white";
+    button.classList.remove("active");
     isActive = true;
+  } else {
+    button.classList.add("active");
+    isActive = false;
   }
 
   if (!fixNoneButton) return;
@@ -124,11 +130,11 @@ export function toggleButton(className, ID, fixNoneButton = true) {
           elem.tagName.toLowerCase() === "button",
       )
       .forEach((elem) => {
-        elem.style.color = "green";
+        elem.classList.remove("active");
       });
   } else if (ID !== BUTTON_ID.None && isActive) {
-    const button = document.getElementById(`${className}_${BUTTON_ID.None}`);
-    button.style.color = "green";
+    const noneButton = document.getElementById(`${className}_${BUTTON_ID.None}`);
+    noneButton.classList.remove("active");
   }
 }
 
@@ -138,11 +144,11 @@ export function toggleButton(className, ID, fixNoneButton = true) {
  *
  * @param {string} className - The name of the class to which the dropdown or toggle section belongs.
  * @param {string} ID - The ID of the button to check.
- * @returns {boolean} - True if the button is active (white), false otherwise.
+ * @returns {boolean} - True if the button is active, false otherwise.
  */
 export function isButtonActive(className, ID) {
   const button = document.getElementById(`${className}_${ID}`);
-  return button.style.color === "white";
+  return button.classList.contains("active");
 }
 
 /**
@@ -157,9 +163,9 @@ export function updateUI(hitType) {
     .forEach((elem) => {
       // Toggle visibility for the new class.
       if (elem.id.includes(hitType)) {
-        elem.style.display = "block";
+        elem.style.visibility = "visible";
       } else {
-        elem.style.display = "none";
+        elem.style.visibility = "hidden";
       }
     });
 }

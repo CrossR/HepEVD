@@ -5,6 +5,18 @@
     <title>HepEVD</title>
     <!-- <link rel="shortcut icon" href="favicon.ico"> -->
     <link rel="stylesheet" type="text/css" href="hep_evd.css" />
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM"
+      crossorigin="anonymous"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootswatch@4.5.2/dist/darkly/bootstrap.min.css"
+      integrity="sha384-nNK9n28pDUDDgIiIqZ/MiyO3F4/9vsMtReZK39klb/MtkZI3/LtjSjlmyVPS3KdN"
+      crossorigin="anonymous"
+    />
 
     <script
       async
@@ -19,61 +31,69 @@
         }
       }
     </script>
+
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"
+      integrity="sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz"
+      crossorigin="anonymous"
+    ></script>
   </head>
 
-  <body class="darktheme" style="overflow: hidden">
+  <body class="lightheme" style="overflow: hidden">
     <script>
       if (window.sessionStorage.theme)
         document.body.className = window.sessionStorage.theme;
     </script>
 
-    <div class="top_bar">
-      <button onclick="quitEvd()">🛑 Quit</button>
+    <div>
+      <button type="button" class="btn btn-primary" onclick="quitEvd()">
+        🛑 Quit
+      </button>
+      <button
+        type="button"
+        class="btn btn-primary"
+        id="save_button"
+        onclick="saveEvd()"
+      >
+        📷 Save
+      </button>
+      <button
+        type="button"
+        class="btn btn-primary"
+        class="btn btn-primary"
+        onclick="resetView()"
+      >
+        🔄 Reset
+      </button>
 
-      <button id="save_button" onclick="saveEvd()">📷 Save</button>
-
-      <button onclick="resetView()">🔄 Reset</button>
-
-      <div class="dropdown">
-        <button>Labels...</button>
-        <div class="dropdown-content" id="labels_dropdown">
-          <button id="label_none" onclick="NoAxes()">None</button>
-          <button id="label_on" onclick="EnablesAxes()">Enabled</button>
-        </div>
+      <div class="btn-group">
+        <button id="2D_dropdown_button" type="button" class="btn btn-primary">
+          2D Hits...
+        </button>
+        <button
+          type="button"
+          class="btn btn-primary dropdown-toggle dropdown-toggle-split"
+          data-bs-toggle="dropdown"
+        ></button>
+        <div id="2D_dropdown" class="dropdown-menu"></div>
       </div>
 
-      <div class="dropdown">
-        <button class="button-12">Theme...</button>
-        <div class="dropdown-content">
-          <button onclick="Theme('darktheme')">Dark</button>
-          <button onclick="Theme('lighttheme')">Light</button>
-        </div>
-      </div>
-
-      <div class="dropdown">
-        <button>2D Hits...</button>
-        <div class="dropdown-content" id="2D_dropdown"></div>
-      </div>
-
-      <div class="dropdown">
-        <button>3D Hits...</button>
-        <div class="dropdown-content" id="3D_dropdown"></div>
-      </div>
-
-      <div class="dropdown">
-        <button>Vertices...</button>
-        <div class="dropdown-content" id="vertices_dropdown"></div>
-      </div>
-
-      <div class="dropdown">
-        <button>MC Truth...</button>
-        <div class="dropdown-content" id="mc_dropdown"></div>
+      <div class="btn-group">
+        <button id="3D_dropdown_button" type="button" class="btn btn-primary">
+          3D Hits...
+        </button>
+        <button
+          type="button"
+          class="btn btn-primary dropdown-toggle dropdown-toggle-split"
+          data-bs-toggle="dropdown"
+        ></button>
+        <div id="3D_dropdown" class="dropdown-menu"></div>
       </div>
     </div>
 
     <div id="all_toggle_options">
-      <div class="toggle_options" id="classes_2D"></div>
-      <div class="toggle_options" id="classes_3D"></div>
+      <div class="d-flex flex-column toggle_options" id="classes_2D"></div>
+      <div class="d-flex flex-column toggle_options" id="classes_3D"></div>
 
       <div class="toggle_options_mc" id="classes_MC_2D"></div>
       <div class="toggle_options_mc" id="classes_MC_3D"></div>

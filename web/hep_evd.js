@@ -30,10 +30,9 @@ const renderer = new THREE.WebGLRenderer({
   preserveDrawingBuffer: true,
 });
 const stats = new Stats();
+// Move to top right.
+stats.domElement.style.cssText = "position:absolute;top:0px;right:0px;";
 renderer.setSize(window.innerWidth, window.innerHeight);
-
-if (document.body.className === "lighttheme") renderer.setClearColor("white");
-else renderer.setClearColor("black");
 
 document.body.appendChild(renderer.domElement);
 document.body.appendChild(stats.dom);
