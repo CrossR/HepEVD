@@ -8,12 +8,18 @@ div {
   margin: 0;
 }
 
-.dropdown:hover>.dropdown-menu {
-  display: block;
+.btn {
+  min-height: 2em;
+  height: 2em;
 }
 
-.dropdown>.dropdown-toggle:active {
-    pointer-events: none;
+.navbar {
+  min-height: 2.1em;
+  height: 2.1em;
+}
+
+.dropdown:hover>.dropdown-menu {
+  display: block;
 }
 
 .toggle_options {

@@ -4,23 +4,10 @@
     <meta charset="utf-8" />
     <title>HepEVD</title>
     <!-- <link rel="shortcut icon" href="favicon.ico"> -->
-    <link rel="stylesheet" type="text/css" href="hep_evd.css" />
-    <link
-      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
-      rel="stylesheet"
-      integrity="sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM"
-      crossorigin="anonymous"
-    />
-    <link
-      rel="stylesheet"
-      href="https://cdn.jsdelivr.net/npm/bootswatch@4.5.2/dist/darkly/bootstrap.min.css"
-      integrity="sha384-nNK9n28pDUDDgIiIqZ/MiyO3F4/9vsMtReZK39klb/MtkZI3/LtjSjlmyVPS3KdN"
-      crossorigin="anonymous"
-    />
 
     <script
       async
-      src="https://unpkg.com/es-module-shims@1.6.3/dist/es-module-shims.js"
+      src="https://ga.jspm.io/npm:es-module-shims@1.8.0/dist/es-module-shims.js"
     ></script>
 
     <script type="importmap">
@@ -32,68 +19,59 @@
       }
     </script>
 
-    <script
-      src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"
-      integrity="sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz"
-      crossorigin="anonymous"
-    ></script>
+    <link
+      href="https://cdn.jsdelivr.net/npm/daisyui@3.3.1/dist/full.css"
+      rel="stylesheet"
+      type="text/css"
+    />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" type="text/css" href="hep_evd.css" />
   </head>
 
-  <body class="lightheme" style="overflow: hidden">
-    <script>
-      if (window.sessionStorage.theme)
-        document.body.className = window.sessionStorage.theme;
-    </script>
+  <body>
+    <div class="navbar bg-base-300 rounded-box">
+      <div class="flex justify-start flex-1 px-2">
+        <div class="dropdown dropdown-hover">
+          <label id="2D_dropdown_button" class="btn btn-primary m-1">
+            2D Hits...
+          </label>
+          <ul
+            id="2D_dropdown"
+            class="dropdown-content z-[1] menu p-1 shadow bg-base-100 rounded-box"
+          ></ul>
+        </div>
 
-    <div>
-      <button type="button" class="btn btn-primary" onclick="quitEvd()">
-        🛑 Quit
-      </button>
-      <button
-        type="button"
-        class="btn btn-primary"
-        id="save_button"
-        onclick="saveEvd()"
-      >
-        📷 Save
-      </button>
-      <button
-        type="button"
-        class="btn btn-primary"
-        class="btn btn-primary"
-        onclick="resetView()"
-      >
-        🔄 Reset
-      </button>
-
-      <div class="btn-group dropdown">
-        <button id="2D_dropdown_button" type="button" class="btn btn-primary">
-          2D Hits...
-        </button>
-        <button
-          class="btn btn-primary dropdown-toggle"
-          type="button"
-          data-bs-toggle="dropdown"
-        ></button>
-        <div id="2D_dropdown" class="dropdown-menu"></div>
+        <div class="dropdown dropdown-hover">
+          <label id="3D_dropdown_button" class="btn btn-primary m-1">
+            3D Hits...
+          </label>
+          <ul
+            id="3D_dropdown"
+            class="dropdown-content z-[1] menu p-1 shadow bg-base-100 rounded-box"
+          ></ul>
+        </div>
       </div>
 
-      <div class="btn-group dropdown">
-        <button id="3D_dropdown_button" type="button" class="btn btn-primary">
-          3D Hits...
+      <div class="flex justify-end flex-1 px-2">
+        <button class="btn btn-primary btn-outline" onclick="resetView()">
+          🔄 Reset
         </button>
         <button
-          class="btn btn-primary dropdown-toggle"
-          type="button"
-          data-bs-toggle="dropdown"
-        ></button>
-        <div id="3D_dropdown" class="dropdown-menu"></div>
+          class="btn btn-primary btn-outline"
+          id="save_button"
+          onclick="saveEvd()"
+        >
+          📷 Save
+        </button>
+        <button class="btn btn-primary btn-outline" onclick="quitEvd()">
+          🛑 Quit
+        </button>
       </div>
     </div>
 
     <div id="all_toggle_options">
-      <div class="d-flex flex-column toggle_options" id="classes_2D"></div>
-      <div class="d-flex flex-column toggle_options" id="classes_3D"></div>
+      <div class="flex flex-col toggle_options" id="classes_2D"></div>
+      <div class="flex flex-col toggle_options" id="classes_3D"></div>
 
       <div class="toggle_options_mc" id="classes_MC_2D"></div>
       <div class="toggle_options_mc" id="classes_MC_3D"></div>

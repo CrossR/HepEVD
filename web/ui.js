@@ -27,13 +27,14 @@ export function populateDropdown(className, hitPropMap, onClick = (_) => {}) {
   });
 
   entries.forEach((entry) => {
-    const newButton = document.createElement("a");
-    newButton.classList.add("dropdown-item");
+    const listElement = document.createElement("li");
+    const newButton = document.createElement("li");
     newButton.style.textTransform = "capitalize";
     newButton.innerText = entry;
     newButton.id = `${className}_${entry}`;
     newButton.addEventListener("click", () => onClick(entry));
-    dropDown.appendChild(newButton);
+    listElement.appendChild(newButton);
+    dropDown.appendChild(listElement);
   });
 
   // Add dropdown on click to send empty string.
@@ -142,7 +143,7 @@ export function toggleButton(className, ID, fixNoneButton = true) {
  */
 export function isButtonActive(className, ID) {
   const button = document.getElementById(`${className}_${ID}`);
-  return button.classList.contains("active");
+  return button ? button.classList.contains("active") : false;
 }
 
 /**

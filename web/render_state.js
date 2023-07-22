@@ -176,39 +176,28 @@ export class RenderState {
   //  - We need to update any UI around them.
   //  - Can then re-render the hits out.
   onHitPropertyChange(hitProperty) {
-    // If the "None" button is clicked, short-circuit.
-    // Clear everything out, re-render, stop.
-    if (hitProperty === BUTTON_ID.None) {
-      this.activeHitProps.clear();
-      this.#updateHitArrays();
-      toggleButton(this.hitType, hitProperty);
-      this.toggleScene(this.hitType);
-      this.renderHits();
-
-      return;
-    }
-
-    // Similarly, if there was no actual hitProperty, i.e. this
-    // is just a scene toggle, just swap the scene and finish.
-    if (hitProperty === "") {
-      this.toggleScene(this.hitType);
-      return;
-    }
 
     const buttonActive = isButtonActive(this.hitType, hitProperty);
     const sceneActive = this.scene.visible;
 
-    // If the button is active, but the scene is not, just enable the scene.
-    if (buttonActive && !sceneActive) {
+    // If there was no actual hitProperty, or the scene isn't active but the
+    // hits are setup correctly, just swap the scene and finish.
+    if ((hitProperty === "")|| (buttonActive && !sceneActive)) {
       this.toggleScene(this.hitType);
       return;
     }
 
-    // Add or remove the toggled property as needed...
-    if (this.activeHitProps.has(hitProperty)) {
-      this.activeHitProps.delete(hitProperty);
+    // If the "None" property is clicked, we want to toggle everything off.
+    // Otherwise, add or remove this property from the list.
+    if (hitProperty === BUTTON_ID.None) {
+        this.activeHitProps.clear();
     } else {
-      this.activeHitProps.add(hitProperty);
+        // Add or remove the toggled property as needed...
+        if (this.activeHitProps.has(hitProperty)) {
+            this.activeHitProps.delete(hitProperty);
+        } else {
+            this.activeHitProps.add(hitProperty);
+        }
     }
 
     // Fix the active hits for this change...
