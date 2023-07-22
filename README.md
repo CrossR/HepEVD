@@ -50,9 +50,9 @@ as possible.
 
 ## Future Work
 
- - Start populating and passing over the other menu entries (vertices, MC hits).
+ - Start populating and passing over the other menu entries (vertices, other markers).
 
- - Helper functions for Pandora, LArSoft + more to convert bits.
+ - More helper functions.
 
  - Setup a client mode -> I.e. post JSON objects to it to add them to the state.
   - That would allow hits to be added to the server from anywhere, including

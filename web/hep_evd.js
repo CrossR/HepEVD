@@ -31,7 +31,7 @@ const renderer = new THREE.WebGLRenderer({
 });
 const stats = new Stats();
 // Move to top right.
-stats.domElement.style.cssText = "position:absolute;top:0px;right:0px;";
+stats.domElement.style.cssText = "position:absolute; bottom:0px; right:0px;";
 renderer.setSize(window.innerWidth, window.innerHeight);
 
 document.body.appendChild(renderer.domElement);
