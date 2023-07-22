@@ -306,4 +306,38 @@ export class RenderState {
 
     updateUI(renderTarget);
   }
+
+  // If this is currently active, reset the event display.
+  resetView() {
+    if (! this.scene.visible) return;
+
+    // Reset back to all hits...
+    this.activeHits = this.hits;
+    this.activeMC = this.mcHits;
+    this.activeHitColours = [];
+
+    // And no properties active...
+    this.activeHitProps = new Set([BUTTON_ID.All]);
+    toggleButton(this.hitType, BUTTON_ID.None);
+    toggleButton(this.hitType, BUTTON_ID.All);
+
+    this.activeHitClasses.forEach((hitClass) => {
+        toggleButton("classes", hitClass, false);
+    });
+    this.activeHitClasses = new Set();
+
+    // Re-render with the default hit array.
+    this.renderGeometry();
+    this.renderHits();
+
+    // Reset the camera + controls.
+    this.controls.reset();
+
+    fitSceneInCamera(
+      this.camera,
+      this.controls,
+      this.detGeoGroup,
+      this.hitType,
+    );
+  }
 }

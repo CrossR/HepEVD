@@ -85,6 +85,10 @@ window.addEventListener("resize", () => {
     onWindowResize(threeDRenderer.camera, renderer);
     onWindowResize(twoDRenderer.camera, renderer);
 }, false);
+document.resetView = () => {
+    threeDRenderer.resetView();
+    twoDRenderer.resetView();
+};
 
 // Finally, animate the scene!
 animate(renderer, renderStates, stats);
