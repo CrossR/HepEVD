@@ -81,13 +81,17 @@ renderStates.forEach((state) => {
 // Hook up various global events.
 document.saveEvd = () => saveEvd(renderer);
 document.quitEvd = () => quitEvd();
-window.addEventListener("resize", () => {
+window.addEventListener(
+  "resize",
+  () => {
     onWindowResize(threeDRenderer.camera, renderer);
     onWindowResize(twoDRenderer.camera, renderer);
-}, false);
+  },
+  false,
+);
 document.resetView = () => {
-    threeDRenderer.resetView();
-    twoDRenderer.resetView();
+  threeDRenderer.resetView();
+  twoDRenderer.resetView();
 };
 
 // Finally, animate the scene!

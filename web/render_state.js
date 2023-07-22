@@ -134,7 +134,6 @@ export class RenderState {
    * classes and properties.
    */
   #updateHitArrays() {
-
     const newHits = new Set();
     const newMCHits = [];
     const newHitColours = [];
@@ -146,13 +145,15 @@ export class RenderState {
         !this.activeHitClasses.has(hit.class)
       )
         return;
-      Array.from(this.activeHitProps).reverse().forEach((property) => {
-        if (!this.hitProperties.get(hit).has(property)) return;
-        if (newHits.has(hit)) return;
+      Array.from(this.activeHitProps)
+        .reverse()
+        .forEach((property) => {
+          if (!this.hitProperties.get(hit).has(property)) return;
+          if (newHits.has(hit)) return;
 
-        newHits.add(hit);
-        newHitColours.push(this.hitProperties.get(hit).get(property));
-      });
+          newHits.add(hit);
+          newHitColours.push(this.hitProperties.get(hit).get(property));
+        });
     });
 
     // Then repeat for the MC hits, but skip the hit properties bit.
@@ -175,24 +176,23 @@ export class RenderState {
   //  - We need to update any UI around them.
   //  - Can then re-render the hits out.
   onHitPropertyChange(hitProperty) {
-
     // If the "None" button is clicked, short-circuit.
     // Clear everything out, re-render, stop.
     if (hitProperty === BUTTON_ID.None) {
-        this.activeHitProps.clear();
-        this.#updateHitArrays();
-        toggleButton(this.hitType, hitProperty);
-        this.toggleScene(this.hitType);
-        this.renderHits();
+      this.activeHitProps.clear();
+      this.#updateHitArrays();
+      toggleButton(this.hitType, hitProperty);
+      this.toggleScene(this.hitType);
+      this.renderHits();
 
-        return;
+      return;
     }
 
     // Similarly, if there was no actual hitProperty, i.e. this
     // is just a scene toggle, just swap the scene and finish.
     if (hitProperty === "") {
-        this.toggleScene(this.hitType);
-        return;
+      this.toggleScene(this.hitType);
+      return;
     }
 
     const buttonActive = isButtonActive(this.hitType, hitProperty);
@@ -244,9 +244,8 @@ export class RenderState {
 
   // Finally, a MC-hit based toggle, enabling or disabling as needed.
   onMCToggle() {
-
     // Toggle the visibility state.
-    this.mcHitGroup.visible = ! this.mcHitGroup.visible;
+    this.mcHitGroup.visible = !this.mcHitGroup.visible;
 
     // Now that the internal state is correct, correct the UI.
     toggleButton("classes_MC_toggle", this.hitType, false);
@@ -309,7 +308,7 @@ export class RenderState {
 
   // If this is currently active, reset the event display.
   resetView() {
-    if (! this.scene.visible) return;
+    if (!this.scene.visible) return;
 
     // Reset back to all hits...
     this.activeHits = this.hits;
@@ -322,7 +321,7 @@ export class RenderState {
     toggleButton(this.hitType, BUTTON_ID.All);
 
     this.activeHitClasses.forEach((hitClass) => {
-        toggleButton("classes", hitClass, false);
+      toggleButton("classes", hitClass, false);
     });
     this.activeHitClasses = new Set();
 

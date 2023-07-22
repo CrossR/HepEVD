@@ -71,7 +71,6 @@ export function populateClassToggle(className, hits, onClick = (_) => {}) {
 }
 
 export function enableMCToggle(hitType, mcHits, onClick) {
-
   const classDiv = document.getElementById(`classes_MC_${hitType}`);
 
   if (mcHits.length === 0) {

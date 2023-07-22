@@ -429,17 +429,19 @@ MCHits getHepEVDMCHits(const pandora::Algorithm &pAlgorithm, const pandora::Calo
     const pandora::MCParticleList *pMCParticleList(nullptr);
     try {
         PandoraContentApi::GetCurrentList(pAlgorithm, pMCParticleList);
-    } catch (pandora::StatusCodeException&) {
+    } catch (pandora::StatusCodeException &) {
         return mcHits;
     }
 
     LArMCParticleHelper::MCContributionMap mcToHitsMap;
-    std::function<bool(const pandora::MCParticle *const)> getAll = [](const pandora::MCParticle *const) { return true; };
+    std::function<bool(const pandora::MCParticle *const)> getAll = [](const pandora::MCParticle *const) {
+        return true;
+    };
     LArMCParticleHelper::SelectReconstructableMCParticles(
         pMCParticleList, pCaloHitList, LArMCParticleHelper::PrimaryParameters(), getAll, mcToHitsMap);
 
-
-    std::cout << "In: " << pCaloHitList->size() << "/" << pMCParticleList->size() << ", Out: " << mcToHitsMap.size() << std::endl;
+    std::cout << "In: " << pCaloHitList->size() << "/" << pMCParticleList->size() << ", Out: " << mcToHitsMap.size()
+              << std::endl;
 
     for (auto const &mcCaloHitListPair : mcToHitsMap) {
 
@@ -455,15 +457,15 @@ MCHits getHepEVDMCHits(const pandora::Algorithm &pAlgorithm, const pandora::Calo
             mcHit->setHitType(HitType::TWO_D);
 
             switch (caloHit->GetHitType()) {
-                case pandora::HitType::TPC_VIEW_U:
-                    mcHit->setHitClass(HitClass::TWO_D_U);
-                    break;
-                case pandora::HitType::TPC_VIEW_V:
-                    mcHit->setHitClass(HitClass::TWO_D_V);
-                    break;
-                case pandora::HitType::TPC_VIEW_W:
-                    mcHit->setHitClass(HitClass::TWO_D_W);
-                    break;
+            case pandora::HitType::TPC_VIEW_U:
+                mcHit->setHitClass(HitClass::TWO_D_U);
+                break;
+            case pandora::HitType::TPC_VIEW_V:
+                mcHit->setHitClass(HitClass::TWO_D_V);
+                break;
+            case pandora::HitType::TPC_VIEW_W:
+                mcHit->setHitClass(HitClass::TWO_D_W);
+                break;
             }
 
             mcHits.push_back(mcHit);
