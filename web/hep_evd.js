@@ -6,7 +6,7 @@ import * as THREE from "three";
 import Stats from "three/addons/libs/stats.module.js";
 
 import { RenderState } from "./render_state.js";
-import { animate } from "./rendering.js";
+import { animate, onWindowResize } from "./rendering.js";
 import { saveEvd, quitEvd } from "./ui.js";
 
 // Do some initial threejs setup...
@@ -78,9 +78,13 @@ renderStates.forEach((state) => {
   state.setupUI(defaultDraw);
 });
 
-// Hook up the save button.
+// Hook up various global events.
 document.saveEvd = () => saveEvd(renderer);
 document.quitEvd = () => quitEvd();
+window.addEventListener("resize", () => {
+    onWindowResize(threeDRenderer.camera, renderer);
+    onWindowResize(twoDRenderer.camera, renderer);
+}, false);
 
 // Finally, animate the scene!
 animate(renderer, renderStates, stats);

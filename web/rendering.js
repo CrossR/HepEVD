@@ -84,3 +84,16 @@ export function animate(renderer, states, stats) {
   });
   stats.update();
 }
+
+/**
+ * On resize, update the camera + renderer.
+ *
+ * @param {THREE.PerspectiveCamera} camera - The camera to adjust.
+ * @param {THREE.WebGLRenderer} renderer - The renderer to adjust.
+ */
+export function onWindowResize(camera, renderer) {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+
+  renderer.setSize(window.innerWidth, window.innerHeight);
+}
