@@ -64,7 +64,7 @@ export function populateClassToggle(className, hits, onClick = (_) => {}) {
 
   entries.forEach((entry) => {
     const newButton = document.createElement("button");
-    newButton.classList.add("btn", "btn-secondary", "m-1");
+    newButton.classList.add("btn", "btn-outline-info", "m-1");
     newButton.style.textTransform = "capitalize";
     newButton.innerText = entry;
     newButton.id = `classes_${entry}`;
@@ -83,7 +83,7 @@ export function enableMCToggle(hitType, mcHits, onClick) {
   }
 
   const newButton = document.createElement("button");
-  newButton.classList.add("btn", "btn-secondary", "m-1");
+  newButton.classList.add("btn", "btn-outline-info", "m-1", "nohover");
   newButton.innerText = "MC Hits";
   newButton.id = `classes_MC_toggle_${hitType}`;
   newButton.addEventListener("click", () => onClick());
