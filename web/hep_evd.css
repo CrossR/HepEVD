@@ -8,6 +8,14 @@ div {
   margin: 0;
 }
 
+.dropdown:hover>.dropdown-menu {
+  display: block;
+}
+
+.dropdown>.dropdown-toggle:active {
+    pointer-events: none;
+}
+
 .toggle_options {
   position: absolute;
   top: 10%;
