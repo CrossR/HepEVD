@@ -65,7 +65,7 @@ export function populateClassToggle(className, hits, onClick = (_) => {}) {
 
   entries.forEach((entry) => {
     const newButton = document.createElement("button");
-    newButton.classList.add("btn", "btn-outline-info", "m-1");
+    newButton.classList.add("btn", "btn-outline", "btn-accent", "m-1");
     newButton.style.textTransform = "capitalize";
     newButton.innerText = entry;
     newButton.id = `classes_${entry}`;
@@ -84,7 +84,7 @@ export function enableMCToggle(hitType, mcHits, onClick) {
   }
 
   const newButton = document.createElement("button");
-  newButton.classList.add("btn", "btn-outline-info", "m-1", "nohover");
+  newButton.classList.add("btn", "btn-outline", "btn-accent", "m-1", "nohover");
   newButton.innerText = "MC Hits";
   newButton.id = `classes_MC_toggle_${hitType}`;
   newButton.addEventListener("click", () => onClick());
@@ -108,13 +108,13 @@ export function toggleButton(className, ID, fixNoneButton = true) {
 
   if (button === null) return;
 
-  let isActive = button.classList.contains("active");
+  let isActive = button.classList.contains("btn-active");
 
   if (isActive) {
-    button.classList.remove("active");
+    button.classList.remove("btn-active");
     isActive = false;
   } else {
-    button.classList.add("active");
+    button.classList.add("btn-active");
     isActive = true;
   }
 
@@ -125,11 +125,11 @@ export function toggleButton(className, ID, fixNoneButton = true) {
 
     Array.from(dropDown.childNodes)
       .forEach((elem) => {
-        elem.classList.remove("active");
+        elem.childNodes[0].classList.remove("btn-active");
       });
   } else if (ID !== BUTTON_ID.None && isActive) {
     const noneButton = document.getElementById(`${className}_${BUTTON_ID.None}`);
-    noneButton.classList.remove("active");
+    noneButton.classList.remove("btn-active");
   }
 }
 
@@ -143,7 +143,7 @@ export function toggleButton(className, ID, fixNoneButton = true) {
  */
 export function isButtonActive(className, ID) {
   const button = document.getElementById(`${className}_${ID}`);
-  return button ? button.classList.contains("active") : false;
+  return button ? button.classList.contains("btn-active") : false;
 }
 
 /**
