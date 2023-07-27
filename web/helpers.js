@@ -72,27 +72,27 @@ export function getHitProperties(hits) {
 }
 
 /**
- * Returns a map of hit classes for each hit in the given array of hits.
+ * Returns a map of hit types for each hit in the given array of hits.
  *
- * @param {Array} hits - The array of hits to get classes for.
- * @returns {Map} A map of hit classes for each hit in the given array of hits.
+ * @param {Array} hits - The array of hits to get types for.
+ * @returns {Map} A map of hit types for each hit in the given array of hits.
  */
-export function getHitClasses(hits) {
-  const classFilterMap = new Map();
-  classFilterMap.set(BUTTON_ID.All, (_) => {
+export function getHitTypes(hits) {
+  const typeFilterMap = new Map();
+  typeFilterMap.set(BUTTON_ID.All, (_) => {
     return true;
   });
 
   hits.forEach((hit) => {
     if (Object.hasOwn(hit, "type") && hit.type !== "General") {
-      const currentHitClass = hit.type;
-      classFilterMap.set(hit.type, (hit) => {
-        return hit.type === currentHitClass;
+      const currentHitType = hit.type;
+      typeFilterMap.set(hit.type, (hit) => {
+        return hit.type === currentHitType;
       });
     }
   });
 
-  return classFilterMap;
+  return typeFilterMap;
 }
 
 /**

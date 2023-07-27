@@ -9,8 +9,8 @@
 #ifndef HEP_EVD_MARKER_H
 #define HEP_EVD_MARKER_H
 
-#include "utils.h"
 #include "hits.h"
+#include "utils.h"
 
 #include <array>
 #include <sstream>

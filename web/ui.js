@@ -52,8 +52,8 @@ export function populateDropdown(className, hitPropMap, onClick = (_) => {}) {
  * @param {Array} hits - An array of hit objects.
  * @param {function} onClick - The function to be called when a button is clicked.
  */
-export function populateClassToggle(className, hits, onClick = (_) => {}) {
-  const classDiv = document.getElementById(`classes_${className}`);
+export function populateTypeToggle(className, hits, onClick = (_) => {}) {
+  const classDiv = document.getElementById(`types_${className}`);
   const entries = new Set();
 
   hits.forEach((hit, _) => entries.add(hit.type));
@@ -68,7 +68,7 @@ export function populateClassToggle(className, hits, onClick = (_) => {}) {
     newButton.classList.add("btn", "btn-outline", "btn-accent", "m-1");
     newButton.style.textTransform = "capitalize";
     newButton.innerText = entry;
-    newButton.id = `classes_${entry}`;
+    newButton.id = `types_${entry}`;
     newButton.addEventListener("click", () => onClick(entry));
     classDiv.appendChild(newButton);
   });
@@ -77,7 +77,7 @@ export function populateClassToggle(className, hits, onClick = (_) => {}) {
 }
 
 export function enableMCToggle(hitType, mcHits, onClick) {
-  const classDiv = document.getElementById(`classes_MC_${hitType}`);
+  const classDiv = document.getElementById(`types_MC_${hitType}`);
 
   if (mcHits.length === 0) {
     return;
@@ -86,7 +86,7 @@ export function enableMCToggle(hitType, mcHits, onClick) {
   const newButton = document.createElement("button");
   newButton.classList.add("btn", "btn-outline", "btn-accent", "m-1", "nohover");
   newButton.innerText = "MC Hits";
-  newButton.id = `classes_MC_toggle_${hitType}`;
+  newButton.id = `types_MC_toggle_${hitType}`;
   newButton.addEventListener("click", () => onClick());
   classDiv.appendChild(newButton);
 

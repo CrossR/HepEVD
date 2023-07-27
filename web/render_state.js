@@ -7,13 +7,13 @@ import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 
 import { fitSceneInCamera, setupControls } from "./camera_and_controls.js";
 import { BUTTON_ID, HIT_CONFIG } from "./constants.js";
-import { getHitClasses, getHitProperties, getMCColouring } from "./helpers.js";
+import { getHitTypes, getHitProperties, getMCColouring } from "./helpers.js";
 import { drawHits } from "./hits.js";
 import { drawBox } from "./rendering.js";
 import {
   enableMCToggle,
   isButtonActive,
-  populateClassToggle,
+  populateTypeToggle as populateTypeToggle,
   populateDropdown,
   toggleButton,
   updateUI,
@@ -50,7 +50,7 @@ export class RenderState {
 
     // The generated property lists...
     this.hitProperties = getHitProperties(this.hits);
-    this.hitClasses = getHitClasses(this.hits);
+    this.hitTypes = getHitTypes(this.hits);
 
     // Finally, setup the dynamic bits, the state that will change.
     this.uiSetup = false;
@@ -60,7 +60,7 @@ export class RenderState {
     this.activeHitColours = [];
 
     this.activeHitProps = new Set([BUTTON_ID.All]);
-    this.activeHitClasses = new Set();
+    this.activeHitTypes = new Set();
 
     this.otherRenderer = undefined;
   }
@@ -98,7 +98,7 @@ export class RenderState {
   }
 
   /**
-   * Renders the hits for the current state, based on the active hit classes and properties.
+   * Renders the hits for the current state, based on the active hit types and properties.
    * Clears the hit group and then draws the hits with the active hit colours.
    */
   renderHits() {
@@ -113,7 +113,7 @@ export class RenderState {
   }
 
   /**
-   * Renders the hits for the current state, based on the active hit classes and properties.
+   * Renders the MC hits for the current state, based on the active hit types and properties.
    * Clears the hit group and then draws the hits with the active hit colours.
    */
   renderMCHits() {
@@ -131,7 +131,7 @@ export class RenderState {
 
   /**
    * Updates the active hits and hit colours based on the current active hit
-   * classes and properties.
+   * type and properties.
    */
   #updateHitArrays() {
     const newHits = new Set();
@@ -141,8 +141,8 @@ export class RenderState {
     // First, do the actual hits...
     this.hits.forEach((hit) => {
       if (
-        this.activeHitClasses.size > 0 &&
-        !this.activeHitClasses.has(hit.type)
+        this.activeHitTypes.size > 0 &&
+        !this.activeHitTypes.has(hit.type)
       )
         return;
       Array.from(this.activeHitProps)
@@ -159,8 +159,8 @@ export class RenderState {
     // Then repeat for the MC hits, but skip the hit properties bit.
     this.mcHits.forEach((hit) => {
       if (
-        this.activeHitClasses.size > 0 &&
-        !this.activeHitClasses.has(hit.type)
+        this.activeHitTypes.size > 0 &&
+        !this.activeHitTypes.has(hit.type)
       )
         return;
       newMCHits.push(hit);
@@ -211,20 +211,20 @@ export class RenderState {
     this.renderHits();
   }
 
-  // Similar to the property change, update the hit class list.
-  onHitClassChange(hitClass) {
+  // Similar to the property change, update the hit type list.
+  onHitTypeChange(hitType) {
     // Add or remove the toggled class as needed...
-    if (this.activeHitClasses.has(hitClass)) {
-      this.activeHitClasses.delete(hitClass);
+    if (this.activeHitTypes.has(hitType)) {
+      this.activeHitTypes.delete(hitType);
     } else {
-      this.activeHitClasses.add(hitClass);
+      this.activeHitTypes.add(hitType);
     }
 
     // Fix the active hits for this change...
     this.#updateHitArrays();
 
     // Now that the internal state is correct, correct the UI.
-    toggleButton("classes", hitClass, false);
+    toggleButton("types", hitType, false);
     this.toggleScene(this.hitType);
 
     // Finally, render the new hits!
@@ -237,7 +237,7 @@ export class RenderState {
     this.mcHitGroup.visible = !this.mcHitGroup.visible;
 
     // Now that the internal state is correct, correct the UI.
-    toggleButton("classes_MC_toggle", this.hitType, false);
+    toggleButton("types_MC_toggle", this.hitType, false);
 
     // Render out the new hits.
     this.renderMCHits();
@@ -260,8 +260,8 @@ export class RenderState {
     populateDropdown(this.hitType, this.hitProperties, (prop) =>
       this.onHitPropertyChange(prop),
     );
-    populateClassToggle(this.hitType, this.hits, (hitClass) =>
-      this.onHitClassChange(hitClass),
+    populateTypeToggle(this.hitType, this.hits, (hitType) =>
+      this.onHitTypeChange(hitType),
     );
     enableMCToggle(this.hitType, this.mcHits, () => this.onMCToggle());
 
@@ -309,10 +309,10 @@ export class RenderState {
     toggleButton(this.hitType, BUTTON_ID.None);
     toggleButton(this.hitType, BUTTON_ID.All);
 
-    this.activeHitClasses.forEach((hitClass) => {
-      toggleButton("classes", hitClass, false);
+    this.activeHitTypes.forEach((hitType) => {
+      toggleButton("types", hitType, false);
     });
-    this.activeHitClasses = new Set();
+    this.activeHitTypes = new Set();
 
     // Re-render with the default hit array.
     this.renderGeometry();

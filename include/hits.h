@@ -5,8 +5,8 @@
 // That is, a position but also information on the sort of hit,
 // and associated energy and timing information.
 //
-// The type of a hit can vary: 2D or 3D.
-// Then, a given type of hit can have sub-classes: A specific 2D view etc.
+// The dimension of a hit can vary: 2D or 3D.
+// Then, a given dimension of hit can have sub-classes: A specific 2D view etc.
 
 #ifndef HEP_EVD_HITS_H
 #define HEP_EVD_HITS_H
