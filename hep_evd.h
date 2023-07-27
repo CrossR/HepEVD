@@ -8,14 +8,6 @@
 #ifndef HEP_EVD_H
 #define HEP_EVD_H
 
-#include <iostream>
-#include <optional>
-#include <sstream>
-#include <stdexcept>
-#include <string>
-
-#include "httplib.h"
-
 // Include everything...
 #include "include/config.h"
 #include "include/geometry.h"

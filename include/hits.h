@@ -13,6 +13,11 @@
 
 #include "utils.h"
 
+#include <map>
+#include <ostream>
+#include <string>
+#include <vector>
+
 namespace HepEVD {
 
 enum HitType { THREE_D, TWO_D };
@@ -27,7 +32,8 @@ class Hit {
     void setHitClass(const HitClass &hitClass) { this->hitClass = hitClass; }
     void setLabel(const std::string &str) { this->label = str; }
 
-    // TODO: This may want to be extensible. I.e. string -> double + other properties (CATEGORIC, NUMERIC) etc;
+    // TODO: This may want to be extensible. I.e. string -> double + other
+    // properties (CATEGORIC, NUMERIC) etc;
     void addProperties(std::map<std::string, double> props) {
         for (const auto &propValuePair : props)
             this->properties.insert({propValuePair});
@@ -37,7 +43,7 @@ class Hit {
 
     friend std::ostream &operator<<(std::ostream &os, Hit const &hit) {
 
-        auto hitPosition(hit.position);
+        Position hitPosition(hit.position);
 
         // If this is a 2D hit, its easier in the EVD to consider XY, not XZ.
         if (hit.hitType == TWO_D) {

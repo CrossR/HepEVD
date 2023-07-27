@@ -9,6 +9,11 @@
 
 #include "utils.h"
 
+#include <map>
+#include <sstream>
+#include <string>
+#include <vector>
+
 namespace HepEVD {
 
 class GeoVolume {

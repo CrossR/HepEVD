@@ -6,6 +6,9 @@
 #ifndef HEP_EVD_POSITION_H
 #define HEP_EVD_POSITION_H
 
+#include <array>
+#include <ostream>
+
 namespace HepEVD {
 
 // Store a 3D position, and include a helper for JSON production.

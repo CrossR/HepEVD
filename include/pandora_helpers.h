@@ -7,6 +7,9 @@
 #ifndef HEP_EVD_PANDORA_HELPERS_H
 #define HEP_EVD_PANDORA_HELPERS_H
 
+#include <map>
+#include <string>
+
 // SDK Includes
 #include "Geometry/LArTPC.h"
 #include "Managers/GeometryManager.h"

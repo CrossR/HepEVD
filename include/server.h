@@ -3,13 +3,17 @@
 //
 // Once constructed and given a detector geometry and hits,
 // running the server will spin up the event display on
-// localhost::CPPHEP_EVD_PORT.
+// localhost::HEP_EVD_PORT.
 
 #ifndef HEP_EVD_SERVER_H
 #define HEP_EVD_SERVER_H
 
+#include "config.h"
 #include "geometry.h"
 #include "hits.h"
+#include "marker.h"
+
+#include "extern/httplib.h"
 
 namespace HepEVD {
 
