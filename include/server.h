@@ -113,8 +113,8 @@ inline void HepEVDServer::startServer() {
 
     // Finally, mount the www folder, which contains the actual HepEVD JS code.
     const std::string headerFilePath(__FILE__);
-    const std::string rootFolder(headerFilePath.substr(0, headerFilePath.rfind("/")));
-    this->server.set_mount_point("/", rootFolder + "/web/");
+    const std::string includeFolder(headerFilePath.substr(0, headerFilePath.rfind("/")));
+    this->server.set_mount_point("/", includeFolder + "/../web/");
 
     std::cout << "Starting a server on http://localhost:" << HEP_EVD_PORT << "..." << std::endl;
     this->server.listen("localhost", HEP_EVD_PORT);
