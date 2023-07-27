@@ -214,7 +214,7 @@ export function quitEvd() {
       element.style.opacity = String(value);
 
       if (window.getComputedStyle(element, null).display === "none")
-        element.style.display = "block";
+        element.style.display = "grid";
 
       if (element.style.opacity !== "1") {
         setTimeout(() => {
@@ -227,7 +227,7 @@ export function quitEvd() {
   };
 
   const quittingElem = document.getElementById("quit_message");
-  fadeInThenOut(quittingElem, 500, 750);
+  fadeInThenOut(quittingElem, 250, 550);
 
   // Actually perform the quit, now that the timers are running.
   fetch("quit");
