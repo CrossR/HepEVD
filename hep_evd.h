@@ -12,6 +12,7 @@
 #include "include/config.h"
 #include "include/geometry.h"
 #include "include/hits.h"
+#include "include/marker.h"
 #include "include/server.h"
 #include "include/utils.h"
 

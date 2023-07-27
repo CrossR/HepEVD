@@ -49,6 +49,20 @@ class HepEVDServer {
         return true;
     }
 
+    bool addMarkers(const Markers &inputMarkers) {
+
+        if (this->markers.size() == 0) {
+            this->markers = inputMarkers;
+            return true;
+        }
+
+        Markers newMarkers = this->markers;
+        newMarkers.insert(newMarkers.end(), inputMarkers.begin(), inputMarkers.end());
+        this->markers = newMarkers;
+
+        return true;
+    }
+
     bool addTruth(const MCHits &inputMC, const std::string truth = "") {
         this->mcHits = inputMC;
         this->mcTruth = truth;
@@ -64,6 +78,7 @@ class HepEVDServer {
     DetectorGeometry geometry;
     Hits hits;
     MCHits mcHits;
+    Markers markers;
     std::string mcTruth;
 };
 
@@ -107,6 +122,9 @@ inline void HepEVDServer::startServer() {
     });
     this->server.Get("/mcHits", [&](const Request &, Response &res) {
         res.set_content(this->jsonify<MCHit *>(this->mcHits), "application/json");
+    });
+    this->server.Get("/markers", [&](const Request &, Response &res) {
+        res.set_content(this->jsonify<Marker *>(this->markers), "application/json");
     });
     this->server.Get("/geometry", [&](const Request &, Response &res) {
         res.set_content(this->jsonify<DetectorGeometry>(this->geometry), "application/json");

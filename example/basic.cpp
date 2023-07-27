@@ -90,6 +90,9 @@ int main(void) {
         DetectorGeometry(vols), hits, mcHits
     );
 
+    Ring ring = new Ring({0.0, 0.0, 0.0}, 1.0, 1.5);
+    server.addMarkers({&ring});
+
     server.startServer();
     return 0;
 }

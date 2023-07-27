@@ -11,6 +11,7 @@
 
 #include "utils.h"
 
+#include <array>
 #include <sstream>
 #include <string>
 
@@ -24,8 +25,8 @@ class Marker {
 
     friend std::ostream &operator<<(std::ostream &os, Marker const &marker) {
         os << "{"
-           << "\"label\": " << marker.label << ","
-           << "\"colour\": " << marker.colour << "," << marker.getJsonString() << "}";
+           << "\"label\": \"" << marker.label << "\","
+           << "\"colour\": \"" << marker.colour << "\"," << marker.getJsonString() << "}";
         return os;
     }
 
@@ -39,7 +40,7 @@ class Marker {
 using Markers = std::vector<Marker *>;
 
 // A point is just a single 3D location.
-class Point {
+class Point : public Marker {
   public:
     Point(const Position &pos) : position(pos) {}
 
@@ -54,7 +55,7 @@ class Point {
 };
 
 // A line is a 3D line between two 3D points.
-class Line {
+class Line : public Marker {
   public:
     Line(const Position &start, const Position &end) : start(start), end(end) {}
 
@@ -72,9 +73,11 @@ class Line {
 };
 
 // A ring is represented by centre point, and then an inner and outer radius.
-class Ring {
+class Ring : public Marker {
   public:
-    Ring(const Position &center, const float inner, const float outer) : center(center), inner(inner), outer(outer) {}
+    Ring(const Position &center, const double inner, const double outer) : center(center), inner(inner), outer(outer) {}
+    Ring(const std::array<double, 3> &center, const double inner, const double outer)
+        : center(center), inner(inner), outer(outer) {}
 
     std::string getJsonString() const {
         std::stringstream os;
@@ -86,8 +89,8 @@ class Ring {
 
   private:
     Position center;
-    float inner;
-    float outer;
+    double inner;
+    double outer;
 };
 
 }; // namespace HepEVD
