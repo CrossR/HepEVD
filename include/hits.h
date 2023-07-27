@@ -20,16 +20,16 @@
 
 namespace HepEVD {
 
-enum HitType { THREE_D, TWO_D };
-enum HitClass { GENERAL, TWO_D_U, TWO_D_V, TWO_D_W };
+enum HitDimension { THREE_D, TWO_D };
+enum HitType { GENERAL, TWO_D_U, TWO_D_V, TWO_D_W };
 
 class Hit {
   public:
     Hit(const Position &pos, double e = 0, double t = 0) : position(pos), time(t), energy(e) {}
     Hit(const std::array<double, 3> &pos, double e = 0, double t = 0) : position(pos), time(t), energy(e) {}
 
-    void setHitType(const HitType &hitType) { this->hitType = hitType; }
-    void setHitClass(const HitClass &hitClass) { this->hitClass = hitClass; }
+    void setDim(const HitDimension &dim) { this->dim = dim; }
+    void setType(const HitType &type) { this->type = type; }
     void setLabel(const std::string &str) { this->label = str; }
 
     // TODO: This may want to be extensible. I.e. string -> double + other
@@ -46,14 +46,14 @@ class Hit {
         Position hitPosition(hit.position);
 
         // If this is a 2D hit, its easier in the EVD to consider XY, not XZ.
-        if (hit.hitType == TWO_D) {
+        if (hit.dim == TWO_D) {
             hitPosition.y = hit.position.z;
             hitPosition.z = 0;
         }
 
         os << "{"
-           << "\"type\": \"" << Hit::hitTypeToString(hit.hitType) << "\","
-           << "\"class\": \"" << Hit::hitClassToString(hit.hitClass) << "\"," << hitPosition << ","
+           << "\"dim\": \"" << Hit::hitDimToString(hit.dim) << "\","
+           << "\"type\": \"" << Hit::hitTypeToString(hit.type) << "\"," << hitPosition << ","
            << "\"time\": " << hit.time << ","
            << "\"energy\": " << hit.energy;
 
@@ -73,7 +73,7 @@ class Hit {
         return os;
     }
 
-    static std::string hitTypeToString(const HitType &hit) {
+    static std::string hitDimToString(const HitDimension &hit) {
         switch (hit) {
         case THREE_D:
             return "3D";
@@ -83,7 +83,7 @@ class Hit {
         throw std::invalid_argument("Unknown hit type!");
     }
 
-    static std::string hitClassToString(const HitClass &hit) {
+    static std::string hitTypeToString(const HitType &hit) {
         switch (hit) {
         case GENERAL:
             return "Hit";
@@ -100,8 +100,8 @@ class Hit {
   protected:
     Position position;
     double time, energy;
-    HitType hitType = HitType::THREE_D;
-    HitClass hitClass = HitClass::GENERAL;
+    HitDimension dim = HitDimension::THREE_D;
+    HitType type = HitType::GENERAL;
     std::string label;
     std::map<std::string, double> properties;
 };

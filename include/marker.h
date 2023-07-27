@@ -10,6 +10,7 @@
 #define HEP_EVD_MARKER_H
 
 #include "utils.h"
+#include "hits.h"
 
 #include <array>
 #include <sstream>
@@ -22,6 +23,8 @@ class Marker {
   public:
     void setColour(const std::string colour) { this->colour = colour; }
     void setLabel(const std::string label) { this->label = label; }
+    void setDim(const HitDimension &dim) { this->dim = dim; }
+    void setType(const HitType &type) { this->type = type; }
 
     friend std::ostream &operator<<(std::ostream &os, Marker const &marker) {
         os << "{"
@@ -33,6 +36,8 @@ class Marker {
     virtual std::string getJsonString() const = 0;
 
   protected:
+    HitDimension dim = HitDimension::THREE_D;
+    HitType type = HitType::GENERAL;
     std::string colour;
     std::string label;
 };

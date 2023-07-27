@@ -84,10 +84,10 @@ export function getHitClasses(hits) {
   });
 
   hits.forEach((hit) => {
-    if (Object.hasOwn(hit, "class") && hit.class !== "General") {
-      const currentHitClass = hit.class;
-      classFilterMap.set(hit.class, (hit) => {
-        return hit.class === currentHitClass;
+    if (Object.hasOwn(hit, "type") && hit.type !== "General") {
+      const currentHitClass = hit.type;
+      classFilterMap.set(hit.type, (hit) => {
+        return hit.type === currentHitClass;
       });
     }
   });

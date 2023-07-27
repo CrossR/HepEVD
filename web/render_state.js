@@ -142,7 +142,7 @@ export class RenderState {
     this.hits.forEach((hit) => {
       if (
         this.activeHitClasses.size > 0 &&
-        !this.activeHitClasses.has(hit.class)
+        !this.activeHitClasses.has(hit.type)
       )
         return;
       Array.from(this.activeHitProps)
@@ -160,7 +160,7 @@ export class RenderState {
     this.mcHits.forEach((hit) => {
       if (
         this.activeHitClasses.size > 0 &&
-        !this.activeHitClasses.has(hit.class)
+        !this.activeHitClasses.has(hit.type)
       )
         return;
       newMCHits.push(hit);

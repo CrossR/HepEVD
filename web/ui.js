@@ -56,7 +56,7 @@ export function populateClassToggle(className, hits, onClick = (_) => {}) {
   const classDiv = document.getElementById(`classes_${className}`);
   const entries = new Set();
 
-  hits.forEach((hit, _) => entries.add(hit.class));
+  hits.forEach((hit, _) => entries.add(hit.type));
 
   // If there is no entries, or only the default "Hit" class, don't bother.
   if (entries.size <= 1) {

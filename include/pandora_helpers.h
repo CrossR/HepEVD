@@ -42,6 +42,19 @@ DetectorGeometry getHepEVDGeometry(const pandora::GeometryManager *manager) {
     return DetectorGeometry(volumes);
 }
 
+HitType getHepEVDHitType(pandora::HitType pandoraHitType) {
+    switch (pandoraHitType) {
+    case pandora::HitType::TPC_VIEW_U:
+        return HitType::TWO_D_U;
+    case pandora::HitType::TPC_VIEW_V:
+        return HitType::TWO_D_V;
+    case pandora::HitType::TPC_VIEW_W:
+        return HitType::TWO_D_W;
+    default:
+        return HitType::GENERAL;
+    }
+}
+
 Hits getHepEVD2DHits(const pandora::CaloHitList *caloHits, HepHitMap &pandoraToCaloMap, std::string label = "") {
 
     Hits hits;
@@ -54,19 +67,8 @@ Hits getHepEVD2DHits(const pandora::CaloHitList *caloHits, HepHitMap &pandoraToC
         if (label != "")
             hit->setLabel(label);
 
-        hit->setHitType(HitType::TWO_D);
-
-        switch (pCaloHit->GetHitType()) {
-        case pandora::HitType::TPC_VIEW_U:
-            hit->setHitClass(HitClass::TWO_D_U);
-            break;
-        case pandora::HitType::TPC_VIEW_V:
-            hit->setHitClass(HitClass::TWO_D_V);
-            break;
-        case pandora::HitType::TPC_VIEW_W:
-            hit->setHitClass(HitClass::TWO_D_W);
-            break;
-        }
+        hit->setDim(HitDimension::TWO_D);
+        hit->setType(getHepEVDHitType(pCaloHit->GetHitType()));
 
         hits.push_back(hit);
         pandoraToCaloMap.insert({pCaloHit, hit});
@@ -107,19 +109,8 @@ MCHits getHepEVDMCHits(const pandora::Algorithm &pAlgorithm, const pandora::Calo
             MCHit *mcHit = new MCHit({pos.GetX(), pos.GetY(), pos.GetZ()}, mcParticle->GetParticleId(),
                                      caloHit->GetMipEquivalentEnergy(), caloHit->GetTime());
 
-            mcHit->setHitType(HitType::TWO_D);
-
-            switch (caloHit->GetHitType()) {
-            case pandora::HitType::TPC_VIEW_U:
-                mcHit->setHitClass(HitClass::TWO_D_U);
-                break;
-            case pandora::HitType::TPC_VIEW_V:
-                mcHit->setHitClass(HitClass::TWO_D_V);
-                break;
-            case pandora::HitType::TPC_VIEW_W:
-                mcHit->setHitClass(HitClass::TWO_D_W);
-                break;
-            }
+            mcHit->setDim(HitDimension::TWO_D);
+            mcHit->setType(getHepEVDHitType(pCaloHit->GetHitType()));
 
             mcHits.push_back(mcHit);
         }

@@ -66,7 +66,7 @@ int main(void) {
     // Repeat for the 2D views
     disX = std::uniform_real_distribution<float>(-350, 350);
     disZ = std::uniform_real_distribution<float>(0, 1300);
-    std::array<HitClass, 3> views({TWO_D_U, TWO_D_V, TWO_D_W});
+    std::array<HitType, 3> views({TWO_D_U, TWO_D_V, TWO_D_W});
 
     for (unsigned int i = 0; i < 3; ++i) {
         for (unsigned int j = 0; j < 5000; ++j) {
@@ -75,13 +75,13 @@ int main(void) {
             const double e = x + z;
 
             Hit* hit = new Hit({x, 0.f, z}, e);
-            hit->setHitType(TWO_D);
-            hit->setHitClass(views[i]);
+            hit->setDim(TWO_D);
+            hit->setType(views[i]);
             hits.push_back(hit);
 
             MCHit* mcHit = new MCHit({disX(gen), 0.f, disZ(gen)}, pdgCodes[disPdg(gen)]);
-            mcHit->setHitType(TWO_D);
-            mcHit->setHitClass(views[i]);
+            mcHit->setDim(TWO_D);
+            mcHit->setType(views[i]);
             mcHits.push_back(mcHit);
         }
     }
@@ -90,8 +90,8 @@ int main(void) {
         DetectorGeometry(vols), hits, mcHits
     );
 
-    Ring ring = new Ring({0.0, 0.0, 0.0}, 1.0, 1.5);
-    server.addMarkers({&ring});
+    Ring* ring = new Ring({0.0, 0.0, 0.0}, 1.0, 1.5);
+    server.addMarkers({ring});
 
     server.startServer();
     return 0;

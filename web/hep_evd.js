@@ -3,6 +3,7 @@
 //
 
 import * as THREE from "three";
+import * as BufferGeometryUtils from 'three/addons/utils/BufferGeometryUtils.js';
 import Stats from "three/addons/libs/stats.module.js";
 
 import { RenderState } from "./render_state.js";
@@ -49,16 +50,16 @@ const threeDRenderer = new RenderState(
   "3D",
   threeDCamera,
   renderer,
-  hits.filter((hit) => hit.type === "3D"),
-  mcHits.filter((hit) => hit.type === "3D"),
+  hits.filter((hit) => hit.dim === "3D"),
+  mcHits.filter((hit) => hit.dim === "3D"),
   detectorGeometry,
 );
 const twoDRenderer = new RenderState(
   "2D",
   twoDCamera,
   renderer,
-  hits.filter((hit) => hit.type === "2D"),
-  mcHits.filter((hit) => hit.type === "2D"),
+  hits.filter((hit) => hit.dim === "2D"),
+  mcHits.filter((hit) => hit.dim === "2D"),
   detectorGeometry,
 );
 threeDRenderer.otherRenderer = twoDRenderer;
@@ -67,6 +68,19 @@ const renderStates = new Map([
   ["3D", threeDRenderer],
   ["2D", twoDRenderer],
 ]);
+
+// const markers = await fetch("markers").then((response) => response.json());
+// const geometries = [];
+// markers.forEach((marker) => {
+//     if (marker.inner === 0) return;
+//     const ringGeo = new THREE.RingGeometry(marker.inner, marker.outer, 32);
+//     ringGeo.translate(marker.x, marker.z, 0);
+//     geometries.push(ringGeo);
+// });
+// const mergedGeo = BufferGeometryUtils.mergeGeometries(geometries);
+// const ringMaterial = new THREE.MeshBasicMaterial( {transparent: true, opacity: 0.01, polygonOffset: true, polygonOffsetFactor: 10} );
+// const mesh = new THREE.Mesh(mergedGeo, ringMaterial);
+// twoDRenderer.scene.add(mesh);
 
 // Prefer drawing 3D hits, but draw 2D if only option.
 const defaultDraw = threeDRenderer.hitSize != 0 ? "3D" : "2D";
@@ -95,3 +109,4 @@ document.resetView = () => {
 
 // Finally, animate the scene!
 animate(renderer, renderStates, stats);
+
