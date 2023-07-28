@@ -69,19 +69,6 @@ const renderStates = new Map([
   ["2D", twoDRenderer],
 ]);
 
-// const markers = await fetch("markers").then((response) => response.json());
-// const geometries = [];
-// markers.forEach((marker) => {
-//     if (marker.inner === 0) return;
-//     const ringGeo = new THREE.RingGeometry(marker.inner, marker.outer, 32);
-//     ringGeo.translate(marker.x, marker.z, 0);
-//     geometries.push(ringGeo);
-// });
-// const mergedGeo = BufferGeometryUtils.mergeGeometries(geometries);
-// const ringMaterial = new THREE.MeshBasicMaterial( {transparent: true, opacity: 0.01, polygonOffset: true, polygonOffsetFactor: 10} );
-// const mesh = new THREE.Mesh(mergedGeo, ringMaterial);
-// twoDRenderer.scene.add(mesh);
-
 // Prefer drawing 3D hits, but draw 2D if only option.
 const defaultDraw = threeDRenderer.hitSize != 0 ? "3D" : "2D";
 
@@ -106,6 +93,33 @@ document.resetView = () => {
   threeDRenderer.resetView();
   twoDRenderer.resetView();
 };
+
+const markers = await fetch("markers").then((response) => response.json());
+const geometries = [];
+markers.filter((marker) => marker.type === "V View")
+    .forEach((marker) => {
+    if (marker.inner === 0) return;
+    const ringGeo = new THREE.RingGeometry(marker.inner, marker.outer, 32);
+    ringGeo.translate(marker.x, marker.z, 0);
+    geometries.push(ringGeo);
+});
+const mergedGeo = BufferGeometryUtils.mergeGeometries(geometries);
+const ringMaterial = new THREE.MeshBasicMaterial( { transparent: true, opacity: 0.01 } );
+// const ringMaterial = new THREE.MeshBasicMaterial();
+ringMaterial.blending = THREE.CustomBlending;
+
+ringMaterial.blendEquation = THREE.AddEquation;
+ringMaterial.blendSrc = THREE.SrcAlphaFactor;
+ringMaterial.blendDst = THREE.OneMinusSrcAlphaFactor;
+
+// ringMaterial.blendEquationAlpha = THREE.AddEquation;
+ringMaterial.blendSrcAlpha = THREE.OneFactor;
+// ringMaterial.blendDstAlpha = THREE.ZeroFactor;
+
+const mesh = new THREE.Mesh(mergedGeo, ringMaterial);
+mesh.matrixAutoUpdate = false;
+mesh.matrixWorldAutoUpdate = false;
+twoDRenderer.scene.add(mesh);
 
 // Finally, animate the scene!
 animate(renderer, renderStates, stats);

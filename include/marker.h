@@ -28,6 +28,8 @@ class Marker {
 
     friend std::ostream &operator<<(std::ostream &os, Marker const &marker) {
         os << "{"
+           << "\"dim\": \"" << Hit::hitDimToString(marker.dim) << "\","
+           << "\"type\": \"" << Hit::hitTypeToString(marker.type) << "\","
            << "\"label\": \"" << marker.label << "\","
            << "\"colour\": \"" << marker.colour << "\"," << marker.getJsonString() << "}";
         return os;
@@ -51,7 +53,7 @@ class Point : public Marker {
 
     std::string getJsonString() const {
         std::stringstream os;
-        os << "\"type\": \"point\"," << this->position;
+        os << "\"marker\": \"point\"," << this->position;
         return os.str();
     }
 
@@ -66,7 +68,7 @@ class Line : public Marker {
 
     std::string getJsonString() const {
         std::stringstream os;
-        os << "\"type\": \"line\","
+        os << "\"marker\": \"line\","
            << "\"start\": {" << this->start << "}, "
            << "\"end\": {" << this->end << "}";
         return os.str();
@@ -86,7 +88,7 @@ class Ring : public Marker {
 
     std::string getJsonString() const {
         std::stringstream os;
-        os << "\"type\": \"ring\"," << this->center << ", "
+        os << "\"marker\": \"ring\"," << this->center << ", "
            << "\"inner\": " << this->inner << ","
            << "\"outer\": " << this->outer;
         return os.str();

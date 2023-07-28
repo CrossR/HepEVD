@@ -95,6 +95,9 @@ export class RenderState {
     boxVolumes.forEach((box) =>
       drawBox(this.hitType, this.detGeoGroup, this.hits, box),
     );
+
+    this.detGeoGroup.matrixAutoUpdate = false;
+    this.detGeoGroup.matrixWorldAutoUpdate = false;
   }
 
   /**
@@ -110,6 +113,9 @@ export class RenderState {
       this.activeHitColours,
       HIT_CONFIG[this.hitType],
     );
+
+    this.hitGroup.matrixAutoUpdate = false;
+    this.hitGroup.matrixWorldAutoUpdate = false;
   }
 
   /**
@@ -127,6 +133,9 @@ export class RenderState {
       mcColours,
       HIT_CONFIG[this.hitType],
     );
+
+    this.mcHitGroup.matrixAutoUpdate = false;
+    this.mcHitGroup.matrixWorldAutoUpdate = false;
   }
 
   /**

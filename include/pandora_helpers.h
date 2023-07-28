@@ -110,7 +110,7 @@ MCHits getHepEVDMCHits(const pandora::Algorithm &pAlgorithm, const pandora::Calo
                                      caloHit->GetMipEquivalentEnergy(), caloHit->GetTime());
 
             mcHit->setDim(HitDimension::TWO_D);
-            mcHit->setType(getHepEVDHitType(pCaloHit->GetHitType()));
+            mcHit->setType(getHepEVDHitType(caloHit->GetHitType()));
 
             mcHits.push_back(mcHit);
         }

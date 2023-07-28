@@ -50,6 +50,8 @@ as possible.
 
 ## Future Work
 
+ - Can everything inherit from a base class (Position, Dimension, Type)?
+
  - Start populating and passing over the other menu entries (vertices, other markers).
 
  - More helper functions.
