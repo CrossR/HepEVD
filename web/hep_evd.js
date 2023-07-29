@@ -110,8 +110,6 @@ const theta = (endAngle - startAngle) / segments;
 let ringNumber = 0;
 
 import { Lut } from "three/addons/math/Lut.js";
-const lut = new Lut("blackbody", 64);
-const minColour = lut.getColor(0);
 
 markers
   .filter((marker) => marker.type === "V View")
@@ -142,7 +140,7 @@ markers
         // First, store the new vertex.
         const index = vertices.length / 3;
         vertices.push(x, z, ringNumber);
-        colors.push(minColour.r, minColour.g, minColour.b, 0.2);
+        colors.push(1, 0, 0, 0.01);
 
         // Now, update the map.
         // Round to nearest two, to avoid floating point issues.
@@ -185,16 +183,13 @@ console.log(minScore, maxScore);
 vertexMap3D.forEach((indices, key) => {
   const score = indices.length;
 
-  const color = lut.getColor((score - minScore) / (maxScore - minScore));
+  // const color = lut.getColor((score - minScore) / (maxScore - minScore));
 
   // Now we know the colour, update the vertex with the lowest z value.
   const index = indices.forEach((index) => {
     [0, 1, 2].forEach((offset) => {
-      colors[(index + offset) * 4 + 0] = color.r;
-      colors[(index + offset) * 4 + 1] = color.g;
-      colors[(index + offset) * 4 + 2] = color.b;
       colors[(index + offset) * 4 + 3] =
-        0.2 + (score - minScore) / (maxScore - minScore);
+        0.05 + (score - minScore) / (maxScore - minScore);
     });
   });
 });
