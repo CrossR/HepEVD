@@ -3,7 +3,7 @@
 //
 
 import * as THREE from "three";
-import * as BufferGeometryUtils from 'three/addons/utils/BufferGeometryUtils.js';
+import * as BufferGeometryUtils from "three/addons/utils/BufferGeometryUtils.js";
 import Stats from "three/addons/libs/stats.module.js";
 
 import { RenderState } from "./render_state.js";
@@ -15,7 +15,7 @@ const threeDCamera = new THREE.PerspectiveCamera(
   50,
   window.innerWidth / window.innerHeight,
   0.1,
-  1e6,
+  1e6
 );
 const twoDCamera = new THREE.OrthographicCamera(
   window.innerWidth / -2,
@@ -23,7 +23,7 @@ const twoDCamera = new THREE.OrthographicCamera(
   window.innerHeight / 2,
   window.innerHeight / -2,
   -1,
-  1e6,
+  1e6
 );
 const renderer = new THREE.WebGLRenderer({
   alpha: true,
@@ -40,7 +40,7 @@ document.body.appendChild(stats.dom);
 
 // Pull in the basic data from the API...
 const detectorGeometry = await fetch("geometry").then((response) =>
-  response.json(),
+  response.json()
 );
 const hits = await fetch("hits").then((response) => response.json());
 const mcHits = await fetch("mcHits").then((response) => response.json());
@@ -52,7 +52,7 @@ const threeDRenderer = new RenderState(
   renderer,
   hits.filter((hit) => hit.dim === "3D"),
   mcHits.filter((hit) => hit.dim === "3D"),
-  detectorGeometry,
+  detectorGeometry
 );
 const twoDRenderer = new RenderState(
   "2D",
@@ -60,7 +60,7 @@ const twoDRenderer = new RenderState(
   renderer,
   hits.filter((hit) => hit.dim === "2D"),
   mcHits.filter((hit) => hit.dim === "2D"),
-  detectorGeometry,
+  detectorGeometry
 );
 threeDRenderer.otherRenderer = twoDRenderer;
 twoDRenderer.otherRenderer = threeDRenderer;
@@ -87,7 +87,7 @@ window.addEventListener(
     onWindowResize(threeDRenderer.camera, renderer);
     onWindowResize(twoDRenderer.camera, renderer);
   },
-  false,
+  false
 );
 document.resetView = () => {
   threeDRenderer.resetView();
@@ -97,51 +97,131 @@ document.resetView = () => {
 const markers = await fetch("markers").then((response) => response.json());
 const bufferGeometry = new THREE.BufferGeometry();
 
-const zOffset = 0.01 / markers.filter((marker) => marker.type === "V View").length;
-let ringNumber = 0;
+const vertexMap3D = new Map();
 const vertices = [];
 const indicies = [];
+const colors = [];
 
 const segments = 32;
 const startAngle = 0;
 const endAngle = Math.PI * 2;
 const theta = (endAngle - startAngle) / segments;
 
-markers.filter((marker) => marker.type === "V View")
-    .forEach((marker) => {
-        if (marker.inner === 0) return;
-        const innerRadius = marker.inner;
-        const outerRadius = marker.outer;
-        const x = marker.x;
-        const z = marker.z;
+let ringNumber = 0;
 
-        for (let i = 0; i <= segments; i++) {
-            const angle = startAngle + i * theta;
-            const cos = Math.cos(angle);
-            const sin = Math.sin(angle);
-            vertices.push(x + cos * innerRadius, z + sin * innerRadius, 0.1 + (zOffset * ringNumber));
-            vertices.push(x + cos * outerRadius, z + sin * outerRadius, 0.1 + (zOffset * ringNumber));
+import { Lut } from "three/addons/math/Lut.js";
+const lut = new Lut("blackbody", 64);
+const minColour = lut.getColor(0);
+
+markers
+  .filter((marker) => marker.type === "V View")
+  .forEach((marker) => {
+    if (ringNumber > 1e7) {
+      return;
+    }
+    if (marker.inner === 0) return;
+    const innerRadius = marker.inner;
+    const outerRadius = marker.outer;
+    const x = marker.x;
+    const z = marker.z;
+
+    for (let i = 0; i <= segments; i++) {
+      const angle = startAngle + i * theta;
+      const cos = Math.cos(angle);
+      const sin = Math.sin(angle);
+
+      const x1 = x + cos * innerRadius;
+      const z1 = z + sin * innerRadius;
+      const x2 = x + cos * outerRadius;
+      const z2 = z + sin * outerRadius;
+
+      [
+        [x1, z1],
+        [x2, z2],
+      ].forEach(([x, z]) => {
+        // First, store the new vertex.
+        const index = vertices.length / 3;
+        vertices.push(x, z, ringNumber);
+        colors.push(minColour.r, minColour.g, minColour.b, 0.2);
+
+        // Now, update the map.
+        // Round to nearest two, to avoid floating point issues.
+        const key = `${Math.round(x / 5) * 5},${Math.round(z / 5) * 5}`;
+        if (vertexMap3D.has(key)) {
+          vertexMap3D.get(key).push(index);
+        } else {
+          vertexMap3D.set(key, [index]);
         }
+      });
+    }
 
-        const offset = vertices.length / 3 - (segments + 1) * 2;
-        for (let i = 0; i < segments; i++) {
-            indicies.push(offset + i * 2);
-            indicies.push(offset + i * 2 + 1);
-            indicies.push(offset + i * 2 + 2);
-            indicies.push(offset + i * 2 + 2);
-            indicies.push(offset + i * 2 + 1);
-            indicies.push(offset + i * 2 + 3);
-        }
+    const offset = vertices.length / 3 - (segments + 1) * 2;
 
-        ringNumber += 1;
+    for (let i = 0; i < segments; i++) {
+      indicies.push(offset + i * 2);
+      indicies.push(offset + i * 2 + 1);
+      indicies.push(offset + i * 2 + 2);
+      indicies.push(offset + i * 2 + 2);
+      indicies.push(offset + i * 2 + 1);
+      indicies.push(offset + i * 2 + 3);
+    }
+
+    ringNumber -= 1;
+  });
+
+// Lets parse the vertexMap, to figure out a vertex score, that can be used
+// to color the vertices.
+console.log(vertexMap3D);
+const scores = [];
+vertexMap3D.forEach((indices, key) => {
+  const score = indices.length;
+  scores.push(score);
+});
+console.log(scores);
+const minScore = Math.min(...scores);
+const maxScore = Math.max(...scores);
+console.log(minScore, maxScore);
+
+vertexMap3D.forEach((indices, key) => {
+  const score = indices.length;
+
+  const color = lut.getColor((score - minScore) / (maxScore - minScore));
+
+  // Now we know the colour, update the vertex with the lowest z value.
+  const index = indices.forEach((index) => {
+    [0, 1, 2].forEach((offset) => {
+      colors[(index + offset) * 4 + 0] = color.r;
+      colors[(index + offset) * 4 + 1] = color.g;
+      colors[(index + offset) * 4 + 2] = color.b;
+      colors[(index + offset) * 4 + 3] =
+        0.2 + (score - minScore) / (maxScore - minScore);
+    });
+  });
 });
 
-bufferGeometry.setAttribute("position", new THREE.Float32BufferAttribute(vertices, 3));
+console.log(vertices);
+console.log(indicies);
+console.log(colors);
+bufferGeometry.setAttribute(
+  "position",
+  new THREE.Float32BufferAttribute(vertices, 3)
+);
 bufferGeometry.setIndex(indicies);
+bufferGeometry.setAttribute(
+  "color",
+  new THREE.Float32BufferAttribute(colors, 4)
+);
 
-const ringMaterial = new THREE.MeshBasicMaterial( { color: 'red', transparent: true, opacity: 0.01 } );
-ringMaterial.lightMapIntensisty = 0.1;
+// const ringMaterial = new THREE.MeshBasicMaterial( { color: 'red', transparent: true, opacity: 0.1 } );
+const ringMaterial = new THREE.MeshBasicMaterial({
+  // wireframe: true,
+  // color: "red",
+  vertexColors: true,
+  transparent: true,
+});
+// const ringMaterial = new THREE.MeshBasicMaterial( { vertexColors: true } );
 console.log(ringMaterial);
+console.log(bufferGeometry);
 
 const mesh = new THREE.Mesh(bufferGeometry, ringMaterial);
 mesh.matrixAutoUpdate = false;
