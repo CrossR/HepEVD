@@ -15,7 +15,7 @@ export const DEFAULT_HIT_CLASS = "Hit";
 
 export const HIT_CONFIG = {
   "2D": {
-    hitSize: 3,
+    hitSize: 1,
   },
   "3D": {
     hitSize: 3,

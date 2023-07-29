@@ -95,32 +95,58 @@ document.resetView = () => {
 };
 
 const markers = await fetch("markers").then((response) => response.json());
-const geometries = [];
+const bufferGeometry = new THREE.BufferGeometry();
+
+const zOffset = 0.01 / markers.filter((marker) => marker.type === "V View").length;
+let ringNumber = 0;
+const vertices = [];
+const indicies = [];
+
+const segments = 32;
+const startAngle = 0;
+const endAngle = Math.PI * 2;
+const theta = (endAngle - startAngle) / segments;
+
 markers.filter((marker) => marker.type === "V View")
     .forEach((marker) => {
-    if (marker.inner === 0) return;
-    const ringGeo = new THREE.RingGeometry(marker.inner, marker.outer, 32);
-    ringGeo.translate(marker.x, marker.z, 0);
-    geometries.push(ringGeo);
+        if (marker.inner === 0) return;
+        const innerRadius = marker.inner;
+        const outerRadius = marker.outer;
+        const x = marker.x;
+        const z = marker.z;
+
+        for (let i = 0; i <= segments; i++) {
+            const angle = startAngle + i * theta;
+            const cos = Math.cos(angle);
+            const sin = Math.sin(angle);
+            vertices.push(x + cos * innerRadius, z + sin * innerRadius, 0.1 + (zOffset * ringNumber));
+            vertices.push(x + cos * outerRadius, z + sin * outerRadius, 0.1 + (zOffset * ringNumber));
+        }
+
+        const offset = vertices.length / 3 - (segments + 1) * 2;
+        for (let i = 0; i < segments; i++) {
+            indicies.push(offset + i * 2);
+            indicies.push(offset + i * 2 + 1);
+            indicies.push(offset + i * 2 + 2);
+            indicies.push(offset + i * 2 + 2);
+            indicies.push(offset + i * 2 + 1);
+            indicies.push(offset + i * 2 + 3);
+        }
+
+        ringNumber += 1;
 });
-const mergedGeo = BufferGeometryUtils.mergeGeometries(geometries);
-const ringMaterial = new THREE.MeshBasicMaterial( { transparent: true, opacity: 0.01 } );
-// const ringMaterial = new THREE.MeshBasicMaterial();
-ringMaterial.blending = THREE.CustomBlending;
 
-ringMaterial.blendEquation = THREE.AddEquation;
-ringMaterial.blendSrc = THREE.SrcAlphaFactor;
-ringMaterial.blendDst = THREE.OneMinusSrcAlphaFactor;
+bufferGeometry.setAttribute("position", new THREE.Float32BufferAttribute(vertices, 3));
+bufferGeometry.setIndex(indicies);
 
-// ringMaterial.blendEquationAlpha = THREE.AddEquation;
-ringMaterial.blendSrcAlpha = THREE.OneFactor;
-// ringMaterial.blendDstAlpha = THREE.ZeroFactor;
+const ringMaterial = new THREE.MeshBasicMaterial( { color: 'red', transparent: true, opacity: 0.01 } );
+ringMaterial.lightMapIntensisty = 0.1;
+console.log(ringMaterial);
 
-const mesh = new THREE.Mesh(mergedGeo, ringMaterial);
+const mesh = new THREE.Mesh(bufferGeometry, ringMaterial);
 mesh.matrixAutoUpdate = false;
 mesh.matrixWorldAutoUpdate = false;
 twoDRenderer.scene.add(mesh);
 
 // Finally, animate the scene!
 animate(renderer, renderStates, stats);
-
