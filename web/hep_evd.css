@@ -18,13 +18,23 @@ div {
   height: 2.1em;
 }
 
-.dropdown:hover>.dropdown-menu {
+.dropdown:hover > .dropdown-menu {
   display: block;
 }
 
 .toggle_options {
   position: absolute;
+  width: 8em;
   top: 10%;
+  right: 0%;
+  padding: 1em;
+  visibility: hidden;
+}
+
+.toggle_options_markers {
+  position: absolute;
+  width: 8em;
+  top: 30%;
   right: 0%;
   padding: 1em;
   visibility: hidden;
@@ -32,6 +42,7 @@ div {
 
 .toggle_options_mc {
   position: absolute;
+  width: 8em;
   top: 10%;
   left: 0;
   padding: 1em;
@@ -65,7 +76,6 @@ button.active,
 button.focus,
 button.hover,
 button.visited {
-    box-shadow: unset !important;
-    outline: 0 !important;
+  box-shadow: unset !important;
+  outline: 0 !important;
 }
-

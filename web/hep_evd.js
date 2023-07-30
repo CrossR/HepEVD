@@ -44,6 +44,7 @@ const detectorGeometry = await fetch("geometry").then((response) =>
 );
 const hits = await fetch("hits").then((response) => response.json());
 const mcHits = await fetch("mcHits").then((response) => response.json());
+const markers = await fetch("markers").then((response) => response.json());
 
 // And use that data to setup the initial rendering states.
 const threeDRenderer = new RenderState(
@@ -52,6 +53,7 @@ const threeDRenderer = new RenderState(
   renderer,
   hits.filter((hit) => hit.dim === "3D"),
   mcHits.filter((hit) => hit.dim === "3D"),
+  markers.filter((marker) => marker.dim === "3D"),
   detectorGeometry
 );
 const twoDRenderer = new RenderState(
@@ -60,6 +62,7 @@ const twoDRenderer = new RenderState(
   renderer,
   hits.filter((hit) => hit.dim === "2D"),
   mcHits.filter((hit) => hit.dim === "2D"),
+  markers.filter((marker) => marker.dim === "2D"),
   detectorGeometry
 );
 threeDRenderer.otherRenderer = twoDRenderer;
@@ -93,135 +96,6 @@ document.resetView = () => {
   threeDRenderer.resetView();
   twoDRenderer.resetView();
 };
-
-const markers = await fetch("markers").then((response) => response.json());
-const bufferGeometry = new THREE.BufferGeometry();
-
-const vertexMap3D = new Map();
-const vertices = [];
-const indicies = [];
-const colors = [];
-
-const segments = 32;
-const startAngle = 0;
-const endAngle = Math.PI * 2;
-const theta = (endAngle - startAngle) / segments;
-
-let ringNumber = 0;
-
-import { Lut } from "three/addons/math/Lut.js";
-
-markers
-  .filter((marker) => marker.type === "V View")
-  .forEach((marker) => {
-    if (ringNumber > 1e7) {
-      return;
-    }
-    if (marker.inner === 0) return;
-    const innerRadius = marker.inner;
-    const outerRadius = marker.outer;
-    const x = marker.x;
-    const z = marker.z;
-
-    for (let i = 0; i <= segments; i++) {
-      const angle = startAngle + i * theta;
-      const cos = Math.cos(angle);
-      const sin = Math.sin(angle);
-
-      const x1 = x + cos * innerRadius;
-      const z1 = z + sin * innerRadius;
-      const x2 = x + cos * outerRadius;
-      const z2 = z + sin * outerRadius;
-
-      [
-        [x1, z1],
-        [x2, z2],
-      ].forEach(([x, z]) => {
-        // First, store the new vertex.
-        const index = vertices.length / 3;
-        vertices.push(x, z, ringNumber);
-        colors.push(1, 0, 0, 0.01);
-
-        // Now, update the map.
-        // Round to nearest two, to avoid floating point issues.
-        const key = `${Math.round(x / 5) * 5},${Math.round(z / 5) * 5}`;
-        if (vertexMap3D.has(key)) {
-          vertexMap3D.get(key).push(index);
-        } else {
-          vertexMap3D.set(key, [index]);
-        }
-      });
-    }
-
-    const offset = vertices.length / 3 - (segments + 1) * 2;
-
-    for (let i = 0; i < segments; i++) {
-      indicies.push(offset + i * 2);
-      indicies.push(offset + i * 2 + 1);
-      indicies.push(offset + i * 2 + 2);
-      indicies.push(offset + i * 2 + 2);
-      indicies.push(offset + i * 2 + 1);
-      indicies.push(offset + i * 2 + 3);
-    }
-
-    ringNumber -= 1;
-  });
-
-// Lets parse the vertexMap, to figure out a vertex score, that can be used
-// to color the vertices.
-console.log(vertexMap3D);
-const scores = [];
-vertexMap3D.forEach((indices, key) => {
-  const score = indices.length;
-  scores.push(score);
-});
-console.log(scores);
-const minScore = Math.min(...scores);
-const maxScore = Math.max(...scores);
-console.log(minScore, maxScore);
-
-vertexMap3D.forEach((indices, key) => {
-  const score = indices.length;
-
-  // const color = lut.getColor((score - minScore) / (maxScore - minScore));
-
-  // Now we know the colour, update the vertex with the lowest z value.
-  const index = indices.forEach((index) => {
-    [0, 1, 2].forEach((offset) => {
-      colors[(index + offset) * 4 + 3] =
-        0.05 + (score - minScore) / (maxScore - minScore);
-    });
-  });
-});
-
-console.log(vertices);
-console.log(indicies);
-console.log(colors);
-bufferGeometry.setAttribute(
-  "position",
-  new THREE.Float32BufferAttribute(vertices, 3)
-);
-bufferGeometry.setIndex(indicies);
-bufferGeometry.setAttribute(
-  "color",
-  new THREE.Float32BufferAttribute(colors, 4)
-);
-
-// const ringMaterial = new THREE.MeshBasicMaterial( { color: 'red', transparent: true, opacity: 0.1 } );
-const ringMaterial = new THREE.MeshBasicMaterial({
-  // wireframe: true,
-  // color: "red",
-  vertexColors: true,
-  transparent: true,
-});
-// const ringMaterial = new THREE.MeshBasicMaterial( { vertexColors: true } );
-console.log(ringMaterial);
-console.log(bufferGeometry);
-
-const mesh = new THREE.Mesh(bufferGeometry, ringMaterial);
-mesh.matrixAutoUpdate = false;
-mesh.matrixWorldAutoUpdate = false;
-twoDRenderer.scene.add(mesh);
 
 // Finally, animate the scene!
 animate(renderer, renderStates, stats);

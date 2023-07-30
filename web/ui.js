@@ -9,12 +9,12 @@ import { BUTTON_ID } from "./constants.js";
  * Adds a "None" option by default, and an "All" option if the hit property map is not empty.
  * Finally, add a toggle for that scene on the dropdown itself.
  *
- * @param {string} className - The name of the class to which the dropdown belongs.
+ * @param {string} hitDim - The dimension of the hit to which the dropdown belongs.
  * @param {Map} hitPropMap - A map of hit properties.
  * @param {function} onClick - The function to be called when a button is clicked.
  */
-export function populateDropdown(className, hitPropMap, onClick = (_) => {}) {
-  const dropDown = document.getElementById(`${className}_dropdown`);
+export function populateDropdown(hitDim, hitPropMap, onClick = (_) => {}) {
+  const dropDown = document.getElementById(`${hitDim}_dropdown`);
   const entries = new Set();
 
   // Add the default "None" option.
@@ -31,14 +31,14 @@ export function populateDropdown(className, hitPropMap, onClick = (_) => {}) {
     const newButton = document.createElement("li");
     newButton.style.textTransform = "capitalize";
     newButton.innerText = entry;
-    newButton.id = `${className}_${entry}`;
+    newButton.id = `${hitDim}_${entry}`;
     newButton.addEventListener("click", () => onClick(entry));
     listElement.appendChild(newButton);
     dropDown.appendChild(listElement);
   });
 
   // Add dropdown on click to send empty string.
-  const dropDownButton = document.getElementById(`${className}_dropdown_button`);
+  const dropDownButton = document.getElementById(`${hitDim}_dropdown_button`);
   dropDownButton.addEventListener("click", () => onClick(""));
 
   return;
@@ -48,12 +48,12 @@ export function populateDropdown(className, hitPropMap, onClick = (_) => {}) {
  * Populates a class toggle section with buttons based on the given hits array.
  * Adds a button for each unique class in the hits array.
  *
- * @param {string} className - The name of the class to which the toggle section belongs.
+ * @param {string} hitDim - The dimension of the hit to which the toggle section belongs.
  * @param {Array} hits - An array of hit objects.
  * @param {function} onClick - The function to be called when a button is clicked.
  */
-export function populateTypeToggle(className, hits, onClick = (_) => {}) {
-  const classDiv = document.getElementById(`types_${className}`);
+export function populateTypeToggle(hitDim, hits, onClick = (_) => {}) {
+  const classDiv = document.getElementById(`types_${hitDim}`);
   const entries = new Set();
 
   hits.forEach((hit, _) => entries.add(hit.type));
@@ -65,7 +65,7 @@ export function populateTypeToggle(className, hits, onClick = (_) => {}) {
 
   entries.forEach((entry) => {
     const newButton = document.createElement("button");
-    newButton.classList.add("btn", "btn-outline", "btn-accent", "m-1");
+    newButton.classList.add("btn", "btn-outline", "btn-accent", "m-1", "nohover");
     newButton.style.textTransform = "capitalize";
     newButton.innerText = entry;
     newButton.id = `types_${entry}`;
@@ -76,6 +76,46 @@ export function populateTypeToggle(className, hits, onClick = (_) => {}) {
   return;
 }
 
+/**
+ * Populates the marker toggle section with buttons based on the given markers.
+ *
+ * @param {string} hitDim - The dimension of the hit to which the toggle section belongs.
+ * @param {Array} markers - An array of marker objects.
+ * @param {function} onClick - The function to be called when a button is clicked.
+ */
+export function populateMarkerToggle(hitDim, markers, onClick = (_) => {}) {
+  const classDiv = document.getElementById(`markers_${hitDim}`);
+  const entries = new Set();
+
+  // TODO: Could potentially be extended, to use labels etc.
+  markers.forEach((marker) => entries.add(marker.marker));
+
+  // If there is no entries, don't bother.
+  if (entries.size < 1) {
+    return;
+  }
+
+  entries.forEach((entry) => {
+    const newButton = document.createElement("button");
+    newButton.classList.add("btn", "btn-outline", "btn-accent", "m-1", "nohover");
+    newButton.style.textTransform = "capitalize";
+    newButton.innerText = entry;
+    newButton.id = `markers_${entry}`;
+    newButton.addEventListener("click", () => onClick(entry));
+    classDiv.appendChild(newButton);
+  });
+
+  return;
+}
+
+/**
+ * Enables a toggle button for MC hits in the class toggle section with the given hit type.
+ * If there are no MC hits, the function does nothing.
+ *
+ * @param {string} hitType - The hit type for which to enable the MC toggle button.
+ * @param {Array} mcHits - An array of MC hit objects.
+ * @param {function} onClick - The function to be called when the MC toggle button is clicked.
+ */
 export function enableMCToggle(hitType, mcHits, onClick) {
   const classDiv = document.getElementById(`types_MC_${hitType}`);
 
@@ -99,12 +139,12 @@ export function enableMCToggle(hitType, mcHits, onClick) {
  * "None" button, it also toggles the state of every other button in that
  * dropdown.
  *
- * @param {string} className - The name of the class to which the dropdown or toggle section belongs.
+ * @param {string} hitDim - The dimension of the hit to which the dropdown belongs.
  * @param {string} ID - The ID of the button to toggle.
  * @param {boolean} fixNoneButton - Whether or not to fix the state of the "None" button in the dropdown menu. Defaults to true.
  */
-export function toggleButton(className, ID, fixNoneButton = true) {
-  const button = document.getElementById(`${className}_${ID}`);
+export function toggleButton(hitDim, ID, fixNoneButton = true) {
+  const button = document.getElementById(`${hitDim}_${ID}`);
 
   if (button === null) return;
 
@@ -121,14 +161,14 @@ export function toggleButton(className, ID, fixNoneButton = true) {
   if (!fixNoneButton) return;
 
   if (ID === BUTTON_ID.None && isActive) {
-    const dropDown = document.getElementById(`${className}_dropdown`);
+    const dropDown = document.getElementById(`${hitDim}_dropdown`);
 
     Array.from(dropDown.childNodes)
       .forEach((elem) => {
         elem.childNodes[0].classList.remove("btn-active");
       });
   } else if (ID !== BUTTON_ID.None && isActive) {
-    const noneButton = document.getElementById(`${className}_${BUTTON_ID.None}`);
+    const noneButton = document.getElementById(`${hitDim}_${BUTTON_ID.None}`);
     noneButton.classList.remove("btn-active");
   }
 }
@@ -137,12 +177,12 @@ export function toggleButton(className, ID, fixNoneButton = true) {
  * Determines whether a button with the given ID in the dropdown menu or class
  * toggle section with the given class name is currently active.
  *
- * @param {string} className - The name of the class to which the dropdown or toggle section belongs.
+ * @param {string} hitDim - The dimension of the hit to which the dropdown belongs.
  * @param {string} ID - The ID of the button to check.
  * @returns {boolean} - True if the button is active, false otherwise.
  */
-export function isButtonActive(className, ID) {
-  const button = document.getElementById(`${className}_${ID}`);
+export function isButtonActive(hitDim, ID) {
+  const button = document.getElementById(`${hitDim}_${ID}`);
   return button ? button.classList.contains("btn-active") : false;
 }
 
@@ -197,7 +237,7 @@ export function saveEvd(renderer) {
 }
 
 /**
- * Quit the event display, allowing the server itself to close.
+ * Sends a request to the server to quit the event display.
  */
 export function quitEvd() {
   const fadeOut = (element, duration) => {
