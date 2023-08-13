@@ -19,6 +19,7 @@ namespace HepEVD {
 class GeoVolume {
   public:
     GeoVolume(const Position &pos) : position(pos) {}
+    GeoVolume(const PosArray &pos) : position(pos) {}
 
     friend std::ostream &operator<<(std::ostream &os, GeoVolume const &vol) {
         os << vol.getJsonString();
@@ -38,6 +39,8 @@ class BoxVolume : public GeoVolume {
     static const int ARG_COUNT = 3;
 
     BoxVolume(const Position &pos, double xWidth, double yWidth, double zWidth)
+        : GeoVolume(pos), xWidth(xWidth), yWidth(yWidth), zWidth(zWidth) {}
+    BoxVolume(const PosArray &pos, double xWidth, double yWidth, double zWidth)
         : GeoVolume(pos), xWidth(xWidth), yWidth(yWidth), zWidth(zWidth) {}
 
     std::string getJsonString() const {

@@ -49,7 +49,7 @@ using Markers = std::vector<Marker *>;
 // A point is just a single 3D location.
 class Point : public Marker {
   public:
-    Point(const Position &pos) : position(pos) {}
+    Point(const PosArray &pos) : position(pos) {}
 
     std::string getJsonString() const {
         std::stringstream os;
@@ -64,7 +64,7 @@ class Point : public Marker {
 // A line is a 3D line between two 3D points.
 class Line : public Marker {
   public:
-    Line(const Position &start, const Position &end) : start(start), end(end) {}
+    Line(const PosArray &start, const PosArray &end) : start(start), end(end) {}
 
     std::string getJsonString() const {
         std::stringstream os;
@@ -82,9 +82,7 @@ class Line : public Marker {
 // A ring is represented by centre point, and then an inner and outer radius.
 class Ring : public Marker {
   public:
-    Ring(const Position &center, const double inner, const double outer) : center(center), inner(inner), outer(outer) {}
-    Ring(const std::array<double, 3> &center, const double inner, const double outer)
-        : center(center), inner(inner), outer(outer) {}
+    Ring(const PosArray &center, const double inner, const double outer) : center(center), inner(inner), outer(outer) {}
 
     std::string getJsonString() const {
         std::stringstream os;

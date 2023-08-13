@@ -3,6 +3,9 @@
 //
 
 import * as THREE from "three";
+import { Lut } from "three/addons/math/Lut.js";
+
+import { MARKER_CONFIG } from "./constants.js";
 
 /**
  * Draws rings using the provided data and adds them to the specified group.
@@ -118,4 +121,69 @@ export function drawRings(rings, group) {
   mesh.matrixAutoUpdate = false;
   mesh.matrixWorldAutoUpdate = false;
   group.add(mesh);
+}
+
+/**
+ * Draws points using the provided data and adds them to the specified group.
+ * @param {Array} points - An array of point data objects.
+ * @param {THREE.Group} group - The group to which the points will be added.
+ */
+export function drawPoints(points, group) {
+
+  if (points.length === 0) return;
+
+  let groups = new Map();
+  let pointColours = [];
+
+  points.forEach((point) => {
+    const label = point.label;
+    if (! groups.has(label)) {
+      groups.set(label, groups.size)
+    }
+
+    pointColours.push(groups[label]);
+  });
+
+  // Start building the mesh.
+  const pointSize = MARKER_CONFIG["point"].size;
+  const pointGeo = new THREE.SphereGeometry(pointSize, 32, 16);
+  const materialPoint = new THREE.MeshBasicMaterial({
+      side: THREE.DoubleSide,
+  });
+  const dummyObject = new THREE.Object3D();
+  const pointMesh = new THREE.InstancedMesh(pointGeo, materialPoint, points.length);
+
+  const lut = new Lut("cooltowarm", 512);
+  let usingLut = typeof pointColours[0] === 'number'
+
+  if (usingLut) {
+    let minColourValue = Infinity;
+    let maxColourValue = Number.NEGATIVE_INFINITY;
+    pointColours.forEach((value) => {
+      if (value < minColourValue) minColourValue = value;
+      if (value > maxColourValue) maxColourValue = value;
+    });
+    lut.setMax(maxColourValue);
+  }
+
+  points.forEach(function (point, index) {
+
+    dummyObject.position.set(point.x, point.y, point.z);
+    dummyObject.updateMatrix();
+
+    pointMesh.setMatrixAt(index, dummyObject.matrix);
+
+    if (usingLut) {
+      pointMesh.setColorAt(index, lut.getColor(pointColours[index]));
+    } else {
+      pointMesh.setColorAt(index, new THREE.Color("red"));
+    }
+
+  });
+
+  pointMesh.instanceMatrix.needsUpdate = true;
+  pointMesh.instanceColor.needsUpdate = true;
+
+  group.add(pointMesh);
+
 }

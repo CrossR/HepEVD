@@ -11,11 +11,13 @@
 
 namespace HepEVD {
 
+using PosArray = std::array<double, 3>;
+
 // Store a 3D position, and include a helper for JSON production.
 class Position {
 
   public:
-    Position(const std::array<double, 3> &pos) : x(pos[0]), y(pos[1]), z(pos[2]) {}
+    Position(const PosArray &pos) : x(pos[0]), y(pos[1]), z(pos[2]) {}
 
     friend std::ostream &operator<<(std::ostream &os, Position const &pos) {
         os << "\"x\": " << pos.x << ","

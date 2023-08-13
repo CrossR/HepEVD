@@ -26,7 +26,7 @@ enum HitType { GENERAL, TWO_D_U, TWO_D_V, TWO_D_W };
 class Hit {
   public:
     Hit(const Position &pos, double e = 0, double t = 0) : position(pos), time(t), energy(e) {}
-    Hit(const std::array<double, 3> &pos, double e = 0, double t = 0) : position(pos), time(t), energy(e) {}
+    Hit(const PosArray &pos, double e = 0, double t = 0) : position(pos), time(t), energy(e) {}
 
     void setDim(const HitDimension &dim) { this->dim = dim; }
     void setType(const HitType &type) { this->type = type; }
@@ -114,7 +114,7 @@ class MCHit : public Hit {
         : Hit(pos, t, energy) {
         this->addProperties({{"PDG", pdgCode}});
     }
-    MCHit(const std::array<double, 3> &pos, const double pdgCode, const double t = 0, const double energy = 0)
+    MCHit(const PosArray &pos, const double pdgCode, const double t = 0, const double energy = 0)
         : Hit(pos, t, energy) {
         this->addProperties({{"PDG", pdgCode}});
     }

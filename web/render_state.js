@@ -10,7 +10,7 @@ import { BUTTON_ID, HIT_CONFIG } from "./constants.js";
 import { getHitTypes, getHitProperties, getMCColouring } from "./helpers.js";
 import { drawHits } from "./hits.js";
 import { drawBox } from "./rendering.js";
-import { drawRings } from "./markers.js";
+import { drawRings, drawPoints } from "./markers.js";
 import {
   enableMCToggle,
   isButtonActive,
@@ -154,6 +154,10 @@ export class RenderState {
 
     drawRings(
       this.activeMarkers.filter((marker) => marker.marker === "ring"),
+      this.markerGroup,
+    );
+    drawPoints(
+      this.activeMarkers.filter((marker) => marker.marker === "point"),
       this.markerGroup,
     );
 

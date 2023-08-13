@@ -22,6 +22,12 @@ export const HIT_CONFIG = {
   },
 };
 
+export const MARKER_CONFIG = {
+    "point": {
+        size: 5
+    },
+};
+
 export const PDG_TO_COLOUR = {
   "11":   "skyblue", // Elecron : Light Blue
   "13":   "green",   // Muon : Green
