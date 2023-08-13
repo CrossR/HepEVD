@@ -53,7 +53,15 @@ class Point : public Marker {
 
     std::string getJsonString() const {
         std::stringstream os;
-        os << "\"marker\": \"point\"," << this->position;
+
+        Position pos(this->position);
+
+        if (this->dim == TWO_D) {
+            pos.y = pos.z;
+            pos.z = 0;
+        }
+
+        os << "\"marker\": \"point\"," << pos;
         return os.str();
     }
 

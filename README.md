@@ -51,6 +51,7 @@ as possible.
 ## Future Work
 
  - Can everything inherit from a base class (Position, Dimension, Type)?
+    - This would make stuff like 2D swapping Z -> Y easier.
 
  - Start populating and passing over the other menu entries (vertices, other markers).
 

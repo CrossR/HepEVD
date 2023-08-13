@@ -24,7 +24,7 @@ export const HIT_CONFIG = {
 
 export const MARKER_CONFIG = {
   point: {
-    size: 5,
+    size: 2,
   },
 };
 
