@@ -91,8 +91,8 @@ export function fitSceneInCamera(
     controls.target = center;
     controls.maxDistance = cameraToFarEdge;
   } else {
-    const yOffset = -225 - center.y / 2;
-    console.log(yOffset, window.innerHeight);
+    const navBarH = document.getElementById('navbar').offsetHeight;
+    const yOffset = navBarH - center.y / 2;
     camera.setViewOffset(
       window.innerWidth,
       window.innerHeight,
@@ -105,7 +105,7 @@ export function fitSceneInCamera(
       Math.min(
         window.innerWidth / (boundingBox.max.x - boundingBox.min.x),
         window.innerHeight / (boundingBox.max.y - boundingBox.min.y),
-      ) * 0.9;
+      ) * 0.85;
     camera.zoom = zoomAmount;
   }
 
