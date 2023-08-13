@@ -91,7 +91,8 @@ export function fitSceneInCamera(
     controls.target = center;
     controls.maxDistance = cameraToFarEdge;
   } else {
-    const yOffset = 0 - center.y / 2;
+    const yOffset = -225 - center.y / 2;
+    console.log(yOffset, window.innerHeight);
     camera.setViewOffset(
       window.innerWidth,
       window.innerHeight,
