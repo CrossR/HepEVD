@@ -376,9 +376,9 @@ export class RenderState {
     this.controls.enabled = this.hitDim === renderTarget;
 
     this.otherRenderer.scene.visible =
-      this.otherRenderer.hitType === renderTarget;
+      this.otherRenderer.hitDim === renderTarget;
     this.otherRenderer.controls.enabled =
-      this.otherRenderer.hitType === renderTarget;
+      this.otherRenderer.hitDim === renderTarget;
 
     updateUI(renderTarget);
   }
