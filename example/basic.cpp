@@ -91,6 +91,7 @@ int main(void) {
     );
 
     Ring* ring = new Ring({0.0, 0.0, 0.0}, 1.0, 1.5);
+    ring->setDim(TWO_D);
     server.addMarkers({ring});
 
     server.startServer();
