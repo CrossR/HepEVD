@@ -3,7 +3,6 @@
 //
 
 import * as THREE from "three";
-import * as BufferGeometryUtils from "three/addons/utils/BufferGeometryUtils.js";
 import Stats from "three/addons/libs/stats.module.js";
 
 import { RenderState } from "./render_state.js";
@@ -15,7 +14,7 @@ const threeDCamera = new THREE.PerspectiveCamera(
   50,
   window.innerWidth / window.innerHeight,
   0.1,
-  1e6
+  1e6,
 );
 const twoDCamera = new THREE.OrthographicCamera(
   window.innerWidth / -2,
@@ -23,7 +22,7 @@ const twoDCamera = new THREE.OrthographicCamera(
   window.innerHeight / 2,
   window.innerHeight / -2,
   -1,
-  1e6
+  1e6,
 );
 const renderer = new THREE.WebGLRenderer({
   alpha: true,
@@ -40,7 +39,7 @@ document.body.appendChild(stats.dom);
 
 // Pull in the basic data from the API...
 const detectorGeometry = await fetch("geometry").then((response) =>
-  response.json()
+  response.json(),
 );
 const hits = await fetch("hits").then((response) => response.json());
 const mcHits = await fetch("mcHits").then((response) => response.json());
@@ -54,7 +53,7 @@ const threeDRenderer = new RenderState(
   hits.filter((hit) => hit.dim === "3D"),
   mcHits.filter((hit) => hit.dim === "3D"),
   markers.filter((marker) => marker.dim === "3D"),
-  detectorGeometry
+  detectorGeometry,
 );
 const twoDRenderer = new RenderState(
   "2D",
@@ -63,7 +62,7 @@ const twoDRenderer = new RenderState(
   hits.filter((hit) => hit.dim === "2D"),
   mcHits.filter((hit) => hit.dim === "2D"),
   markers.filter((marker) => marker.dim === "2D"),
-  detectorGeometry
+  detectorGeometry,
 );
 threeDRenderer.otherRenderer = twoDRenderer;
 twoDRenderer.otherRenderer = threeDRenderer;
@@ -90,7 +89,7 @@ window.addEventListener(
     onWindowResize(threeDRenderer.camera, renderer);
     onWindowResize(twoDRenderer.camera, renderer);
   },
-  false
+  false,
 );
 document.resetView = () => {
   threeDRenderer.resetView();

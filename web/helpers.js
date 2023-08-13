@@ -102,18 +102,16 @@ export function getHitTypes(hits) {
  * @returns {Array} An array of colour strings, to be used in the hit rendering.
  */
 export function getMCColouring(mcHits) {
+  let mcHitColours = [];
 
-    let mcHitColours = [];
+  mcHits.forEach((hit) => {
+    const mcPdg = hit.properties["PDG"];
+    if (Object.hasOwn(PDG_TO_COLOUR, mcPdg)) {
+      mcHitColours.push(PDG_TO_COLOUR[mcPdg]);
+    } else {
+      console.log(mcPdg);
+    }
+  });
 
-    mcHits.forEach((hit) => {
-        const mcPdg = hit.properties["PDG"];
-        if (Object.hasOwn(PDG_TO_COLOUR, mcPdg)) {
-          mcHitColours.push(PDG_TO_COLOUR[mcPdg]);
-        } else {
-          console.log(mcPdg);
-        }
-    });
-
-    return mcHitColours;
+  return mcHitColours;
 }
-

@@ -129,7 +129,6 @@ export function drawRings(rings, group) {
  * @param {THREE.Group} group - The group to which the points will be added.
  */
 export function drawPoints(points, group) {
-
   if (points.length === 0) return;
 
   let groups = new Map();
@@ -137,8 +136,8 @@ export function drawPoints(points, group) {
 
   points.forEach((point) => {
     const label = point.label;
-    if (! groups.has(label)) {
-      groups.set(label, groups.size)
+    if (!groups.has(label)) {
+      groups.set(label, groups.size);
     }
 
     pointColours.push(groups[label]);
@@ -148,13 +147,17 @@ export function drawPoints(points, group) {
   const pointSize = MARKER_CONFIG["point"].size;
   const pointGeo = new THREE.SphereGeometry(pointSize, 32, 16);
   const materialPoint = new THREE.MeshBasicMaterial({
-      side: THREE.DoubleSide,
+    side: THREE.DoubleSide,
   });
   const dummyObject = new THREE.Object3D();
-  const pointMesh = new THREE.InstancedMesh(pointGeo, materialPoint, points.length);
+  const pointMesh = new THREE.InstancedMesh(
+    pointGeo,
+    materialPoint,
+    points.length,
+  );
 
   const lut = new Lut("cooltowarm", 512);
-  let usingLut = typeof pointColours[0] === 'number'
+  let usingLut = typeof pointColours[0] === "number";
 
   if (usingLut) {
     let minColourValue = Infinity;
@@ -167,7 +170,6 @@ export function drawPoints(points, group) {
   }
 
   points.forEach(function (point, index) {
-
     dummyObject.position.set(point.x, point.y, point.z);
     dummyObject.updateMatrix();
 
@@ -178,12 +180,10 @@ export function drawPoints(points, group) {
     } else {
       pointMesh.setColorAt(index, new THREE.Color("red"));
     }
-
   });
 
   pointMesh.instanceMatrix.needsUpdate = true;
   pointMesh.instanceColor.needsUpdate = true;
 
   group.add(pointMesh);
-
 }

@@ -23,16 +23,16 @@ export const HIT_CONFIG = {
 };
 
 export const MARKER_CONFIG = {
-    "point": {
-        size: 5
-    },
+  point: {
+    size: 5,
+  },
 };
 
 export const PDG_TO_COLOUR = {
-  "11":   "skyblue", // Elecron : Light Blue
-  "13":   "green",   // Muon : Green
-  "211":  "orange",  // Pion : Orange
-  "2212": "red",     // Proton : Red
+  11: "skyblue", // Elecron : Light Blue
+  13: "green", // Muon : Green
+  211: "orange", // Pion : Orange
+  2212: "red", // Proton : Red
 };
 
 export const threeDGeoMat = new THREE.LineBasicMaterial({
@@ -49,4 +49,3 @@ export const twoDYMat = new LineMaterial({
 export const materialHit = new THREE.MeshBasicMaterial({
   side: THREE.DoubleSide,
 });
-
