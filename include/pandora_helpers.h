@@ -62,7 +62,7 @@ static Hits getHepEVD2DHits(const pandora::CaloHitList *caloHits, HepHitMap &pan
     for (const pandora::CaloHit *const pCaloHit : *caloHits) {
         const auto pos = pCaloHit->GetPositionVector();
         Hit *hit =
-            new Hit({pos.GetX(), pos.GetY(), pos.GetZ()}, pCaloHit->GetMipEquivalentEnergy(), pCaloHit->GetTime());
+            new Hit({pos.GetX(), pos.GetY(), pos.GetZ()}, pCaloHit->GetMipEquivalentEnergy());
 
         if (label != "")
             hit->setLabel(label);
@@ -107,7 +107,7 @@ static MCHits getHepEVDMCHits(const pandora::Algorithm &pAlgorithm, const pandor
 
             const auto pos = caloHit->GetPositionVector();
             MCHit *mcHit = new MCHit({pos.GetX(), pos.GetY(), pos.GetZ()}, mcParticle->GetParticleId(),
-                                     caloHit->GetMipEquivalentEnergy(), caloHit->GetTime());
+                                     caloHit->GetMipEquivalentEnergy());
 
             mcHit->setDim(HitDimension::TWO_D);
             mcHit->setType(getHepEVDHitType(caloHit->GetHitType()));

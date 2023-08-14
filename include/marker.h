@@ -28,8 +28,8 @@ class Marker {
 
     friend std::ostream &operator<<(std::ostream &os, Marker const &marker) {
         os << "{"
-           << "\"dim\": \"" << Hit::hitDimToString(marker.dim) << "\","
-           << "\"type\": \"" << Hit::hitTypeToString(marker.type) << "\","
+           << "\"dim\": \"" << hitDimToString(marker.dim) << "\","
+           << "\"type\": \"" << hitTypeToString(marker.type) << "\","
            << "\"label\": \"" << marker.label << "\","
            << "\"colour\": \"" << marker.colour << "\"," << marker.getJsonString() << "}";
         return os;

@@ -13,6 +13,9 @@
 
 #include "utils.h"
 
+#include "extern/json.hpp"
+using json = nlohmann::json;
+
 #include <map>
 #include <ostream>
 #include <string>
@@ -20,13 +23,35 @@
 
 namespace HepEVD {
 
-enum HitDimension { THREE_D, TWO_D };
-enum HitType { GENERAL, TWO_D_U, TWO_D_V, TWO_D_W };
+static std::string hitDimToString(const HitDimension &hit) {
+    switch (hit) {
+    case THREE_D:
+        return "3D";
+    case TWO_D:
+        return "2D";
+    }
+    throw std::invalid_argument("Unknown hit type!");
+}
+
+static std::string hitTypeToString(const HitType &hit) {
+    switch (hit) {
+    case GENERAL:
+        return "Hit";
+    case TWO_D_U:
+        return "U View";
+    case TWO_D_V:
+        return "V View";
+    case TWO_D_W:
+        return "W View";
+    }
+    throw std::invalid_argument("Unknown hit class!");
+}
 
 class Hit {
   public:
-    Hit(const Position &pos, double e = 0, double t = 0) : position(pos), time(t), energy(e) {}
-    Hit(const PosArray &pos, double e = 0, double t = 0) : position(pos), time(t), energy(e) {}
+    Hit() : position(), energy(0.0) {}
+    Hit(const Position &pos, double e = 0) : position(pos), energy(e) {}
+    Hit(const PosArray &pos, double e = 0) : position(pos), energy(e) {}
 
     void setDim(const HitDimension &dim) { this->dim = dim; }
     void setType(const HitType &type) { this->type = type; }
@@ -52,9 +77,8 @@ class Hit {
         }
 
         os << "{"
-           << "\"dim\": \"" << Hit::hitDimToString(hit.dim) << "\","
-           << "\"type\": \"" << Hit::hitTypeToString(hit.type) << "\"," << hitPosition << ","
-           << "\"time\": " << hit.time << ","
+           << "\"dim\": \"" << hitDimToString(hit.dim) << "\","
+           << "\"type\": \"" << hitTypeToString(hit.type) << "\"," << hitPosition << ","
            << "\"energy\": " << hit.energy;
 
         if (hit.label != "")
@@ -73,33 +97,11 @@ class Hit {
         return os;
     }
 
-    static std::string hitDimToString(const HitDimension &hit) {
-        switch (hit) {
-        case THREE_D:
-            return "3D";
-        case TWO_D:
-            return "2D";
-        }
-        throw std::invalid_argument("Unknown hit type!");
-    }
-
-    static std::string hitTypeToString(const HitType &hit) {
-        switch (hit) {
-        case GENERAL:
-            return "Hit";
-        case TWO_D_U:
-            return "U View";
-        case TWO_D_V:
-            return "V View";
-        case TWO_D_W:
-            return "W View";
-        }
-        throw std::invalid_argument("Unknown hit class!");
-    }
+    NLOHMANN_DEFINE_TYPE_INTRUSIVE(Hit, dim, type, position, energy, label, properties);
 
   protected:
     Position position;
-    double time, energy;
+    double energy;
     HitDimension dim = HitDimension::THREE_D;
     HitType type = HitType::GENERAL;
     std::string label;
@@ -110,11 +112,10 @@ using Hits = std::vector<Hit *>;
 // Convenience constructor for MC hits.
 class MCHit : public Hit {
   public:
-    MCHit(const Position &pos, const double pdgCode, const double t = 0, const double energy = 0)
-        : Hit(pos, t, energy) {
+    MCHit(const Position &pos, const double pdgCode, const double energy = 0) : Hit(pos, energy) {
         this->addProperties({{"PDG", pdgCode}});
     }
-    MCHit(const PosArray &pos, const double pdgCode, const double t = 0, const double energy = 0)
+    MCHit(const PosArray &pos, const double pdgCode, const double energy = 0)
         : Hit(pos, t, energy) {
         this->addProperties({{"PDG", pdgCode}});
     }

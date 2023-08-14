@@ -8,9 +8,13 @@ YEL='\033[1;33m'
 RED='\033[0;31m'
 NC='\033[0m' # No Colour
 
-HTTPLIB_URL="https://raw.githubusercontent.com/yhirose/cpp-httplib/master/httplib.h"
 EXTERN_PATH="include/extern"
+
+HTTPLIB_URL="https://raw.githubusercontent.com/yhirose/cpp-httplib/master/httplib.h"
 HTTPLIB_FILE_PATH="${EXTERN_PATH}/httplib.h"
+
+JSON_URL="https://raw.githubusercontent.com/nlohmann/json/develop/single_include/nlohmann/json.hpp"
+JSON_PATH="${EXTERN_PATH}/json.hpp"
 
 LogMessage() {
     echo -e "${GRN}$(date +'%d/%m/%Y %T') : INFO    : $*${NC}"
@@ -68,6 +72,11 @@ RunAndCheck "mkdir -p include/extern" \
 LogMessage "Getting httplib.h..."
 RunAndCheck "wget ${HTTPLIB_URL} -O ${HTTPLIB_FILE_PATH} " \
             "Failed to download httplib.h!" \
+            "ERR"
+
+LogMessage "Getting json.hpp..."
+RunAndCheck "wget ${JSON_URL} -O ${JSON_PATH} " \
+            "Failed to download json.hpp!" \
             "ERR"
 
 LogMessage "Done!"

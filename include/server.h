@@ -15,6 +15,9 @@
 
 #include "extern/httplib.h"
 
+#include "extern/json.hpp"
+using json = nlohmann::json;
+
 namespace HepEVD {
 
 class HepEVDServer {
@@ -127,7 +130,9 @@ inline void HepEVDServer::startServer() {
         res.set_content(this->jsonify<Marker *>(this->markers), "application/json");
     });
     this->server.Get("/geometry", [&](const Request &, Response &res) {
-        res.set_content(this->jsonify<DetectorGeometry>(this->geometry), "application/json");
+        json j(this->geometry);
+        std::cout << j.dump() << std::endl;
+        res.set_content(j.dump(), "application/json");
     });
 
     // Management controls...

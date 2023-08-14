@@ -9,69 +9,72 @@
 
 #include "utils.h"
 
+#include "extern/json.hpp"
+using json = nlohmann::json;
+
 #include <map>
-#include <sstream>
 #include <string>
+#include <variant>
 #include <vector>
 
 namespace HepEVD {
 
-class GeoVolume {
+enum VolumeType { BOX, LINE, SPHERE, CYLINDER };
+NLOHMANN_JSON_SERIALIZE_ENUM(VolumeType, {{BOX, "box"}, {LINE, "line"}, {SPHERE, "sphere"}, {CYLINDER, "cylinder"}});
+
+// Detector geometry volume to represent any 3D box.
+class BoxVolume {
   public:
-    GeoVolume(const Position &pos) : position(pos) {}
-    GeoVolume(const PosArray &pos) : position(pos) {}
-
-    friend std::ostream &operator<<(std::ostream &os, GeoVolume const &vol) {
-        os << vol.getJsonString();
-        return os;
-    }
-
-    virtual Position getCenter() const = 0;
-    virtual std::string getJsonString() const = 0;
-
-  protected:
-    Position position;
-};
-
-// Specialised detector geometry volume to represent any 3D box.
-class BoxVolume : public GeoVolume {
-  public:
+    static const VolumeType type = BOX;
     static const int ARG_COUNT = 3;
 
     BoxVolume(const Position &pos, double xWidth, double yWidth, double zWidth)
-        : GeoVolume(pos), xWidth(xWidth), yWidth(yWidth), zWidth(zWidth) {}
+        : position(pos), xWidth(xWidth), yWidth(yWidth), zWidth(zWidth) {}
     BoxVolume(const PosArray &pos, double xWidth, double yWidth, double zWidth)
-        : GeoVolume(pos), xWidth(xWidth), yWidth(yWidth), zWidth(zWidth) {}
-
-    std::string getJsonString() const {
-        std::stringstream os;
-        os << "{"
-           << "\"type\": \"box\"," << this->position << ","
-           << "\"center\": {" << this->getCenter() << "},"
-           << "\"xWidth\": " << this->xWidth << ","
-           << "\"yWidth\": " << this->yWidth << ","
-           << "\"zWidth\": " << this->zWidth << "}";
-
-        return os.str();
-    }
+        : position(pos), xWidth(xWidth), yWidth(yWidth), zWidth(zWidth) {}
 
     Position getCenter() const { return this->position; }
 
-  protected:
+    NLOHMANN_DEFINE_TYPE_INTRUSIVE(BoxVolume, position, xWidth, yWidth, zWidth);
+
+  private:
+    Position position;
     double xWidth, yWidth, zWidth;
 };
 
-// TODO: Extend geometry model to include lines, sphere, cylinder etc.
-enum VolumeType { BOX, LINE, SPHERE, CYLINDER };
-
-using Volumes = std::vector<GeoVolume *>;
+// Volumes vector to hold all possible detector geometry volumes.
+using AllVolumes = std::variant<BoxVolume>;
+using Volumes = std::vector<AllVolumes>;
 using VolumeMap = std::map<VolumeType, std::vector<double>>;
+
+// Define the required JSON formatters for the detector geometry volumes.
+void to_json(json &j, const AllVolumes &vol) {
+    std::visit([&j](const auto &vol) { j = vol; }, vol);
+}
+void to_json(json &j, const Volumes &vols) { j = json{{"volumes", vols}}; }
+
+void from_json(const json &j, AllVolumes &vol) {
+    Position pos = j.get<Position>();
+    VolumeType type = j.at("type").get<VolumeType>();
+
+    switch (type) {
+    case BOX: {
+        BoxVolume boxVolume(pos, pos.x, pos.y, pos.z);
+        vol = boxVolume;
+        break;
+    }
+    default:
+        throw std::invalid_argument("Unknown volume type given!");
+    }
+}
+void from_json(const json &j, Volumes &vols) { vols = j.at("volumes").get<Volumes>(); }
 
 // Top-level detector geometry, with a detector being composed of
 // at least one geometry volume.
 class DetectorGeometry {
 
   public:
+    DetectorGeometry() : volumes({}) {}
     DetectorGeometry(Volumes &vols) : volumes(vols) {}
 
     ~DetectorGeometry() { this->volumes.clear(); }
@@ -92,7 +95,7 @@ class DetectorGeometry {
                 if (volume.second.size() - 3 != BoxVolume::ARG_COUNT)
                     throw std::invalid_argument("A box volume needs 6 inputs!");
                 BoxVolume boxVolume(pos, params[3], params[4], params[5]);
-                volumes.push_back(&boxVolume);
+                volumes.push_back(boxVolume);
 
                 break;
             }
@@ -106,18 +109,9 @@ class DetectorGeometry {
         }
     }
 
-    friend std::ostream &operator<<(std::ostream &os, DetectorGeometry const &geo) {
-        if (geo.volumes.size() == 0)
-            return os;
+    NLOHMANN_DEFINE_TYPE_INTRUSIVE(DetectorGeometry, volumes);
 
-        for (const auto &volume : geo.volumes)
-            os << *volume << ",";
-
-        os.seekp(-1, os.cur);
-        return os;
-    }
-
-  protected:
+  private:
     Volumes volumes;
 };
 
