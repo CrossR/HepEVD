@@ -27,7 +27,7 @@ namespace PandoraHelpers {
 
 using HepHitMap = std::map<const pandora::CaloHit *, Hit *>;
 
-DetectorGeometry getHepEVDGeometry(const pandora::GeometryManager *manager) {
+static DetectorGeometry getHepEVDGeometry(const pandora::GeometryManager *manager) {
 
     Volumes volumes;
 
@@ -42,7 +42,7 @@ DetectorGeometry getHepEVDGeometry(const pandora::GeometryManager *manager) {
     return DetectorGeometry(volumes);
 }
 
-HitType getHepEVDHitType(pandora::HitType pandoraHitType) {
+static HitType getHepEVDHitType(pandora::HitType pandoraHitType) {
     switch (pandoraHitType) {
     case pandora::HitType::TPC_VIEW_U:
         return HitType::TWO_D_U;
@@ -55,7 +55,7 @@ HitType getHepEVDHitType(pandora::HitType pandoraHitType) {
     }
 }
 
-Hits getHepEVD2DHits(const pandora::CaloHitList *caloHits, HepHitMap &pandoraToCaloMap, std::string label = "") {
+static Hits getHepEVD2DHits(const pandora::CaloHitList *caloHits, HepHitMap &pandoraToCaloMap, std::string label = "") {
 
     Hits hits;
 
@@ -77,7 +77,7 @@ Hits getHepEVD2DHits(const pandora::CaloHitList *caloHits, HepHitMap &pandoraToC
     return hits;
 }
 
-MCHits getHepEVDMCHits(const pandora::Algorithm &pAlgorithm, const pandora::CaloHitList *pCaloHitList) {
+static MCHits getHepEVDMCHits(const pandora::Algorithm &pAlgorithm, const pandora::CaloHitList *pCaloHitList) {
 
     MCHits mcHits;
 

@@ -55,6 +55,9 @@ as possible.
 
  - Start populating and passing over the other menu entries (vertices, other markers).
 
+ - Camera / World saving? Would be useful between plots etc, to instant go exactly back
+   to the previous zoom and position used for an event display pic.
+
  - More helper functions.
 
  - Setup a client mode -> I.e. post JSON objects to it to add them to the state.
