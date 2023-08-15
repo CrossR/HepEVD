@@ -33,9 +33,9 @@ static DetectorGeometry getHepEVDGeometry(const pandora::GeometryManager *manage
 
     for (const auto &tpcIndexPair : manager->GetLArTPCMap()) {
         const auto &lartpc = *(tpcIndexPair.second);
-        BoxVolume *larTPCVolume =
-            new BoxVolume(Position({lartpc.GetCenterX(), lartpc.GetCenterY(), lartpc.GetCenterZ()}), lartpc.GetWidthX(),
-                          lartpc.GetWidthY(), lartpc.GetWidthZ());
+        BoxVolume larTPCVolume(
+            {lartpc.GetCenterX(), lartpc.GetCenterY(), lartpc.GetCenterZ()},
+            lartpc.GetWidthX(), lartpc.GetWidthY(), lartpc.GetWidthZ());
         volumes.push_back(larTPCVolume);
     }
 
