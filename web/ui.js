@@ -56,7 +56,7 @@ export function populateTypeToggle(hitDim, hits, onClick = (_) => {}) {
   const classDiv = document.getElementById(`types_${hitDim}`);
   const entries = new Set();
 
-  hits.forEach((hit, _) => entries.add(hit.type));
+  hits.forEach((hit, _) => entries.add(hit.position.type));
 
   // If there is no entries, or only the default "Hit" class, don't bother.
   if (entries.size <= 1) {

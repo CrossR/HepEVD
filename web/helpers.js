@@ -60,11 +60,11 @@ export function getHitProperties(hits) {
     hitPropMaps.set(hit, new Map([[BUTTON_ID.All, 0.0]]));
     hitPropMaps.get(hit).set("energy", hit.energy);
 
-    if (Object.hasOwn(hit, "label")) {
+    if (hit.label !== "") {
       hitPropMaps.get(hit).set(hit.label, 1.0);
     }
 
-    if (Object.hasOwn(hit, "properties")) {
+    if (Object.keys(hit.properties).length > 0) {
       Object.entries(hit.properties).forEach((prop) => {
         hitPropMaps.get(hit).set(prop[0], prop[1]);
       });
@@ -87,10 +87,10 @@ export function getHitTypes(hits) {
   });
 
   hits.forEach((hit) => {
-    if (Object.hasOwn(hit, "type") && hit.type !== "General") {
-      const currentHitType = hit.type;
-      typeFilterMap.set(hit.type, (hit) => {
-        return hit.type === currentHitType;
+    if (hit.position.type !== "General") {
+      const currentHitType = hit.position.type;
+      typeFilterMap.set(currentHitType, (hit) => {
+        return hit.position.type === currentHitType;
       });
     }
   });
