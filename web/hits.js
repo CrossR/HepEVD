@@ -46,7 +46,8 @@ export function drawHits(group, hits, hitColours, hitConfig = {}) {
   );
 
   hits.forEach(function (hit, index) {
-    dummyObject.position.set(hit.x, hit.y, hit.z);
+    const pos = hit.position;
+    dummyObject.position.set(pos.x, pos.y, pos.z);
     dummyObject.updateMatrix();
 
     hitMesh.setMatrixAt(index, dummyObject.matrix);

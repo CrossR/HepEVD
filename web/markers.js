@@ -31,8 +31,8 @@ export function drawRings(rings, group) {
     if (ring.inner === 0) return;
     const innerRadius = ring.inner;
     const outerRadius = ring.outer;
-    const x = ring.x;
-    const z = ring.z;
+    const x = ring.position.x;
+    const y = ring.position.y;
 
     for (let i = 0; i <= segments; i++) {
       const angle = startAngle + i * theta;
@@ -40,25 +40,25 @@ export function drawRings(rings, group) {
       const sin = Math.sin(angle);
 
       const x1 = x + cos * innerRadius;
-      const z1 = z + sin * innerRadius;
+      const y1 = y + sin * innerRadius;
       const x2 = x + cos * outerRadius;
-      const z2 = z + sin * outerRadius;
+      const y2 = y + sin * outerRadius;
 
       [
-        [x1, z1],
-        [x2, z2],
-      ].forEach(([x, z]) => {
+        [x1, y1],
+        [x2, y2],
+      ].forEach(([x, y]) => {
         // First, store the new vertex.
         // We store the vertices with decreasing z values, so that
         // there is less chance of z-fighting.
         const index = vertices.length / 3;
-        vertices.push(x, z, ringNumber * -1);
+        vertices.push(x, y, ringNumber * -1);
         colors.push(1, 1, 1, 0.01);
 
         // Now, update the map.
         // Round to nearest five, so that we can group vertices together.
         // This isn't perfect, but it's good enough for now.
-        const key = `${Math.round(x / 5) * 5},${Math.round(z / 5) * 5}`;
+        const key = `${Math.round(x / 5) * 5},${Math.round(y / 5) * 5}`;
         if (vertexMap3D.has(key)) {
           vertexMap3D.get(key).push(index);
         } else {
@@ -170,7 +170,8 @@ export function drawPoints(points, group) {
   }
 
   points.forEach(function (point, index) {
-    dummyObject.position.set(point.x, point.y, point.z);
+    const pos = point.position;
+    dummyObject.position.set(pos.x, pos.y, pos.z);
     dummyObject.updateMatrix();
 
     pointMesh.setMatrixAt(index, dummyObject.matrix);

@@ -56,7 +56,7 @@ export function populateTypeToggle(hitDim, hits, onClick = (_) => {}) {
   const classDiv = document.getElementById(`types_${hitDim}`);
   const entries = new Set();
 
-  hits.forEach((hit, _) => entries.add(hit.type));
+  hits.forEach((hit, _) => entries.add(hit.position.hitType));
 
   // If there is no entries, or only the default "Hit" class, don't bother.
   if (entries.size <= 1) {
@@ -65,7 +65,13 @@ export function populateTypeToggle(hitDim, hits, onClick = (_) => {}) {
 
   entries.forEach((entry) => {
     const newButton = document.createElement("button");
-    newButton.classList.add("btn", "btn-outline", "btn-accent", "m-1", "nohover");
+    newButton.classList.add(
+      "btn",
+      "btn-outline",
+      "btn-accent",
+      "m-1",
+      "nohover",
+    );
     newButton.style.textTransform = "capitalize";
     newButton.innerText = entry;
     newButton.id = `types_${entry}`;
@@ -88,7 +94,7 @@ export function populateMarkerToggle(hitDim, markers, onClick = (_) => {}) {
   const entries = new Set();
 
   // TODO: Could potentially be extended, to use labels etc.
-  markers.forEach((marker) => entries.add(marker.marker));
+  markers.forEach((marker) => entries.add(marker.markerType));
 
   // If there is no entries, don't bother.
   if (entries.size < 1) {
@@ -97,7 +103,13 @@ export function populateMarkerToggle(hitDim, markers, onClick = (_) => {}) {
 
   entries.forEach((entry) => {
     const newButton = document.createElement("button");
-    newButton.classList.add("btn", "btn-outline", "btn-accent", "m-1", "nohover");
+    newButton.classList.add(
+      "btn",
+      "btn-outline",
+      "btn-accent",
+      "m-1",
+      "nohover",
+    );
     newButton.style.textTransform = "capitalize";
     newButton.innerText = entry;
     newButton.id = `markers_${entry}`;
@@ -163,10 +175,9 @@ export function toggleButton(hitDim, ID, fixNoneButton = true) {
   if (ID === BUTTON_ID.None && isActive) {
     const dropDown = document.getElementById(`${hitDim}_dropdown`);
 
-    Array.from(dropDown.childNodes)
-      .forEach((elem) => {
-        elem.childNodes[0].classList.remove("btn-active");
-      });
+    Array.from(dropDown.childNodes).forEach((elem) => {
+      elem.childNodes[0].classList.remove("btn-active");
+    });
   } else if (ID !== BUTTON_ID.None && isActive) {
     const noneButton = document.getElementById(`${hitDim}_${BUTTON_ID.None}`);
     noneButton.classList.remove("btn-active");

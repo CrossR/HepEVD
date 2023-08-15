@@ -33,7 +33,8 @@ export function drawBoxVolume(group, box) {
   const boxEdges = new THREE.EdgesGeometry(boxGeometry);
   const boxLines = new THREE.LineSegments(boxEdges, threeDGeoMat);
 
-  boxLines.position.set(box.x, box.y, box.z);
+  const boxPos = box.position;
+  boxLines.position.set(boxPos.x, boxPos.y, boxPos.z);
   boxLines.updateMatrixWorld();
 
   group.add(boxLines);

@@ -50,18 +50,18 @@ const threeDRenderer = new RenderState(
   "3D",
   threeDCamera,
   renderer,
-  hits.filter((hit) => hit.dim === "3D"),
-  mcHits.filter((hit) => hit.dim === "3D"),
-  markers.filter((marker) => marker.dim === "3D"),
+  hits.filter((hit) => hit.position.dim === "3D"),
+  mcHits.filter((hit) => hit.position.dim === "3D"),
+  markers.filter((marker) => marker.position.dim === "3D"),
   detectorGeometry,
 );
 const twoDRenderer = new RenderState(
   "2D",
   twoDCamera,
   renderer,
-  hits.filter((hit) => hit.dim === "2D"),
-  mcHits.filter((hit) => hit.dim === "2D"),
-  markers.filter((marker) => marker.dim === "2D"),
+  hits.filter((hit) => hit.position.dim === "2D"),
+  mcHits.filter((hit) => hit.position.dim === "2D"),
+  markers.filter((marker) => marker.position.dim === "2D"),
   detectorGeometry,
 );
 threeDRenderer.otherRenderer = twoDRenderer;

@@ -17,7 +17,7 @@ int main(void) {
         Position({182.954544067, 0, 696.293762207}),
         359.415008545, 1207.84753418, 1394.33996582
     );
-    Volumes vols({&volume1, &volume2});
+    Volumes vols({volume1, volume2});
 
     std::random_device rd;
     std::mt19937 gen(rd());
@@ -76,12 +76,12 @@ int main(void) {
 
             Hit* hit = new Hit({x, 0.f, z}, e);
             hit->setDim(TWO_D);
-            hit->setType(views[i]);
+            hit->setHitType(views[i]);
             hits.push_back(hit);
 
             MCHit* mcHit = new MCHit({disX(gen), 0.f, disZ(gen)}, pdgCodes[disPdg(gen)]);
             mcHit->setDim(TWO_D);
-            mcHit->setType(views[i]);
+            mcHit->setHitType(views[i]);
             mcHits.push_back(mcHit);
         }
     }
@@ -90,10 +90,10 @@ int main(void) {
         DetectorGeometry(vols), hits, mcHits
     );
 
-    Ring* ring = new Ring({0.0, 0.0, 0.0}, 1.0, 1.5);
-    Point* point = new Point({0.0, 0.0, 0.0});
-    ring->setDim(TWO_D);
-    point->setDim(TWO_D);
+    Ring ring({0.0, 0.0, 0.0}, 1.0, 1.5);
+    Point point({0.0, 0.0, 0.0});
+    ring.setDim(TWO_D);
+    point.setDim(TWO_D);
     server.addMarkers({ring, point});
 
     server.startServer();

@@ -9,69 +9,97 @@
 
 #include "utils.h"
 
+#include "extern/json.hpp"
+using json = nlohmann::json;
+
 #include <map>
-#include <sstream>
 #include <string>
+#include <variant>
 #include <vector>
 
 namespace HepEVD {
 
-class GeoVolume {
+enum VolumeType { BOX, SPHERE, CYLINDER };
+NLOHMANN_JSON_SERIALIZE_ENUM(VolumeType, {{BOX, "box"}, {SPHERE, "sphere"}, {CYLINDER, "cylinder"}});
+
+// Detector geometry volume to represent any 3D box.
+class BoxVolume {
   public:
-    GeoVolume(const Position &pos) : position(pos) {}
-    GeoVolume(const PosArray &pos) : position(pos) {}
-
-    friend std::ostream &operator<<(std::ostream &os, GeoVolume const &vol) {
-        os << vol.getJsonString();
-        return os;
-    }
-
-    virtual Position getCenter() const = 0;
-    virtual std::string getJsonString() const = 0;
-
-  protected:
-    Position position;
-};
-
-// Specialised detector geometry volume to represent any 3D box.
-class BoxVolume : public GeoVolume {
-  public:
+    static const VolumeType volumeType = BOX;
     static const int ARG_COUNT = 3;
 
+    BoxVolume() {}
     BoxVolume(const Position &pos, double xWidth, double yWidth, double zWidth)
-        : GeoVolume(pos), xWidth(xWidth), yWidth(yWidth), zWidth(zWidth) {}
+        : position(pos), xWidth(xWidth), yWidth(yWidth), zWidth(zWidth) {}
     BoxVolume(const PosArray &pos, double xWidth, double yWidth, double zWidth)
-        : GeoVolume(pos), xWidth(xWidth), yWidth(yWidth), zWidth(zWidth) {}
-
-    std::string getJsonString() const {
-        std::stringstream os;
-        os << "{"
-           << "\"type\": \"box\"," << this->position << ","
-           << "\"center\": {" << this->getCenter() << "},"
-           << "\"xWidth\": " << this->xWidth << ","
-           << "\"yWidth\": " << this->yWidth << ","
-           << "\"zWidth\": " << this->zWidth << "}";
-
-        return os.str();
-    }
+        : position(pos), xWidth(xWidth), yWidth(yWidth), zWidth(zWidth) {}
 
     Position getCenter() const { return this->position; }
 
-  protected:
+    // Use custom to/from_json to allow including the volume type.
+    friend void to_json(json &j, const BoxVolume &box) {
+        j["volumeType"] = BOX;
+        j["position"] = box.position;
+        j["xWidth"] = box.xWidth;
+        j["yWidth"] = box.yWidth;
+        j["zWidth"] = box.zWidth;
+    }
+
+    friend void from_json(const json &j, BoxVolume &box) {
+        j.at("position").get_to(box.position);
+        j.at("xWidth").get_to(box.xWidth);
+        j.at("yWidth").get_to(box.yWidth);
+        j.at("zWidth").get_to(box.zWidth);
+    }
+
+  private:
+    Position position;
     double xWidth, yWidth, zWidth;
 };
 
-// TODO: Extend geometry model to include lines, sphere, cylinder etc.
-enum VolumeType { BOX, LINE, SPHERE, CYLINDER };
-
-using Volumes = std::vector<GeoVolume *>;
+// Volumes vector to hold all possible detector geometry volumes.
+using AllVolumes = std::variant<BoxVolume>;
+using Volumes = std::vector<AllVolumes>;
 using VolumeMap = std::map<VolumeType, std::vector<double>>;
+
+// Define the required JSON formatters for the detector geometry volumes.
+inline static void to_json(json &j, const AllVolumes &vol) {
+    std::visit([&j](const auto &vol) { j = vol; }, vol);
+}
+inline static void to_json(json &j, const Volumes &vols) {
+
+    if (vols.size() == 0) {
+        j = json::array();
+        return;
+    }
+    for (const auto &vol : vols) {
+        std::visit([&j](const auto &vol) { j.push_back(vol); }, vol);
+    }
+}
+
+// Parse the vector of Detector volumes...
+inline static void from_json(const json &j, Volumes &vols) {
+    for (const auto &vol : j.at("volumes")) {
+        VolumeType type = vol.at("volumeType").get<VolumeType>();
+
+        switch (type) {
+        case BOX: {
+            BoxVolume boxVolume(vol);
+            vols.push_back(boxVolume);
+            break;
+        }
+        default:
+            throw std::invalid_argument("Unknown volume type given!");
+        }
+    }
+}
 
 // Top-level detector geometry, with a detector being composed of
 // at least one geometry volume.
 class DetectorGeometry {
 
   public:
+    DetectorGeometry() : volumes({}) {}
     DetectorGeometry(Volumes &vols) : volumes(vols) {}
 
     ~DetectorGeometry() { this->volumes.clear(); }
@@ -92,11 +120,10 @@ class DetectorGeometry {
                 if (volume.second.size() - 3 != BoxVolume::ARG_COUNT)
                     throw std::invalid_argument("A box volume needs 6 inputs!");
                 BoxVolume boxVolume(pos, params[3], params[4], params[5]);
-                volumes.push_back(&boxVolume);
+                volumes.push_back(boxVolume);
 
                 break;
             }
-            case LINE:
             case SPHERE:
             case CYLINDER:
                 throw std::logic_error("Geometry not yet implemented!");
@@ -106,18 +133,9 @@ class DetectorGeometry {
         }
     }
 
-    friend std::ostream &operator<<(std::ostream &os, DetectorGeometry const &geo) {
-        if (geo.volumes.size() == 0)
-            return os;
+    NLOHMANN_DEFINE_TYPE_INTRUSIVE(DetectorGeometry, volumes);
 
-        for (const auto &volume : geo.volumes)
-            os << *volume << ",";
-
-        os.seekp(-1, os.cur);
-        return os;
-    }
-
-  protected:
+  private:
     Volumes volumes;
 };
 
