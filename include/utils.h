@@ -30,16 +30,14 @@ class Position {
     Position() : x(0.0), y(0.0), z(0.0) {}
     Position(const PosArray &pos) : x(pos[0]), y(pos[1]), z(pos[2]) {}
 
-    friend std::ostream &operator<<(std::ostream &os, Position const &pos) {
-        os << "\"x\": " << pos.x << ","
-           << "\"y\": " << pos.y << ","
-           << "\"z\": " << pos.z;
-        return os;
-    }
+    void setDim(HitDimension d) { dim = d; }
+    void setType(HitType t) { type = t; }
 
-    NLOHMANN_DEFINE_TYPE_INTRUSIVE(Position, x, y, z);
+    NLOHMANN_DEFINE_TYPE_INTRUSIVE(Position, x, y, z, dim, type);
 
     double x, y, z;
+    HitDimension dim = THREE_D;
+    HitType type = GENERAL;
 };
 
 }; // namespace HepEVD

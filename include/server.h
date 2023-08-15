@@ -121,17 +121,18 @@ inline void HepEVDServer::startServer() {
 
     // Simple commands to return the currently understood server state.
     this->server.Get("/hits", [&](const Request &, Response &res) {
-        res.set_content(this->jsonify<Hit *>(this->hits), "application/json");
+        json j(this->hits);
+        res.set_content(j.dump(), "application/json");
     });
     this->server.Get("/mcHits", [&](const Request &, Response &res) {
-        res.set_content(this->jsonify<MCHit *>(this->mcHits), "application/json");
+        json j(this->mcHits);
+        res.set_content(j.dump(), "application/json");
     });
     this->server.Get("/markers", [&](const Request &, Response &res) {
         res.set_content(this->jsonify<Marker *>(this->markers), "application/json");
     });
     this->server.Get("/geometry", [&](const Request &, Response &res) {
         json j(this->geometry);
-        std::cout << j.dump() << std::endl;
         res.set_content(j.dump(), "application/json");
     });
 

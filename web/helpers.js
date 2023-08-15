@@ -32,7 +32,10 @@ export function getMinMax(arr, prop) {
  * @returns {Object} An object containing the center, width, minimum and maximum values of the given axis.
  */
 export function getHitBoundaries(hits, axis) {
-  const minMax = getMinMax(hits, axis);
+  const positions = hits.map((hit) => {
+    return hit.position;
+  });
+  const minMax = getMinMax(positions, axis);
 
   const center = (minMax[0] + minMax[1]) / 2 ?? 0.0;
   const width = Math.abs(minMax[0] - minMax[1]);
