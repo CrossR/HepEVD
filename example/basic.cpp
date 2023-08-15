@@ -100,10 +100,10 @@ int main(void) {
     );
 
     std::cout << "Adding markers...\n";
-    Ring* ring = new Ring({0.0, 0.0, 0.0}, 1.0, 1.5);
-    Point* point = new Point({0.0, 0.0, 0.0});
-    ring->setDim(TWO_D);
-    point->setDim(TWO_D);
+    Ring ring({0.0, 0.0, 0.0}, 1.0, 1.5);
+    Point point({0.0, 0.0, 0.0});
+    ring.setDim(TWO_D);
+    point.setDim(TWO_D);
     server.addMarkers({ring, point});
 
     std::cout << "All done, starting server...\n";
