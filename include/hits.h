@@ -52,7 +52,7 @@ class Hit {
 };
 using Hits = std::vector<Hit *>;
 
-static void to_json(json &j, const Hits &hits) {
+inline static void to_json(json &j, const Hits &hits) {
 
     if (hits.size() == 0) {
         j = json::array();
@@ -64,7 +64,7 @@ static void to_json(json &j, const Hits &hits) {
     }
 }
 
-static void from_json(const json &j, Hits &hits) {
+inline static void from_json(const json &j, Hits &hits) {
     for (const auto &hit : j) {
         hits.push_back(new Hit(hit));
     }
@@ -85,7 +85,7 @@ class MCHit : public Hit {
 };
 using MCHits = std::vector<MCHit *>;
 
-static void to_json(json &j, const MCHits &hits) {
+inline static void to_json(json &j, const MCHits &hits) {
 
     if (hits.size() == 0) {
         j = json::array();
@@ -97,7 +97,7 @@ static void to_json(json &j, const MCHits &hits) {
     }
 }
 
-static void from_json(const json &j, MCHits &hits) {
+inline static void from_json(const json &j, MCHits &hits) {
     for (const auto &hit : j) {
         hits.push_back(new MCHit(hit));
     }

@@ -86,10 +86,10 @@ using AllMarkers = std::variant<Point, Line, Ring>;
 using Markers = std::vector<AllMarkers>;
 
 // Define the required JSON formatters for the markers variant.
-static void to_json(json &j, const AllMarkers &marker) {
+inline static void to_json(json &j, const AllMarkers &marker) {
     std::visit([&j](const auto &marker) { j = marker; }, marker);
 }
-static void to_json(json &j, const Markers &markers) {
+inline static void to_json(json &j, const Markers &markers) {
 
     if (markers.size() == 0) {
         j = json::array();
@@ -101,7 +101,7 @@ static void to_json(json &j, const Markers &markers) {
     }
 }
 
-static void from_json(const json &j, Markers &markers) {
+inline static void from_json(const json &j, Markers &markers) {
     for (const auto &marker : j.at("markers")) {
         MarkerType markerType = marker.at("markerType").get<MarkerType>();
 
