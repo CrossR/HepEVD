@@ -73,9 +73,6 @@ class HepEVDServer {
     }
 
   private:
-    template <typename T> std::string jsonify(const std::vector<T> &data);
-    template <typename T> std::string jsonify(const T &data);
-
     httplib::Server server;
 
     DetectorGeometry geometry;
@@ -85,35 +82,6 @@ class HepEVDServer {
     std::string mcTruth;
 };
 
-// Produce a full JSON representation of the given items.
-template <typename T> inline std::string HepEVDServer::jsonify(const std::vector<T> &data) {
-
-    if (data.size() == 0) {
-        return "[]";
-    }
-
-    std::stringstream json_string;
-    json_string << "[";
-
-    for (const auto &dataPoint : data) {
-        if constexpr (std::is_pointer<T>::value)
-            json_string << *dataPoint << ",";
-        else
-            json_string << dataPoint << ",";
-    }
-
-    // Move the stringstream write head back one char,
-    // removing the trailing comma, then close the JSON.
-    json_string.seekp(-1, json_string.cur);
-    json_string << "]";
-
-    return json_string.str();
-}
-
-template <typename T> inline std::string HepEVDServer::jsonify(const T &data) {
-    return HepEVDServer::jsonify(std::vector<T>({data}));
-}
-
 // Run the actual server, spinning up the API endpoints and serving the
 // HTML/JS required for the event display.
 inline void HepEVDServer::startServer() {
@@ -121,19 +89,16 @@ inline void HepEVDServer::startServer() {
 
     // Simple commands to return the currently understood server state.
     this->server.Get("/hits", [&](const Request &, Response &res) {
-        json j(this->hits);
-        res.set_content(j.dump(), "application/json");
+        res.set_content(json(this->hits).dump(), "application/json");
     });
     this->server.Get("/mcHits", [&](const Request &, Response &res) {
-        json j(this->mcHits);
-        res.set_content(j.dump(), "application/json");
+        res.set_content(json(this->mcHits).dump(), "application/json");
     });
     this->server.Get("/markers", [&](const Request &, Response &res) {
         res.set_content(json(this->markers).dump(), "application/json");
     });
     this->server.Get("/geometry", [&](const Request &, Response &res) {
-        json j(this->geometry);
-        res.set_content(j.dump(), "application/json");
+        res.set_content(json(this->geometry).dump(), "application/json");
     });
 
     // Management controls...
