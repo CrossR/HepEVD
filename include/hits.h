@@ -30,7 +30,7 @@ class Hit {
     Hit(const PosArray &pos, double e = 0) : position(pos), energy(e) {}
 
     void setDim(const HitDimension &dim) { this->position.setDim(dim); }
-    void setType(const HitType &type) { this->position.setType(type); }
+    void setHitType(const HitType &hitType) { this->position.setHitType(hitType); }
     void setLabel(const std::string &str) { this->label = str; }
 
     // TODO: This may want to be extensible. I.e. string -> double + other

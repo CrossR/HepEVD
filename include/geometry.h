@@ -80,7 +80,7 @@ static void to_json(json &j, const Volumes &vols) {
 // Parse the vector of Detector volumes...
 static void from_json(const json &j, Volumes &vols) {
     for (const auto &vol : j.at("volumes")) {
-        VolumeType type = vol.at("type").get<VolumeType>();
+        VolumeType type = vol.at("volumeType").get<VolumeType>();
 
         switch (type) {
         case BOX: {

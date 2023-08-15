@@ -76,12 +76,12 @@ int main(void) {
 
             Hit* hit = new Hit({x, 0.f, z}, e);
             hit->setDim(TWO_D);
-            hit->setType(views[i]);
+            hit->setHitType(views[i]);
             hits.push_back(hit);
 
             MCHit* mcHit = new MCHit({disX(gen), 0.f, disZ(gen)}, pdgCodes[disPdg(gen)]);
             mcHit->setDim(TWO_D);
-            mcHit->setType(views[i]);
+            mcHit->setHitType(views[i]);
             mcHits.push_back(mcHit);
         }
     }

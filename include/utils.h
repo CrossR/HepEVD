@@ -31,24 +31,24 @@ class Position {
     Position(const PosArray &pos) : x(pos[0]), y(pos[1]), z(pos[2]) {}
 
     void setDim(HitDimension d) { dim = d; }
-    void setType(HitType t) { type = t; }
+    void setHitType(HitType t) { hitType = t; }
 
     // When converting to JSON, we want to convert 2D positoins to use
     // XY, not XZ.
     friend void to_json(json &j, const Position &pos) {
         if (pos.dim == THREE_D) {
-            j = {{"x", pos.x}, {"y", pos.y}, {"z", pos.z}, {"dim", pos.dim}, {"type", pos.type}};
+            j = {{"x", pos.x}, {"y", pos.y}, {"z", pos.z}, {"dim", pos.dim}, {"hitType", pos.hitType}};
             return;
         }
 
-        j = {{"x", pos.x}, {"y", pos.z}, {"z", 0.0}, {"dim", pos.dim}, {"type", pos.type}};
+        j = {{"x", pos.x}, {"y", pos.z}, {"z", 0.0}, {"dim", pos.dim}, {"hitType", pos.hitType}};
         return;
     }
 
     // That means we need to convert from XY to XZ when reading from JSON.
     friend void from_json(const json &j, Position &pos) {
         j.at("dim").get_to(pos.dim);
-        j.at("type").get_to(pos.type);
+        j.at("hitType").get_to(pos.hitType);
 
         if (pos.dim == THREE_D) {
             j.at("x").get_to(pos.x);
@@ -65,7 +65,7 @@ class Position {
 
     double x, y, z;
     HitDimension dim = THREE_D;
-    HitType type = GENERAL;
+    HitType hitType = GENERAL;
 };
 
 }; // namespace HepEVD

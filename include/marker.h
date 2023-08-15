@@ -31,7 +31,7 @@ class Marker {
     Marker() {}
     Marker(const PosArray &pos) : position(pos) {}
     void setDim(const HitDimension &dim) { this->position.setDim(dim); }
-    void setType(const HitType &type) { this->position.setType(type); }
+    void setHitType(const HitType &hitType) { this->position.setHitType(hitType); }
     void setColour(const std::string colour) { this->colour = colour; }
     void setLabel(const std::string label) { this->label = label; }
 
@@ -47,10 +47,10 @@ class Point : public Marker {
     Point() {}
     Point(const PosArray &pos) : Marker(pos) {}
 
-    NLOHMANN_DEFINE_TYPE_INTRUSIVE(Point, type, position, colour, label);
+    NLOHMANN_DEFINE_TYPE_INTRUSIVE(Point, markerType, position, colour, label);
 
   private:
-    MarkerType type = POINT;
+    MarkerType markerType = POINT;
 };
 
 // A line is a 3D line between two 3D points.
@@ -59,10 +59,10 @@ class Line : public Marker {
     Line() {}
     Line(const PosArray &start, const PosArray &end) : Marker(start), end(end) {}
 
-    NLOHMANN_DEFINE_TYPE_INTRUSIVE(Line, type, end, position, colour, label);
+    NLOHMANN_DEFINE_TYPE_INTRUSIVE(Line, markerType, end, position, colour, label);
 
   private:
-    MarkerType type = LINE;
+    MarkerType markerType = LINE;
 
     Position end;
 };
@@ -73,10 +73,10 @@ class Ring : public Marker {
     Ring() {}
     Ring(const PosArray &center, const double inner, const double outer) : Marker(center), inner(inner), outer(outer) {}
 
-    NLOHMANN_DEFINE_TYPE_INTRUSIVE(Ring, type, inner, outer, position, colour, label);
+    NLOHMANN_DEFINE_TYPE_INTRUSIVE(Ring, markerType, inner, outer, position, colour, label);
 
   private:
-    MarkerType type = RING;
+    MarkerType markerType = RING;
 
     double inner;
     double outer;
@@ -103,9 +103,9 @@ static void to_json(json &j, const Markers &markers) {
 
 static void from_json(const json &j, Markers &markers) {
     for (const auto &marker : j.at("markers")) {
-        MarkerType type = marker.at("type").get<MarkerType>();
+        MarkerType markerType = marker.at("markerType").get<MarkerType>();
 
-        switch (type) {
+        switch (markerType) {
         case POINT: {
             Point point(marker);
             markers.push_back(point);
@@ -122,7 +122,7 @@ static void from_json(const json &j, Markers &markers) {
             break;
         }
         default:
-            throw std::invalid_argument("Unknown volume type given!");
+            throw std::invalid_argument("Unknown marker type given!");
         }
     }
 }

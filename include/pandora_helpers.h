@@ -68,7 +68,7 @@ static Hits getHepEVD2DHits(const pandora::CaloHitList *caloHits, HepHitMap &pan
             hit->setLabel(label);
 
         hit->setDim(HitDimension::TWO_D);
-        hit->setType(getHepEVDHitType(pCaloHit->GetHitType()));
+        hit->setHitType(getHepEVDHitType(pCaloHit->GetHitType()));
 
         hits.push_back(hit);
         pandoraToCaloMap.insert({pCaloHit, hit});
@@ -110,7 +110,7 @@ static MCHits getHepEVDMCHits(const pandora::Algorithm &pAlgorithm, const pandor
                                      caloHit->GetMipEquivalentEnergy());
 
             mcHit->setDim(HitDimension::TWO_D);
-            mcHit->setType(getHepEVDHitType(caloHit->GetHitType()));
+            mcHit->setHitType(getHepEVDHitType(caloHit->GetHitType()));
 
             mcHits.push_back(mcHit);
         }
