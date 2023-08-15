@@ -127,7 +127,6 @@ inline static void from_json(const json &j, Markers &markers) {
     }
 }
 
-
 }; // namespace HepEVD
 
 #endif // HEP_EVD_MARKER_H

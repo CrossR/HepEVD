@@ -176,7 +176,10 @@ export class RenderState {
 
     // First, do the actual hits...
     this.hits.forEach((hit) => {
-      if (this.activeHitTypes.size > 0 && !this.activeHitTypes.has(hit.position.hitType))
+      if (
+        this.activeHitTypes.size > 0 &&
+        !this.activeHitTypes.has(hit.position.hitType)
+      )
         return;
       Array.from(this.activeHitProps)
         .reverse()
@@ -191,7 +194,10 @@ export class RenderState {
 
     // Then repeat for the MC hits, but skip the hit properties bit.
     this.mcHits.forEach((hit) => {
-      if (this.activeHitTypes.size > 0 && !this.activeHitTypes.has(hit.position.hitType))
+      if (
+        this.activeHitTypes.size > 0 &&
+        !this.activeHitTypes.has(hit.position.hitType)
+      )
         return;
       newMCHits.push(hit);
     });

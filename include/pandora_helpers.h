@@ -33,9 +33,8 @@ static DetectorGeometry getHepEVDGeometry(const pandora::GeometryManager *manage
 
     for (const auto &tpcIndexPair : manager->GetLArTPCMap()) {
         const auto &lartpc = *(tpcIndexPair.second);
-        BoxVolume larTPCVolume(
-            {lartpc.GetCenterX(), lartpc.GetCenterY(), lartpc.GetCenterZ()},
-            lartpc.GetWidthX(), lartpc.GetWidthY(), lartpc.GetWidthZ());
+        BoxVolume larTPCVolume({lartpc.GetCenterX(), lartpc.GetCenterY(), lartpc.GetCenterZ()}, lartpc.GetWidthX(),
+                               lartpc.GetWidthY(), lartpc.GetWidthZ());
         volumes.push_back(larTPCVolume);
     }
 
@@ -61,8 +60,7 @@ static Hits getHepEVD2DHits(const pandora::CaloHitList *caloHits, HepHitMap &pan
 
     for (const pandora::CaloHit *const pCaloHit : *caloHits) {
         const auto pos = pCaloHit->GetPositionVector();
-        Hit *hit =
-            new Hit({pos.GetX(), pos.GetY(), pos.GetZ()}, pCaloHit->GetMipEquivalentEnergy());
+        Hit *hit = new Hit({pos.GetX(), pos.GetY(), pos.GetZ()}, pCaloHit->GetMipEquivalentEnergy());
 
         if (label != "")
             hit->setLabel(label);

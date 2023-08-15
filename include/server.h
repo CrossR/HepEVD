@@ -88,9 +88,8 @@ inline void HepEVDServer::startServer() {
     using namespace httplib;
 
     // Simple commands to return the currently understood server state.
-    this->server.Get("/hits", [&](const Request &, Response &res) {
-        res.set_content(json(this->hits).dump(), "application/json");
-    });
+    this->server.Get(
+        "/hits", [&](const Request &, Response &res) { res.set_content(json(this->hits).dump(), "application/json"); });
     this->server.Get("/mcHits", [&](const Request &, Response &res) {
         res.set_content(json(this->mcHits).dump(), "application/json");
     });
