@@ -53,6 +53,12 @@ class Hit {
 using Hits = std::vector<Hit *>;
 
 static void to_json(json &j, const Hits &hits) {
+
+    if (hits.size() == 0) {
+        j = json::array();
+        return;
+    }
+
     for (const auto &hit : hits) {
         j.push_back(*hit);
     }
@@ -80,6 +86,12 @@ class MCHit : public Hit {
 using MCHits = std::vector<MCHit *>;
 
 static void to_json(json &j, const MCHits &hits) {
+
+    if (hits.size() == 0) {
+        j = json::array();
+        return;
+    }
+
     for (const auto &hit : hits) {
         j.push_back(*hit);
     }

@@ -67,6 +67,11 @@ static void to_json(json &j, const AllVolumes &vol) {
     std::visit([&j](const auto &vol) { j = vol; }, vol);
 }
 static void to_json(json &j, const Volumes &vols) {
+
+    if (vols.size() == 0) {
+        j = json::array();
+        return;
+    }
     for (const auto &vol : vols) {
         std::visit([&j](const auto &vol) { j.push_back(vol); }, vol);
     }

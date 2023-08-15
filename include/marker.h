@@ -90,6 +90,12 @@ static void to_json(json &j, const AllMarkers &marker) {
     std::visit([&j](const auto &marker) { j = marker; }, marker);
 }
 static void to_json(json &j, const Markers &markers) {
+
+    if (markers.size() == 0) {
+        j = json::array();
+        return;
+    }
+
     for (const auto &marker : markers) {
         std::visit([&j](const auto &marker) { j.push_back(marker); }, marker);
     }
