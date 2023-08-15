@@ -115,8 +115,7 @@ class MCHit : public Hit {
     MCHit(const Position &pos, const double pdgCode, const double energy = 0) : Hit(pos, energy) {
         this->addProperties({{"PDG", pdgCode}});
     }
-    MCHit(const PosArray &pos, const double pdgCode, const double energy = 0)
-        : Hit(pos, t, energy) {
+    MCHit(const PosArray &pos, const double pdgCode, const double energy = 0) : Hit(pos, energy) {
         this->addProperties({{"PDG", pdgCode}});
     }
 };

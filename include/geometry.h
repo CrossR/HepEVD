@@ -25,7 +25,7 @@ NLOHMANN_JSON_SERIALIZE_ENUM(VolumeType, {{BOX, "box"}, {LINE, "line"}, {SPHERE,
 // Detector geometry volume to represent any 3D box.
 class BoxVolume {
   public:
-    static const VolumeType type = BOX;
+    static const VolumeType volumeType = BOX;
     static const int ARG_COUNT = 3;
 
     BoxVolume(const Position &pos, double xWidth, double yWidth, double zWidth)
@@ -35,7 +35,21 @@ class BoxVolume {
 
     Position getCenter() const { return this->position; }
 
-    NLOHMANN_DEFINE_TYPE_INTRUSIVE(BoxVolume, position, xWidth, yWidth, zWidth);
+    // Use custom to/from_json to allow including the volume type.
+    friend void to_json(json &j, const BoxVolume &box) {
+        j["volumeType"] = BOX;
+        j["position"] = box.position;
+        j["xWidth"] = box.xWidth;
+        j["yWidth"] = box.yWidth;
+        j["zWidth"] = box.zWidth;
+    }
+
+    friend void from_json(const json &j, BoxVolume &box) {
+        j.at("position").get_to(box.position);
+        j.at("xWidth").get_to(box.xWidth);
+        j.at("yWidth").get_to(box.yWidth);
+        j.at("zWidth").get_to(box.zWidth);
+    }
 
   private:
     Position position;
@@ -51,23 +65,29 @@ using VolumeMap = std::map<VolumeType, std::vector<double>>;
 void to_json(json &j, const AllVolumes &vol) {
     std::visit([&j](const auto &vol) { j = vol; }, vol);
 }
-void to_json(json &j, const Volumes &vols) { j = json{{"volumes", vols}}; }
-
-void from_json(const json &j, AllVolumes &vol) {
-    Position pos = j.get<Position>();
-    VolumeType type = j.at("type").get<VolumeType>();
-
-    switch (type) {
-    case BOX: {
-        BoxVolume boxVolume(pos, pos.x, pos.y, pos.z);
-        vol = boxVolume;
-        break;
-    }
-    default:
-        throw std::invalid_argument("Unknown volume type given!");
+void to_json(json &j, const Volumes &vols) {
+    for (const auto &vol : vols) {
+        std::visit([&j](const auto &vol) { j.push_back(vol); }, vol);
     }
 }
-void from_json(const json &j, Volumes &vols) { vols = j.at("volumes").get<Volumes>(); }
+
+// Parse the vector of Detector volumes...
+void from_json(const json &j, Volumes &vols) {
+    for (const auto &vol : j.at("volumes")) {
+        Position pos = vol.get<Position>();
+        VolumeType type = vol.at("type").get<VolumeType>();
+
+        switch (type) {
+        case BOX: {
+            BoxVolume boxVolume(pos, pos.x, pos.y, pos.z);
+            vols.push_back(boxVolume);
+            break;
+        }
+        default:
+            throw std::invalid_argument("Unknown volume type given!");
+        }
+    }
+}
 
 // Top-level detector geometry, with a detector being composed of
 // at least one geometry volume.

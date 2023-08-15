@@ -96,8 +96,8 @@ export class RenderState {
     this.detGeoGroup.clear();
 
     // For now, just render the box geometry and nothing else.
-    const boxVolumes = this.detectorGeometry.filter(
-      (volume) => volume.type === "box",
+    const boxVolumes = this.detectorGeometry.volumes.filter(
+      (volume) => volume.volumeType === "box",
     );
     boxVolumes.forEach((box) =>
       drawBox(this.hitDim, this.detGeoGroup, this.hits, box),
