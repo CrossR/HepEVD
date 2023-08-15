@@ -12,99 +12,115 @@
 #include "hits.h"
 #include "utils.h"
 
+#include "extern/json.hpp"
+using json = nlohmann::json;
+
 #include <array>
 #include <sstream>
 #include <string>
+#include <variant>
 
 namespace HepEVD {
+
+enum MarkerType { POINT, LINE, RING };
+NLOHMANN_JSON_SERIALIZE_ENUM(MarkerType, {{POINT, "Point"}, {LINE, "Line"}, {RING, "Ring"}});
 
 // High level Marker class, defining the things that every marker has.
 class Marker {
   public:
+    Marker() {}
+    Marker(const PosArray &pos) : position(pos) {}
+    void setDim(const HitDimension &dim) { this->position.setDim(dim); }
+    void setType(const HitType &type) { this->position.setType(type); }
     void setColour(const std::string colour) { this->colour = colour; }
     void setLabel(const std::string label) { this->label = label; }
-    void setDim(const HitDimension &dim) { this->dim = dim; }
-    void setType(const HitType &type) { this->type = type; }
-
-    friend std::ostream &operator<<(std::ostream &os, Marker const &marker) {
-        os << "{"
-           << "\"dim\": \"" << hitDimToString(marker.dim) << "\","
-           << "\"type\": \"" << hitTypeToString(marker.type) << "\","
-           << "\"label\": \"" << marker.label << "\","
-           << "\"colour\": \"" << marker.colour << "\"," << marker.getJsonString() << "}";
-        return os;
-    }
-
-    virtual std::string getJsonString() const = 0;
 
   protected:
-    HitDimension dim = HitDimension::THREE_D;
-    HitType type = HitType::GENERAL;
+    Position position;
     std::string colour;
     std::string label;
 };
 
-using Markers = std::vector<Marker *>;
-
-// A point is just a single 3D location.
+// A point is just a single 2D/3D location.
 class Point : public Marker {
   public:
-    Point(const PosArray &pos) : position(pos) {}
+    Point() {}
+    Point(const PosArray &pos) : Marker(pos) {}
 
-    std::string getJsonString() const {
-        std::stringstream os;
-
-        Position pos(this->position);
-
-        if (this->dim == TWO_D) {
-            pos.y = pos.z;
-            pos.z = 0;
-        }
-
-        os << "\"marker\": \"point\"," << pos;
-        return os.str();
-    }
+    NLOHMANN_DEFINE_TYPE_INTRUSIVE(Point, type, position, colour, label);
 
   private:
-    Position position;
+    MarkerType type = POINT;
 };
 
 // A line is a 3D line between two 3D points.
 class Line : public Marker {
   public:
-    Line(const PosArray &start, const PosArray &end) : start(start), end(end) {}
+    Line() {}
+    Line(const PosArray &start, const PosArray &end) : Marker(start), end(end) {}
 
-    std::string getJsonString() const {
-        std::stringstream os;
-        os << "\"marker\": \"line\","
-           << "\"start\": {" << this->start << "}, "
-           << "\"end\": {" << this->end << "}";
-        return os.str();
-    }
+    NLOHMANN_DEFINE_TYPE_INTRUSIVE(Line, type, end, position, colour, label);
 
   private:
-    Position start;
+    MarkerType type = LINE;
+
     Position end;
 };
 
 // A ring is represented by centre point, and then an inner and outer radius.
 class Ring : public Marker {
   public:
-    Ring(const PosArray &center, const double inner, const double outer) : center(center), inner(inner), outer(outer) {}
+    Ring() {}
+    Ring(const PosArray &center, const double inner, const double outer) : Marker(center), inner(inner), outer(outer) {}
 
-    std::string getJsonString() const {
-        std::stringstream os;
-        os << "\"marker\": \"ring\"," << this->center << ", "
-           << "\"inner\": " << this->inner << ","
-           << "\"outer\": " << this->outer;
-        return os.str();
-    }
+    NLOHMANN_DEFINE_TYPE_INTRUSIVE(Ring, type, inner, outer, position, colour, label);
 
   private:
-    Position center;
+    MarkerType type = RING;
+
     double inner;
     double outer;
 };
+
+using AllMarkers = std::variant<Point, Line, Ring>;
+using Markers = std::vector<AllMarkers>;
+
+// Define the required JSON formatters for the markers variant.
+void to_json(json &j, const AllMarkers &marker) {
+    std::visit([&j](const auto &marker) { j = marker; }, marker);
+}
+void to_json(json &j, const Markers &markers) {
+    for (const auto &marker : markers) {
+        std::visit([&j](const auto &marker) { j.push_back(marker); }, marker);
+    }
+}
+
+void from_json(const json &j, Markers &markers) {
+    for (const auto &marker : j.at("markers")) {
+        MarkerType type = marker.at("type").get<MarkerType>();
+
+        switch (type) {
+        case POINT: {
+            Point point(marker);
+            markers.push_back(point);
+            break;
+        }
+        case LINE: {
+            Line line(marker);
+            markers.push_back(line);
+            break;
+        }
+        case RING: {
+            Ring ring(marker);
+            markers.push_back(ring);
+            break;
+        }
+        default:
+            throw std::invalid_argument("Unknown volume type given!");
+        }
+    }
+}
+
 
 }; // namespace HepEVD
 

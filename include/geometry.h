@@ -19,8 +19,8 @@ using json = nlohmann::json;
 
 namespace HepEVD {
 
-enum VolumeType { BOX, LINE, SPHERE, CYLINDER };
-NLOHMANN_JSON_SERIALIZE_ENUM(VolumeType, {{BOX, "box"}, {LINE, "line"}, {SPHERE, "sphere"}, {CYLINDER, "cylinder"}});
+enum VolumeType { BOX, SPHERE, CYLINDER };
+NLOHMANN_JSON_SERIALIZE_ENUM(VolumeType, {{BOX, "box"}, {SPHERE, "sphere"}, {CYLINDER, "cylinder"}});
 
 // Detector geometry volume to represent any 3D box.
 class BoxVolume {
@@ -28,6 +28,7 @@ class BoxVolume {
     static const VolumeType volumeType = BOX;
     static const int ARG_COUNT = 3;
 
+    BoxVolume() {}
     BoxVolume(const Position &pos, double xWidth, double yWidth, double zWidth)
         : position(pos), xWidth(xWidth), yWidth(yWidth), zWidth(zWidth) {}
     BoxVolume(const PosArray &pos, double xWidth, double yWidth, double zWidth)
@@ -74,12 +75,11 @@ void to_json(json &j, const Volumes &vols) {
 // Parse the vector of Detector volumes...
 void from_json(const json &j, Volumes &vols) {
     for (const auto &vol : j.at("volumes")) {
-        Position pos = vol.get<Position>();
         VolumeType type = vol.at("type").get<VolumeType>();
 
         switch (type) {
         case BOX: {
-            BoxVolume boxVolume(pos, pos.x, pos.y, pos.z);
+            BoxVolume boxVolume(vol);
             vols.push_back(boxVolume);
             break;
         }
@@ -119,7 +119,6 @@ class DetectorGeometry {
 
                 break;
             }
-            case LINE:
             case SPHERE:
             case CYLINDER:
                 throw std::logic_error("Geometry not yet implemented!");

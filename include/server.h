@@ -129,7 +129,7 @@ inline void HepEVDServer::startServer() {
         res.set_content(j.dump(), "application/json");
     });
     this->server.Get("/markers", [&](const Request &, Response &res) {
-        res.set_content(this->jsonify<Marker *>(this->markers), "application/json");
+        res.set_content(json(this->markers).dump(), "application/json");
     });
     this->server.Get("/geometry", [&](const Request &, Response &res) {
         json j(this->geometry);
