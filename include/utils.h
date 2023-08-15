@@ -33,7 +33,35 @@ class Position {
     void setDim(HitDimension d) { dim = d; }
     void setType(HitType t) { type = t; }
 
-    NLOHMANN_DEFINE_TYPE_INTRUSIVE(Position, x, y, z, dim, type);
+    // When converting to JSON, we want to convert 2D positoins to use
+    // XY, not XZ.
+    friend void to_json(json &j, const Position &pos) {
+        if (pos.dim == THREE_D) {
+            j = {{"x", pos.x}, {"y", pos.y}, {"z", pos.z}, {"dim", pos.dim}, {"type", pos.type}};
+            return;
+        }
+
+        j = {{"x", pos.x}, {"y", pos.z}, {"z", 0.0}, {"dim", pos.dim}, {"type", pos.type}};
+        return;
+    }
+
+    // That means we need to convert from XY to XZ when reading from JSON.
+    friend void from_json(const json &j, Position &pos) {
+        j.at("dim").get_to(pos.dim);
+        j.at("type").get_to(pos.type);
+
+        if (pos.dim == THREE_D) {
+            j.at("x").get_to(pos.x);
+            j.at("y").get_to(pos.y);
+            j.at("z").get_to(pos.z);
+        } else {
+            j.at("x").get_to(pos.x);
+            j.at("y").get_to(pos.z);
+            pos.y = 0.0;
+        }
+
+        return;
+    }
 
     double x, y, z;
     HitDimension dim = THREE_D;
