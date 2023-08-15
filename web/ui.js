@@ -56,7 +56,7 @@ export function populateTypeToggle(hitDim, hits, onClick = (_) => {}) {
   const classDiv = document.getElementById(`types_${hitDim}`);
   const entries = new Set();
 
-  hits.forEach((hit, _) => entries.add(hit.position.type));
+  hits.forEach((hit, _) => entries.add(hit.position.hitType));
 
   // If there is no entries, or only the default "Hit" class, don't bother.
   if (entries.size <= 1) {
@@ -88,7 +88,7 @@ export function populateMarkerToggle(hitDim, markers, onClick = (_) => {}) {
   const entries = new Set();
 
   // TODO: Could potentially be extended, to use labels etc.
-  markers.forEach((marker) => entries.add(marker.marker));
+  markers.forEach((marker) => entries.add(marker.markerType));
 
   // If there is no entries, don't bother.
   if (entries.size < 1) {

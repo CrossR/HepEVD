@@ -153,11 +153,11 @@ export class RenderState {
     this.markerGroup.clear();
 
     drawRings(
-      this.activeMarkers.filter((marker) => marker.marker === "ring"),
+      this.activeMarkers.filter((marker) => marker.markerType === "Ring"),
       this.markerGroup,
     );
     drawPoints(
-      this.activeMarkers.filter((marker) => marker.marker === "point"),
+      this.activeMarkers.filter((marker) => marker.markerType === "Point"),
       this.markerGroup,
     );
 
@@ -176,7 +176,7 @@ export class RenderState {
 
     // First, do the actual hits...
     this.hits.forEach((hit) => {
-      if (this.activeHitTypes.size > 0 && !this.activeHitTypes.has(hit.position.type))
+      if (this.activeHitTypes.size > 0 && !this.activeHitTypes.has(hit.position.hitType))
         return;
       Array.from(this.activeHitProps)
         .reverse()
@@ -191,7 +191,7 @@ export class RenderState {
 
     // Then repeat for the MC hits, but skip the hit properties bit.
     this.mcHits.forEach((hit) => {
-      if (this.activeHitTypes.size > 0 && !this.activeHitTypes.has(hit.position.type))
+      if (this.activeHitTypes.size > 0 && !this.activeHitTypes.has(hit.position.hitType))
         return;
       newMCHits.push(hit);
     });
@@ -220,10 +220,10 @@ export class RenderState {
       this.markers.forEach((marker) => {
         if (
           this.activeHitTypes.size > 0 &&
-          !this.activeHitTypes.has(marker.type)
+          !this.activeHitTypes.has(marker.position.hitType)
         )
           return;
-        if (marker.marker === markerType) newMarkers.add(marker);
+        if (marker.markerType === markerType) newMarkers.add(marker);
       });
     });
 

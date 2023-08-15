@@ -87,10 +87,10 @@ export function getHitTypes(hits) {
   });
 
   hits.forEach((hit) => {
-    if (hit.position.type !== "General") {
-      const currentHitType = hit.position.type;
+    if (hit.position.hitType !== "General") {
+      const currentHitType = hit.position.hitType;
       typeFilterMap.set(currentHitType, (hit) => {
-        return hit.position.type === currentHitType;
+        return hit.position.hitType === currentHitType;
       });
     }
   });
