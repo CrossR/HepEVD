@@ -88,19 +88,21 @@ export function animate(renderer, states, stats) {
 /**
  * Updates the camera aspect ratio and renderer size when the window is resized.
  *
- * @param {THREE.Camera} camera - The camera to update.
+ * @param {RenderState} state - The render state to update
  * @param {THREE.WebGLRenderer} renderer - The renderer to update.
  */
-export function onWindowResize(camera, renderer) {
-  if (camera instanceof THREE.PerspectiveCamera) {
-    camera.aspect = window.innerWidth / window.innerHeight;
-  } else {
-    camera.left = window.innerWidth / -2;
-    camera.right = window.innerWidth / 2;
-    camera.top = window.innerHeight / 2;
-    camera.bottom = window.innerHeight / -2;
-  }
-  camera.updateProjectionMatrix();
+export function onWindowResize(state, renderer) {
 
+  if (state.camera instanceof THREE.PerspectiveCamera) {
+    state.camera.aspect = window.innerWidth / window.innerHeight;
+  } else {
+    state.camera.left = window.innerWidth / -2;
+    state.camera.right = window.innerWidth / 2;
+    state.camera.top = window.innerHeight / 2;
+    state.camera.bottom = window.innerHeight / -2;
+  }
+
+  state.camera.updateProjectionMatrix();
   renderer.setSize(window.innerWidth, window.innerHeight);
+  state.triggerEvent("change");
 }

@@ -91,8 +91,8 @@ document.setTheme = () => setTheme(renderStates);
 window.addEventListener(
   "resize",
   () => {
-    onWindowResize(threeDRenderer.camera, renderer);
-    onWindowResize(twoDRenderer.camera, renderer);
+    onWindowResize(threeDRenderer, renderer);
+    onWindowResize(twoDRenderer, renderer);
   },
   false,
 );
