@@ -5,6 +5,7 @@
 import * as THREE from "three";
 import { Lut } from "three/addons/math/Lut.js";
 
+import { addColourMap } from "./colourmaps.js";
 import { materialHit } from "./constants.js";
 
 /**
@@ -19,7 +20,8 @@ export function drawHits(group, hits, hitColours, hitConfig = {}) {
   if (hits.length === 0) return;
 
   // Check if we are using colour, and set it up if we are.
-  const energyLut = new Lut("cooltowarm", 512);
+  const colourLut = new Lut("cooltowarm", 10);
+  addColourMap(colourLut, "viridis", 256);
   let usingColour = hitColours.length === hits.length;
   let usingLut = typeof hitColours[0] === "number";
 
@@ -30,7 +32,7 @@ export function drawHits(group, hits, hitColours, hitConfig = {}) {
       if (value < minColourValue) minColourValue = value;
       if (value > maxColourValue) maxColourValue = value;
     });
-    energyLut.setMax(maxColourValue);
+    colourLut.setMax(maxColourValue);
 
     if (maxColourValue === minColourValue) usingColour = false;
   }
@@ -53,11 +55,11 @@ export function drawHits(group, hits, hitColours, hitConfig = {}) {
     hitMesh.setMatrixAt(index, dummyObject.matrix);
 
     if (usingColour && usingLut) {
-      hitMesh.setColorAt(index, energyLut.getColor(hitColours[index]));
+      hitMesh.setColorAt(index, colourLut.getColor(hitColours[index]));
     } else if (usingColour && !usingLut) {
       hitMesh.setColorAt(index, new THREE.Color(hitColours[index]));
     } else {
-      hitMesh.setColorAt(index, new THREE.Color("gray"));
+      hitMesh.setColorAt(index, new THREE.Color(0x808080)); // Gray
     }
   });
 
