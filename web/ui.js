@@ -300,8 +300,6 @@ export function setTheme(states) {
 
   states.forEach((state) => {
     state.scene.background = new THREE.Color(backgroundColor);
-    state.scene.updateMatrixWorld();
-    state.scene.updateMatrix();
-    state.scene.updateWorldMatrix();
+    state.triggerEvent("change");
   });
 }

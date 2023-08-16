@@ -101,5 +101,11 @@ document.resetView = () => {
   twoDRenderer.resetView();
 };
 
-// Finally, animate the scene!
+// Finally, animate the scene.
 animate(renderer, renderStates, stats);
+
+// Now that we've animated once, hook up event listeners for any change.
+renderStates.forEach((state) => {
+    state.addEventListener('change', () => animate(renderer, renderStates, stats));
+    state.controls.addEventListener('change', () => animate(renderer, renderStates, stats));
+});

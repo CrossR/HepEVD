@@ -28,6 +28,8 @@ import {
 export class RenderState {
   // Setup some basics, the scenes, camera, detector and hit groups.
   constructor(name, camera, renderer, hits, mcHits, markers, geometry) {
+
+    // Basic, crucial information...
     this.name = name;
     this.hitDim = name;
 
@@ -42,6 +44,7 @@ export class RenderState {
     this.mcHitGroup = new THREE.Group();
     this.markerGroup = new THREE.Group();
 
+    // Add all the groups...
     this.scene.add(this.detGeoGroup);
     this.scene.add(this.hitGroup);
     this.scene.add(this.mcHitGroup);
@@ -57,9 +60,10 @@ export class RenderState {
     this.hitProperties = getHitProperties(this.hits);
     this.hitTypes = getHitTypes(this.hits);
 
-    // Finally, setup the dynamic bits, the state that will change.
+    // Setup the dynamic bits, the state that will change.
+    // This includes the inn use hits/markers etc, as well as
+    // their types and labels etc...
     this.uiSetup = false;
-
     this.activeHits = this.hits;
     this.activeMC = this.mcHits;
     this.activeHitColours = [];
@@ -69,8 +73,13 @@ export class RenderState {
     this.activeHitTypes = new Set();
     this.activeMarkerTypes = new Set();
 
+    // Finally, store a reference to the other renderer.
+    // If this renderer turns on, we need to turn the other off.
     this.otherRenderer = undefined;
   }
+
+  // Store class callbacks...
+  #eventListeners = {};
 
   /**
    * Returns the number of hits in the current state.
@@ -86,6 +95,21 @@ export class RenderState {
    */
   get visible() {
     return this.scene.visible;
+  }
+
+  /**
+   * Setup event listeners. This is mainly used for hooking up rendering on change.
+   */
+  addEventListener(name, callback) {
+    if (! this.#eventListeners[name]) this.#eventListeners[name] = [];
+    this.#eventListeners[name].push(callback);
+  }
+
+  /**
+   * Event trigger, which will run all the callbacks for that event.
+   */
+  triggerEvent(name, args) {
+    this.#eventListeners[name]?.forEach(f => f.apply(this, args));
   }
 
   /**
@@ -105,6 +129,7 @@ export class RenderState {
 
     this.detGeoGroup.matrixAutoUpdate = false;
     this.detGeoGroup.matrixWorldAutoUpdate = false;
+    this.triggerEvent("change");
   }
 
   /**
@@ -123,6 +148,7 @@ export class RenderState {
 
     this.hitGroup.matrixAutoUpdate = false;
     this.hitGroup.matrixWorldAutoUpdate = false;
+    this.triggerEvent("change");
   }
 
   /**
@@ -143,6 +169,7 @@ export class RenderState {
 
     this.mcHitGroup.matrixAutoUpdate = false;
     this.mcHitGroup.matrixWorldAutoUpdate = false;
+    this.triggerEvent("change");
   }
 
   /**
@@ -163,6 +190,7 @@ export class RenderState {
 
     this.markerGroup.matrixAutoUpdate = false;
     this.markerGroup.matrixWorldAutoUpdate = false;
+    this.triggerEvent("change");
   }
 
   /**
@@ -390,6 +418,7 @@ export class RenderState {
     this.otherRenderer.controls.enabled =
       this.otherRenderer.hitDim === renderTarget;
 
+    this.triggerEvent("change");
     updateUI(renderTarget);
   }
 

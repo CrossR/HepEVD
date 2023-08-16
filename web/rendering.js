@@ -76,9 +76,6 @@ export function drawTwoDBoxVolume(group, hits) {
  * @param {Stats} stats - The stats to update.
  */
 export function animate(renderer, states, stats) {
-  // TODO: Technically, we don't need this.
-  //       We could instead only render when the controls change, or anything new is rendered.
-  requestAnimationFrame(() => animate(renderer, states, stats));
   states.forEach((state) => {
     if (!state.visible) return;
     renderer.render(state.scene, state.camera);
