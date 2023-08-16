@@ -44,8 +44,7 @@ div {
   position: absolute;
   width: 8em;
   top: 10%;
-  left: 0;
-  padding: 1em;
+  left: 1%;
   visibility: hidden;
 }
 

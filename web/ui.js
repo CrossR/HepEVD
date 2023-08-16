@@ -2,7 +2,9 @@
 // GUI Functions
 //
 
-import { BUTTON_ID } from "./constants.js";
+import * as THREE from "three";
+
+import { BUTTON_ID, TO_THEME } from "./constants.js";
 
 /**
  * Populates a dropdown menu with buttons based on the given hit property map.
@@ -282,4 +284,24 @@ export function quitEvd() {
 
   // Actually perform the quit, now that the timers are running.
   fetch("quit");
+}
+
+/**
+ * Swap the scene background colours to match the current theme.
+ *
+ * @param {Array} states - The states to animate.
+ */
+export function setTheme(states) {
+  const themeName = localStorage.getItem("theme");
+
+  // This occurs too quickly for the local storage to be correct.
+  // So instead of setting it to the current value, invert the current value.
+  const backgroundColor = TO_THEME[themeName];
+
+  states.forEach((state) => {
+    state.scene.background = new THREE.Color(backgroundColor);
+    state.scene.updateMatrixWorld();
+    state.scene.updateMatrix();
+    state.scene.updateWorldMatrix();
+  });
 }

@@ -25,11 +25,17 @@
       type="text/css"
     />
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/theme-change@2.0.2/index.js"></script>
     <link rel="stylesheet" type="text/css" href="hep_evd.css" />
+
+    <script async crossorigin="anonymous">
+        const selectedTheme = localStorage.getItem("theme") ?? "dark";
+        document.documentElement.setAttribute("data-theme", selectedTheme);
+    </script>
   </head>
 
-  <body class="bg-black">
-    <div id="navbar" class="navbar bg-base-300 rounded-box">
+  <body class="bg-base-200">
+    <div id="navbar" class="navbar bg-neutral-300 rounded-box">
       <div class="flex justify-start flex-1 px-2">
         <div class="dropdown dropdown-hover">
           <label id="2D_dropdown_button" class="btn btn-primary m-1">
@@ -53,17 +59,25 @@
       </div>
 
       <div class="flex justify-end flex-1 px-2">
-        <button class="btn btn-primary btn-outline" onclick="resetView()">
+        <button
+          class="btn btn-primary btn-outline m-1"
+          data-toggle-theme="dark,light"
+          data-act-class="ACTIVECLASS"
+          onClick="setTheme()"
+        >
+          ☀️ Theme
+        </button>
+        <button class="btn btn-primary btn-outline m-1" onclick="resetView()">
           🔄 Reset
         </button>
         <button
-          class="btn btn-primary btn-outline"
+          class="btn btn-primary btn-outline m-1"
           id="save_button"
           onclick="saveEvd()"
         >
           📷 Save
         </button>
-        <button class="btn btn-primary btn-outline" onclick="quitEvd()">
+        <button class="btn btn-primary btn-outline m-1" onclick="quitEvd()">
           🛑 Quit
         </button>
       </div>

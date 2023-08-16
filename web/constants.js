@@ -11,6 +11,16 @@ export const BUTTON_ID = {
   All: "All",
 };
 
+export const THEME = {
+    "dark": "rgb(25, 30, 36)",
+    "light": "rgb(242, 242, 242)",
+}
+
+export const TO_THEME = {
+    "dark": THEME["light"],
+    "light": THEME["dark"],
+}
+
 export const DEFAULT_HIT_CLASS = "Hit";
 
 export const HIT_CONFIG = {

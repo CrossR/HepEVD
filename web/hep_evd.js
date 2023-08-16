@@ -5,9 +5,10 @@
 import * as THREE from "three";
 import Stats from "three/addons/libs/stats.module.js";
 
+import { THEME } from "./constants.js";
 import { RenderState } from "./render_state.js";
 import { animate, onWindowResize } from "./rendering.js";
-import { saveEvd, quitEvd } from "./ui.js";
+import { saveEvd, quitEvd, setTheme } from "./ui.js";
 
 // Do some initial threejs setup...
 const threeDCamera = new THREE.PerspectiveCamera(
@@ -33,6 +34,9 @@ const stats = new Stats();
 // Move to top right.
 stats.domElement.style.cssText = "position:absolute; bottom:0px; right:0px;";
 renderer.setSize(window.innerWidth, window.innerHeight);
+
+const themeName = localStorage.getItem("theme") ?? "dark";
+renderer.setClearColor(THEME[themeName]);
 
 document.body.appendChild(renderer.domElement);
 document.body.appendChild(stats.dom);
@@ -83,6 +87,7 @@ renderStates.forEach((state) => {
 // Hook up various global events.
 document.saveEvd = () => saveEvd(renderer);
 document.quitEvd = () => quitEvd();
+document.setTheme = () => setTheme(renderStates);
 window.addEventListener(
   "resize",
   () => {
