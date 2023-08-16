@@ -29,8 +29,8 @@
     <link rel="stylesheet" type="text/css" href="hep_evd.css" />
 
     <script async crossorigin="anonymous">
-        const selectedTheme = localStorage.getItem("theme") ?? "dark";
-        document.documentElement.setAttribute("data-theme", selectedTheme);
+      const selectedTheme = localStorage.getItem("theme") ?? "dark";
+      document.documentElement.setAttribute("data-theme", selectedTheme);
     </script>
   </head>
 
@@ -59,24 +59,30 @@
       </div>
 
       <div class="flex justify-end flex-1 px-2">
-        <button
-          class="btn btn-primary btn-outline m-1"
-          data-toggle-theme="dark,light"
-          data-act-class="ACTIVECLASS"
-          onClick="setTheme()"
-        >
-          ☀️ Theme
-        </button>
-        <button class="btn btn-primary btn-outline m-1" onclick="resetView()">
-          🔄 Reset
-        </button>
-        <button
-          class="btn btn-primary btn-outline m-1"
-          id="save_button"
-          onclick="saveEvd()"
-        >
-          📷 Save
-        </button>
+        <div class="dropdown dropdown-hover">
+          <label class="btn btn-primary m-1"> ⚙️ Options </label>
+          <div class="dropdown-content">
+            <button
+              class="btn btn-primary btn-outline m-1 w-28"
+              id="theme_button"
+              data-toggle-theme="dark,light"
+              data-act-class="ACTIVECLASS"
+              onClick="setTheme()"
+            >
+              ☀️ Theme
+            </button>
+            <button class="btn btn-primary btn-outline m-1 w-28" onclick="resetView()">
+              🔄 Reset
+            </button>
+            <button
+              class="btn btn-primary btn-outline m-1 w-28"
+              id="save_button"
+              onclick="saveEvd()"
+            >
+              📷 Save
+            </button>
+          </div>
+        </div>
         <button class="btn btn-primary btn-outline m-1" onclick="quitEvd()">
           🛑 Quit
         </button>

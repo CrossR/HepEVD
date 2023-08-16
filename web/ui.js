@@ -302,4 +302,20 @@ export function setTheme(states) {
     state.scene.background = new THREE.Color(backgroundColor);
     state.triggerEvent("change");
   });
+
+  fixThemeButton();
+}
+
+/**
+ * Simply fix the theme button, if needed. That is, set the theme emoji
+ * correctly.
+ */
+export function fixThemeButton(invert = false) {
+  let themeName = localStorage.getItem("theme");
+
+  if (invert) themeName = themeName === "light" ? "dark" : "light";
+
+  const emojis = {"light": "☀️", "dark": "🌙"};
+  const themeButton = document.getElementById("theme_button");
+  themeButton.innerHTML = `${emojis[themeName]} Theme`;
 }

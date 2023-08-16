@@ -8,7 +8,7 @@ import Stats from "three/addons/libs/stats.module.js";
 import { THEME } from "./constants.js";
 import { RenderState } from "./render_state.js";
 import { animate, onWindowResize } from "./rendering.js";
-import { saveEvd, quitEvd, setTheme } from "./ui.js";
+import { saveEvd, quitEvd, setTheme, fixThemeButton } from "./ui.js";
 
 // Do some initial threejs setup...
 const threeDCamera = new THREE.PerspectiveCamera(
@@ -84,7 +84,17 @@ renderStates.forEach((state) => {
   state.setupUI(defaultDraw);
 });
 
-// Hook up various global events.
+// Finally, animate the scene.
+animate(renderer, renderStates, stats);
+
+// Now that we've animated once, hook up event listeners for any change.
+renderStates.forEach((state) => {
+    state.addEventListener('change', () => animate(renderer, renderStates, stats));
+    state.controls.addEventListener('change', () => animate(renderer, renderStates, stats));
+});
+
+// Final tidy ups.
+// Hook up various global events and tidy functions.
 document.saveEvd = () => saveEvd(renderer);
 document.quitEvd = () => quitEvd();
 document.setTheme = () => setTheme(renderStates);
@@ -100,12 +110,5 @@ document.resetView = () => {
   threeDRenderer.resetView();
   twoDRenderer.resetView();
 };
+fixThemeButton(true);
 
-// Finally, animate the scene.
-animate(renderer, renderStates, stats);
-
-// Now that we've animated once, hook up event listeners for any change.
-renderStates.forEach((state) => {
-    state.addEventListener('change', () => animate(renderer, renderStates, stats));
-    state.controls.addEventListener('change', () => animate(renderer, renderStates, stats));
-});
