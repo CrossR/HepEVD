@@ -8,7 +8,7 @@ import Stats from "three/addons/libs/stats.module.js";
 import { THEME } from "./constants.js";
 import { RenderState } from "./render_state.js";
 import { animate, onWindowResize } from "./rendering.js";
-import { saveEvd, quitEvd, setTheme, fixThemeButton } from "./ui.js";
+import { fixThemeButton, quitEvd, screenshotEvd, saveState, setTheme, loadState } from "./ui.js";
 
 // Do some initial threejs setup...
 const threeDCamera = new THREE.PerspectiveCamera(
@@ -89,13 +89,13 @@ animate(renderer, renderStates, stats);
 
 // Now that we've animated once, hook up event listeners for any change.
 renderStates.forEach((state) => {
-    state.addEventListener('change', () => animate(renderer, renderStates, stats));
-    state.controls.addEventListener('change', () => animate(renderer, renderStates, stats));
+  state.addEventListener('change', () => animate(renderer, renderStates, stats));
+  state.controls.addEventListener('change', () => animate(renderer, renderStates, stats));
 });
 
 // Final tidy ups.
 // Hook up various global events and tidy functions.
-document.saveEvd = () => saveEvd(renderer);
+document.screenshotEvd = () => screenshotEvd(renderer);
 document.quitEvd = () => quitEvd();
 document.setTheme = () => setTheme(renderStates);
 window.addEventListener(
@@ -112,3 +112,38 @@ document.resetView = () => {
 };
 fixThemeButton(true);
 
+document.getElementById("saveState_button").addEventListener("click", () => {
+
+  const namePicker = document.createElement("div");
+  namePicker.classList.add("user_input_dialog", "alert", "alert-info");
+  const nameInput = document.createElement("input", {type: "text"});
+  nameInput.placeholder = "Enter a name for this state";
+  nameInput.classList.add("input", "input-bordered", "w-70", "h-1/4", "max-w-xs", "text-white");
+  const nameButton = document.createElement("button");
+  nameButton.classList.add("btn", "btn-primary", "w-30", "h-1/4", "max-w-xs");
+  nameButton.innerText = "Save";
+  const closeButton = document.createElement("button");
+  closeButton.classList.add("close_button", "btn", "btn-error");
+  closeButton.innerText = "X";
+  closeButton.addEventListener("click", () => {
+    namePicker.remove();
+  });
+
+  nameButton.addEventListener("click", () => {
+    const name = nameInput.value;
+    if (name) {
+      saveState(renderStates, name);
+    }
+    namePicker.remove();
+  });
+
+  namePicker.appendChild(nameInput);
+  namePicker.appendChild(nameButton);
+  namePicker.appendChild(closeButton);
+  document.body.appendChild(namePicker);
+});
+document.getElementById("loadState_button").addEventListener("click", () => {
+  // TODO: List all the saved states, and pop-up a dialog to pick one.
+  // TODO: Should only show the ones that are valid for the current state.
+  loadState(renderStates, "testName");
+});

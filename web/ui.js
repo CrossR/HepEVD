@@ -223,7 +223,7 @@ export function updateUI(hitType) {
  *
  * @param {THREE.WebGLRenderer} renderer - The renderer to take a screenshot of.
  */
-export function saveEvd(renderer) {
+export function screenshotEvd(renderer) {
   const imageData = renderer.domElement.toDataURL("image/jpeg", 1.0);
   const contentType = "image/jpeg";
 
@@ -289,7 +289,7 @@ export function quitEvd() {
 /**
  * Swap the scene background colours to match the current theme.
  *
- * @param {Array} states - The states to animate.
+ * @param {Map} states - The states to animate.
  */
 export function setTheme(states) {
   const themeName = localStorage.getItem("theme");
@@ -317,5 +317,65 @@ export function fixThemeButton(invert = false) {
 
   const emojis = {"light": "☀️", "dark": "🌙"};
   const themeButton = document.getElementById("theme_button");
-  themeButton.innerHTML = `${emojis[themeName]} Theme`;
+  themeButton.innerHTML = `${emojis[themeName]} Change Theme`;
+}
+
+/**
+ * Save the current state of the event display to local storage.
+ *
+ * @param {Map} states - The states to save.
+ * @param {String} name - The name of the state to save.
+ */
+export function saveState(states, name) {
+
+  const visibleState = Array.from(states.values()).find((state) => state.visible);
+  const store = window.localStorage;
+
+  const cameraPos = visibleState.camera.position;
+  const cameraUp = visibleState.camera.up;
+
+  const state = {
+    name: name,
+    hitDim: visibleState.hitDim,
+    camera: {
+      fov: visibleState.camera.fov,
+      near: visibleState.camera.near,
+      far: visibleState.camera.far,
+      masks: visibleState.camera.layers.mask,
+      position: [cameraPos.x, cameraPos.y, cameraPos.z],
+      up: [cameraUp.x, cameraUp.y, cameraUp.z],
+    }
+  };
+  store.setItem(name, JSON.stringify(state));
+
+}
+
+/**
+ * Load the given state from local storage.
+ *
+ * @param {Map} states - The states to save.
+ * @param {String} name - The name of the state to save.
+ */
+export function loadState(states, name) {
+
+  const visibleState = Array.from(states.values()).find((state) => state.visible);
+  const store = window.localStorage;
+
+  const state = JSON.parse(store.getItem(name));
+
+  if (visibleState.hitDim != state.hitDim)
+    return;
+
+  // Update all the camera properties.
+  visibleState.camera.fov = state.camera.fov;
+  visibleState.camera.near = state.camera.near;
+  visibleState.camera.far = state.camera.far;
+  visibleState.camera.layers.mask = state.camera.masks;
+  visibleState.camera.position.set(...state.camera.position);
+  visibleState.camera.up.set(...state.camera.up);
+
+  visibleState.camera.updateProjectionMatrix();
+  visibleState.controls.update();
+
+  visibleState.triggerEvent("change");
 }

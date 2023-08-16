@@ -1,16 +1,14 @@
 <!doctype html>
 <html>
-  <head>
-    <meta charset="utf-8" />
-    <title>HepEVD</title>
-    <!-- <link rel="shortcut icon" href="favicon.ico"> -->
 
-    <script
-      async
-      src="https://ga.jspm.io/npm:es-module-shims@1.8.0/dist/es-module-shims.js"
-    ></script>
+<head>
+  <meta charset="utf-8" />
+  <title>HepEVD</title>
+  <!-- <link rel="shortcut icon" href="favicon.ico"> -->
 
-    <script type="importmap">
+  <script async src="https://ga.jspm.io/npm:es-module-shims@1.8.0/dist/es-module-shims.js"></script>
+
+  <script type="importmap">
       {
         "imports": {
           "three": "https://unpkg.com/three@0.154.0/build/three.module.min.js",
@@ -19,106 +17,86 @@
       }
     </script>
 
-    <link
-      href="https://cdn.jsdelivr.net/npm/daisyui@3.5.0/dist/full.css"
-      rel="stylesheet"
-      type="text/css"
-    />
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/theme-change@2.0.2/index.js"></script>
-    <link rel="stylesheet" type="text/css" href="hep_evd.css" />
+  <link href="https://cdn.jsdelivr.net/npm/daisyui@3.5.0/dist/full.css" rel="stylesheet" type="text/css" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/theme-change@2.0.2/index.js"></script>
+  <link rel="stylesheet" type="text/css" href="hep_evd.css" />
 
-    <script async crossorigin="anonymous">
-      const selectedTheme = localStorage.getItem("theme") ?? "dark";
-      document.documentElement.setAttribute("data-theme", selectedTheme);
-    </script>
-  </head>
+  <script async crossorigin="anonymous">
+    const selectedTheme = localStorage.getItem("theme") ?? "dark";
+    document.documentElement.setAttribute("data-theme", selectedTheme);
+  </script>
+</head>
 
-  <body class="bg-base-200">
-    <div id="navbar" class="navbar bg-neutral-300 rounded-box">
-      <div class="flex justify-start flex-1 px-2">
-        <div class="dropdown dropdown-hover">
-          <label id="2D_dropdown_button" class="btn btn-primary m-1">
-            2D Hits...
-          </label>
-          <ul
-            id="2D_dropdown"
-            class="dropdown-content z-[1] menu p-1 shadow bg-base-100 rounded-box"
-          ></ul>
-        </div>
-
-        <div class="dropdown dropdown-hover">
-          <label id="3D_dropdown_button" class="btn btn-primary m-1">
-            3D Hits...
-          </label>
-          <ul
-            id="3D_dropdown"
-            class="dropdown-content z-[1] menu p-1 shadow bg-base-100 rounded-box"
-          ></ul>
-        </div>
+<body class="bg-base-200">
+  <div id="navbar" class="navbar bg-neutral-300 rounded-box">
+    <div class="flex justify-start flex-1 px-2">
+      <div class="dropdown dropdown-hover">
+        <label id="2D_dropdown_button" class="btn btn-primary m-1">
+          2D Hits...
+        </label>
+        <ul id="2D_dropdown" class="dropdown-content z-[1] menu p-1 shadow bg-base-100 rounded-box"></ul>
       </div>
 
-      <div class="flex justify-end flex-1 px-2">
-        <div class="dropdown dropdown-hover">
-          <label class="btn btn-primary m-1"> ⚙️ Options </label>
-          <div class="dropdown-content">
-            <button
-              class="btn btn-primary btn-outline m-1 w-28"
-              id="theme_button"
-              data-toggle-theme="dark,light"
-              data-act-class="ACTIVECLASS"
-              onClick="setTheme()"
-            >
-              ☀️ Theme
-            </button>
-            <button class="btn btn-primary btn-outline m-1 w-28" onclick="resetView()">
-              🔄 Reset
-            </button>
-            <button
-              class="btn btn-primary btn-outline m-1 w-28"
-              id="save_button"
-              onclick="saveEvd()"
-            >
-              📷 Save
-            </button>
-          </div>
-        </div>
-        <button class="btn btn-primary btn-outline m-1" onclick="quitEvd()">
-          🛑 Quit
-        </button>
+      <div class="dropdown dropdown-hover">
+        <label id="3D_dropdown_button" class="btn btn-primary m-1">
+          3D Hits...
+        </label>
+        <ul id="3D_dropdown" class="dropdown-content z-[1] menu p-1 shadow bg-base-100 rounded-box"></ul>
       </div>
     </div>
 
-    <div id="all_toggle_options">
-      <div class="flex flex-col toggle_options" id="types_2D"></div>
-      <div class="flex flex-col toggle_options" id="types_3D"></div>
-
-      <div class="flex flex-col toggle_options_markers" id="markers_2D"></div>
-      <div class="flex flex-col toggle_options_markers" id="markers_3D"></div>
-
-      <div class="toggle_options_mc" id="types_MC_2D"></div>
-      <div class="toggle_options_mc" id="types_MC_3D"></div>
+    <div class="flex justify-end flex-1 px-2">
+      <div class="dropdown dropdown-hover">
+        <label class="btn btn-primary m-1"> ⚙️ Options </label>
+        <div class="dropdown-content">
+          <button class="btn btn-primary btn-outline m-1 w-44" id="theme_button" data-toggle-theme="dark,light"
+            data-act-class="ACTIVECLASS" onClick="setTheme()">
+            ☀️ Change Theme
+          </button>
+          <button class="btn btn-primary btn-outline m-1 w-44" onclick="resetView()">
+            🔄 Reset View
+          </button>
+          <button class="btn btn-primary btn-outline m-1 w-44" onclick="screenshotEvd()">
+            📷 Screenshot
+          </button>
+          <button class="btn btn-primary btn-outline m-1 w-44" id="saveState_button">
+            💾 Save State
+          </button>
+          <button class="btn btn-primary btn-outline m-1 w-44" id="loadState_button">
+            💾 Load State
+          </button>
+        </div>
+      </div>
+      <button class="btn btn-primary btn-outline m-1" onclick="quitEvd()">
+        🛑 Quit
+      </button>
     </div>
+  </div>
 
-    <div style="overflow: hidden" id="axisLabels"></div>
+  <div id="all_toggle_options">
+    <div class="flex flex-col toggle_options" id="types_2D"></div>
+    <div class="flex flex-col toggle_options" id="types_3D"></div>
 
-    <div class="alert alert-success quit_message" id="quit_message">
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        fill="none"
-        viewBox="0 0 24 24"
-        class="float-left stroke-current shrink-0 w-6 h-6"
-      >
-        <path
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          stroke-width="2"
-          d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-        ></path>
-      </svg>
-      <span>Server Closed!</span>
-    </div>
+    <div class="flex flex-col toggle_options_markers" id="markers_2D"></div>
+    <div class="flex flex-col toggle_options_markers" id="markers_3D"></div>
 
-    <script type="module" src="hep_evd.js"></script>
-  </body>
+    <div class="toggle_options_mc" id="types_MC_2D"></div>
+    <div class="toggle_options_mc" id="types_MC_3D"></div>
+  </div>
+
+  <div style="overflow: hidden" id="axisLabels"></div>
+
+  <div class="alert alert-success quit_message" id="quit_message">
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+      class="float-left stroke-current shrink-0 w-6 h-6">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+        d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+    </svg>
+    <span>Server Closed!</span>
+  </div>
+
+  <script type="module" src="hep_evd.js"></script>
+</body>
+
 </html>
