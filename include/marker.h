@@ -102,7 +102,10 @@ inline static void to_json(json &j, const Markers &markers) {
 }
 
 inline static void from_json(const json &j, Markers &markers) {
-    for (const auto &marker : j.at("markers")) {
+    if (! j.is_array())
+        throw std::invalid_argument("Markers must be an array!");
+
+    for (const auto &marker : j) {
         MarkerType markerType = marker.at("markerType").get<MarkerType>();
 
         switch (markerType) {

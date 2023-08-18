@@ -79,7 +79,11 @@ inline static void to_json(json &j, const Volumes &vols) {
 
 // Parse the vector of Detector volumes...
 inline static void from_json(const json &j, Volumes &vols) {
-    for (const auto &vol : j.at("volumes")) {
+    if (! j.is_array())
+        throw std::invalid_argument("Volumes must be an array!");
+
+    for (const auto &vol : j) {
+        std::cout << vol << std::endl;
         VolumeType type = vol.at("volumeType").get<VolumeType>();
 
         switch (type) {
