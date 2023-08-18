@@ -28,7 +28,6 @@ import {
 export class RenderState {
   // Setup some basics, the scenes, camera, detector and hit groups.
   constructor(name, camera, renderer, hits, mcHits, markers, geometry) {
-
     // Basic, crucial information...
     this.name = name;
     this.hitDim = name;
@@ -101,7 +100,7 @@ export class RenderState {
    * Setup event listeners. This is mainly used for hooking up rendering on change.
    */
   addEventListener(name, callback) {
-    if (! this.#eventListeners[name]) this.#eventListeners[name] = [];
+    if (!this.#eventListeners[name]) this.#eventListeners[name] = [];
     this.#eventListeners[name].push(callback);
   }
 
@@ -109,7 +108,7 @@ export class RenderState {
    * Event trigger, which will run all the callbacks for that event.
    */
   triggerEvent(name, args) {
-    this.#eventListeners[name]?.forEach(f => f.apply(this, args));
+    this.#eventListeners[name]?.forEach((f) => f.apply(this, args));
   }
 
   /**
@@ -425,25 +424,6 @@ export class RenderState {
   // If this is currently active, reset the event display.
   resetView() {
     if (!this.scene.visible) return;
-
-    // Reset back to all hits...
-    this.activeHits = this.hits;
-    this.activeMC = this.mcHits;
-    this.activeHitColours = [];
-
-    // And no properties active...
-    this.activeHitProps = new Set([BUTTON_ID.All]);
-    toggleButton(this.hitDim, BUTTON_ID.None);
-    toggleButton(this.hitDim, BUTTON_ID.All);
-
-    this.activeHitTypes.forEach((hitType) => {
-      toggleButton("types", hitType, false);
-    });
-    this.activeHitTypes = new Set();
-
-    // Re-render with the default hit array.
-    this.renderGeometry();
-    this.renderHits();
 
     // Reset the camera + controls.
     this.controls.reset();

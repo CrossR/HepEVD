@@ -12,14 +12,14 @@ export const BUTTON_ID = {
 };
 
 export const THEME = {
-    "dark": "rgb(25, 30, 36)",
-    "light": "rgb(242, 242, 242)",
-}
+  dark: "rgb(25, 30, 36)",
+  light: "rgb(242, 242, 242)",
+};
 
 export const TO_THEME = {
-    "dark": THEME["light"],
-    "light": THEME["dark"],
-}
+  dark: THEME["light"],
+  light: THEME["dark"],
+};
 
 export const DEFAULT_HIT_CLASS = "Hit";
 

@@ -92,7 +92,6 @@ export function animate(renderer, states, stats) {
  * @param {THREE.WebGLRenderer} renderer - The renderer to update.
  */
 export function onWindowResize(state, renderer) {
-
   if (state.camera instanceof THREE.PerspectiveCamera) {
     state.camera.aspect = window.innerWidth / window.innerHeight;
   } else {

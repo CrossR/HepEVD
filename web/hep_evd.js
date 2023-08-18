@@ -8,7 +8,14 @@ import Stats from "three/addons/libs/stats.module.js";
 import { THEME } from "./constants.js";
 import { RenderState } from "./render_state.js";
 import { animate, onWindowResize } from "./rendering.js";
-import { saveEvd, quitEvd, setTheme, fixThemeButton } from "./ui.js";
+import {
+  fixThemeButton,
+  quitEvd,
+  screenshotEvd,
+  saveState,
+  setTheme,
+  loadState,
+} from "./ui.js";
 
 // Do some initial threejs setup...
 const threeDCamera = new THREE.PerspectiveCamera(
@@ -89,15 +96,21 @@ animate(renderer, renderStates, stats);
 
 // Now that we've animated once, hook up event listeners for any change.
 renderStates.forEach((state) => {
-    state.addEventListener('change', () => animate(renderer, renderStates, stats));
-    state.controls.addEventListener('change', () => animate(renderer, renderStates, stats));
+  state.addEventListener("change", () =>
+    animate(renderer, renderStates, stats),
+  );
+  state.controls.addEventListener("change", () =>
+    animate(renderer, renderStates, stats),
+  );
 });
 
 // Final tidy ups.
 // Hook up various global events and tidy functions.
-document.saveEvd = () => saveEvd(renderer);
+document.screenshotEvd = () => screenshotEvd(renderer);
 document.quitEvd = () => quitEvd();
 document.setTheme = () => setTheme(renderStates);
+document.saveState = () => saveState(renderStates);
+document.loadState = () => loadState(renderStates);
 window.addEventListener(
   "resize",
   () => {
@@ -111,4 +124,3 @@ document.resetView = () => {
   twoDRenderer.resetView();
 };
 fixThemeButton(true);
-

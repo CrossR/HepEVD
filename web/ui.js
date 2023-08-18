@@ -223,7 +223,7 @@ export function updateUI(hitType) {
  *
  * @param {THREE.WebGLRenderer} renderer - The renderer to take a screenshot of.
  */
-export function saveEvd(renderer) {
+export function screenshotEvd(renderer) {
   const imageData = renderer.domElement.toDataURL("image/jpeg", 1.0);
   const contentType = "image/jpeg";
 
@@ -289,7 +289,7 @@ export function quitEvd() {
 /**
  * Swap the scene background colours to match the current theme.
  *
- * @param {Array} states - The states to animate.
+ * @param {Map} states - The states to animate.
  */
 export function setTheme(states) {
   const themeName = localStorage.getItem("theme");
@@ -315,7 +315,162 @@ export function fixThemeButton(invert = false) {
 
   if (invert) themeName = themeName === "light" ? "dark" : "light";
 
-  const emojis = {"light": "☀️", "dark": "🌙"};
+  const emojis = { light: "☀️", dark: "🌙" };
   const themeButton = document.getElementById("theme_button");
-  themeButton.innerHTML = `${emojis[themeName]} Theme`;
+  themeButton.innerHTML = `${emojis[themeName]} Change Theme`;
+}
+
+/**
+ * Save the current state of the event display to local storage.
+ *
+ * @param {Map} states - The states to save.
+ * @param {String} name - The name of the state to save.
+ */
+export function saveState(states) {
+  const inputModal = document.getElementById("input_modal");
+  const inputSave = document.getElementById("input_modal_save");
+  const inputText = document.getElementById("input_modal_input");
+  const inputBackdrop = document.getElementById("input_backdrop");
+
+  inputText.placeholder = "Enter a name for this state";
+
+  inputModal.showModal();
+
+  let closed = false;
+  const cleanUp = () => {
+    inputText.placeholder = "";
+    inputText.value = "";
+  };
+  const doSave = () => {
+    const name = inputText.value;
+
+    if (name === undefined || name === "") return;
+    const visibleState = Array.from(states.values()).find(
+      (state) => state.visible,
+    );
+    const store = window.localStorage;
+
+    const cameraPos = visibleState.camera.position;
+    const cameraUp = visibleState.camera.up;
+
+    const state = {
+      name: name,
+      hitDim: visibleState.hitDim,
+      camera: {
+        fov: visibleState.camera.fov,
+        near: visibleState.camera.near,
+        far: visibleState.camera.far,
+        masks: visibleState.camera.layers.mask,
+        position: [cameraPos.x, cameraPos.y, cameraPos.z],
+        up: [cameraUp.x, cameraUp.y, cameraUp.z],
+      },
+    };
+
+    let saveStates = [state];
+
+    if (store.getItem("saveStates") !== null) {
+      saveStates = JSON.parse(store.getItem("saveStates"));
+      saveStates.push(state);
+    }
+
+    store.setItem("saveStates", JSON.stringify(saveStates));
+  };
+
+  inputBackdrop.addEventListener(
+    "click",
+    () => {
+      closed = true;
+      cleanUp();
+    },
+    { once: true },
+  );
+
+  inputSave.addEventListener(
+    "click",
+    () => {
+      if (closed) return;
+
+      doSave(name);
+      cleanUp();
+    },
+    { once: true },
+  );
+}
+
+/**
+ * Load the given state from local storage.
+ *
+ * @param {Map} states - The states to save.
+ * @param {String} name - The name of the state to save.
+ */
+export function loadState(renderStates, name) {
+  const visibleState = Array.from(renderStates.values()).find(
+    (state) => state.visible,
+  );
+  const store = window.localStorage;
+
+  const selectModal = document.getElementById("select_modal");
+  const selectButton = document.getElementById("select_modal_choose");
+  const selectDropdown = document.getElementById("select_modal_options");
+  const selectBackdrop = document.getElementById("select_backdrop");
+
+  // Parse out the saved states and then filter to ones for the current view.
+  // If there isn't any, return with no action.
+  const saveStates = JSON.parse(store.getItem("saveStates"));
+
+  if (saveStates === null) return;
+
+  const validSaveStates = saveStates.filter(
+    (state) => state.hitDim === visibleState.hitDim,
+  );
+
+  if (validSaveStates === []) return;
+
+  // Since there are valid states, add them to the dropdown list.
+  validSaveStates.forEach((state) => {
+    const option = document.createElement("option");
+    option.text = state.name;
+    selectDropdown.add(option);
+  });
+
+  // Finally show the modal.
+  selectModal.showModal();
+
+  const cleanUp = () => {
+    selectDropdown.innerHTML = "";
+  };
+  const doLoad = () => {
+    // Update all the camera properties.
+    const newState = validSaveStates[selectDropdown.selectedIndex];
+    visibleState.camera.fov = newState.camera.fov;
+    visibleState.camera.near = newState.camera.near;
+    visibleState.camera.far = newState.camera.far;
+    visibleState.camera.layers.mask = newState.camera.masks;
+    visibleState.camera.position.set(...newState.camera.position);
+    visibleState.camera.up.set(...newState.camera.up);
+
+    visibleState.camera.updateProjectionMatrix();
+    visibleState.controls.update();
+  };
+  let closed = false;
+
+  selectBackdrop.addEventListener(
+    "click",
+    () => {
+      closed = true;
+      cleanUp();
+    },
+    { once: true },
+  );
+
+  selectButton.addEventListener(
+    "click",
+    () => {
+      if (closed) return;
+      doLoad();
+      cleanUp();
+      visibleState.triggerEvent("change");
+    },
+    { once: true },
+  );
 }

@@ -92,7 +92,7 @@ export function fitSceneInCamera(
     controls.maxDistance = cameraToFarEdge;
   } else {
     const navBarH = document.getElementById("navbar").offsetHeight;
-    const yOffset = ((navBarH - center.y) / 2) - 35;
+    const yOffset = (navBarH - center.y) / 2 - 35;
     const xOffset = center.x;
     camera.setViewOffset(
       window.innerWidth,
