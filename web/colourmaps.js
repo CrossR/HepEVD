@@ -115,20 +115,19 @@ const magmaCM = magmaColours.map((c, i) => [i / 255, c]);
 // Exported function that adds the requested colour map to the given LUT.
 // The name must be one of the keys in COLOUR_MAPS.
 export function addColourMap(lut, name, num) {
-    if (!(name in COLOUR_MAPS)) {
-        throw new Error("Unknown colour map: " + name);
-    }
-    lut.addColorMap(name, COLOUR_MAPS[name]);
-    lut.setColorMap(name, num);
+  if (!(name in COLOUR_MAPS)) {
+    throw new Error("Unknown colour map: " + name);
+  }
+  lut.addColorMap(name, COLOUR_MAPS[name]);
+  lut.setColorMap(name, num);
 }
 
 // COLOUR_MAPS lookup table.
 const COLOUR_MAPS = {
-    // Qualitative colour maps.
-    "tableau10": tableau10CM,
-    "tableau20": tableau20CM,
-    // Sequential colour maps.
-    "viridis": viridisCM,
-    "magma": magmaCM,
-}
-
+  // Qualitative colour maps.
+  tableau10: tableau10CM,
+  tableau20: tableau20CM,
+  // Sequential colour maps.
+  viridis: viridisCM,
+  magma: magmaCM,
+};

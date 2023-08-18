@@ -28,7 +28,6 @@ import {
 export class RenderState {
   // Setup some basics, the scenes, camera, detector and hit groups.
   constructor(name, camera, renderer, hits, mcHits, markers, geometry) {
-
     // Basic, crucial information...
     this.name = name;
     this.hitDim = name;
@@ -101,7 +100,7 @@ export class RenderState {
    * Setup event listeners. This is mainly used for hooking up rendering on change.
    */
   addEventListener(name, callback) {
-    if (! this.#eventListeners[name]) this.#eventListeners[name] = [];
+    if (!this.#eventListeners[name]) this.#eventListeners[name] = [];
     this.#eventListeners[name].push(callback);
   }
 
@@ -109,7 +108,7 @@ export class RenderState {
    * Event trigger, which will run all the callbacks for that event.
    */
   triggerEvent(name, args) {
-    this.#eventListeners[name]?.forEach(f => f.apply(this, args));
+    this.#eventListeners[name]?.forEach((f) => f.apply(this, args));
   }
 
   /**
