@@ -50,18 +50,15 @@ as possible.
 
 ## Future Work
 
- - Can everything inherit from a base class (Position, Dimension, Type)?
-    - This would make stuff like 2D swapping Z -> Y easier.
-
- - Start populating and passing over the other menu entries (vertices, other markers).
-
- - Camera / World saving? Would be useful between plots etc, to instant go exactly back
-   to the previous zoom and position used for an event display pic.
-
- - More helper functions.
-
  - Setup a client mode -> I.e. post JSON objects to it to add them to the state.
   - That would allow hits to be added to the server from anywhere, including
     different functions, classes, methods etcetc. This would require using a more
     sensible way of producing/understanding JSON.
+
+ - Setup the larger objects: Cluster, Particles. This should include the ability to
+   toggle individual particles or clusters, and perhaps a highlighting option. Like
+   easiest way to do this is a single object, with a cluster being a flat version of the
+   particle object, and particles being more nested to represent relationships.
+
+ - More helper functions.
 
