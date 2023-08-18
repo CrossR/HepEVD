@@ -22,6 +22,7 @@ namespace HepEVD {
 
 class HepEVDServer {
   public:
+    HepEVDServer() : geometry({}), hits({}), mcHits({}), mcTruth("") {}
     HepEVDServer(const DetectorGeometry &geo) : geometry(geo), hits({}), mcHits({}), mcTruth("") {}
     HepEVDServer(const DetectorGeometry &geo, const Hits &hits) : geometry(geo), hits(hits), mcHits({}), mcTruth("") {}
     HepEVDServer(const DetectorGeometry &geo, const Hits &hits, const MCHits &mc)
@@ -142,7 +143,8 @@ inline void HepEVDServer::startServer() {
     });
     this->server.Post("/geometry", [&](const Request &req, Response &res) {
         try {
-            this->geometry = json::parse(req.body);
+            Volumes vols(json::parse(req.body));
+            this->geometry = DetectorGeometry(vols);
             res.set_content("OK", "text/plain");
         } catch (const std::exception &e) {
             res.set_content("Error: " + std::string(e.what()), "text/plain");

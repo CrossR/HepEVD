@@ -83,7 +83,6 @@ inline static void from_json(const json &j, Volumes &vols) {
         throw std::invalid_argument("Volumes must be an array!");
 
     for (const auto &vol : j) {
-        std::cout << vol << std::endl;
         VolumeType type = vol.at("volumeType").get<VolumeType>();
 
         switch (type) {
