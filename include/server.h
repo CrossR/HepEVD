@@ -34,7 +34,23 @@ class HepEVDServer {
     }
 
     // Check if the server is initialised.
+    // Technically, all we need is a geometry.
     bool isInitialised() { return this->geometry.size() > 0; }
+
+    // Reset the sever.
+    // Hits and markers etc. should be cleared, but its unlikely
+    // the geometry needs it, so make that optional.
+    void resetServer(const bool resetGeo = false) {
+
+        this->hits.clear();
+        this->mcHits.clear();
+        this->markers.clear();
+
+        if (resetGeo)
+            this->geometry.clear();
+
+        return;
+    }
 
     // Start the event display server, blocking until exit is called by the
     // server.
