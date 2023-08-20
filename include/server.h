@@ -22,6 +22,7 @@ namespace HepEVD {
 
 class HepEVDServer {
   public:
+    HepEVDServer() : geometry({}), hits({}), mcHits({}), mcTruth("") {}
     HepEVDServer(const DetectorGeometry &geo) : geometry(geo), hits({}), mcHits({}), mcTruth("") {}
     HepEVDServer(const DetectorGeometry &geo, const Hits &hits) : geometry(geo), hits(hits), mcHits({}), mcTruth("") {}
     HepEVDServer(const DetectorGeometry &geo, const Hits &hits, const MCHits &mc)
@@ -30,6 +31,25 @@ class HepEVDServer {
     ~HepEVDServer() {
         this->hits.clear();
         this->mcHits.clear();
+    }
+
+    // Check if the server is initialised.
+    // Technically, all we need is a geometry.
+    bool isInitialised() { return this->geometry.size() > 0; }
+
+    // Reset the sever.
+    // Hits and markers etc. should be cleared, but its unlikely
+    // the geometry needs it, so make that optional.
+    void resetServer(const bool resetGeo = false) {
+
+        this->hits.clear();
+        this->mcHits.clear();
+        this->markers.clear();
+
+        if (resetGeo)
+            this->geometry.clear();
+
+        return;
     }
 
     // Start the event display server, blocking until exit is called by the
@@ -66,9 +86,16 @@ class HepEVDServer {
         return true;
     }
 
-    bool addTruth(const MCHits &inputMC, const std::string truth = "") {
-        this->mcHits = inputMC;
-        this->mcTruth = truth;
+    bool addMCHits(const MCHits &inputMCHits) {
+        if (this->mcHits.size() == 0) {
+            this->mcHits = inputMCHits;
+            return true;
+        }
+
+        MCHits newHits = this->mcHits;
+        newHits.insert(newHits.end(), inputMCHits.begin(), inputMCHits.end());
+        this->mcHits = newHits;
+
         return true;
     }
 
@@ -87,17 +114,60 @@ class HepEVDServer {
 inline void HepEVDServer::startServer() {
     using namespace httplib;
 
-    // Simple commands to return the currently understood server state.
+    // Every endpoint has two parts:
+    // 1. Get: Access the data.
+    // 2. Post: Update the data.
+
+    // First, the actual event hits.
     this->server.Get(
         "/hits", [&](const Request &, Response &res) { res.set_content(json(this->hits).dump(), "application/json"); });
+    this->server.Post("/hits", [&](const Request &req, Response &res) {
+        try {
+            this->addHits(json::parse(req.body));
+            res.set_content("OK", "text/plain");
+        } catch (const std::exception &e) {
+            res.set_content("Error: " + std::string(e.what()), "text/plain");
+        }
+    });
+
+    // Next, the MC truth hits.
     this->server.Get("/mcHits", [&](const Request &, Response &res) {
         res.set_content(json(this->mcHits).dump(), "application/json");
     });
+    this->server.Post("/mcHits", [&](const Request &req, Response &res) {
+        try {
+            this->addMCHits(json::parse(req.body));
+            res.set_content("OK", "text/plain");
+        } catch (const std::exception &e) {
+            res.set_content("Error: " + std::string(e.what()), "text/plain");
+        }
+    });
+
+    // Then, any markers (points, lines, rings, etc.)
     this->server.Get("/markers", [&](const Request &, Response &res) {
         res.set_content(json(this->markers).dump(), "application/json");
     });
+    this->server.Post("/markers", [&](const Request &req, Response &res) {
+        try {
+            this->addMarkers(json::parse(req.body));
+            res.set_content("OK", "text/plain");
+        } catch (const std::exception &e) {
+            res.set_content("Error: " + std::string(e.what()), "text/plain");
+        }
+    });
+
+    // Finally, the detector geometry.
     this->server.Get("/geometry", [&](const Request &, Response &res) {
         res.set_content(json(this->geometry).dump(), "application/json");
+    });
+    this->server.Post("/geometry", [&](const Request &req, Response &res) {
+        try {
+            Volumes vols(json::parse(req.body));
+            this->geometry = DetectorGeometry(vols);
+            res.set_content("OK", "text/plain");
+        } catch (const std::exception &e) {
+            res.set_content("Error: " + std::string(e.what()), "text/plain");
+        }
     });
 
     // Management controls...

@@ -40,3 +40,5 @@ compile_commands.json
 
 # Examples
 example/basic
+example/server
+example/client

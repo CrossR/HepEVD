@@ -21,13 +21,32 @@
 // Local Includes
 #include "geometry.h"
 #include "hits.h"
+#include "server.h"
 
 namespace HepEVD {
-namespace PandoraHelpers {
 
 using HepHitMap = std::map<const pandora::CaloHit *, Hit *>;
 
-static DetectorGeometry getHepEVDGeometry(const pandora::GeometryManager *manager) {
+// Global Server Instance + HitMap
+// This means we don't have to worry about setting it up,
+// or awkwardness around using across multiple functions.
+inline HepEVDServer* hepEVDServer;
+inline HepHitMap caloHitToEvdHit;
+
+static HepHitMap* getHitMap() {
+    return &caloHitToEvdHit;
+}
+
+static void startServer() {
+    if (hepEVDServer->isInitialised())
+        hepEVDServer->startServer();
+}
+
+static void resetServer(const bool resetGeo = false) {
+    hepEVDServer->resetServer(resetGeo);
+}
+
+static void setHepEVDGeometry(const pandora::GeometryManager *manager) {
 
     Volumes volumes;
 
@@ -38,7 +57,7 @@ static DetectorGeometry getHepEVDGeometry(const pandora::GeometryManager *manage
         volumes.push_back(larTPCVolume);
     }
 
-    return DetectorGeometry(volumes);
+    hepEVDServer = new HepEVDServer(DetectorGeometry(volumes));
 }
 
 static HitType getHepEVDHitType(pandora::HitType pandoraHitType) {
@@ -54,7 +73,9 @@ static HitType getHepEVDHitType(pandora::HitType pandoraHitType) {
     }
 }
 
-static Hits getHepEVD2DHits(const pandora::CaloHitList *caloHits, HepHitMap &pandoraToCaloMap, std::string label = "") {
+static void add2DHits(const pandora::CaloHitList *caloHits, std::string label = "") {
+
+    if (! hepEVDServer->isInitialised()) return;
 
     Hits hits;
 
@@ -69,13 +90,21 @@ static Hits getHepEVD2DHits(const pandora::CaloHitList *caloHits, HepHitMap &pan
         hit->setHitType(getHepEVDHitType(pCaloHit->GetHitType()));
 
         hits.push_back(hit);
-        pandoraToCaloMap.insert({pCaloHit, hit});
+        caloHitToEvdHit.insert({pCaloHit, hit});
     }
 
-    return hits;
+    hepEVDServer->addHits(hits);
 }
 
-static MCHits getHepEVDMCHits(const pandora::Algorithm &pAlgorithm, const pandora::CaloHitList *pCaloHitList) {
+static void addMarkers(const Markers& markers) {
+    if (! hepEVDServer->isInitialised()) return;
+
+    hepEVDServer->addMarkers(markers);
+}
+
+static void addMCHits(const pandora::Algorithm &pAlgorithm, const pandora::CaloHitList *pCaloHitList) {
+
+    if (! hepEVDServer->isInitialised()) return;
 
     MCHits mcHits;
 
@@ -114,10 +143,9 @@ static MCHits getHepEVDMCHits(const pandora::Algorithm &pAlgorithm, const pandor
         }
     }
 
-    return mcHits;
+    hepEVDServer->addMCHits(mcHits);
 }
 
-}; // namespace PandoraHelpers
 }; // namespace HepEVD
 
 #endif // HEP_EVD_PANDORA_HELPERS_H

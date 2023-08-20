@@ -6,6 +6,7 @@
 #ifndef HEP_EVD_POSITION_H
 #define HEP_EVD_POSITION_H
 
+#include "extern/httplib.h"
 #include "extern/json.hpp"
 using json = nlohmann::json;
 
@@ -67,6 +68,15 @@ class Position {
     HitDimension dim = THREE_D;
     HitType hitType = GENERAL;
 };
+
+// General templated utility function to POST data to a URL.
+template <typename T>
+bool postData(const std::string &endPoint, const T &data) {
+    const std::string server = "localhost:" + std::to_string(HEP_EVD_PORT);
+    httplib::Client cli(server);
+    auto res = cli.Post(endPoint, json(data).dump(), "application/json");
+    return res.error() == httplib::Error::Success;
+}
 
 }; // namespace HepEVD
 
