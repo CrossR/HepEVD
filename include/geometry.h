@@ -136,6 +136,8 @@ class DetectorGeometry {
         }
     }
 
+    int size() { return this->volumes.size(); }
+
     NLOHMANN_DEFINE_TYPE_INTRUSIVE(DetectorGeometry, volumes);
 
   private:

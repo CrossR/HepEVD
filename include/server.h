@@ -33,6 +33,9 @@ class HepEVDServer {
         this->mcHits.clear();
     }
 
+    // Check if the server is initialised.
+    bool isInitialised() { return this->geometry.size() > 0; }
+
     // Start the event display server, blocking until exit is called by the
     // server.
     void startServer();
