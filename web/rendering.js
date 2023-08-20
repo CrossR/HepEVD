@@ -56,6 +56,8 @@ export function drawTwoDBoxVolume(group, hits) {
     return axes;
   };
 
+  if (hits.length === 0) return;
+
   const xProps = getHitBoundaries(hits, "x");
   const yProps = getHitBoundaries(hits, "y");
 

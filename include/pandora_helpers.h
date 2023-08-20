@@ -38,7 +38,6 @@ static HepHitMap* getHitMap() {
 }
 
 static void startServer() {
-    std::cout << "isInit: " << hepEVDServer->isInitialised() << std::endl;
     if (hepEVDServer->isInitialised())
         hepEVDServer->startServer();
 }
