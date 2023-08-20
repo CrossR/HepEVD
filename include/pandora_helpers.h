@@ -30,21 +30,17 @@ using HepHitMap = std::map<const pandora::CaloHit *, Hit *>;
 // Global Server Instance + HitMap
 // This means we don't have to worry about setting it up,
 // or awkwardness around using across multiple functions.
-inline HepEVDServer* hepEVDServer;
+inline HepEVDServer *hepEVDServer;
 inline HepHitMap caloHitToEvdHit;
 
-static HepHitMap* getHitMap() {
-    return &caloHitToEvdHit;
-}
+static HepHitMap *getHitMap() { return &caloHitToEvdHit; }
 
 static void startServer() {
     if (hepEVDServer->isInitialised())
         hepEVDServer->startServer();
 }
 
-static void resetServer(const bool resetGeo = false) {
-    hepEVDServer->resetServer(resetGeo);
-}
+static void resetServer(const bool resetGeo = false) { hepEVDServer->resetServer(resetGeo); }
 
 static void setHepEVDGeometry(const pandora::GeometryManager *manager) {
 
@@ -75,7 +71,8 @@ static HitType getHepEVDHitType(pandora::HitType pandoraHitType) {
 
 static void add2DHits(const pandora::CaloHitList *caloHits, std::string label = "") {
 
-    if (! hepEVDServer->isInitialised()) return;
+    if (!hepEVDServer->isInitialised())
+        return;
 
     Hits hits;
 
@@ -96,15 +93,17 @@ static void add2DHits(const pandora::CaloHitList *caloHits, std::string label = 
     hepEVDServer->addHits(hits);
 }
 
-static void addMarkers(const Markers& markers) {
-    if (! hepEVDServer->isInitialised()) return;
+static void addMarkers(const Markers &markers) {
+    if (!hepEVDServer->isInitialised())
+        return;
 
     hepEVDServer->addMarkers(markers);
 }
 
 static void addMCHits(const pandora::Algorithm &pAlgorithm, const pandora::CaloHitList *pCaloHitList) {
 
-    if (! hepEVDServer->isInitialised()) return;
+    if (!hepEVDServer->isInitialised())
+        return;
 
     MCHits mcHits;
 

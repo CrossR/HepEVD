@@ -50,11 +50,6 @@ as possible.
 
 ## Future Work
 
- - Setup a client mode -> I.e. post JSON objects to it to add them to the state.
-  - That would allow hits to be added to the server from anywhere, including
-    different functions, classes, methods etcetc. This would require using a more
-    sensible way of producing/understanding JSON.
-
  - Setup the larger objects: Cluster, Particles. This should include the ability to
    toggle individual particles or clusters, and perhaps a highlighting option. Like
    easiest way to do this is a single object, with a cluster being a flat version of the

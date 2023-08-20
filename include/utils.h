@@ -70,8 +70,7 @@ class Position {
 };
 
 // General templated utility function to POST data to a URL.
-template <typename T>
-bool postData(const std::string &endPoint, const T &data) {
+template <typename T> bool postData(const std::string &endPoint, const T &data) {
     const std::string server = "localhost:" + std::to_string(HEP_EVD_PORT);
     httplib::Client cli(server);
     auto res = cli.Post(endPoint, json(data).dump(), "application/json");
