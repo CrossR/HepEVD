@@ -4,13 +4,15 @@ A header-only web-based event display for particle physics events.
 
 ## Code Layout
 
-`include` contains all the actual C++ library code that is responsible for storing
+The codebase is split into two sections: the C++ code, and the Javascript code:
+
+ - `include` contains all the actual C++ library code that is responsible for storing
 the basic objects needed (hits, detector layouts, event markers), as well as the HTTP
 server that then serves these objects up for the WebUI to show. A HTTP server (serving
 a JSON API and the UI frontend) was chosen as it works nicely on remote systems, and
 allows quick changes to be made to the UI without re-running anything.
 
-`web` contains the actual Javascript code for the event display, utilising `THREE.js`
+ - `web` contains the actual Javascript code for the event display, utilising `THREE.js`
 heavily.
 
 ## Installation + Usage
