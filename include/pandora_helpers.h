@@ -14,14 +14,18 @@
 #include "Geometry/LArTPC.h"
 #include "Managers/GeometryManager.h"
 #include "Objects/CaloHit.h"
+#include "Pandora/AlgorithmHeaders.h"
 
 // LArContent Includes
+#include "larpandoracontent/LArHelpers/LArClusterHelper.h"
 #include "larpandoracontent/LArHelpers/LArMCParticleHelper.h"
 
 // Local Includes
 #include "geometry.h"
 #include "hits.h"
+#include "particle.h"
 #include "server.h"
+#include "utils.h"
 
 namespace HepEVD {
 
@@ -34,9 +38,10 @@ inline HepEVDServer *hepEVDServer;
 inline HepHitMap caloHitToEvdHit;
 
 static HepHitMap *getHitMap() { return &caloHitToEvdHit; }
+static bool isServerInitialised() { return hepEVDServer != nullptr && hepEVDServer->isInitialised(); }
 
 static void startServer() {
-    if (hepEVDServer->isInitialised())
+    if (isServerInitialised())
         hepEVDServer->startServer();
 }
 
@@ -71,7 +76,7 @@ static HitType getHepEVDHitType(pandora::HitType pandoraHitType) {
 
 static void add2DHits(const pandora::CaloHitList *caloHits, std::string label = "") {
 
-    if (!hepEVDServer->isInitialised())
+    if (!isServerInitialised())
         return;
 
     Hits hits;
@@ -94,7 +99,7 @@ static void add2DHits(const pandora::CaloHitList *caloHits, std::string label = 
 }
 
 static void addMarkers(const Markers &markers) {
-    if (!hepEVDServer->isInitialised())
+    if (!isServerInitialised())
         return;
 
     hepEVDServer->addMarkers(markers);
@@ -102,7 +107,7 @@ static void addMarkers(const Markers &markers) {
 
 static void addMCHits(const pandora::Algorithm &pAlgorithm, const pandora::CaloHitList *pCaloHitList) {
 
-    if (!hepEVDServer->isInitialised())
+    if (!isServerInitialised())
         return;
 
     MCHits mcHits;
@@ -111,18 +116,15 @@ static void addMCHits(const pandora::Algorithm &pAlgorithm, const pandora::CaloH
     try {
         PandoraContentApi::GetCurrentList(pAlgorithm, pMCParticleList);
     } catch (pandora::StatusCodeException &) {
-        return mcHits;
+        return;
     }
 
-    LArMCParticleHelper::MCContributionMap mcToHitsMap;
+    lar_content::LArMCParticleHelper::MCContributionMap mcToHitsMap;
     std::function<bool(const pandora::MCParticle *const)> getAll = [](const pandora::MCParticle *const) {
         return true;
     };
-    LArMCParticleHelper::SelectReconstructableMCParticles(
-        pMCParticleList, pCaloHitList, LArMCParticleHelper::PrimaryParameters(), getAll, mcToHitsMap);
-
-    std::cout << "In: " << pCaloHitList->size() << "/" << pMCParticleList->size() << ", Out: " << mcToHitsMap.size()
-              << std::endl;
+    lar_content::LArMCParticleHelper::SelectReconstructableMCParticles(
+        pMCParticleList, pCaloHitList, lar_content::LArMCParticleHelper::PrimaryParameters(), getAll, mcToHitsMap);
 
     for (auto const &mcCaloHitListPair : mcToHitsMap) {
 
@@ -143,6 +145,63 @@ static void addMCHits(const pandora::Algorithm &pAlgorithm, const pandora::CaloH
     }
 
     hepEVDServer->addMCHits(mcHits);
+}
+
+static void addPFOs(const pandora::PfoList *pPfoList, const std::string parentID = "",
+                    std::vector<std::string> childIDs = {}) {
+
+    if (!isServerInitialised())
+        return;
+
+    Particles particles;
+
+    std::string id = getUUID();
+
+    for (const pandora::ParticleFlowObject *const pPfo : *pPfoList) {
+
+        Hits hits;
+
+        for (const pandora::Cluster *const pCluster : pPfo->GetClusterList()) {
+
+            pandora::CaloHitList clusterList;
+            pCluster->GetOrderedCaloHitList().FillCaloHitList(clusterList);
+
+            for (const pandora::CaloHit *const pCaloHit : clusterList) {
+                const auto pos = pCaloHit->GetPositionVector();
+                Hit *hit = new Hit({pos.GetX(), pos.GetY(), pos.GetZ()}, pCaloHit->GetMipEquivalentEnergy());
+
+                hit->setDim(lar_content::LArClusterHelper::GetClusterHitType(pCluster) == pandora::HitType::TPC_3D
+                                ? HitDimension::THREE_D
+                                : HitDimension::TWO_D);
+
+                if (hit->getDim() == HitDimension::TWO_D)
+                    hit->setHitType(getHepEVDHitType(pCaloHit->GetHitType()));
+
+                // if (pPfo->GetParticleId() == 13)
+                //     hit->setLabel("Track-like");
+                // else if (pPfo->GetParticleId() == 11)
+                //     hit->setLabel("Shower-like"
+
+                hits.push_back(hit);
+            }
+        }
+
+        std::vector<std::string> currentChildIDs;
+        std::string currentParentID = id;
+        addPFOs(&(pPfo->GetDaughterPfoList()), currentParentID, currentChildIDs);
+
+        Particle *particle = new Particle(hits, id, pPfo->GetParticleId() == 13 ? "Track-like" : "Shower-like");
+
+        if (parentID != "")
+            particle->setParentID(parentID);
+        particle->setChildIDs(currentChildIDs);
+
+        particles.push_back(particle);
+
+        id = getUUID();
+    }
+
+    hepEVDServer->addParticles(particles);
 }
 
 }; // namespace HepEVD
