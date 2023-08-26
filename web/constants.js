@@ -38,7 +38,7 @@ export const HIT_CONFIG = {
     hitSize: 1,
   },
   "3D": {
-    hitSize: 3,
+    hitSize: 1,
   },
 };
 

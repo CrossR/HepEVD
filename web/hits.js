@@ -6,7 +6,7 @@ import * as THREE from "three";
 import { Lut } from "three/addons/math/Lut.js";
 
 import { addColourMap } from "./colourmaps.js";
-import { DEFAULT_CATEGORICAL_LUT_CONFIG, DEFAULT_HIT_CLASS, DEFAULT_LUT_CONFIG, materialHit } from "./constants.js";
+import { DEFAULT_CATEGORICAL_LUT_CONFIG, DEFAULT_HIT_CLASS, DEFAULT_LUT_CONFIG, HIT_CONFIG, materialHit } from "./constants.js";
 
 /**
  * Draws a set of hits as a 3D mesh using Three.js.
@@ -75,8 +75,9 @@ export function drawHits(group, hits, hitColours, hitConfig = {}, lutConfig = DE
  *
  * @param {THREE.Group} group - The group to which the particles should be added.
  * @param {Array} particles - An array of particle objects, each with an array of hits.
+ * @param {Object} hitConfig - An object containing configuration options for the hit mesh.
  */
-export function drawParticles(group, particles) {
+export function drawParticles(group, particles, hitConfig) {
   const hits = particles.map((particle) => {
     return particle.hits;
   });
@@ -89,5 +90,5 @@ export function drawParticles(group, particles) {
     });
   });
 
-  drawHits(group, hits.flat(), particleColours, DEFAULT_HIT_CLASS, DEFAULT_CATEGORICAL_LUT_CONFIG);
+  drawHits(group, hits.flat(), particleColours, hitConfig, DEFAULT_CATEGORICAL_LUT_CONFIG);
 }

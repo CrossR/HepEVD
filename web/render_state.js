@@ -7,16 +7,16 @@ import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 
 import { fitSceneInCamera, setupControls } from "./camera_and_controls.js";
 import { BUTTON_ID, HIT_CONFIG } from "./constants.js";
-import { getHitTypes, getHitProperties, getMCColouring } from "./helpers.js";
+import { getHitProperties, getHitTypes, getMCColouring } from "./helpers.js";
 import { drawHits, drawParticles } from "./hits.js";
+import { drawPoints, drawRings } from "./markers.js";
 import { drawBox } from "./rendering.js";
-import { drawRings, drawPoints } from "./markers.js";
 import {
   enableMCToggle,
   isButtonActive,
-  populateTypeToggle,
   populateDropdown,
   populateMarkerToggle,
+  populateTypeToggle,
   toggleButton,
   updateUI,
 } from "./ui.js";
@@ -161,7 +161,8 @@ export class RenderState {
 
     drawParticles(
       this.hitGroup,
-      this.activeParticles
+      this.activeParticles,
+      HIT_CONFIG[this.hitDim],
     );
 
     this.hitGroup.matrixAutoUpdate = false;
