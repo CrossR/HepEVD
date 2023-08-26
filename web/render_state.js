@@ -8,7 +8,7 @@ import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { fitSceneInCamera, setupControls } from "./camera_and_controls.js";
 import { BUTTON_ID, HIT_CONFIG } from "./constants.js";
 import { getHitTypes, getHitProperties, getMCColouring } from "./helpers.js";
-import { drawHits } from "./hits.js";
+import { drawHits, drawParticles } from "./hits.js";
 import { drawBox } from "./rendering.js";
 import { drawRings, drawPoints } from "./markers.js";
 import {
@@ -27,7 +27,7 @@ import {
  */
 export class RenderState {
   // Setup some basics, the scenes, camera, detector and hit groups.
-  constructor(name, camera, renderer, hits, mcHits, markers, geometry) {
+  constructor(name, camera, renderer, particles, hits, mcHits, markers, geometry) {
     // Basic, crucial information...
     this.name = name;
     this.hitDim = name;
@@ -55,6 +55,18 @@ export class RenderState {
     this.mcHits = mcHits;
     this.markers = markers;
 
+    // Filter the particles to only those that have hits in the current
+    // dimension.
+    this.particles = particles.flatMap((particle) => {
+      const newParticle = { ...particle };
+      newParticle.hits = particle.hits.filter(
+        (hit) => hit.position.dim === this.hitDim,
+      );
+
+      if (newParticle.hits.length === 0) return [];
+      return newParticle;
+    });
+
     // The generated property lists...
     this.hitProperties = getHitProperties(this.hits);
     this.hitTypes = getHitTypes(this.hits);
@@ -63,6 +75,7 @@ export class RenderState {
     // This includes the inn use hits/markers etc, as well as
     // their types and labels etc...
     this.uiSetup = false;
+    this.activeParticles = this.particles;
     this.activeHits = this.hits;
     this.activeMC = this.mcHits;
     this.activeHitColours = [];
@@ -128,6 +141,25 @@ export class RenderState {
 
     this.detGeoGroup.matrixAutoUpdate = false;
     this.detGeoGroup.matrixWorldAutoUpdate = false;
+    this.triggerEvent("change");
+  }
+
+  /**
+   * Renders the particles for the current state, based on the active particles.
+   * Clears the hit group and then draws the hits with the active hit colours.
+   * 
+   * TODO: Currently doesn't use the active properties etc.
+   */
+  renderParticles() {
+    this.hitGroup.clear();
+
+    drawParticles(
+      this.hitGroup,
+      this.activeParticles
+    );
+
+    this.hitGroup.matrixAutoUpdate = false;
+    this.hitGroup.matrixWorldAutoUpdate = false;
     this.triggerEvent("change");
   }
 
@@ -378,6 +410,7 @@ export class RenderState {
 
     this.renderGeometry();
     this.renderHits();
+    this.renderParticles();
 
     // Also render out the MC, but its not visible at first.
     this.renderMCHits();

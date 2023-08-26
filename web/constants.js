@@ -23,6 +23,16 @@ export const TO_THEME = {
 
 export const DEFAULT_HIT_CLASS = "Hit";
 
+export const DEFAULT_LUT_CONFIG = {
+  name: "viridis",
+  size: 256,
+};
+
+export const DEFAULT_CATEGORICAL_LUT_CONFIG = {
+  name: "tableau20",
+  size: 20,
+};
+
 export const HIT_CONFIG = {
   "2D": {
     hitSize: 1,

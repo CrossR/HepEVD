@@ -6,7 +6,7 @@ import * as THREE from "three";
 import { Lut } from "three/addons/math/Lut.js";
 
 import { addColourMap } from "./colourmaps.js";
-import { materialHit } from "./constants.js";
+import { DEFAULT_CATEGORICAL_LUT_CONFIG, DEFAULT_HIT_CLASS, DEFAULT_LUT_CONFIG, materialHit } from "./constants.js";
 
 /**
  * Draws a set of hits as a 3D mesh using Three.js.
@@ -16,12 +16,12 @@ import { materialHit } from "./constants.js";
  * @param {Array} hitColours - An array of colour values, one for each hit.
  * @param {Object} hitConfig - An object containing configuration options for the hit mesh.
  */
-export function drawHits(group, hits, hitColours, hitConfig = {}) {
+export function drawHits(group, hits, hitColours, hitConfig = {}, lutConfig = DEFAULT_LUT_CONFIG) {
   if (hits.length === 0) return;
 
   // Check if we are using colour, and set it up if we are.
   const colourLut = new Lut("cooltowarm", 10);
-  addColourMap(colourLut, "viridis", 256);
+  addColourMap(colourLut, lutConfig.name, lutConfig.size);
   let usingColour = hitColours.length === hits.length;
   let usingLut = typeof hitColours[0] === "number";
 
@@ -67,4 +67,27 @@ export function drawHits(group, hits, hitColours, hitConfig = {}) {
   hitMesh.instanceColor.needsUpdate = true;
 
   group.add(hitMesh);
+}
+
+
+/**
+ * Draws particles on a given group element.
+ *
+ * @param {THREE.Group} group - The group to which the particles should be added.
+ * @param {Array} particles - An array of particle objects, each with an array of hits.
+ */
+export function drawParticles(group, particles) {
+  const hits = particles.map((particle) => {
+    return particle.hits;
+  });
+
+  // Particle colour here is just their index in the array,
+  // modulo the number of colours in the colour map.
+  const particleColours = particles.flatMap((particle, index) => {
+    return particle.hits.map((_) => {
+      return index % DEFAULT_CATEGORICAL_LUT_CONFIG.size;
+    });
+  });
+
+  drawHits(group, hits.flat(), particleColours, DEFAULT_HIT_CLASS, DEFAULT_CATEGORICAL_LUT_CONFIG);
 }

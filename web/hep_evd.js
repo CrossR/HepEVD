@@ -56,7 +56,6 @@ let hits = await fetch("hits").then((response) => response.json());
 const mcHits = await fetch("mcHits").then((response) => response.json());
 const markers = await fetch("markers").then((response) => response.json());
 const particles = await fetch("particles").then((response) => response.json());
-console.log(hits.length, "hits", mcHits.length, "mcHits", markers.length, "markers", particles.length, "particles")
 
 if (hits.length == 0) {
   hits = particles.map((particle) => {
@@ -70,6 +69,7 @@ const threeDRenderer = new RenderState(
   "3D",
   threeDCamera,
   renderer,
+  particles,
   hits.filter((hit) => hit.position.dim === "3D"),
   mcHits.filter((hit) => hit.position.dim === "3D"),
   markers.filter((marker) => marker.position.dim === "3D"),
@@ -79,6 +79,7 @@ const twoDRenderer = new RenderState(
   "2D",
   twoDCamera,
   renderer,
+  particles,
   hits.filter((hit) => hit.position.dim === "2D"),
   mcHits.filter((hit) => hit.position.dim === "2D"),
   markers.filter((marker) => marker.position.dim === "2D"),
