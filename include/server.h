@@ -12,6 +12,7 @@
 #include "geometry.h"
 #include "hits.h"
 #include "marker.h"
+#include "particle.h"
 
 #include "extern/httplib.h"
 
@@ -99,10 +100,24 @@ class HepEVDServer {
         return true;
     }
 
+    bool addParticles(const Particles &inputParticles) {
+        if (this->particles.size() == 0) {
+            this->particles = inputParticles;
+            return true;
+        }
+
+        Particles newParticles = this->particles;
+        newParticles.insert(newParticles.end(), inputParticles.begin(), inputParticles.end());
+        this->particles = newParticles;
+
+        return true;
+    }
+
   private:
     httplib::Server server;
 
     DetectorGeometry geometry;
+    Particles particles;
     Hits hits;
     MCHits mcHits;
     Markers markers;
@@ -137,6 +152,18 @@ inline void HepEVDServer::startServer() {
     this->server.Post("/mcHits", [&](const Request &req, Response &res) {
         try {
             this->addMCHits(json::parse(req.body));
+            res.set_content("OK", "text/plain");
+        } catch (const std::exception &e) {
+            res.set_content("Error: " + std::string(e.what()), "text/plain");
+        }
+    });
+
+    // Then any actual particles.
+    this->server.Get(
+        "/particles", [&](const Request &, Response &res) { res.set_content(json(this->particles).dump(), "application/json"); });
+    this->server.Post("/particles", [&](const Request &req, Response &res) {
+        try {
+            this->addParticles(json::parse(req.body));
             res.set_content("OK", "text/plain");
         } catch (const std::exception &e) {
             res.set_content("Error: " + std::string(e.what()), "text/plain");
