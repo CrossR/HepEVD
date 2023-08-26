@@ -52,9 +52,18 @@ document.body.appendChild(stats.dom);
 const detectorGeometry = await fetch("geometry").then((response) =>
   response.json(),
 );
-const hits = await fetch("hits").then((response) => response.json());
+let hits = await fetch("hits").then((response) => response.json());
 const mcHits = await fetch("mcHits").then((response) => response.json());
 const markers = await fetch("markers").then((response) => response.json());
+const particles = await fetch("particles").then((response) => response.json());
+console.log(hits.length, "hits", mcHits.length, "mcHits", markers.length, "markers", particles.length, "particles")
+
+if (hits.length == 0) {
+  hits = particles.map((particle) => {
+    return particle.hits;
+  });
+  hits = hits.flat();
+}
 
 // And use that data to setup the initial rendering states.
 const threeDRenderer = new RenderState(
