@@ -57,7 +57,7 @@ export class RenderState {
 
     // Filter the particles to only those that have hits in the current
     // dimension.
-    this.particles = particles.flatMap((particle) => {
+    this.particleHits = particles.flatMap((particle) => {
       const newParticle = { ...particle };
       newParticle.hits = particle.hits.filter(
         (hit) => hit.position.dim === this.hitDim,
@@ -66,11 +66,15 @@ export class RenderState {
       if (newParticle.hits.length === 0) return [];
       return newParticle;
     });
+    this.particleMap = new Map();
+    this.particleHits.forEach((particle) => {
+      this.particleMap.set(particle.particleID, particle);
+    });
 
     // If there are no hits, but there are particles, we want to use the
     // particles instead.
-    if (this.hits.length === 0 && this.particles.length > 0) {
-      this.hits = this.particles.flatMap((particle) => particle.hits);
+    if (this.hits.length === 0 && this.particleHits.length > 0) {
+      this.hits = this.particleHits.flatMap((particle) => particle.hits);
     }
 
     // The generated property lists...
