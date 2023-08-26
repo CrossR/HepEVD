@@ -2,18 +2,31 @@
 
 A header-only web-based event display for particle physics events.
 
+## Code Layout
+
+`include` contains all the actual C++ library code that is responsible for storing
+the basic objects needed (hits, detector layouts, event markers), as well as the HTTP
+server that then serves these objects up for the WebUI to show. A HTTP server (serving
+a JSON API and the UI frontend) was chosen as it works nicely on remote systems, and
+allows quick changes to be made to the UI without re-running anything.
+
+`web` contains the actual Javascript code for the event display, utilising `THREE.js`
+heavily.
+
 ## Installation + Usage
 
-For now, needs the `httplib.h` file from
-[cpp-httplib](https://github.com/yhirose/cpp-httplib) in the root of the repo.
-
-To run example:
+To run the basic example, you need to pull down the external dependencies, then simply
+build the example.
 
 ```
+./get_extern_deps.sh
 cd example/
-make
+make basic
 ./basic
 ```
+
+On remote machines, you should be able to use port forwarding to access the webserver
+that the example sets up from your local browser.
 
 ## Motivation
 
@@ -46,7 +59,8 @@ a web-based event display trivially works remotely, if you use SSH forwarding.
 
 The HTTP server in this project utilises
 [cpp-httplib](https://github.com/yhirose/cpp-httplib), to make the server code as simple
-as possible.
+as possible. Similarly, [nlohmann/json](https://github.com/nlohmann/json) is used to both
+convert and parse objects to/from JSON, such that they can be served via the HTTP server.
 
 ## Future Work
 
