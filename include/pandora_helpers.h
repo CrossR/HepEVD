@@ -19,6 +19,7 @@
 // LArContent Includes
 #include "larpandoracontent/LArHelpers/LArClusterHelper.h"
 #include "larpandoracontent/LArHelpers/LArMCParticleHelper.h"
+#include "larpandoracontent/LArHelpers/LArPfoHelper.h"
 
 // Local Includes
 #include "geometry.h"
@@ -148,7 +149,7 @@ static void addMCHits(const pandora::Algorithm &pAlgorithm, const pandora::CaloH
 }
 
 static void addPFOs(const pandora::PfoList *pPfoList, const std::string parentID = "",
-                    std::vector<std::string> childIDs = {}) {
+                    std::vector<std::string>* childIDs = nullptr) {
 
     if (!isServerInitialised())
         return;
@@ -188,13 +189,21 @@ static void addPFOs(const pandora::PfoList *pPfoList, const std::string parentID
 
         std::vector<std::string> currentChildIDs;
         std::string currentParentID = id;
-        addPFOs(&(pPfo->GetDaughterPfoList()), currentParentID, currentChildIDs);
+        addPFOs(&(pPfo->GetDaughterPfoList()), currentParentID, &currentChildIDs);
 
         Particle *particle = new Particle(hits, id, pPfo->GetParticleId() == 13 ? "Track-like" : "Shower-like");
 
-        if (parentID != "")
+        // If we are in a recursive call, set the parent/child IDs.
+        if (parentID != "" && childIDs != nullptr) {
             particle->setParentID(parentID);
+            childIDs->push_back(id);
+        }
+
         particle->setChildIDs(currentChildIDs);
+
+        particle->setPrimary(pPfo->GetParentPfoList().empty());
+        particle->setInteractionType(lar_content::LArPfoHelper::IsNeutrino(pPfo) ? InteractionType::NEUTRINO
+                                                                                 : InteractionType::COSMIC);
 
         particles.push_back(particle);
 

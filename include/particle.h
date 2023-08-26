@@ -17,6 +17,10 @@ using json = nlohmann::json;
 
 namespace HepEVD {
 
+enum InteractionType { BEAM, COSMIC, NEUTRINO, OTHER };
+NLOHMANN_JSON_SERIALIZE_ENUM(InteractionType,
+                             {{BEAM, "Beam"}, {COSMIC, "Cosmic"}, {NEUTRINO, "Neutrino"}, {OTHER, "Other"}});
+
 // Represent a single particle in the event.
 class Particle {
   public:
@@ -35,13 +39,18 @@ class Particle {
 
     void setParentID(const std::string parentID) { this->parentID = parentID; }
     void setChildIDs(const std::vector<std::string> &childIDs) { this->childIDs = childIDs; }
+    void setPrimary(bool primary) { this->primary = primary; }
+    void setInteractionType(InteractionType interactionType) { this->interactionType = interactionType; }
 
-    NLOHMANN_DEFINE_TYPE_INTRUSIVE(Particle, hits, label, id, parentID, childIDs);
+    NLOHMANN_DEFINE_TYPE_INTRUSIVE(Particle, hits, label, id, parentID, childIDs, primary, interactionType);
 
   private:
     Hits hits;
     std::string label;
     std::string id;
+
+    bool primary;
+    InteractionType interactionType;
 
     // Lets just assume that the IDs are enough, and the list of particles
     // is available by the consumer (i.e. the Web UI). Less contained (could
