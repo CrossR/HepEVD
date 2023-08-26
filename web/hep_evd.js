@@ -57,13 +57,6 @@ const mcHits = await fetch("mcHits").then((response) => response.json());
 const markers = await fetch("markers").then((response) => response.json());
 const particles = await fetch("particles").then((response) => response.json());
 
-if (hits.length == 0) {
-  hits = particles.map((particle) => {
-    return particle.hits;
-  });
-  hits = hits.flat();
-}
-
 // And use that data to setup the initial rendering states.
 const threeDRenderer = new RenderState(
   "3D",

@@ -67,6 +67,12 @@ export class RenderState {
       return newParticle;
     });
 
+    // If there are no hits, but there are particles, we want to use the
+    // particles instead.
+    if (this.hits.length === 0 && this.particles.length > 0) {
+      this.hits = this.particles.flatMap((particle) => particle.hits);
+    }
+
     // The generated property lists...
     this.hitProperties = getHitProperties(this.hits);
     this.hitTypes = getHitTypes(this.hits);
