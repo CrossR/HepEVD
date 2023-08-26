@@ -20,9 +20,9 @@ namespace HepEVD {
 // Represent a single particle in the event.
 class Particle {
   public:
-    Particle() : hits({}), label(""), id(-1), parentID(-1), childIDs({}) {}
-    Particle(const Hits &hits, const unsigned int id = 0, const std::string &label = "")
-        : hits(hits), label(label), id(id), parentID(-1), childIDs({}) {}
+    Particle() : hits({}), label(""), id(""), parentID(""), childIDs({}) {}
+    Particle(const Hits &hits, const std::string id = 0, const std::string &label = "")
+        : hits(hits), label(label), id(id), parentID(""), childIDs({}) {}
 
     double getEnergy() const {
         double energy = 0.0;
@@ -33,19 +33,22 @@ class Particle {
 
     unsigned int getNHits() const { return this->hits.size(); }
 
+    void setParentID(const std::string parentID) { this->parentID = parentID; }
+    void setChildIDs(const std::vector<std::string> &childIDs) { this->childIDs = childIDs; }
+
     NLOHMANN_DEFINE_TYPE_INTRUSIVE(Particle, hits, label, id, parentID, childIDs);
 
   private:
     Hits hits;
     std::string label;
-    unsigned int id;
+    std::string id;
 
     // Lets just assume that the IDs are enough, and the list of particles
     // is available by the consumer (i.e. the Web UI). Less contained (could
     // instead have pointers to the parent/children), but easier to manage and
     // easier to serialise.
-    unsigned int parentID;
-    std::vector<unsigned int> childIDs;
+    std::string parentID;
+    std::vector<std::string> childIDs;
 };
 using Particles = std::vector<Particle *>;
 
