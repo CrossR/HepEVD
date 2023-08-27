@@ -170,7 +170,7 @@ export function enableInteractionTypeToggle(hitType, particles, onClick) {
     const newButton = document.createElement("button");
     newButton.classList.add("btn", "btn-outline", "btn-accent", "m-1", "nohover");
     newButton.innerText = interactionType;
-    newButton.id = `types_MC_toggle_${hitType}`;
+    newButton.id = `particles_${hitType}_${interactionType}`;
     newButton.addEventListener("click", () => onClick(interactionType));
     classDiv.appendChild(newButton);
   });

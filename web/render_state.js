@@ -12,8 +12,8 @@ import { drawHits, drawParticles } from "./hits.js";
 import { drawPoints, drawRings } from "./markers.js";
 import { drawBox } from "./rendering.js";
 import {
-  enableMCToggle,
   enableInteractionTypeToggle,
+  enableMCToggle,
   isButtonActive,
   populateDropdown,
   populateMarkerToggle,
@@ -28,7 +28,16 @@ import {
  */
 export class RenderState {
   // Setup some basics, the scenes, camera, detector and hit groups.
-  constructor(name, camera, renderer, particles, hits, mcHits, markers, geometry) {
+  constructor(
+    name,
+    camera,
+    renderer,
+    particles,
+    hits,
+    mcHits,
+    markers,
+    geometry
+  ) {
     // Basic, crucial information...
     this.name = name;
     this.hitDim = name;
@@ -59,10 +68,9 @@ export class RenderState {
     // Filter the particles to only those that have hits in the current
     // dimension.
     this.particles = particles.flatMap((particle) => {
-      ;
       const newParticle = { ...particle };
       newParticle.hits = particle.hits.filter(
-        (hit) => hit.position.dim === this.hitDim,
+        (hit) => hit.position.dim === this.hitDim
       );
 
       if (newParticle.hits.length === 0) return [];
@@ -89,15 +97,20 @@ export class RenderState {
     // This includes the inn use hits/markers etc, as well as
     // their types and labels etc...
     this.uiSetup = false;
+
     this.activeParticles = this.particles;
+
     this.activeHits = this.hits;
-    this.activeMC = this.mcHits;
     this.activeHitColours = [];
+
+    this.activeMC = this.mcHits;
+
     this.activeMarkers = [];
 
     this.activeHitProps = new Set([BUTTON_ID.All]);
     this.activeHitTypes = new Set();
     this.activeMarkerTypes = new Set();
+    this.activeInteractionTypes = new Set();
 
     // Finally, store a reference to the other renderer.
     // If this renderer turns on, we need to turn the other off.
@@ -148,7 +161,7 @@ export class RenderState {
 
     // For now, just render the box geometry and nothing else.
     const boxVolumes = this.detectorGeometry.volumes.filter(
-      (volume) => volume.volumeType === "box",
+      (volume) => volume.volumeType === "box"
     );
 
     // Since the 2D renderer needs the hits to calculate the box, we need to
@@ -160,7 +173,7 @@ export class RenderState {
     }
 
     boxVolumes.forEach((box) =>
-      drawBox(this.hitDim, this.detGeoGroup, hits, box),
+      drawBox(this.hitDim, this.detGeoGroup, hits, box)
     );
 
     this.detGeoGroup.matrixAutoUpdate = false;
@@ -171,7 +184,7 @@ export class RenderState {
   /**
    * Renders the particles for the current state, based on the active particles.
    * Clears the hit group and then draws the hits with the active hit colours.
-   * 
+   *
    * TODO: Currently doesn't use the active properties etc.
    */
   renderParticles() {
@@ -182,7 +195,7 @@ export class RenderState {
       this.activeParticles,
       this.activeHitProps,
       this.hitProperties,
-      HIT_CONFIG[this.hitDim],
+      HIT_CONFIG[this.hitDim]
     );
 
     this.hitGroup.matrixAutoUpdate = false;
@@ -201,7 +214,7 @@ export class RenderState {
       this.hitGroup,
       this.activeHits,
       this.activeHitColours,
-      HIT_CONFIG[this.hitDim],
+      HIT_CONFIG[this.hitDim]
     );
 
     this.hitGroup.matrixAutoUpdate = false;
@@ -234,7 +247,7 @@ export class RenderState {
       this.mcHitGroup,
       this.activeMC,
       mcColours,
-      HIT_CONFIG[this.hitDim],
+      HIT_CONFIG[this.hitDim]
     );
 
     this.mcHitGroup.matrixAutoUpdate = false;
@@ -251,11 +264,11 @@ export class RenderState {
 
     drawRings(
       this.activeMarkers.filter((marker) => marker.markerType === "Ring"),
-      this.markerGroup,
+      this.markerGroup
     );
     drawPoints(
       this.activeMarkers.filter((marker) => marker.markerType === "Point"),
-      this.markerGroup,
+      this.markerGroup
     );
 
     this.markerGroup.matrixAutoUpdate = false;
@@ -302,6 +315,11 @@ export class RenderState {
 
     // Finally, update the active particles.
     const newParticles = this.particles.flatMap((particle) => {
+      if (
+        this.activeInteractionTypes.size > 0 &&
+        !this.activeInteractionTypes.has(particle.interactionType)
+      )
+        return [];
 
       const newParticle = { ...particle };
 
@@ -452,6 +470,25 @@ export class RenderState {
     this.renderMarkers();
   }
 
+  // If any particle interaction types are toggled, update the list.
+  onInteractionTypeChange(interactionType) {
+    // Add or remove the toggled class as needed...
+    if (this.activeInteractionTypes.has(interactionType)) {
+      this.activeInteractionTypes.delete(interactionType);
+    } else {
+      this.activeInteractionTypes.add(interactionType);
+    }
+
+    // Fix the active markers for this change...
+    this.#updateHitArrays();
+
+    // Now that the internal state is correct, correct the UI.
+    toggleButton(`particles_${this.hitDim}`, interactionType, false);
+
+    // Finally, render the event hits!
+    this.renderEvent();
+  }
+
   // Finally, a MC-hit based toggle, enabling or disabling as needed.
   onMCToggle() {
     // Toggle the visibility state.
@@ -475,16 +512,20 @@ export class RenderState {
 
     // Fill in any dropdown entries, or hit class toggles.
     populateDropdown(this.hitDim, this.hitProperties, (prop) =>
-      this.onHitPropertyChange(prop),
+      this.onHitPropertyChange(prop)
     );
     populateTypeToggle(this.hitDim, this.hitTypes, (hitType) =>
-      this.onHitTypeChange(hitType),
+      this.onHitTypeChange(hitType)
     );
     populateMarkerToggle(this.hitDim, this.markers, (markerType) =>
-      this.onMarkerChange(markerType),
+      this.onMarkerChange(markerType)
     );
     enableMCToggle(this.hitDim, this.mcHits, () => this.onMCToggle());
-    enableInteractionTypeToggle(this.hitDim, this.particles, (interactionType) => console.log(interactionType));
+    enableInteractionTypeToggle(
+      this.hitDim,
+      this.particles,
+      (interactionType) => this.onInteractionTypeChange(interactionType)
+    );
 
     // Move the scene/camera around to best fit it in.
     fitSceneInCamera(this.camera, this.controls, this.detGeoGroup, this.hitDim);
