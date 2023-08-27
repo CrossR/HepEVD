@@ -202,13 +202,13 @@ static void addPFOs(const pandora::Pandora &pPandora, const pandora::PfoList *pP
         }
 
         particle->setChildIDs(currentChildIDs);
-
         particle->setPrimary(pPfo->GetParentPfoList().empty());
 
-        if (lar_content::LArPfoHelper::IsNeutrino(pPfo)) {
+        if (lar_content::LArPfoHelper::IsNeutrino(pPfo) || lar_content::LArPfoHelper::IsNeutrinoFinalState(pPfo)) {
             particle->setInteractionType(InteractionType::NEUTRINO);
             targetPfo = pPfo;
-        } else if (lar_content::LArPfoHelper::IsTestBeam(pPfo)) {
+        } else if (lar_content::LArPfoHelper::IsTestBeam(pPfo) ||
+                   lar_content::LArPfoHelper::IsTestBeamFinalState(pPfo)) {
             particle->setInteractionType(InteractionType::BEAM);
             targetPfo = pPfo;
         } else

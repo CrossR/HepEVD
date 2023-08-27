@@ -146,6 +146,39 @@ export function enableMCToggle(hitType, mcHits, onClick) {
 }
 
 /**
+ * Enables a toggle button for different particle interaction types.
+ * If there are no particles, the function does nothing.
+ *
+ * @param {string} hitType - The hit type for which to enable the particle toggle button.
+ * @param {Array} particles - An array of particle objects.
+ * @param {function} onClick - The function to be called when the particle toggle button is clicked.
+ */
+export function enableInteractionTypeToggle(hitType, particles, onClick) {
+  const classDiv = document.getElementById(`particles_${hitType}`);
+
+  if (particles.length === 0) {
+    return;
+  }
+
+  const interactionTypes = new Set();
+  particles.forEach((particle) => {
+    interactionTypes.add(particle.interactionType);
+  });
+  console.log(interactionTypes)
+
+  interactionTypes.forEach((interactionType) => {
+    const newButton = document.createElement("button");
+    newButton.classList.add("btn", "btn-outline", "btn-accent", "m-1", "nohover");
+    newButton.innerText = interactionType;
+    newButton.id = `types_MC_toggle_${hitType}`;
+    newButton.addEventListener("click", () => onClick(interactionType));
+    classDiv.appendChild(newButton);
+  });
+
+  return;
+}
+
+/**
  * Toggles the active state of a button with the given ID in the dropdown menu
  * or class toggle section with the given class name. If the button is the
  * "None" button, it also toggles the state of every other button in that

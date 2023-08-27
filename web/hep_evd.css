@@ -48,6 +48,14 @@ div {
   visibility: hidden;
 }
 
+.toggle_options_particles {
+  position: absolute;
+  width: 8em;
+  top: 30%;
+  left: 1%;
+  visibility: block;
+}
+
 .quit_message {
   position: absolute;
   top: 50%;

@@ -13,6 +13,7 @@ import { drawPoints, drawRings } from "./markers.js";
 import { drawBox } from "./rendering.js";
 import {
   enableMCToggle,
+  enableInteractionTypeToggle,
   isButtonActive,
   populateDropdown,
   populateMarkerToggle,
@@ -483,6 +484,7 @@ export class RenderState {
       this.onMarkerChange(markerType),
     );
     enableMCToggle(this.hitDim, this.mcHits, () => this.onMCToggle());
+    enableInteractionTypeToggle(this.hitDim, this.particles, (interactionType) => console.log(interactionType));
 
     // Move the scene/camera around to best fit it in.
     fitSceneInCamera(this.camera, this.controls, this.detGeoGroup, this.hitDim);
