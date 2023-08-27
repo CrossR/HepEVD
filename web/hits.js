@@ -6,7 +6,11 @@ import * as THREE from "three";
 import { Lut } from "three/addons/math/Lut.js";
 
 import { addColourMap } from "./colourmaps.js";
-import { DEFAULT_CATEGORICAL_LUT_CONFIG, DEFAULT_HIT_CLASS, DEFAULT_LUT_CONFIG, HIT_CONFIG, materialHit } from "./constants.js";
+import {
+  DEFAULT_CATEGORICAL_LUT_CONFIG,
+  DEFAULT_LUT_CONFIG,
+  materialHit
+} from "./constants.js";
 
 /**
  * Draws a set of hits as a 3D mesh using Three.js.
@@ -16,7 +20,13 @@ import { DEFAULT_CATEGORICAL_LUT_CONFIG, DEFAULT_HIT_CLASS, DEFAULT_LUT_CONFIG, 
  * @param {Array} hitColours - An array of colour values, one for each hit.
  * @param {Object} hitConfig - An object containing configuration options for the hit mesh.
  */
-export function drawHits(group, hits, hitColours, hitConfig = {}, lutConfig = DEFAULT_LUT_CONFIG) {
+export function drawHits(
+  group,
+  hits,
+  hitColours,
+  hitConfig = {},
+  lutConfig = DEFAULT_LUT_CONFIG
+) {
   if (hits.length === 0) return;
 
   // Check if we are using colour, and set it up if we are.
@@ -44,7 +54,7 @@ export function drawHits(group, hits, hitColours, hitConfig = {}, lutConfig = DE
   const hitMesh = new THREE.InstancedMesh(
     hitGeometry,
     materialHit,
-    hits.length,
+    hits.length
   );
 
   hits.forEach(function (hit, index) {
@@ -69,7 +79,6 @@ export function drawHits(group, hits, hitColours, hitConfig = {}, lutConfig = DE
   group.add(hitMesh);
 }
 
-
 /**
  * Draws particles on a given group element.
  *
@@ -79,7 +88,13 @@ export function drawHits(group, hits, hitColours, hitConfig = {}, lutConfig = DE
  * @param {Map} hitPropMap - A map from hit property names to their values.
  * @param {Object} hitConfig - An object containing configuration options for the hit mesh.
  */
-export function drawParticles(group, particles, activeHitProps, hitPropMap, hitConfig) {
+export function drawParticles(
+  group,
+  particles,
+  activeHitProps,
+  hitPropMap,
+  hitConfig
+) {
   const hits = particles.map((particle) => {
     return particle.hits;
   });
@@ -88,11 +103,12 @@ export function drawParticles(group, particles, activeHitProps, hitPropMap, hitC
   // modulo the number of colours in the colour map.
   const particleColours = particles.flatMap((particle, index) => {
     return particle.hits.map((hit) => {
-
       if (activeHitProps.size > 1) {
-        return Array.from(activeHitProps).reverse().map((prop) => {
-          return hitPropMap.get(hit).get(prop);
-        })[0];
+        return Array.from(activeHitProps)
+          .reverse()
+          .map((prop) => {
+            return hitPropMap.get(hit).get(prop);
+          })[0];
       }
 
       return index % DEFAULT_CATEGORICAL_LUT_CONFIG.size;

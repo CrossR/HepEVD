@@ -10,11 +10,11 @@ import { RenderState } from "./render_state.js";
 import { animate, onWindowResize } from "./rendering.js";
 import {
   fixThemeButton,
-  quitEvd,
-  screenshotEvd,
-  saveState,
-  setTheme,
   loadState,
+  quitEvd,
+  saveState,
+  screenshotEvd,
+  setTheme,
 } from "./ui.js";
 
 // Do some initial threejs setup...
@@ -22,7 +22,7 @@ const threeDCamera = new THREE.PerspectiveCamera(
   50,
   window.innerWidth / window.innerHeight,
   0.1,
-  1e6,
+  1e6
 );
 const twoDCamera = new THREE.OrthographicCamera(
   window.innerWidth / -2,
@@ -30,7 +30,7 @@ const twoDCamera = new THREE.OrthographicCamera(
   window.innerHeight / 2,
   window.innerHeight / -2,
   -1,
-  1e6,
+  1e6
 );
 const renderer = new THREE.WebGLRenderer({
   alpha: true,
@@ -50,7 +50,7 @@ document.body.appendChild(stats.dom);
 
 // Pull in the basic data from the API...
 const detectorGeometry = await fetch("geometry").then((response) =>
-  response.json(),
+  response.json()
 );
 let hits = await fetch("hits").then((response) => response.json());
 const mcHits = await fetch("mcHits").then((response) => response.json());
@@ -66,7 +66,7 @@ const threeDRenderer = new RenderState(
   hits.filter((hit) => hit.position.dim === "3D"),
   mcHits.filter((hit) => hit.position.dim === "3D"),
   markers.filter((marker) => marker.position.dim === "3D"),
-  detectorGeometry,
+  detectorGeometry
 );
 const twoDRenderer = new RenderState(
   "2D",
@@ -76,7 +76,7 @@ const twoDRenderer = new RenderState(
   hits.filter((hit) => hit.position.dim === "2D"),
   mcHits.filter((hit) => hit.position.dim === "2D"),
   markers.filter((marker) => marker.position.dim === "2D"),
-  detectorGeometry,
+  detectorGeometry
 );
 threeDRenderer.otherRenderer = twoDRenderer;
 twoDRenderer.otherRenderer = threeDRenderer;
@@ -100,10 +100,10 @@ animate(renderer, renderStates, stats);
 // Now that we've animated once, hook up event listeners for any change.
 renderStates.forEach((state) => {
   state.addEventListener("change", () =>
-    animate(renderer, renderStates, stats),
+    animate(renderer, renderStates, stats)
   );
   state.controls.addEventListener("change", () =>
-    animate(renderer, renderStates, stats),
+    animate(renderer, renderStates, stats)
   );
 });
 
@@ -120,7 +120,7 @@ window.addEventListener(
     onWindowResize(threeDRenderer, renderer);
     onWindowResize(twoDRenderer, renderer);
   },
-  false,
+  false
 );
 document.resetView = () => {
   threeDRenderer.resetView();

@@ -15,7 +15,7 @@ import { BUTTON_ID, TO_THEME } from "./constants.js";
  * @param {Map} hitPropMap - A map of hit properties.
  * @param {function} onClick - The function to be called when a button is clicked.
  */
-export function populateDropdown(hitDim, hitPropMap, onClick = (_) => { }) {
+export function populateDropdown(hitDim, hitPropMap, onClick = (_) => {}) {
   const dropDown = document.getElementById(`${hitDim}_dropdown`);
   const entries = new Set();
 
@@ -54,7 +54,7 @@ export function populateDropdown(hitDim, hitPropMap, onClick = (_) => { }) {
  * @param {Map} hitTypeMap - A map of hit types.
  * @param {function} onClick - The function to be called when a button is clicked.
  */
-export function populateTypeToggle(hitDim, hitTypesMap, onClick = (_) => { }) {
+export function populateTypeToggle(hitDim, hitTypesMap, onClick = (_) => {}) {
   const classDiv = document.getElementById(`types_${hitDim}`);
   const entries = new Set();
 
@@ -70,7 +70,7 @@ export function populateTypeToggle(hitDim, hitTypesMap, onClick = (_) => { }) {
       "btn-outline",
       "btn-accent",
       "m-1",
-      "nohover",
+      "nohover"
     );
     newButton.style.textTransform = "capitalize";
     newButton.innerText = entry;
@@ -89,7 +89,7 @@ export function populateTypeToggle(hitDim, hitTypesMap, onClick = (_) => { }) {
  * @param {Array} markers - An array of marker objects.
  * @param {function} onClick - The function to be called when a button is clicked.
  */
-export function populateMarkerToggle(hitDim, markers, onClick = (_) => { }) {
+export function populateMarkerToggle(hitDim, markers, onClick = (_) => {}) {
   const classDiv = document.getElementById(`markers_${hitDim}`);
   const entries = new Set();
 
@@ -108,7 +108,7 @@ export function populateMarkerToggle(hitDim, markers, onClick = (_) => { }) {
       "btn-outline",
       "btn-accent",
       "m-1",
-      "nohover",
+      "nohover"
     );
     newButton.style.textTransform = "capitalize";
     newButton.innerText = entry;
@@ -164,11 +164,17 @@ export function enableInteractionTypeToggle(hitType, particles, onClick) {
   particles.forEach((particle) => {
     interactionTypes.add(particle.interactionType);
   });
-  console.log(interactionTypes)
+  console.log(interactionTypes);
 
   interactionTypes.forEach((interactionType) => {
     const newButton = document.createElement("button");
-    newButton.classList.add("btn", "btn-outline", "btn-accent", "m-1", "nohover");
+    newButton.classList.add(
+      "btn",
+      "btn-outline",
+      "btn-accent",
+      "m-1",
+      "nohover"
+    );
     newButton.innerText = interactionType;
     newButton.id = `particles_${hitType}_${interactionType}`;
     newButton.addEventListener("click", () => onClick(interactionType));
@@ -259,7 +265,7 @@ export function screenshotEvd(renderer) {
   const contentType = "image/jpeg";
 
   const byteCharacters = atob(
-    imageData.substr(`data:${contentType};base64,`.length),
+    imageData.substr(`data:${contentType};base64,`.length)
   );
   const bytes = [];
 
@@ -289,8 +295,8 @@ export function quitEvd() {
       (element.style.opacity -= 0.1) < 0
         ? (element.style.display = "none")
         : setTimeout(() => {
-          decrement();
-        }, duration / 10);
+            decrement();
+          }, duration / 10);
     })();
   };
   const fadeInThenOut = (element, inDuration, outDuration) => {
@@ -377,7 +383,7 @@ export function saveState(states) {
 
     if (name === undefined || name === "") return;
     const visibleState = Array.from(states.values()).find(
-      (state) => state.visible,
+      (state) => state.visible
     );
     const store = window.localStorage;
 
@@ -413,7 +419,7 @@ export function saveState(states) {
       closed = true;
       cleanUp();
     },
-    { once: true },
+    { once: true }
   );
 
   inputSave.addEventListener(
@@ -424,7 +430,7 @@ export function saveState(states) {
       doSave(name);
       cleanUp();
     },
-    { once: true },
+    { once: true }
   );
 }
 
@@ -436,7 +442,7 @@ export function saveState(states) {
  */
 export function loadState(renderStates, name) {
   const visibleState = Array.from(renderStates.values()).find(
-    (state) => state.visible,
+    (state) => state.visible
   );
   const store = window.localStorage;
 
@@ -452,7 +458,7 @@ export function loadState(renderStates, name) {
   if (saveStates === null) return;
 
   const validSaveStates = saveStates.filter(
-    (state) => state.hitDim === visibleState.hitDim,
+    (state) => state.hitDim === visibleState.hitDim
   );
 
   if (validSaveStates === []) return;
@@ -491,7 +497,7 @@ export function loadState(renderStates, name) {
       closed = true;
       cleanUp();
     },
-    { once: true },
+    { once: true }
   );
 
   selectButton.addEventListener(
@@ -502,6 +508,6 @@ export function loadState(renderStates, name) {
       cleanUp();
       visibleState.triggerEvent("change");
     },
-    { once: true },
+    { once: true }
   );
 }
