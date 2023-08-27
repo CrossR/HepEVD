@@ -47,8 +47,8 @@ class Point : public Marker {
     Point() {}
     Point(const PosArray &pos) : Marker(pos) {}
     Point(const PosArray &pos, const HitDimension &hitDim, const HitType &hitType) : Marker(pos) {
-      this->position.setDim(hitDim);
-      this->position.setHitType(hitType);
+        this->position.setDim(hitDim);
+        this->position.setHitType(hitType);
     }
 
     NLOHMANN_DEFINE_TYPE_INTRUSIVE(Point, markerType, position, colour, label);

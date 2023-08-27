@@ -159,8 +159,9 @@ inline void HepEVDServer::startServer() {
     });
 
     // Then any actual particles.
-    this->server.Get(
-        "/particles", [&](const Request &, Response &res) { res.set_content(json(this->particles).dump(), "application/json"); });
+    this->server.Get("/particles", [&](const Request &, Response &res) {
+        res.set_content(json(this->particles).dump(), "application/json");
+    });
     this->server.Post("/particles", [&](const Request &req, Response &res) {
         try {
             this->addParticles(json::parse(req.body));

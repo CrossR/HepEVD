@@ -32,7 +32,7 @@ class Hit {
     void setDim(const HitDimension &dim) { this->position.setDim(dim); }
     void setHitType(const HitType &hitType) { this->position.setHitType(hitType); }
     void setLabel(const std::string &str) { this->label = str; }
-    
+
     double getEnergy() const { return this->energy; }
     double getDim() const { return this->position.dim; }
 
