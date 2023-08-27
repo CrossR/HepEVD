@@ -179,6 +179,8 @@ export class RenderState {
     drawParticles(
       this.hitGroup,
       this.activeParticles,
+      this.activeHitProps,
+      this.hitProperties,
       HIT_CONFIG[this.hitDim],
     );
 

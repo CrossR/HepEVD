@@ -107,7 +107,6 @@ export function getHitTypes(particles, hits) {
     }
   });
 
-  console.log(typeFilterMap);
   return typeFilterMap;
 }
 
@@ -125,7 +124,7 @@ export function getMCColouring(mcHits) {
     if (Object.hasOwn(PDG_TO_COLOUR, mcPdg)) {
       mcHitColours.push(PDG_TO_COLOUR[mcPdg]);
     } else {
-      console.log(mcPdg);
+      console.log(`Found unknown PDG code: ${mcPdg}`);
     }
   });
 

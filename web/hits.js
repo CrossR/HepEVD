@@ -75,9 +75,11 @@ export function drawHits(group, hits, hitColours, hitConfig = {}, lutConfig = DE
  *
  * @param {THREE.Group} group - The group to which the particles should be added.
  * @param {Array} particles - An array of particle objects, each with an array of hits.
+ * @param {Array} activeHitProps - An array of active hit properties, used for colouring.
+ * @param {Map} hitPropMap - A map from hit property names to their values.
  * @param {Object} hitConfig - An object containing configuration options for the hit mesh.
  */
-export function drawParticles(group, particles, hitConfig) {
+export function drawParticles(group, particles, activeHitProps, hitPropMap, hitConfig) {
   const hits = particles.map((particle) => {
     return particle.hits;
   });
@@ -85,10 +87,23 @@ export function drawParticles(group, particles, hitConfig) {
   // Particle colour here is just their index in the array,
   // modulo the number of colours in the colour map.
   const particleColours = particles.flatMap((particle, index) => {
-    return particle.hits.map((_) => {
+    return particle.hits.map((hit) => {
+
+      if (activeHitProps.size > 1) {
+        return Array.from(activeHitProps).reverse().map((prop) => {
+          return hitPropMap.get(hit).get(prop);
+        })[0];
+      }
+
       return index % DEFAULT_CATEGORICAL_LUT_CONFIG.size;
     });
   });
 
-  drawHits(group, hits.flat(), particleColours, hitConfig, DEFAULT_CATEGORICAL_LUT_CONFIG);
+  let lutToUse = DEFAULT_CATEGORICAL_LUT_CONFIG;
+
+  if (activeHitProps.size > 1) {
+    lutToUse = DEFAULT_LUT_CONFIG;
+  }
+
+  drawHits(group, hits.flat(), particleColours, hitConfig, lutToUse);
 }
