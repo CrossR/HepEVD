@@ -18,6 +18,7 @@
 
 // LArContent Includes
 #include "larpandoracontent/LArHelpers/LArClusterHelper.h"
+#include "larpandoracontent/LArHelpers/LArGeometryHelper.h"
 #include "larpandoracontent/LArHelpers/LArMCParticleHelper.h"
 #include "larpandoracontent/LArHelpers/LArPfoHelper.h"
 
@@ -148,8 +149,8 @@ static void addMCHits(const pandora::Algorithm &pAlgorithm, const pandora::CaloH
     hepEVDServer->addMCHits(mcHits);
 }
 
-static void addPFOs(const pandora::PfoList *pPfoList, const std::string parentID = "",
-                    std::vector<std::string>* childIDs = nullptr) {
+static void addPFOs(const pandora::Pandora &pPandora, const pandora::PfoList *pPfoList, const std::string parentID = "",
+                    std::vector<std::string> *childIDs = nullptr) {
 
     if (!isServerInitialised())
         return;
@@ -190,7 +191,7 @@ static void addPFOs(const pandora::PfoList *pPfoList, const std::string parentID
 
         std::vector<std::string> currentChildIDs;
         std::string currentParentID = id;
-        addPFOs(&(pPfo->GetDaughterPfoList()), currentParentID, &currentChildIDs);
+        addPFOs(pPandora, &(pPfo->GetDaughterPfoList()), currentParentID, &currentChildIDs);
 
         Particle *particle = new Particle(hits, id, pPfo->GetParticleId() == 13 ? "Track-like" : "Shower-like");
 
@@ -216,6 +217,23 @@ static void addPFOs(const pandora::PfoList *pPfoList, const std::string parentID
         particles.push_back(particle);
 
         id = getUUID();
+    }
+
+    // Populate the 2D and 3D vertices.
+    if (targetPfo != nullptr) {
+        const pandora::Vertex *vertex = lar_content::LArPfoHelper::GetVertex(targetPfo);
+
+        Point recoVertex3D({vertex->GetPosition().GetX(), vertex->GetPosition().GetY(), vertex->GetPosition().GetZ()});
+        hepEVDServer->addMarkers({recoVertex3D});
+
+        auto views({pandora::TPC_VIEW_U, pandora::TPC_VIEW_V, pandora::TPC_VIEW_W});
+        for (auto view : views) {
+            const pandora::CartesianVector vertex2D =
+                lar_content::LArGeometryHelper::ProjectPosition(pPandora, vertex->GetPosition(), view);
+            Point recoVertex2D({vertex2D.GetX(), vertex2D.GetY(), vertex2D.GetZ()}, HitDimension::TWO_D,
+                               getHepEVDHitType(view));
+            hepEVDServer->addMarkers({recoVertex2D});
+        }
     }
 
     hepEVDServer->addParticles(particles);
