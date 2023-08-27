@@ -64,6 +64,7 @@ export class RenderState {
       );
 
       if (newParticle.hits.length === 0) return [];
+
       return newParticle;
     });
     this.particleMap = new Map();
@@ -394,7 +395,7 @@ export class RenderState {
     this.#updateMarkers();
 
     // Now that the internal state is correct, correct the UI.
-    toggleButton("markers", markerType, false);
+    toggleButton(`markers_${this.hitDim}`, markerType, false);
     this.toggleScene(this.hitDim);
 
     // Finally, render the new markers!

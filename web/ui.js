@@ -114,7 +114,7 @@ export function populateMarkerToggle(hitDim, markers, onClick = (_) => {}) {
     );
     newButton.style.textTransform = "capitalize";
     newButton.innerText = entry;
-    newButton.id = `markers_${entry}`;
+    newButton.id = `markers_${hitDim}_${entry}`;
     newButton.addEventListener("click", () => onClick(entry));
     classDiv.appendChild(newButton);
   });
@@ -159,6 +159,7 @@ export function enableMCToggle(hitType, mcHits, onClick) {
  */
 export function toggleButton(hitDim, ID, fixNoneButton = true) {
   const button = document.getElementById(`${hitDim}_${ID}`);
+  console.log(`Updating button ${hitDim}_${ID}`)
 
   if (button === null) return;
 

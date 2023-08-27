@@ -38,13 +38,13 @@ export const HIT_CONFIG = {
     hitSize: 1,
   },
   "3D": {
-    hitSize: 1,
+    hitSize: 0.5,
   },
 };
 
 export const MARKER_CONFIG = {
   point: {
-    size: 2,
+    size: 1,
   },
 };
 
