@@ -72,3 +72,5 @@ convert and parse objects to/from JSON, such that they can be served via the HTT
   particle object, and particles being more nested to represent relationships.
 
 - More helper functions.
+
+- How easy / how expensive is adding a hoverover action?
