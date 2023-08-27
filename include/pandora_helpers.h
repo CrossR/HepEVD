@@ -155,6 +155,7 @@ static void addPFOs(const pandora::PfoList *pPfoList, const std::string parentID
         return;
 
     Particles particles;
+    const pandora::ParticleFlowObject *targetPfo = nullptr;
 
     std::string id = getUUID();
 
@@ -202,8 +203,15 @@ static void addPFOs(const pandora::PfoList *pPfoList, const std::string parentID
         particle->setChildIDs(currentChildIDs);
 
         particle->setPrimary(pPfo->GetParentPfoList().empty());
-        particle->setInteractionType(lar_content::LArPfoHelper::IsNeutrino(pPfo) ? InteractionType::NEUTRINO
-                                                                                 : InteractionType::COSMIC);
+
+        if (lar_content::LArPfoHelper::IsNeutrino(pPfo)) {
+            particle->setInteractionType(InteractionType::NEUTRINO);
+            targetPfo = pPfo;
+        } else if (lar_content::LArPfoHelper::IsTestBeam(pPfo)) {
+            particle->setInteractionType(InteractionType::BEAM);
+            targetPfo = pPfo;
+        } else
+            particle->setInteractionType(InteractionType::COSMIC);
 
         particles.push_back(particle);
 
