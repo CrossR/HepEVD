@@ -46,17 +46,23 @@ export function getHitBoundaries(hits, axis) {
 /**
  * Returns a map of hit properties for each hit in the given array of hits.
  *
+ * @param {Array} particles - The array of particles to get properties for.
  * @param {Array} hits - The array of hits to get properties for.
  * @returns {Map} A map of hit properties for each hit in the given array of hits.
  */
-export function getHitProperties(hits) {
+export function getHitProperties(particles, hits) {
   const hitPropMaps = new Map();
+
+  const allHits = particles.flatMap((particle) => {
+    return particle.hits;
+  });
+  allHits.push(...hits);
 
   // Every hit should have an energy property, but there is
   // then two additional cases where a hit can be grouped:
   //  - If a hit is labelled.
   //  - If a hit has a property map associated.
-  hits.forEach((hit) => {
+  allHits.forEach((hit) => {
     hitPropMaps.set(hit, new Map([[BUTTON_ID.All, 0.0]]));
     hitPropMaps.get(hit).set("energy", hit.energy);
 
@@ -77,17 +83,23 @@ export function getHitProperties(hits) {
 /**
  * Returns a map of hit types for each hit in the given array of hits.
  *
+ * @param {Array} particles - The array of particles to get properties for.
  * @param {Array} hits - The array of hits to get types for.
  * @returns {Map} A map of hit types for each hit in the given array of hits.
  */
-export function getHitTypes(hits) {
+export function getHitTypes(particles, hits) {
   const typeFilterMap = new Map();
   typeFilterMap.set(BUTTON_ID.All, (_) => {
     return true;
   });
 
-  hits.forEach((hit) => {
-    if (hit.position.hitType !== "General") {
+  const allHits = particles.flatMap((particle) => {
+    return particle.hits;
+  });
+  allHits.push(...hits);
+
+  allHits.forEach((hit) => {
+    if (hit.position.hitType !== "Hit") {
       const currentHitType = hit.position.hitType;
       typeFilterMap.set(currentHitType, (hit) => {
         return hit.position.hitType === currentHitType;
@@ -95,6 +107,7 @@ export function getHitTypes(hits) {
     }
   });
 
+  console.log(typeFilterMap);
   return typeFilterMap;
 }
 

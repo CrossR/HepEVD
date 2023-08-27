@@ -15,7 +15,7 @@ import { BUTTON_ID, TO_THEME } from "./constants.js";
  * @param {Map} hitPropMap - A map of hit properties.
  * @param {function} onClick - The function to be called when a button is clicked.
  */
-export function populateDropdown(hitDim, hitPropMap, onClick = (_) => {}) {
+export function populateDropdown(hitDim, hitPropMap, onClick = (_) => { }) {
   const dropDown = document.getElementById(`${hitDim}_dropdown`);
   const entries = new Set();
 
@@ -51,19 +51,17 @@ export function populateDropdown(hitDim, hitPropMap, onClick = (_) => {}) {
  * Adds a button for each unique class in the hits array.
  *
  * @param {string} hitDim - The dimension of the hit to which the toggle section belongs.
- * @param {Array} hits - An array of hit objects.
+ * @param {Map} hitTypeMap - A map of hit types.
  * @param {function} onClick - The function to be called when a button is clicked.
  */
-export function populateTypeToggle(hitDim, hits, onClick = (_) => {}) {
+export function populateTypeToggle(hitDim, hitTypesMap, onClick = (_) => { }) {
   const classDiv = document.getElementById(`types_${hitDim}`);
   const entries = new Set();
 
-  hits.forEach((hit, _) => entries.add(hit.position.hitType));
-
-  // If there is no entries, or only the default "Hit" class, don't bother.
-  if (entries.size <= 1) {
-    return;
-  }
+  hitTypesMap.forEach((_, hitTypeString) => {
+    if (hitTypeString === "All") return;
+    entries.add(hitTypeString);
+  });
 
   entries.forEach((entry) => {
     const newButton = document.createElement("button");
@@ -91,7 +89,7 @@ export function populateTypeToggle(hitDim, hits, onClick = (_) => {}) {
  * @param {Array} markers - An array of marker objects.
  * @param {function} onClick - The function to be called when a button is clicked.
  */
-export function populateMarkerToggle(hitDim, markers, onClick = (_) => {}) {
+export function populateMarkerToggle(hitDim, markers, onClick = (_) => { }) {
   const classDiv = document.getElementById(`markers_${hitDim}`);
   const entries = new Set();
 
@@ -159,7 +157,6 @@ export function enableMCToggle(hitType, mcHits, onClick) {
  */
 export function toggleButton(hitDim, ID, fixNoneButton = true) {
   const button = document.getElementById(`${hitDim}_${ID}`);
-  console.log(`Updating button ${hitDim}_${ID}`)
 
   if (button === null) return;
 
@@ -259,8 +256,8 @@ export function quitEvd() {
       (element.style.opacity -= 0.1) < 0
         ? (element.style.display = "none")
         : setTimeout(() => {
-            decrement();
-          }, duration / 10);
+          decrement();
+        }, duration / 10);
     })();
   };
   const fadeInThenOut = (element, inDuration, outDuration) => {

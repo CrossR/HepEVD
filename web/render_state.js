@@ -58,6 +58,7 @@ export class RenderState {
     // Filter the particles to only those that have hits in the current
     // dimension.
     this.particles = particles.flatMap((particle) => {
+      ;
       const newParticle = { ...particle };
       newParticle.hits = particle.hits.filter(
         (hit) => hit.position.dim === this.hitDim,
@@ -67,20 +68,21 @@ export class RenderState {
 
       return newParticle;
     });
+
     this.particleMap = new Map();
     this.particles.forEach((particle) => {
       this.particleMap.set(particle.particleID, particle);
     });
 
-    // If there are no hits, but there are particles, we want to use the
-    // particles instead.
-    if (this.hits.length === 0 && this.particles.length > 0) {
-      this.hits = this.particles.flatMap((particle) => particle.hits);
-    }
+    // // If there are no hits, but there are particles, we want to use the
+    // // particles instead.
+    // if (this.hits.length === 0 && this.particles.length > 0) {
+    //   this.hits = this.particles.flatMap((particle) => particle.hits);
+    // }
 
     // The generated property lists...
-    this.hitProperties = getHitProperties(this.hits);
-    this.hitTypes = getHitTypes(this.hits);
+    this.hitProperties = getHitProperties(this.particles, this.hits);
+    this.hitTypes = getHitTypes(this.particles, this.hits);
 
     // Setup the dynamic bits, the state that will change.
     // This includes the inn use hits/markers etc, as well as
@@ -109,6 +111,7 @@ export class RenderState {
    * @returns {number} The number of hits.
    */
   get hitSize() {
+    if (this.particles.length > 0) return this.particles.length;
     return this.hits.length;
   }
 
@@ -146,8 +149,17 @@ export class RenderState {
     const boxVolumes = this.detectorGeometry.volumes.filter(
       (volume) => volume.volumeType === "box",
     );
+
+    // Since the 2D renderer needs the hits to calculate the box, we need to
+    // check if there are any hits, and if not, use the particles instead.
+    let hits = this.hits;
+
+    if (hits.length === 0 && this.particles.length > 0) {
+      hits = this.particles.flatMap((particle) => particle.hits);
+    }
+
     boxVolumes.forEach((box) =>
-      drawBox(this.hitDim, this.detGeoGroup, this.hits, box),
+      drawBox(this.hitDim, this.detGeoGroup, hits, box),
     );
 
     this.detGeoGroup.matrixAutoUpdate = false;
@@ -192,6 +204,18 @@ export class RenderState {
     this.hitGroup.matrixAutoUpdate = false;
     this.hitGroup.matrixWorldAutoUpdate = false;
     this.triggerEvent("change");
+  }
+
+  /**
+   * Top level event render function, which will render all the different
+   * hits of the event, picking between either the particles or the hits.
+   */
+  renderEvent() {
+    if (this.particles.length > 0) {
+      this.renderParticles();
+    } else {
+      this.renderHits();
+    }
   }
 
   /**
@@ -273,9 +297,32 @@ export class RenderState {
       newMCHits.push(hit);
     });
 
+    // Finally, update the active particles.
+    const newParticles = this.particles.flatMap((particle) => {
+
+      const newParticle = { ...particle };
+
+      newParticle.hits = newParticle.hits.filter((hit) => {
+        if (
+          this.activeHitTypes.size > 0 &&
+          !this.activeHitTypes.has(hit.position.hitType)
+        )
+          return false;
+
+        return Array.from(this.activeHitProps).some((property) => {
+          return this.hitProperties.get(hit).has(property);
+        });
+      });
+
+      if (newParticle.hits.length === 0) return [];
+
+      return newParticle;
+    });
+
     this.activeHits = [...newHits];
     this.activeHitColours = newHitColours;
     this.activeMC = newMCHits;
+    this.activeParticles = newParticles;
   }
 
   /**
@@ -350,8 +397,8 @@ export class RenderState {
     toggleButton(this.hitDim, hitProperty);
     this.toggleScene(this.hitDim);
 
-    // Finally, render the new hits!
-    this.renderHits();
+    // Finally, render the event hits!
+    this.renderEvent();
   }
 
   // Similar to the property change, update the hit type list.
@@ -372,8 +419,8 @@ export class RenderState {
     toggleButton("types", hitType, false);
     this.toggleScene(this.hitDim);
 
-    // Finally, render the new hits!
-    this.renderHits();
+    // Finally, render the event hits!
+    this.renderEvent();
 
     // Its possible that the marker list has changed, so we need to update
     // the marker UI as well.
@@ -421,18 +468,13 @@ export class RenderState {
     if (this.uiSetup) return;
 
     this.renderGeometry();
-    this.renderHits();
-    this.renderParticles();
-
-    // Also render out the MC, but its not visible at first.
-    this.renderMCHits();
-    this.mcHitGroup.visible = false;
+    this.renderEvent();
 
     // Fill in any dropdown entries, or hit class toggles.
     populateDropdown(this.hitDim, this.hitProperties, (prop) =>
       this.onHitPropertyChange(prop),
     );
-    populateTypeToggle(this.hitDim, this.hits, (hitType) =>
+    populateTypeToggle(this.hitDim, this.hitTypes, (hitType) =>
       this.onHitTypeChange(hitType),
     );
     populateMarkerToggle(this.hitDim, this.markers, (markerType) =>
