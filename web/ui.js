@@ -164,7 +164,6 @@ export function enableInteractionTypeToggle(hitType, particles, onClick) {
   particles.forEach((particle) => {
     interactionTypes.add(particle.interactionType);
   });
-  console.log(interactionTypes);
 
   interactionTypes.forEach((interactionType) => {
     const newButton = document.createElement("button");

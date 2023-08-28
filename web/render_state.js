@@ -80,8 +80,9 @@ export class RenderState {
 
     this.particleMap = new Map();
     this.particles.forEach((particle) => {
-      this.particleMap.set(particle.particleID, particle);
+      this.particleMap.set(particle.id, particle);
     });
+    console.log(`Built a particle map of size ${this.particleMap.size}, from ${this.particles.length} particles.`);
 
     // // If there are no hits, but there are particles, we want to use the
     // // particles instead.

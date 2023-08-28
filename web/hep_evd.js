@@ -6,6 +6,7 @@ import * as THREE from "three";
 import Stats from "three/addons/libs/stats.module.js";
 
 import { THEME } from "./constants.js";
+import { createParticleMenu } from "./particle_menu.js";
 import { RenderState } from "./render_state.js";
 import { animate, onWindowResize } from "./rendering.js";
 import {
@@ -127,3 +128,5 @@ document.resetView = () => {
   twoDRenderer.resetView();
 };
 fixThemeButton(true);
+
+createParticleMenu(threeDRenderer.particleMap);
