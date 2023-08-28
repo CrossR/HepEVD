@@ -201,7 +201,12 @@ static void addPFOs(const pandora::Pandora &pPandora, const pandora::PfoList *pP
             childIDs->push_back(id);
         }
 
-        particle->setChildIDs(currentChildIDs);
+        if (currentChildIDs.size() > 0) {
+            std::cout << "Setting child IDs for " << id << " to " << std::endl;
+            std::cout << "There are " << currentChildIDs.size() << " children" << std::endl;
+            particle->setChildIDs(currentChildIDs);
+        }
+
         particle->setPrimary(pPfo->GetParentPfoList().empty());
 
         if (lar_content::LArPfoHelper::IsNeutrino(pPfo) || lar_content::LArPfoHelper::IsNeutrinoFinalState(pPfo)) {
