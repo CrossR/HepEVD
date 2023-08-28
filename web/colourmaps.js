@@ -24,6 +24,20 @@ const tableau20Colours = [
 ];
 const tableau20CM = tableau20Colours.map((c, i) => [i / 19, c]);
 
+const tableau20bColours = [
+  0x393B79, 0x5254A3, 0x6B6ECF, 0x9C9EDE, 0x637939, 0x8CA252, 0xB5CF6B,
+  0xCEDB9C, 0x8C6D31, 0xBD9E39, 0xE7BA52, 0xE7CB94, 0x843C39, 0xAD494A,
+  0xD6616B, 0xE7969C, 0x7B4173, 0xA55194, 0xCE6DBD, 0xDE9ED6,
+];
+const tableau20bCM = tableau20bColours.map((c, i) => [i / 19, c]);
+
+const tableau20cColours = [
+  0x3182BD, 0x6BAED6, 0x9ECAE1, 0xC6DBEF, 0xE6550D, 0xFD8D3C, 0xFDAE6B,
+  0xFDD0A2, 0x31A354, 0x74C476, 0xA1D99B, 0xC7E9C0, 0x756BB1, 0x9E9AC8,
+  0xBCBDDC, 0xDADAEB, 0x636363, 0x969696, 0xBDBDBD, 0xD9D9D9,
+];
+const tableau20cCM = tableau20cColours.map((c, i) => [i / 19, c]);
+
 // Now, sequential colour maps.
 
 // Viridis, see https://bids.github.io/colormap/
@@ -72,7 +86,7 @@ const viridisCM = viridisColours.map((c, i) => [i / 255, c]);
 
 // prettier-ignore
 const magmaColours = [
-  0xff0004, 0x010005, 0x010106, 0x010108, 0x020109, 0x02020b, 0x02020d,
+  0x010000, 0x010005, 0x010106, 0x010108, 0x020109, 0x02020b, 0x02020d,
   0x03030f, 0x030312, 0x040414, 0x050416, 0x060518, 0x06051a, 0x07061c,
   0x08071e, 0x090720, 0x0a0822, 0x0b0924, 0x0c0926, 0x0d0a29, 0x0e0b2b,
   0x100b2d, 0x110c2f, 0x120d31, 0x130d34, 0x140e36, 0x150e38, 0x160f3b,
@@ -127,6 +141,8 @@ const COLOUR_MAPS = {
   // Qualitative colour maps.
   tableau10: tableau10CM,
   tableau20: tableau20CM,
+  tableau20b: tableau20bCM,
+  tableau20c: tableau20cCM,
   // Sequential colour maps.
   viridis: viridisCM,
   magma: magmaCM,

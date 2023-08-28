@@ -66,11 +66,14 @@ convert and parse objects to/from JSON, such that they can be served via the HTT
 
 ## Future Work
 
-- Setup the larger objects: Cluster, Particles. This should include the ability to
-  toggle individual particles or clusters, and perhaps a highlighting option. Like
-  easiest way to do this is a single object, with a cluster being a flat version of the
-  particle object, and particles being more nested to represent relationships.
+- Setup the larger objects: Cluster, Particles. This should include the ability
+toggle individual particles or clusters, and perhaps a highlighting option. Like
+easiest way to do this is a single object, with a cluster being a flat version
+of the particle object, and particles being more nested to represent
+relationships.
 
 - More helper functions.
 
 - How easy / how expensive is adding a hoverover action?
+
+- Select the colourmaps from a drop down.
