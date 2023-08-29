@@ -181,7 +181,12 @@ Particle *addParticle(const pandora::Pandora &pPandora, const pandora::ParticleF
 
     Hits hits;
     pandora::CaloHitList caloHitList;
+
+    // By default, this helper only returns the 2D hits.
+    // We want the 3D hits too, so add them as well.
     lar_content::LArPfoHelper::GetAllCaloHits(pPfo, caloHitList);
+    lar_content::LArPfoHelper::GetCaloHits(pPfo, pandora::HitType::TPC_3D, caloHitList);
+    lar_content::LArPfoHelper::GetIsolatedCaloHits(pPfo, pandora::HitType::TPC_3D, caloHitList);
 
     for (const pandora::CaloHit *const pCaloHit : caloHitList) {
         const auto pos = pCaloHit->GetPositionVector();
