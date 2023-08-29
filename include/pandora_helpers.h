@@ -40,7 +40,18 @@ inline HepEVDServer *hepEVDServer;
 inline HepHitMap caloHitToEvdHit;
 
 static HepHitMap *getHitMap() { return &caloHitToEvdHit; }
-static bool isServerInitialised() { return hepEVDServer != nullptr && hepEVDServer->isInitialised(); }
+
+static bool isServerInitialised() { 
+    const bool isInit(hepEVDServer != nullptr && hepEVDServer->isInitialised());
+
+    if (!isInit) {
+        std::cout << "HepEVD Server is not initialised!" << std::endl;
+        std::cout << "Please call HepEVD::setHepEVDGeometry(this->GetPandora.GetGeometry()) or similar." << std::endl;
+        std::cout << "This should be done before any other calls to the event display."
+    }
+
+    return isInit;
+}
 
 static void startServer() {
     if (isServerInitialised())
