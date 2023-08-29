@@ -23,7 +23,7 @@ div {
   background: transparent;
   top: 45%;
   max-height: 40%;
-  width: 30%;
+  width: 20%;
 }
 
 .dropdown:hover > .dropdown-menu {
