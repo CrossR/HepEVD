@@ -36,11 +36,19 @@ class Particle {
     }
 
     unsigned int getNHits() const { return this->hits.size(); }
+    std::string getLabel() const { return this->label; }
+    std::string getID() const { return this->id; }
 
     void setParentID(const std::string parentID) { this->parentID = parentID; }
+
     void setChildIDs(const std::vector<std::string> &childIDs) { this->childIDs = childIDs; }
+    void addChild(const std::string childID) { this->childIDs.push_back(childID); }
+
     void setPrimary(bool primary) { this->primary = primary; }
+    bool getPrimary() const { return this->primary; }
+
     void setInteractionType(InteractionType interactionType) { this->interactionType = interactionType; }
+    InteractionType getInteractionType() const { return this->interactionType; }
 
     NLOHMANN_DEFINE_TYPE_INTRUSIVE(Particle, hits, label, id, parentID, childIDs, primary, interactionType);
 

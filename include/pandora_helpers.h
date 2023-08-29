@@ -40,13 +40,13 @@ inline HepHitMap caloHitToEvdHit;
 
 static HepHitMap *getHitMap() { return &caloHitToEvdHit; }
 
-static bool isServerInitialised() { 
+static bool isServerInitialised() {
     const bool isInit(hepEVDServer != nullptr && hepEVDServer->isInitialised());
 
     if (!isInit) {
         std::cout << "HepEVD Server is not initialised!" << std::endl;
         std::cout << "Please call HepEVD::setHepEVDGeometry(this->GetPandora.GetGeometry()) or similar." << std::endl;
-        std::cout << "This should be done before any other calls to the event display."
+        std::cout << "This should be done before any other calls to the event display." << std::endl;
     }
 
     return isInit;
@@ -177,8 +177,36 @@ static void addMCHits(const pandora::Algorithm &pAlgorithm, const pandora::CaloH
     hepEVDServer->addMCHits(mcHits);
 }
 
-static void addPFOs(const pandora::Pandora &pPandora, const pandora::PfoList *pPfoList,
-                     const std::string parentID = "", std::vector<std::string> *childIDs = nullptr) {
+Particle *addParticle(const pandora::Pandora &pPandora, const pandora::ParticleFlowObject *pPfo) {
+
+    Hits hits;
+    pandora::CaloHitList caloHitList;
+    lar_content::LArPfoHelper::GetAllCaloHits(pPfo, caloHitList);
+
+    for (const pandora::CaloHit *const pCaloHit : caloHitList) {
+        const auto pos = pCaloHit->GetPositionVector();
+        Hit *hit = new Hit({pos.GetX(), pos.GetY(), pos.GetZ()}, pCaloHit->GetMipEquivalentEnergy());
+
+        hit->setDim(getHepEVDHitDimension(pCaloHit->GetHitType()));
+        hit->setHitType(getHepEVDHitType(pCaloHit->GetHitType()));
+
+        hits.push_back(hit);
+    }
+
+    std::string id = getUUID();
+    Particle *particle = new Particle(hits, id, pPfo->GetParticleId() == 13 ? "Track-like" : "Shower-like");
+
+    if (lar_content::LArPfoHelper::IsNeutrino(pPfo) || lar_content::LArPfoHelper::IsNeutrinoFinalState(pPfo))
+        particle->setInteractionType(InteractionType::NEUTRINO);
+    else if (lar_content::LArPfoHelper::IsTestBeam(pPfo) || lar_content::LArPfoHelper::IsTestBeamFinalState(pPfo))
+        particle->setInteractionType(InteractionType::BEAM);
+    else
+        particle->setInteractionType(InteractionType::COSMIC);
+
+    return particle;
+}
+
+static void addPFOs(const pandora::Pandora &pPandora, const pandora::PfoList *pPfoList) {
 
     if (!isServerInitialised())
         return;
@@ -187,71 +215,47 @@ static void addPFOs(const pandora::Pandora &pPandora, const pandora::PfoList *pP
         return;
 
     Particles particles;
+    std::map<const pandora::ParticleFlowObject *, Particle *> pfoToParticleMap;
     const pandora::ParticleFlowObject *targetPfo = nullptr;
 
-    std::string id = getUUID();
-
+    // First, get a HepEVD::Particle for every Pandora::PFO.
     for (const pandora::ParticleFlowObject *const pPfo : *pPfoList) {
-
-        if (parentID != "")
-            std::cout << "This child PFO has " << lar_content::LArPfoHelper::GetNumberOfTwoDHits(pPfo) << " 2D hits"
-                      << std::endl;
-
-        Hits hits;
-        pandora::CaloHitList caloHitList;
-        lar_content::LArPfoHelper::GetAllCaloHits(pPfo, caloHitList);
-
-        for (const pandora::CaloHit *const pCaloHit : caloHitList) {
-            const auto pos = pCaloHit->GetPositionVector();
-            Hit *hit = new Hit({pos.GetX(), pos.GetY(), pos.GetZ()}, pCaloHit->GetMipEquivalentEnergy());
-
-            hit->setDim(getHepEVDHitDimension(pCaloHit->GetHitType()));
-            hit->setHitType(getHepEVDHitType(pCaloHit->GetHitType()));
-
-            hits.push_back(hit);
-        }
-
-        std::vector<std::string> currentChildIDs;
-        std::string currentParentID = id;
-
-        // If this PFO has any children, add them as particles now, so we
-        // can store and associate their IDs with their parent.
-        if (pPfo->GetNDaughterPfos() > 0)
-            addPFOs(pPandora, &(pPfo->GetDaughterPfoList()), currentParentID, &currentChildIDs);
-
-        Particle *particle = new Particle(hits, id, pPfo->GetParticleId() == 13 ? "Track-like" : "Shower-like");
-
-        // If we are in a recursive call, set the parent/child IDs.
-        if (parentID != "" && childIDs != nullptr) {
-            particle->setParentID(parentID);
-            childIDs->push_back(id);
-        }
-
-        particle->setChildIDs(currentChildIDs); // INFO: Will be empty for childless particles.
-        particle->setPrimary(pPfo->GetParentPfoList().empty());
-
-        if (lar_content::LArPfoHelper::IsNeutrino(pPfo) || lar_content::LArPfoHelper::IsNeutrinoFinalState(pPfo)) {
-            particle->setInteractionType(InteractionType::NEUTRINO);
-            targetPfo = pPfo;
-        } else if (lar_content::LArPfoHelper::IsTestBeam(pPfo) ||
-                   lar_content::LArPfoHelper::IsTestBeamFinalState(pPfo)) {
-            particle->setInteractionType(InteractionType::BEAM);
-            targetPfo = pPfo;
-        } else
-            particle->setInteractionType(InteractionType::COSMIC);
-
+        const auto particle = addParticle(pPandora, pPfo);
         particles.push_back(particle);
+        pfoToParticleMap.insert({pPfo, particle});
+    }
 
-        // Get a new ID for the next particle.
-        id = getUUID();
+    // Now, we can add the parent/child relationships.
+    //
+    // Its a little easier to do this in two steps, just to avoid
+    // having to worry about the order of the PFOs in the list or any
+    // double counting.
+    for (const pandora::ParticleFlowObject *const pPfo : *pPfoList) {
+        if (pPfo->GetNDaughterPfos() == 0)
+            continue;
+
+        for (const auto childPfo : pPfo->GetDaughterPfoList()) {
+
+            const auto parent = pfoToParticleMap.at(pPfo);
+            const auto child = pfoToParticleMap.at(childPfo);
+
+            parent->addChild(child->getID());
+            child->setParentID(parent->getID());
+    
+            // We will need the target PFO later, so lets store it now.
+            if (parent->getInteractionType() == InteractionType::NEUTRINO)
+                targetPfo = pPfo;
+            if (parent->getInteractionType() == InteractionType::BEAM)
+                targetPfo = pPfo;
+        }
     }
 
     // Populate the 2D and 3D vertices.
     if (targetPfo != nullptr) {
         const pandora::Vertex *vertex = lar_content::LArPfoHelper::GetVertex(targetPfo);
 
-        Point recoVertex3D({vertex->GetPosition().GetX(), vertex->GetPosition().GetY(), vertex->GetPosition().GetZ()});
-        hepEVDServer->addMarkers({recoVertex3D});
+        Point recoVertex3D({vertex->GetPosition().GetX(), vertex->GetPosition().GetY(),
+        vertex->GetPosition().GetZ()}); hepEVDServer->addMarkers({recoVertex3D});
 
         auto views({pandora::TPC_VIEW_U, pandora::TPC_VIEW_V, pandora::TPC_VIEW_W});
         for (auto view : views) {
@@ -263,10 +267,7 @@ static void addPFOs(const pandora::Pandora &pPandora, const pandora::PfoList *pP
         }
     }
 
-    // Only give debug output if we are at the top level.
-    if (parentID == "")
-        std::cout << "Adding " << particles.size() << " PFOs to HepEVD..." << std::endl;
-
+    std::cout << "Adding " << particles.size() << " PFOs to HepEVD..." << std::endl;
     hepEVDServer->addParticles(particles);
 }
 
