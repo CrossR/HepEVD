@@ -52,6 +52,12 @@ function createMenuItem(
           return;
         }
         const particle = particlesMap.get(childID);
+
+        // INFO: Likely a particle with no valid hits for this dimension.
+        if (particle === undefined) {
+          return;
+        }
+
         createMenuItem(particle, onClick, particlesMap, usedParticles, details);
       });
 
