@@ -208,6 +208,20 @@ Particle *addParticle(const pandora::Pandora &pPandora, const pandora::ParticleF
     else
         particle->setInteractionType(InteractionType::COSMIC);
 
+    const pandora::Vertex *vertex = lar_content::LArPfoHelper::GetVertex(pPfo);
+
+    Point recoVertex3D({vertex->GetPosition().GetX(), vertex->GetPosition().GetY(), vertex->GetPosition().GetZ()});
+    hepEVDServer->addMarkers({recoVertex3D});
+
+    auto views({pandora::TPC_VIEW_U, pandora::TPC_VIEW_V, pandora::TPC_VIEW_W});
+    for (auto view : views) {
+        const pandora::CartesianVector vertex2D =
+            lar_content::LArGeometryHelper::ProjectPosition(pPandora, vertex->GetPosition(), view);
+        Point recoVertex2D({vertex2D.GetX(), vertex2D.GetY(), vertex2D.GetZ()}, HitDimension::TWO_D,
+                           getHepEVDHitType(view));
+        hepEVDServer->addMarkers({recoVertex2D});
+    }
+
     return particle;
 }
 
@@ -246,7 +260,7 @@ static void addPFOs(const pandora::Pandora &pPandora, const pandora::PfoList *pP
 
             parent->addChild(child->getID());
             child->setParentID(parent->getID());
-    
+
             // We will need the target PFO later, so lets store it now.
             if (parent->getInteractionType() == InteractionType::NEUTRINO)
                 targetPfo = pPfo;
@@ -255,22 +269,22 @@ static void addPFOs(const pandora::Pandora &pPandora, const pandora::PfoList *pP
         }
     }
 
-    // Populate the 2D and 3D vertices.
-    if (targetPfo != nullptr) {
-        const pandora::Vertex *vertex = lar_content::LArPfoHelper::GetVertex(targetPfo);
+    // // Populate the 2D and 3D vertices.
+    // if (targetPfo != nullptr) {
+    //     const pandora::Vertex *vertex = lar_content::LArPfoHelper::GetVertex(targetPfo);
 
-        Point recoVertex3D({vertex->GetPosition().GetX(), vertex->GetPosition().GetY(),
-        vertex->GetPosition().GetZ()}); hepEVDServer->addMarkers({recoVertex3D});
+    //     Point recoVertex3D({vertex->GetPosition().GetX(), vertex->GetPosition().GetY(),
+    //     vertex->GetPosition().GetZ()}); hepEVDServer->addMarkers({recoVertex3D});
 
-        auto views({pandora::TPC_VIEW_U, pandora::TPC_VIEW_V, pandora::TPC_VIEW_W});
-        for (auto view : views) {
-            const pandora::CartesianVector vertex2D =
-                lar_content::LArGeometryHelper::ProjectPosition(pPandora, vertex->GetPosition(), view);
-            Point recoVertex2D({vertex2D.GetX(), vertex2D.GetY(), vertex2D.GetZ()}, HitDimension::TWO_D,
-                               getHepEVDHitType(view));
-            hepEVDServer->addMarkers({recoVertex2D});
-        }
-    }
+    //     auto views({pandora::TPC_VIEW_U, pandora::TPC_VIEW_V, pandora::TPC_VIEW_W});
+    //     for (auto view : views) {
+    //         const pandora::CartesianVector vertex2D =
+    //             lar_content::LArGeometryHelper::ProjectPosition(pPandora, vertex->GetPosition(), view);
+    //         Point recoVertex2D({vertex2D.GetX(), vertex2D.GetY(), vertex2D.GetZ()}, HitDimension::TWO_D,
+    //                            getHepEVDHitType(view));
+    //         hepEVDServer->addMarkers({recoVertex2D});
+    //     }
+    // }
 
     std::cout << "Adding " << particles.size() << " PFOs to HepEVD..." << std::endl;
     hepEVDServer->addParticles(particles);
