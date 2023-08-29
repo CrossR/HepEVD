@@ -2,7 +2,6 @@
 // Useful helper functions.
 //
 
-
 import { BUTTON_ID, PDG_TO_COLOUR } from "./constants.js";
 
 /**

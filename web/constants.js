@@ -84,8 +84,8 @@ export const PDG_TO_COLOUR = {
 };
 
 export const INTERACTION_TYPE_SCORE = {
-  "Neutrino": 0,
-  "Beam": 1,
-  "Cosmic": 2,
-  "Other": 3,
+  Neutrino: 0,
+  Beam: 1,
+  Cosmic: 2,
+  Other: 3,
 };

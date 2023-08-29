@@ -89,7 +89,12 @@ export function populateTypeToggle(hitDim, hitTypesMap, onClick = (_) => {}) {
  * @param {Array} markers - An array of marker objects.
  * @param {function} onClick - The function to be called when a button is clicked.
  */
-export function populateMarkerToggle(hitDim, markers, particles, onClick = (_) => {}) {
+export function populateMarkerToggle(
+  hitDim,
+  markers,
+  particles,
+  onClick = (_) => {}
+) {
   const classDiv = document.getElementById(`markers_${hitDim}`);
   const entries = new Set();
 

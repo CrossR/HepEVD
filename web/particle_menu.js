@@ -13,7 +13,6 @@ function createMenuItem(
   particlesMap,
   parentElement
 ) {
-
   const menuItem = document.createElement("li");
   menuItem.id = `particle_${particle.id}_${hitDim}`;
   menuItem.classList.add("block");
@@ -58,13 +57,7 @@ function createMenuItem(
           return;
         }
 
-        createMenuItem(
-          hitDim,
-          childParticle,
-          onClick,
-          particlesMap,
-          details
-        );
+        createMenuItem(hitDim, childParticle, onClick, particlesMap, details);
 
         // Lets also update the parent label to include the number of child
         // particle hits.
