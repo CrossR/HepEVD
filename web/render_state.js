@@ -73,18 +73,20 @@ export class RenderState {
         (hit) => hit.position.dim === this.hitDim
       );
 
-      if (newParticle.hits.length === 0) return [];
+      // Ignore particles with no hits, but also
+      // ensure they have no children: if they do,
+      // we want to keep them as the relationship
+      // between the parent and child is important.
+      if (newParticle.childIDs.length === 0 && newParticle.hits.length === 0)
+        return [];
 
       return newParticle;
     });
 
     this.particleMap = new Map();
     this.particles.forEach((particle) => {
-      if (this.hitDim === "3D" && particle.interactionType === "Neutrino")
-        console.log(particle);
       this.particleMap.set(particle.id, particle);
     });
-    console.log(this.particleMap)
 
     // // If there are no hits, but there are particles, we want to use the
     // // particles instead.
@@ -322,7 +324,7 @@ export class RenderState {
         !this.activeInteractionTypes.has(particle.interactionType)
       )
         return [];
-      
+
       if (this.ignoredParticles.has(particle.id)) {
         console.log(`Ignoring particle of size ${particle.hits.length}`);
         return [];
@@ -350,10 +352,7 @@ export class RenderState {
     this.activeHits = [...newHits];
     this.activeHitColours = newHitColours;
     this.activeMC = newMCHits;
-
-    console.log(`Before: ${this.activeParticles.length}`)
     this.activeParticles = newParticles;
-    console.log(`After: ${this.activeParticles.length}`)
   }
 
   /**
