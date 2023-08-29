@@ -129,3 +129,21 @@ export function getMCColouring(mcHits) {
 
   return mcHitColours;
 }
+
+/**
+ * Calculates a hash value for the given string.
+ *
+ * @param {string} str - The string to hash.
+ * @returns {number} The hash value for the string.
+ */
+export function hashStr(str) {
+  let hash = 0;
+
+  for (let i = 0; i < str.length; i++) {
+    const char = str.charCodeAt(i);
+    hash = (hash << 5) - hash + char;
+    hash |= hash;
+  }
+
+  return hash;
+}

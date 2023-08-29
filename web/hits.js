@@ -9,8 +9,9 @@ import { addColourMap } from "./colourmaps.js";
 import {
   DEFAULT_CATEGORICAL_LUT_CONFIG,
   DEFAULT_LUT_CONFIG,
-  materialHit
+  materialHit,
 } from "./constants.js";
+import { hashStr } from "./helpers.js";
 
 /**
  * Draws a set of hits as a 3D mesh using Three.js.
@@ -101,7 +102,7 @@ export function drawParticles(
 
   // Particle colour here is just their index in the array,
   // modulo the number of colours in the colour map.
-  const particleColours = particles.flatMap((particle, index) => {
+  const particleColours = particles.flatMap((particle, _) => {
     return particle.hits.map((hit) => {
       if (activeHitProps.size > 1) {
         return Array.from(activeHitProps)
@@ -111,7 +112,9 @@ export function drawParticles(
           })[0];
       }
 
-      return index % DEFAULT_CATEGORICAL_LUT_CONFIG.size;
+      return (
+        Math.abs(hashStr(particle.id)) % DEFAULT_CATEGORICAL_LUT_CONFIG.size
+      );
     });
   });
 
