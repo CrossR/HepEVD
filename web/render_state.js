@@ -326,7 +326,6 @@ export class RenderState {
         return [];
 
       if (this.ignoredParticles.has(particle.id)) {
-        console.log(`Ignoring particle of size ${particle.hits.length}`);
         return [];
       }
 

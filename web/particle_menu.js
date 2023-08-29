@@ -23,7 +23,7 @@ function createMenuItem(
 
   const summary = document.createElement("summary");
   const label = document.createElement("span");
-  label.innerHTML = particle.interactionType;
+  label.innerHTML = `${particle.interactionType} (${particle.hits.length})`;
   label.classList.add("label-text");
   label.addEventListener("click", () => {
     onClick(particle, particlesMap, "ALL");
@@ -99,18 +99,14 @@ export function createParticleMenu(particlesMap, onClick) {
         );
       }
 
-      const aNumHits =
-        a.numHits +
-        a.childIDs.reduce((acc, childID) => {
-          return acc + particlesMap.get(childID).numHits;
-        }, 0);
-      const bNumHits =
-        b.numHits +
-        b.childIDs.reduce((acc, childID) => {
-          return acc + particlesMap.get(childID).numHits;
-        }, 0);
+      const aNumHits = a.childIDs.reduce((acc, childID) => {
+        return acc + particlesMap.get(childID).hits.length;
+      }, a.hits.length);
+      const bNumHits = b.childIDs.reduce((acc, childID) => {
+        return acc + particlesMap.get(childID).hits.length;
+      }, b.hits.length);
 
-      return bNumHits - aNumHits;
+      return aNumHits < bNumHits;
     });
 
   particles.forEach((particle, _) => {
