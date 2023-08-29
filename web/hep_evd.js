@@ -130,26 +130,34 @@ document.resetView = () => {
 fixThemeButton(true);
 
 const tempOnParticleClick = (particle, particlesMap, toggleTarget) => {
-  console.log(`Clicked on ${particle.id}`);
   const particleID = particle.id;
+  const particleMenuEntry = document.getElementById(
+    `particle_${particleID}_${threeDRenderer.hitDim}`
+  );
+  const label = particleMenuEntry.querySelector("span");
 
-  if (toggleTarget === "ALL") {
-    if (threeDRenderer.ignoredParticles.has(particleID)) {
-      threeDRenderer.ignoredParticles.delete(particleID);
-      particle.childIDs.map((childID) => {
-        threeDRenderer.ignoredParticles.delete(childID);
-      });
-    } else {
-      threeDRenderer.ignoredParticles.add(particleID);
-      particle.childIDs.map((childID) => {
-        threeDRenderer.ignoredParticles.add(childID);
-      });
-    }
+  if (threeDRenderer.ignoredParticles.has(particleID)) {
+    threeDRenderer.ignoredParticles.delete(particleID);
+    label.classList.remove("line-through");
+
+    particle.childIDs.map((childID) => {
+      threeDRenderer.ignoredParticles.delete(childID);
+    });
+  } else {
+    threeDRenderer.ignoredParticles.add(particleID);
+    label.classList.add("line-through");
+
+    particle.childIDs.map((childID) => {
+      threeDRenderer.ignoredParticles.add(childID);
+    });
   }
 
   threeDRenderer.updateActiveArrays();
   threeDRenderer.renderEvent();
 };
 
-
-createParticleMenu(threeDRenderer.particleMap, tempOnParticleClick);
+createParticleMenu(
+  threeDRenderer.hitDim,
+  threeDRenderer.particleMap,
+  tempOnParticleClick
+);

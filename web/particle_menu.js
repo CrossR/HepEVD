@@ -7,15 +7,15 @@
 import { INTERACTION_TYPE_SCORE } from "./constants.js";
 
 function createMenuItem(
+  hitDim,
   particle,
   onClick,
   particlesMap,
-  usedParticles,
   parentElement
 ) {
-  usedParticles.add(particle.id);
 
   const menuItem = document.createElement("li");
+  menuItem.id = `particle_${particle.id}_${hitDim}`;
   menuItem.classList.add("block");
 
   const details = document.createElement("details");
@@ -23,14 +23,17 @@ function createMenuItem(
 
   const summary = document.createElement("summary");
   const label = document.createElement("span");
-  label.innerHTML = `${particle.interactionType} (${particle.hits.length})`;
-  label.classList.add("label-text");
+  label.classList.add("label-text", "pr-4");
   label.addEventListener("click", () => {
-    onClick(particle, particlesMap, "ALL");
+    onClick(particle, particlesMap, "All");
   });
-  summary.appendChild(label);
 
   // Now, add the child elements for the particle
+  // Add a new label for each of the child elements.
+  // In the case of the "Child PFOs" element, we need to
+  // recursively call this function to add the child particles
+  // to the menu.
+  let totalNumHits = particle.hits.length;
   const elementList = document.createElement("ul");
   ["Vertices", "Clusters", "Child PFOs"].forEach((childType) => {
     if (childType === "Child PFOs" && particle.childIDs.length > 0) {
@@ -38,27 +41,34 @@ function createMenuItem(
       details.open = false;
 
       const summary = document.createElement("summary");
-      const label = document.createElement("span");
-      label.innerHTML = childType;
-      label.classList.add("label-text");
-      label.addEventListener("click", () => {
+      const childLabel = document.createElement("span");
+      childLabel.innerHTML = childType;
+      childLabel.classList.add("label-text");
+      childLabel.addEventListener("click", () => {
         onClick(particle, particlesMap, childType);
       });
-      summary.appendChild(label);
+      summary.appendChild(childLabel);
       details.appendChild(summary);
 
       particle.childIDs.map((childID) => {
-        if (usedParticles.has(childID)) {
-          return;
-        }
-        const particle = particlesMap.get(childID);
+        const childParticle = particlesMap.get(childID);
 
         // INFO: Likely a particle with no valid hits for this dimension.
-        if (particle === undefined) {
+        if (childParticle === undefined) {
           return;
         }
 
-        createMenuItem(particle, onClick, particlesMap, usedParticles, details);
+        createMenuItem(
+          hitDim,
+          childParticle,
+          onClick,
+          particlesMap,
+          details
+        );
+
+        // Lets also update the parent label to include the number of child
+        // particle hits.
+        totalNumHits += childParticle.hits.length;
       });
 
       elementList.appendChild(details);
@@ -78,15 +88,21 @@ function createMenuItem(
     elementList.appendChild(childItem);
   });
 
+  // Finally set the label to include the total number of hits.
+  label.innerHTML = `${particle.interactionType} (${totalNumHits})`;
+  summary.appendChild(label);
+
+  // Then add the summary + dropdown bits to the new Particle...
   details.appendChild(summary);
   details.appendChild(elementList);
+
+  // And finally add the new Particle to the menu.
   menuItem.appendChild(details);
   parentElement.appendChild(menuItem);
 }
 
-export function createParticleMenu(particlesMap, onClick) {
-  const menu = document.getElementById("particle_menu");
-  const usedParticles = new Set();
+export function createParticleMenu(hitDim, particlesMap, onClick) {
+  const menu = document.getElementById(`particle_menu_${hitDim}`);
 
   // Filter then sort the particles. Filtering is used to
   // remove the child particles from the list, as they will
@@ -116,6 +132,6 @@ export function createParticleMenu(particlesMap, onClick) {
     });
 
   particles.forEach((particle, _) => {
-    createMenuItem(particle, onClick, particlesMap, usedParticles, menu);
+    createMenuItem(hitDim, particle, onClick, particlesMap, menu);
   });
 }
