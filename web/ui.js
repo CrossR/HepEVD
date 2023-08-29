@@ -89,12 +89,17 @@ export function populateTypeToggle(hitDim, hitTypesMap, onClick = (_) => {}) {
  * @param {Array} markers - An array of marker objects.
  * @param {function} onClick - The function to be called when a button is clicked.
  */
-export function populateMarkerToggle(hitDim, markers, onClick = (_) => {}) {
+export function populateMarkerToggle(hitDim, markers, particles, onClick = (_) => {}) {
   const classDiv = document.getElementById(`markers_${hitDim}`);
   const entries = new Set();
 
   // TODO: Could potentially be extended, to use labels etc.
   markers.forEach((marker) => entries.add(marker.markerType));
+
+  // If there are vertices anywhere in the particle array, add a vertex toggle.
+  if (particles.some((particle) => particle.vertices.length > 0)) {
+    entries.add("Point");
+  }
 
   // If there is no entries, don't bother.
   if (entries.size < 1) {

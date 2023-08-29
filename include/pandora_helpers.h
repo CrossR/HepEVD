@@ -210,8 +210,9 @@ Particle *addParticle(const pandora::Pandora &pPandora, const pandora::ParticleF
 
     const pandora::Vertex *vertex = lar_content::LArPfoHelper::GetVertex(pPfo);
 
+    Markers vertices;
     Point recoVertex3D({vertex->GetPosition().GetX(), vertex->GetPosition().GetY(), vertex->GetPosition().GetZ()});
-    hepEVDServer->addMarkers({recoVertex3D});
+    vertices.push_back(recoVertex3D);
 
     auto views({pandora::TPC_VIEW_U, pandora::TPC_VIEW_V, pandora::TPC_VIEW_W});
     for (auto view : views) {
@@ -219,8 +220,10 @@ Particle *addParticle(const pandora::Pandora &pPandora, const pandora::ParticleF
             lar_content::LArGeometryHelper::ProjectPosition(pPandora, vertex->GetPosition(), view);
         Point recoVertex2D({vertex2D.GetX(), vertex2D.GetY(), vertex2D.GetZ()}, HitDimension::TWO_D,
                            getHepEVDHitType(view));
-        hepEVDServer->addMarkers({recoVertex2D});
+        vertices.push_back(recoVertex2D);
     }
+
+    particle->setVertices(vertices);
 
     return particle;
 }
@@ -268,23 +271,6 @@ static void addPFOs(const pandora::Pandora &pPandora, const pandora::PfoList *pP
                 targetPfo = pPfo;
         }
     }
-
-    // // Populate the 2D and 3D vertices.
-    // if (targetPfo != nullptr) {
-    //     const pandora::Vertex *vertex = lar_content::LArPfoHelper::GetVertex(targetPfo);
-
-    //     Point recoVertex3D({vertex->GetPosition().GetX(), vertex->GetPosition().GetY(),
-    //     vertex->GetPosition().GetZ()}); hepEVDServer->addMarkers({recoVertex3D});
-
-    //     auto views({pandora::TPC_VIEW_U, pandora::TPC_VIEW_V, pandora::TPC_VIEW_W});
-    //     for (auto view : views) {
-    //         const pandora::CartesianVector vertex2D =
-    //             lar_content::LArGeometryHelper::ProjectPosition(pPandora, vertex->GetPosition(), view);
-    //         Point recoVertex2D({vertex2D.GetX(), vertex2D.GetY(), vertex2D.GetZ()}, HitDimension::TWO_D,
-    //                            getHepEVDHitType(view));
-    //         hepEVDServer->addMarkers({recoVertex2D});
-    //     }
-    // }
 
     std::cout << "Adding " << particles.size() << " PFOs to HepEVD..." << std::endl;
     hepEVDServer->addParticles(particles);

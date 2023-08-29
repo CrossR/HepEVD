@@ -152,7 +152,6 @@ const tempOnParticleClick = (particle, particlesMap, toggleTarget) => {
     });
   }
 
-  threeDRenderer.updateActiveArrays();
   threeDRenderer.renderEvent();
 };
 

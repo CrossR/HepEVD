@@ -7,6 +7,7 @@
 #define HEP_EVD_HIERARCHIES_H
 
 #include "hits.h"
+#include "marker.h"
 #include "utils.h"
 
 #include "extern/json.hpp"
@@ -39,6 +40,18 @@ class Particle {
     std::string getLabel() const { return this->label; }
     std::string getID() const { return this->id; }
 
+    void setVertices(const Markers &vertices) {
+        // Check that the markers are all Point-type.
+        for (const auto &marker : vertices) {
+            if (!std::holds_alternative<Point>(marker)) {
+                throw std::invalid_argument("All markers must be of type Point");
+            }
+        }
+
+        this->vertices = vertices;
+    }
+    Markers getVertices() const { return this->vertices; }
+
     void setParentID(const std::string parentID) { this->parentID = parentID; }
 
     void setChildIDs(const std::vector<std::string> &childIDs) { this->childIDs = childIDs; }
@@ -50,10 +63,11 @@ class Particle {
     void setInteractionType(InteractionType interactionType) { this->interactionType = interactionType; }
     InteractionType getInteractionType() const { return this->interactionType; }
 
-    NLOHMANN_DEFINE_TYPE_INTRUSIVE(Particle, hits, label, id, parentID, childIDs, primary, interactionType);
+    NLOHMANN_DEFINE_TYPE_INTRUSIVE(Particle, hits, vertices, label, id, parentID, childIDs, primary, interactionType);
 
   private:
     Hits hits;
+    Markers vertices;
     std::string label;
     std::string id;
 
