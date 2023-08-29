@@ -6,7 +6,13 @@
 
 import { INTERACTION_TYPE_SCORE } from "./constants.js";
 
-function createMenuItem(particle, particlesMap, usedParticles, parentElement) {
+function createMenuItem(
+  particle,
+  onClick,
+  particlesMap,
+  usedParticles,
+  parentElement
+) {
   usedParticles.add(particle.id);
 
   const menuItem = document.createElement("li");
@@ -19,6 +25,9 @@ function createMenuItem(particle, particlesMap, usedParticles, parentElement) {
   const label = document.createElement("span");
   label.innerHTML = particle.interactionType;
   label.classList.add("label-text");
+  label.addEventListener("click", () => {
+    onClick(particle, particlesMap, "ALL");
+  });
   summary.appendChild(label);
 
   // Now, add the child elements for the particle
@@ -32,6 +41,9 @@ function createMenuItem(particle, particlesMap, usedParticles, parentElement) {
       const label = document.createElement("span");
       label.innerHTML = childType;
       label.classList.add("label-text");
+      label.addEventListener("click", () => {
+        onClick(particle, particlesMap, childType);
+      });
       summary.appendChild(label);
       details.appendChild(summary);
 
@@ -40,7 +52,7 @@ function createMenuItem(particle, particlesMap, usedParticles, parentElement) {
           return;
         }
         const particle = particlesMap.get(childID);
-        createMenuItem(particle, particlesMap, usedParticles, details);
+        createMenuItem(particle, onClick, particlesMap, usedParticles, details);
       });
 
       elementList.appendChild(details);
@@ -53,6 +65,9 @@ function createMenuItem(particle, particlesMap, usedParticles, parentElement) {
     const childLabel = document.createElement("span");
     childLabel.innerHTML = childType;
     childLabel.classList.add("label-text");
+    childLabel.addEventListener("click", () => {
+      onClick(particle, particlesMap, childType);
+    });
     childItem.appendChild(childLabel);
     elementList.appendChild(childItem);
   });
@@ -63,7 +78,7 @@ function createMenuItem(particle, particlesMap, usedParticles, parentElement) {
   parentElement.appendChild(menuItem);
 }
 
-export function createParticleMenu(particlesMap) {
+export function createParticleMenu(particlesMap, onClick) {
   const menu = document.getElementById("particle_menu");
   const usedParticles = new Set();
 
@@ -75,7 +90,7 @@ export function createParticleMenu(particlesMap) {
   // 1. The interaction type, based on the INTERACTION_TYPE_SCORE.
   // 2. The number of hits (including child particles)
   const particles = Array.from(particlesMap.values())
-    .filter((particle) => particle.parentID !== "")
+    .filter((particle) => particle.parentID === "")
     .sort((a, b) => {
       if (a.interactionType !== b.interactionType) {
         return (
@@ -99,6 +114,6 @@ export function createParticleMenu(particlesMap) {
     });
 
   particles.forEach((particle, _) => {
-    createMenuItem(particle, particlesMap, usedParticles, menu);
+    createMenuItem(particle, onClick, particlesMap, usedParticles, menu);
   });
 }

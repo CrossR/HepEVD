@@ -129,4 +129,27 @@ document.resetView = () => {
 };
 fixThemeButton(true);
 
-createParticleMenu(threeDRenderer.particleMap);
+const tempOnParticleClick = (particle, particlesMap, toggleTarget) => {
+  console.log(`Clicked on ${particle.id}`);
+  const particleID = particle.id;
+
+  if (toggleTarget === "ALL") {
+    if (threeDRenderer.ignoredParticles.has(particleID)) {
+      threeDRenderer.ignoredParticles.delete(particleID);
+      particle.childIDs.map((childID) => {
+        threeDRenderer.ignoredParticles.delete(childID);
+      });
+    } else {
+      threeDRenderer.ignoredParticles.add(particleID);
+      particle.childIDs.map((childID) => {
+        threeDRenderer.ignoredParticles.add(childID);
+      });
+    }
+  }
+
+  threeDRenderer.updateActiveArrays();
+  threeDRenderer.renderEvent();
+};
+
+
+createParticleMenu(threeDRenderer.particleMap, tempOnParticleClick);

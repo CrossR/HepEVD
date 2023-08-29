@@ -80,9 +80,11 @@ export class RenderState {
 
     this.particleMap = new Map();
     this.particles.forEach((particle) => {
+      if (this.hitDim === "3D" && particle.interactionType === "Neutrino")
+        console.log(particle);
       this.particleMap.set(particle.id, particle);
     });
-    console.log(`Built a particle map of size ${this.particleMap.size}, from ${this.particles.length} particles.`);
+    console.log(this.particleMap)
 
     // // If there are no hits, but there are particles, we want to use the
     // // particles instead.
@@ -112,6 +114,7 @@ export class RenderState {
     this.activeHitTypes = new Set();
     this.activeMarkerTypes = new Set();
     this.activeInteractionTypes = new Set();
+    this.ignoredParticles = new Set();
 
     // Finally, store a reference to the other renderer.
     // If this renderer turns on, we need to turn the other off.
@@ -185,8 +188,6 @@ export class RenderState {
   /**
    * Renders the particles for the current state, based on the active particles.
    * Clears the hit group and then draws the hits with the active hit colours.
-   *
-   * TODO: Currently doesn't use the active properties etc.
    */
   renderParticles() {
     this.hitGroup.clear();
@@ -321,6 +322,11 @@ export class RenderState {
         !this.activeInteractionTypes.has(particle.interactionType)
       )
         return [];
+      
+      if (this.ignoredParticles.has(particle.id)) {
+        console.log(`Ignoring particle of size ${particle.hits.length}`);
+        return [];
+      }
 
       const newParticle = { ...particle };
 
@@ -344,7 +350,10 @@ export class RenderState {
     this.activeHits = [...newHits];
     this.activeHitColours = newHitColours;
     this.activeMC = newMCHits;
+
+    console.log(`Before: ${this.activeParticles.length}`)
     this.activeParticles = newParticles;
+    console.log(`After: ${this.activeParticles.length}`)
   }
 
   /**
@@ -380,6 +389,10 @@ export class RenderState {
    * Run all the update functions for the active arrays.
    */
   #updateActiveArrays() {
+    this.#updateHitArrays();
+    this.#updateMarkers();
+  }
+  updateActiveArrays() {
     this.#updateHitArrays();
     this.#updateMarkers();
   }
