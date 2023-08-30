@@ -212,6 +212,7 @@ Particle *addParticle(const pandora::Pandora &pPandora, const pandora::ParticleF
 
     Markers vertices;
     Point recoVertex3D({vertex->GetPosition().GetX(), vertex->GetPosition().GetY(), vertex->GetPosition().GetZ()});
+    if (particle->getInteractionType() == InteractionType::COSMIC) recoVertex3D.setColour("yellow");
     vertices.push_back(recoVertex3D);
 
     auto views({pandora::TPC_VIEW_U, pandora::TPC_VIEW_V, pandora::TPC_VIEW_W});
@@ -220,6 +221,7 @@ Particle *addParticle(const pandora::Pandora &pPandora, const pandora::ParticleF
             lar_content::LArGeometryHelper::ProjectPosition(pPandora, vertex->GetPosition(), view);
         Point recoVertex2D({vertex2D.GetX(), vertex2D.GetY(), vertex2D.GetZ()}, HitDimension::TWO_D,
                            getHepEVDHitType(view));
+        if (particle->getInteractionType() == InteractionType::COSMIC) recoVertex2D.setColour("yellow");
         vertices.push_back(recoVertex2D);
     }
 

@@ -140,7 +140,14 @@ export function drawPoints(points, group) {
       groups.set(label, groups.size);
     }
 
-    pointColours.push(groups[label]);
+    // If the point has a colour, use that.
+    // Otherwise, use the group colour.
+    if (point.colour) {
+      pointColours.push(point.colour);
+      console.log(point.colour);
+    } else {
+      pointColours.push(groups[label]);
+    }
   });
 
   // Start building the mesh.
@@ -158,6 +165,7 @@ export function drawPoints(points, group) {
 
   const lut = new Lut("cooltowarm", 512);
   let usingLut = typeof pointColours[0] === "number";
+  let usingColour = typeof pointColours[0] === "string";
 
   if (usingLut) {
     let minColourValue = Infinity;
@@ -178,6 +186,8 @@ export function drawPoints(points, group) {
 
     if (usingLut) {
       pointMesh.setColorAt(index, lut.getColor(pointColours[index]));
+    } else if (usingColour && pointColours[index] !== "") {
+      pointMesh.setColorAt(index, new THREE.Color(pointColours[index]));
     } else {
       pointMesh.setColorAt(index, new THREE.Color("red"));
     }

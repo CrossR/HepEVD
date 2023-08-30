@@ -399,7 +399,6 @@ export class RenderState {
     // If there are no markers still, but there are particles
     // we want to add the vertex markers.
     if (this.particles.length > 0) {
-      console.log("Updating using the particles array...");
       this.particles.forEach((particle) => {
         if (
           this.activeInteractionTypes.size > 0 &&
