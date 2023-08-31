@@ -31,14 +31,16 @@ function createMenuItem(
   // Make an optional details element for the particle, which will
   // only be used if the particle has child particles.
   const details = document.createElement("details");
-  const summary = document.createElement("summary");
   details.open = false;
 
   // This is the label, which tells the user the particle type and
   // number of hits.
+  const summary = document.createElement("summary");
   const label = document.createElement("span");
   label.classList.add("label-text", "pr-4");
-  label.addEventListener("click", () => {
+
+  label.addEventListener("click", (ev) => {
+    ev.preventDefault();
     onClick(particle, particlesMap);
   });
 
@@ -67,18 +69,17 @@ function createMenuItem(
   // Set the label text to include the number of hits, including the
   // child particles hits.
   label.innerHTML = `${particle.interactionType} (${totalNumHits})`;
+  summary.appendChild(label);
 
-  // If there are any child particles, we should include
-  // the details and summary elements in the menu item.
-  // This will give us the dropdown arrow to expand the
+  // If there are any child particles, we should include the details element in
+  // the menu item.  This will give us the dropdown arrow to expand the
   // sub-menu.
   if (elementList.childElementCount > 0) {
-    summary.appendChild(label);
     details.appendChild(summary);
     details.appendChild(elementList);
     menuItem.appendChild(details);
   } else {
-    menuItem.appendChild(label);
+    menuItem.appendChild(summary);
   }
 
   // Finally, append the menu item to the parent element.
