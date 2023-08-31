@@ -131,22 +131,14 @@ export function drawRings(rings, group) {
 export function drawPoints(points, group) {
   if (points.length === 0) return;
 
-  let groups = new Map();
   let pointColours = [];
 
   points.forEach((point) => {
-    const label = point.label;
-    if (!groups.has(label)) {
-      groups.set(label, groups.size);
-    }
-
     // If the point has a colour, use that.
-    // Otherwise, use the group colour.
     if (point.colour) {
       pointColours.push(point.colour);
-      console.log(point.colour);
     } else {
-      pointColours.push(groups[label]);
+      pointColours.push(MARKER_CONFIG["point"].colour);
     }
   });
 
@@ -165,7 +157,6 @@ export function drawPoints(points, group) {
 
   const lut = new Lut("cooltowarm", 512);
   let usingLut = typeof pointColours[0] === "number";
-  let usingColour = typeof pointColours[0] === "string";
 
   if (usingLut) {
     let minColourValue = Infinity;
@@ -186,10 +177,8 @@ export function drawPoints(points, group) {
 
     if (usingLut) {
       pointMesh.setColorAt(index, lut.getColor(pointColours[index]));
-    } else if (usingColour && pointColours[index] !== "") {
-      pointMesh.setColorAt(index, new THREE.Color(pointColours[index]));
     } else {
-      pointMesh.setColorAt(index, new THREE.Color("red"));
+      pointMesh.setColorAt(index, new THREE.Color(pointColours[index]));
     }
   });
 
