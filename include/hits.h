@@ -34,7 +34,7 @@ class Hit {
     void setLabel(const std::string &str) { this->label = str; }
 
     double getEnergy() const { return this->energy; }
-    double getDim() const { return this->position.dim; }
+    HitDimension getDim() const { return this->position.dim; }
 
     // TODO: This may want to be extensible. I.e. string -> double + other
     // properties (CATEGORIC, NUMERIC) etc;

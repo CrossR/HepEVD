@@ -8,7 +8,7 @@ import { INTERACTION_TYPE_SCORE } from "./constants.js";
 
 /**
  * Creates a menu item for a particle with the given hit dimension, particle object, and onClick function.
- * 
+ *
  * @param {number} hitDim - The hit dimension of the particle.
  * @param {Object} particle - The particle object.
  * @param {Function} onClick - The function to be called when the menu item is clicked.
@@ -51,20 +51,24 @@ function createMenuItem(
   let totalNumHits = particle.hits.length;
   const elementList = document.createElement("ul");
 
-  particle.childIDs.map((childID) => {
-    const childParticle = particlesMap.get(childID);
+  particle.childIDs
+    .sort((a, b) => {
+      return particlesMap.get(a).hits.length < particlesMap.get(b).hits.length;
+    })
+    .map((childID) => {
+      const childParticle = particlesMap.get(childID);
 
-    // INFO: Likely a particle with no valid hits for this dimension.
-    if (childParticle === undefined) {
-      return;
-    }
+      // INFO: Likely a particle with no valid hits for this dimension.
+      if (childParticle === undefined) {
+        return;
+      }
 
-    // Recursively create the menu item for the child particle.
-    // This can be called multiple times, if the child particle
-    // has child particles of its own.
-    createMenuItem(hitDim, childParticle, onClick, particlesMap, elementList);
-    totalNumHits += childParticle.hits.length;
-  });
+      // Recursively create the menu item for the child particle.
+      // This can be called multiple times, if the child particle
+      // has child particles of its own.
+      createMenuItem(hitDim, childParticle, onClick, particlesMap, elementList);
+      totalNumHits += childParticle.hits.length;
+    });
 
   // Set the label text to include the number of hits, including the
   // child particles hits.
@@ -88,7 +92,7 @@ function createMenuItem(
 
 /**
  * Creates a particle menu with the given hit dimension, particles map, and onClick function.
- * 
+ *
  * @param {string} hitDim - The hit dimension.
  * @param {Map} particlesMap - The particles map.
  * @param {function} onClick - The onClick function.
