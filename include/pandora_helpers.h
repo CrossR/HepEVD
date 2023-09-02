@@ -199,6 +199,7 @@ Particle *addParticle(const pandora::Pandora &pPandora, const pandora::ParticleF
         hit->setHitType(getHepEVDHitType(pCaloHit->GetHitType()));
 
         hits.push_back(hit);
+        caloHitToEvdHit.insert({pCaloHit, hit});
     }
 
     std::string id = getUUID();
