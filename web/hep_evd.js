@@ -128,35 +128,3 @@ document.resetView = () => {
   twoDRenderer.resetView();
 };
 fixThemeButton(true);
-
-const tempOnParticleClick = (particle, particlesMap, toggleTarget) => {
-  const particleID = particle.id;
-  const particleMenuEntry = document.getElementById(
-    `particle_${particleID}_${threeDRenderer.hitDim}`
-  );
-  const label = particleMenuEntry.querySelector("span");
-
-  if (threeDRenderer.ignoredParticles.has(particleID)) {
-    threeDRenderer.ignoredParticles.delete(particleID);
-    label.classList.remove("line-through");
-
-    particle.childIDs.map((childID) => {
-      threeDRenderer.ignoredParticles.delete(childID);
-    });
-  } else {
-    threeDRenderer.ignoredParticles.add(particleID);
-    label.classList.add("line-through");
-
-    particle.childIDs.map((childID) => {
-      threeDRenderer.ignoredParticles.add(childID);
-    });
-  }
-
-  threeDRenderer.renderEvent();
-};
-
-createParticleMenu(
-  threeDRenderer.hitDim,
-  threeDRenderer.particleMap,
-  tempOnParticleClick
-);

@@ -18,6 +18,7 @@ import {
   populateDropdown,
   populateMarkerToggle,
   populateTypeToggle,
+  setupParticleMenu,
   toggleButton,
   updateUI,
 } from "./ui.js";
@@ -570,6 +571,7 @@ export class RenderState {
 
     // Setup the default button.
     toggleButton(this.hitDim, BUTTON_ID.All);
+    setupParticleMenu(this);
 
     this.toggleScene(renderTarget);
     this.uiSetup = true;

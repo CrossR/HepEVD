@@ -5,6 +5,7 @@
 import * as THREE from "three";
 
 import { BUTTON_ID, TO_THEME } from "./constants.js";
+import { createParticleMenu } from "./particle_menu.js";
 
 /**
  * Populates a dropdown menu with buttons based on the given hit property map.
@@ -246,22 +247,81 @@ export function isButtonActive(hitDim, ID) {
 }
 
 /**
- * Updates the UI by toggling the visibility of the toggle options for the given class name.
+ * Sets up the particle menu with the given render state.
  *
- * @param {string} hitType - The name of the hit class for which to toggle the visibility of the toggle options.
+ * @param {Object} renderState - The render state object.
+ * @returns {void}
  */
-export function updateUI(hitType) {
+export function setupParticleMenu(renderState) {
+  const onClickAction = (particle) => {
+    const particleID = particle.id;
+    const particleMenuEntry = document.getElementById(
+      `particle_${particleID}_${renderState.hitDim}`
+    );
+    const label = particleMenuEntry.querySelector("span");
+
+    if (renderState.ignoredParticles.has(particleID)) {
+      renderState.ignoredParticles.delete(particleID);
+      label.classList.remove("line-through");
+
+      particle.childIDs.map((childID) => {
+        renderState.ignoredParticles.delete(childID);
+      });
+    } else {
+      renderState.ignoredParticles.add(particleID);
+      label.classList.add("line-through");
+
+      particle.childIDs.map((childID) => {
+        renderState.ignoredParticles.add(childID);
+      });
+    }
+
+    renderState.renderEvent();
+  };
+
+  createParticleMenu(
+    renderState.hitDim,
+    renderState.particleMap,
+    onClickAction
+  );
+}
+
+/**
+ * Toggles the visibility of the particle menu based on the active hit type.
+ *
+ * @param {string} activeHitType - The active hit type, either "2D" or "3D".
+ */
+export function toggleVisibleParticleMenu(activeHitType) {
+  const particleMenu2D = document.getElementById("particle_menu_2D");
+  const particleMenu3D = document.getElementById("particle_menu_3D");
+
+  if (activeHitType === "2D") {
+    particleMenu2D.style.display = "block";
+    particleMenu3D.style.display = "none";
+  } else {
+    particleMenu2D.style.display = "none";
+    particleMenu3D.style.display = "block";
+  }
+}
+
+/**
+ * Updates the UI by toggling the visibility of various menu options.
+ *
+ * @param {string} activeHitType - The name of the hit class for which to toggle the visibility of the toggle options.
+ */
+export function updateUI(activeHitType) {
   const toggleOptions = document.getElementById("all_toggle_options");
   Array.from(toggleOptions.childNodes)
     .filter((elem) => elem.nodeName != "#text")
     .forEach((elem) => {
       // Toggle visibility for the new class.
-      if (elem.id.includes(hitType)) {
+      if (elem.id.includes(activeHitType)) {
         elem.style.visibility = "visible";
       } else {
         elem.style.visibility = "hidden";
       }
     });
+  toggleVisibleParticleMenu(activeHitType);
 }
 
 /**
