@@ -61,6 +61,9 @@ static void resetServer(const bool resetGeo = false) { hepEVDServer->resetServer
 
 static void setHepEVDGeometry(const pandora::GeometryManager *manager) {
 
+    if (isServerInitialised())
+        return;
+
     Volumes volumes;
 
     for (const auto &tpcIndexPair : manager->GetLArTPCMap()) {
