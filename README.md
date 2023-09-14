@@ -73,3 +73,5 @@ convert and parse objects to/from JSON, such that they can be served via the HTT
 
  - More helper functions.
 
+ - Hit widths? Need to work out the best way to support that + instanced meshes.
+
