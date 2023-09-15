@@ -458,6 +458,7 @@ export function saveState(states) {
 
     const cameraPos = visibleState.camera.position;
     const cameraUp = visibleState.camera.up;
+    const cameraTarget = visibleState.controls.target;
 
     const state = {
       name: name,
@@ -470,7 +471,13 @@ export function saveState(states) {
         position: [cameraPos.x, cameraPos.y, cameraPos.z],
         up: [cameraUp.x, cameraUp.y, cameraUp.z],
       },
+      controls: {
+        target: [cameraTarget.x, cameraTarget.y, cameraTarget.z],
+      }
     };
+
+    console.log(cameraPos);
+    console.log(cameraUp);
 
     let saveStates = [state];
 
@@ -496,8 +503,10 @@ export function saveState(states) {
     () => {
       if (closed) return;
 
-      doSave(name);
+      doSave();
       cleanUp();
+
+      console.log("Saved state to local storage")
     },
     { once: true }
   );
@@ -507,9 +516,8 @@ export function saveState(states) {
  * Load the given state from local storage.
  *
  * @param {Map} states - The states to save.
- * @param {String} name - The name of the state to save.
  */
-export function loadState(renderStates, name) {
+export function loadState(renderStates) {
   const visibleState = Array.from(renderStates.values()).find(
     (state) => state.visible
   );
@@ -524,13 +532,13 @@ export function loadState(renderStates, name) {
   // If there isn't any, return with no action.
   const saveStates = JSON.parse(store.getItem("saveStates"));
 
-  if (saveStates === null) return;
+  if (saveStates === null) { return; }
 
   const validSaveStates = saveStates.filter(
     (state) => state.hitDim === visibleState.hitDim
   );
 
-  if (validSaveStates === []) return;
+  if (validSaveStates === null) return;
 
   // Since there are valid states, add them to the dropdown list.
   validSaveStates.forEach((state) => {
@@ -554,6 +562,7 @@ export function loadState(renderStates, name) {
     visibleState.camera.layers.mask = newState.camera.masks;
     visibleState.camera.position.set(...newState.camera.position);
     visibleState.camera.up.set(...newState.camera.up);
+    visibleState.controls.target.set(...newState.controls.target);
 
     visibleState.camera.updateProjectionMatrix();
     visibleState.controls.update();
@@ -579,4 +588,5 @@ export function loadState(renderStates, name) {
     },
     { once: true }
   );
+  console.log("Exiting loadState function");
 }
