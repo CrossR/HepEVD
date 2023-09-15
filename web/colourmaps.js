@@ -130,10 +130,14 @@ const magmaCM = magmaColours.map((c, i) => [i / 255, c]);
 // The name must be one of the keys in COLOUR_MAPS.
 export function addColourMap(lut, name, num) {
   if (!(name in COLOUR_MAPS)) {
-    throw new Error("Unknown colour map: " + name);
+    if (! DEFAULT_MAPS.includes(name)) {
+      throw new Error("Unknown colour map: " + name);
+    }
+    lut.setColorMap(name, num);
+  } else {
+    lut.addColorMap(name, COLOUR_MAPS[name]);
+    lut.setColorMap(name, num);
   }
-  lut.addColorMap(name, COLOUR_MAPS[name]);
-  lut.setColorMap(name, num);
 }
 
 // COLOUR_MAPS lookup table.
@@ -147,3 +151,10 @@ const COLOUR_MAPS = {
   viridis: viridisCM,
   magma: magmaCM,
 };
+
+const DEFAULT_MAPS = [
+    "cooltowarm",
+    "rainbow",
+    "blackbody",
+    "grayscale",
+];
