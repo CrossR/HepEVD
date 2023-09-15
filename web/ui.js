@@ -655,11 +655,10 @@ export function pickColourscheme(states) {
 
       const result = JSON.stringify({
         name: categoricalSelect.value,
-        size: map.length,
-        maxSize: -1,
+        size: map.length ?? map,
       });
 
-      storage.setItem("categoricaColourMap", result);
+      store.setItem("categoricaColourMap", result);
     }
 
     if (continuousSelect.selectedIndex !== 0) {
@@ -669,10 +668,9 @@ export function pickColourscheme(states) {
 
       const result = JSON.stringify({
         name: continuousSelect.value,
-        size: map.length,
-        maxSize: map.length,
+        size: map.length ?? map,
       });
-      
+
       store.setItem("continuousColourMap", result);
     }
   };
@@ -695,7 +693,8 @@ export function pickColourscheme(states) {
       if (closed) return;
       doSave();
       cleanUp();
-      visibleState.triggerEvent("change");
+
+      visibleState.triggerEvent("fullUpdate");
     },
     { once: true }
   );

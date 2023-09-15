@@ -29,13 +29,11 @@ export const DEFAULT_HIT_CLASS = "Hit";
 export const DEFAULT_LUT_CONFIG = {
   name: "cooltowarm",
   size: 128,
-  maxSize: -1, // INFO: Scale the LUT as needed.
 };
 
 export const DEFAULT_CATEGORICAL_LUT_CONFIG = {
   name: "tableau20",
   size: 20,
-  maxSize: 20, // INFO: Keep the LUT at a fixed size.
 };
 
 export const HIT_CONFIG = {

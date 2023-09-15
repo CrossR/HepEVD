@@ -155,10 +155,10 @@ export const COLOUR_MAPS = {
 };
 
 export const DEFAULT_MAPS = {
-    "cooltowarm": 32,
-    "rainbow": 32,
-    "blackbody": 32,
-    "grayscale": 32,
+    "cooltowarm": 128,
+    "rainbow": 128,
+    "blackbody": 128,
+    "grayscale": 128,
 };
 
 export function getCategoricalLutConf() {

@@ -43,7 +43,8 @@ export function drawHits(
     });
 
     // Set to the maximum value between the calcualted max, and the LUT default.
-    colourLut.setMax(Math.min(maxColourValue, lutConfig.size - 1));
+    colourLut.setMax(maxColourValue);
+    colourLut.setMin(minColourValue);
 
     if (maxColourValue === minColourValue) usingColour = false;
   }
