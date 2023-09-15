@@ -180,16 +180,25 @@ static void addMCHits(const pandora::Algorithm &pAlgorithm, const pandora::CaloH
     hepEVDServer->addMCHits(mcHits);
 }
 
+// Helper function, as the "GetAllCaloHits" function isn't in some older versions of Pandora.
+void getAllCaloHits(const pandora::ParticleFlowObject *pPfo, pandora::CaloHitList &caloHitList) {
+
+    std::vector<pandora::HitType> views({
+        pandora::HitType::TPC_VIEW_U, pandora::HitType::TPC_VIEW_V,
+        pandora::HitType::TPC_VIEW_W, pandora::HitType::TPC_3D
+    });
+
+    for (auto view : views) {
+        lar_content::LArPfoHelper::GetCaloHits(pPfo, view, caloHitList);
+        lar_content::LArPfoHelper::GetIsolatedCaloHits(pPfo, view, caloHitList);
+    }
+}
+
 Particle *addParticle(const pandora::Pandora &pPandora, const pandora::ParticleFlowObject *pPfo) {
 
     Hits hits;
     pandora::CaloHitList caloHitList;
-
-    // By default, this helper only returns the 2D hits.
-    // We want the 3D hits too, so add them as well.
-    lar_content::LArPfoHelper::GetAllCaloHits(pPfo, caloHitList);
-    lar_content::LArPfoHelper::GetCaloHits(pPfo, pandora::HitType::TPC_3D, caloHitList);
-    lar_content::LArPfoHelper::GetIsolatedCaloHits(pPfo, pandora::HitType::TPC_3D, caloHitList);
+    getAllCaloHits(pPfo, caloHitList);
 
     for (const pandora::CaloHit *const pCaloHit : caloHitList) {
         const auto pos = pCaloHit->GetPositionVector();
@@ -207,8 +216,6 @@ Particle *addParticle(const pandora::Pandora &pPandora, const pandora::ParticleF
 
     if (lar_content::LArPfoHelper::IsNeutrino(pPfo) || lar_content::LArPfoHelper::IsNeutrinoFinalState(pPfo))
         particle->setInteractionType(InteractionType::NEUTRINO);
-    else if (lar_content::LArPfoHelper::IsTestBeam(pPfo) || lar_content::LArPfoHelper::IsTestBeamFinalState(pPfo))
-        particle->setInteractionType(InteractionType::BEAM);
     else
         particle->setInteractionType(InteractionType::COSMIC);
 
@@ -219,7 +226,9 @@ Particle *addParticle(const pandora::Pandora &pPandora, const pandora::ParticleF
     if (particle->getInteractionType() == InteractionType::COSMIC) recoVertex3D.setColour("yellow");
     vertices.push_back(recoVertex3D);
 
-    auto views({pandora::TPC_VIEW_U, pandora::TPC_VIEW_V, pandora::TPC_VIEW_W});
+    std::vector<pandora::HitType> views({
+        pandora::HitType::TPC_VIEW_U, pandora::HitType::TPC_VIEW_V, pandora::HitType::TPC_VIEW_W
+    });
     for (auto view : views) {
         const pandora::CartesianVector vertex2D =
             lar_content::LArGeometryHelper::ProjectPosition(pPandora, vertex->GetPosition(), view);
