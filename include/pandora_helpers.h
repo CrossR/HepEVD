@@ -66,7 +66,10 @@ static void startServer(const bool verbose = false) {
     hepEVDServer->startServer();
 }
 
-static void resetServer(const bool resetGeo = false) { hepEVDServer->resetServer(resetGeo); }
+static void resetServer(const bool resetGeo = false) {
+    if (isServerInitialised(true))
+        hepEVDServer->resetServer(resetGeo);
+}
 
 static void setHepEVDGeometry(const pandora::GeometryManager *manager) {
 
