@@ -72,6 +72,7 @@ class HepEVDServer {
 
         return true;
     }
+    Hits getHits() { return this->hits; }
 
     bool addMarkers(const Markers &inputMarkers) {
 
@@ -86,6 +87,7 @@ class HepEVDServer {
 
         return true;
     }
+    Markers getMarkers() { return this->markers; }
 
     bool addMCHits(const MCHits &inputMCHits) {
         if (this->mcHits.size() == 0) {
@@ -99,6 +101,7 @@ class HepEVDServer {
 
         return true;
     }
+    MCHits getMCHits() { return this->mcHits; }
 
     bool addParticles(const Particles &inputParticles) {
         if (this->particles.size() == 0) {
@@ -112,6 +115,7 @@ class HepEVDServer {
 
         return true;
     }
+    Particles getParticles() { return this->particles; }
 
   private:
     httplib::Server server;

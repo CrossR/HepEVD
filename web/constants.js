@@ -49,7 +49,7 @@ export const HIT_CONFIG = {
 
 export const MARKER_CONFIG = {
   point: {
-    size: 0.5,
+    size: 1,
     colour: "red",
   },
 };
