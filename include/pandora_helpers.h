@@ -39,6 +39,7 @@ inline HepEVDServer *hepEVDServer;
 inline HepHitMap caloHitToEvdHit;
 
 static HepHitMap *getHitMap() { return &caloHitToEvdHit; }
+static HepEVDServer *getServer() { return hepEVDServer; }
 
 static bool isServerInitialised(const bool quiet = false) {
     const bool isInit(hepEVDServer != nullptr && hepEVDServer->isInitialised());
