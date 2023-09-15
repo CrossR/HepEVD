@@ -52,9 +52,18 @@ static bool isServerInitialised(const bool quiet = false) {
     return isInit;
 }
 
-static void startServer() {
-    if (isServerInitialised())
-        hepEVDServer->startServer();
+static void startServer(const bool verbose = false) {
+    if (! isServerInitialised())
+        return;
+
+    if (verbose) {
+        std::cout << "There are " << hepEVDServer->getHits().size() << " hits registered!" << std::endl;
+        std::cout << "There are " << hepEVDServer->getMCHits().size() << " MC hits registered!" << std::endl;
+        std::cout << "There are " << hepEVDServer->getParticles().size() << " particles registered!" << std::endl;
+        std::cout << "There are " << hepEVDServer->getMarkers().size() << " markers registered!" << std::endl;
+    }
+
+    hepEVDServer->startServer();
 }
 
 static void resetServer(const bool resetGeo = false) { hepEVDServer->resetServer(resetGeo); }
@@ -126,7 +135,6 @@ static void add2DHits(const pandora::CaloHitList *caloHits, std::string label = 
         caloHitToEvdHit.insert({pCaloHit, hit});
     }
 
-    std::cout << "Adding " << hits.size() << " hits to HepEVD..." << std::endl;
     hepEVDServer->addHits(hits);
 }
 
@@ -176,7 +184,6 @@ static void addMCHits(const pandora::Algorithm &pAlgorithm, const pandora::CaloH
         }
     }
 
-    std::cout << "Adding " << mcHits.size() << " MC hits to HepEVD..." << std::endl;
     hepEVDServer->addMCHits(mcHits);
 }
 
@@ -287,7 +294,6 @@ static void addPFOs(const pandora::Pandora &pPandora, const pandora::PfoList *pP
         }
     }
 
-    std::cout << "Adding " << particles.size() << " PFOs to HepEVD..." << std::endl;
     hepEVDServer->addParticles(particles);
 }
 
