@@ -27,8 +27,8 @@ export const TO_THEME = {
 export const DEFAULT_HIT_CLASS = "Hit";
 
 export const DEFAULT_LUT_CONFIG = {
-  name: "viridis",
-  size: 256,
+  name: "cooltowarm",
+  size: 128,
   maxSize: -1, // INFO: Scale the LUT as needed.
 };
 
@@ -43,7 +43,7 @@ export const HIT_CONFIG = {
     hitSize: 1,
   },
   "3D": {
-    hitSize: 0.5,
+    hitSize: 1,
   },
 };
 

@@ -6,6 +6,7 @@ import * as THREE from "three";
 
 import { BUTTON_ID, TO_THEME } from "./constants.js";
 import { createParticleMenu } from "./particle_menu.js";
+import { COLOUR_MAPS, DEFAULT_MAPS } from "./colourmaps.js";
 
 /**
  * Populates a dropdown menu with buttons based on the given hit property map.
@@ -437,6 +438,7 @@ export function saveState(states) {
   const inputSave = document.getElementById("input_modal_save");
   const inputText = document.getElementById("input_modal_input");
   const inputBackdrop = document.getElementById("input_backdrop");
+  const inputClose = document.getElementById("input_close");
 
   inputText.placeholder = "Enter a name for this state";
 
@@ -473,11 +475,8 @@ export function saveState(states) {
       },
       controls: {
         target: [cameraTarget.x, cameraTarget.y, cameraTarget.z],
-      }
+      },
     };
-
-    console.log(cameraPos);
-    console.log(cameraUp);
 
     let saveStates = [state];
 
@@ -489,13 +488,15 @@ export function saveState(states) {
     store.setItem("saveStates", JSON.stringify(saveStates));
   };
 
-  inputBackdrop.addEventListener(
-    "click",
-    () => {
-      closed = true;
-      cleanUp();
-    },
-    { once: true }
+  [inputBackdrop, inputClose].forEach((elem) =>
+    elem.addEventListener(
+      "click",
+      () => {
+        closed = true;
+        cleanUp();
+      },
+      { once: true }
+    )
   );
 
   inputSave.addEventListener(
@@ -505,8 +506,6 @@ export function saveState(states) {
 
       doSave();
       cleanUp();
-
-      console.log("Saved state to local storage")
     },
     { once: true }
   );
@@ -527,12 +526,15 @@ export function loadState(renderStates) {
   const selectButton = document.getElementById("select_modal_choose");
   const selectDropdown = document.getElementById("select_modal_options");
   const selectBackdrop = document.getElementById("select_backdrop");
+  const selectClose = document.getElementById("select_close");
 
   // Parse out the saved states and then filter to ones for the current view.
   // If there isn't any, return with no action.
   const saveStates = JSON.parse(store.getItem("saveStates"));
 
-  if (saveStates === null) { return; }
+  if (saveStates === null) {
+    return;
+  }
 
   const validSaveStates = saveStates.filter(
     (state) => state.hitDim === visibleState.hitDim
@@ -569,13 +571,15 @@ export function loadState(renderStates) {
   };
   let closed = false;
 
-  selectBackdrop.addEventListener(
-    "click",
-    () => {
-      closed = true;
-      cleanUp();
-    },
-    { once: true }
+  [selectBackdrop, selectClose].forEach((elem) =>
+    selectBackdrop.addEventListener(
+      "click",
+      () => {
+        closed = true;
+        cleanUp();
+      },
+      { once: true }
+    )
   );
 
   selectButton.addEventListener(
@@ -588,5 +592,111 @@ export function loadState(renderStates) {
     },
     { once: true }
   );
-  console.log("Exiting loadState function");
+}
+
+/**
+ * Show a modal to pick the current colourscheme.
+ *
+ */
+export function pickColourscheme(states) {
+  const visibleState = Array.from(states.values()).find(
+    (state) => state.visible
+  );
+  const store = window.localStorage;
+
+  const selectModal = document.getElementById("select_modal");
+  const selectButton = document.getElementById("select_modal_choose");
+  const categoricalSelect = document.getElementById("select_modal_options");
+  const selectBackdrop = document.getElementById("select_backdrop");
+  const selectClose = document.getElementById("select_close");
+
+  // First, we need to duplicate the select, since we need two, one
+  // for categorical and one for continuous.
+  const continuousSelect = categoricalSelect.cloneNode(true);
+  categoricalSelect.parentElement.appendChild(continuousSelect);
+
+  // Add a default, unselected option with the placeholder text.
+  [
+    [categoricalSelect, "Categorical"],
+    [continuousSelect, "Continuous"],
+  ].forEach(([select, placeholder]) => {
+    const option = document.createElement("option");
+    option.text = placeholder;
+    option.disabled = true;
+    option.selected = true;
+    select.add(option);
+  });
+
+  // Then, add all the options to the dropdown.
+  [...Object.keys(COLOUR_MAPS), ...Object.keys(DEFAULT_MAPS)].forEach(
+    (csName) => {
+      const option = document.createElement("option");
+      option.text = csName;
+      categoricalSelect.add(option);
+      continuousSelect.add(option.cloneNode(true));
+    }
+  );
+
+  // Finally show the modal.
+  selectModal.showModal();
+
+  const cleanUp = () => {
+    categoricalSelect.innerHTML = "";
+    continuousSelect.innerHTML = "";
+
+    // We also need to remove the continuous select.
+    continuousSelect.parentElement.removeChild(continuousSelect);
+  };
+  const doSave = () => {
+    if (categoricalSelect.selectedIndex !== 0) {
+      const map =
+        COLOUR_MAPS[continuousSelect.value] ||
+        DEFAULT_MAPS[continuousSelect.value];
+
+      const result = JSON.stringify({
+        name: categoricalSelect.value,
+        size: map.length,
+        maxSize: -1,
+      });
+
+      storage.setItem("categoricaColourMap", result);
+    }
+
+    if (continuousSelect.selectedIndex !== 0) {
+      const map =
+        COLOUR_MAPS[continuousSelect.value] ||
+        DEFAULT_MAPS[continuousSelect.value];
+
+      const result = JSON.stringify({
+        name: continuousSelect.value,
+        size: map.length,
+        maxSize: map.length,
+      });
+      
+      store.setItem("continuousColourMap", result);
+    }
+  };
+  let closed = false;
+
+  [selectBackdrop, selectClose].forEach((elem) =>
+    elem.addEventListener(
+      "click",
+      () => {
+        closed = true;
+        cleanUp();
+      },
+      { once: true }
+    )
+  );
+
+  selectButton.addEventListener(
+    "click",
+    () => {
+      if (closed) return;
+      doSave();
+      cleanUp();
+      visibleState.triggerEvent("change");
+    },
+    { once: true }
+  );
 }

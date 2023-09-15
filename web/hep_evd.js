@@ -12,6 +12,7 @@ import { animate, onWindowResize } from "./rendering.js";
 import {
   fixThemeButton,
   loadState,
+  pickColourscheme,
   quitEvd,
   saveState,
   screenshotEvd,
@@ -115,6 +116,7 @@ document.quitEvd = () => quitEvd();
 document.setTheme = () => setTheme(renderStates);
 document.saveState = () => saveState(renderStates);
 document.loadState = () => loadState(renderStates);
+document.pickColourscheme = () => pickColourscheme(renderStates);
 window.addEventListener(
   "resize",
   () => {

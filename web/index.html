@@ -67,6 +67,14 @@
           >
             <button
               class="btn btn-primary btn-outline m-1 w-44"
+              id="lut_button"
+              data-act-class="ACTIVECLASS"
+              onClick="pickColourscheme()"
+            >
+              🎨 Set Colours
+            </button>
+            <button
+              class="btn btn-primary btn-outline m-1 w-44"
               id="theme_button"
               data-toggle-theme="dark,light"
               data-act-class="ACTIVECLASS"
@@ -171,7 +179,7 @@
     <!-- Generic input modal -->
     <dialog id="input_modal" class="modal">
       <form method="dialog" class="modal-box w-fit">
-        <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">
+        <button id="input_close" class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">
           ✕
         </button>
         <div class="join p-4">
@@ -196,7 +204,7 @@
     <!-- Generic selection modal -->
     <dialog id="select_modal" class="modal">
       <form method="dialog" class="modal-box w-fit">
-        <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">
+        <button id="select_close" class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">
           ✕
         </button>
         <div class="join p-4">

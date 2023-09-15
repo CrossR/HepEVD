@@ -2,6 +2,8 @@
 // Colour maps
 //
 
+import { DEFAULT_CATEGORICAL_LUT_CONFIG, DEFAULT_LUT_CONFIG } from "./constants.js";
+
 // By default, THREE.js only includes 4 colour maps: 'rainbow', 'cooltowarm',
 // 'blackbody', 'grayscale'.
 //
@@ -130,7 +132,7 @@ const magmaCM = magmaColours.map((c, i) => [i / 255, c]);
 // The name must be one of the keys in COLOUR_MAPS.
 export function addColourMap(lut, name, num) {
   if (!(name in COLOUR_MAPS)) {
-    if (! DEFAULT_MAPS.includes(name)) {
+    if (!(name in DEFAULT_MAPS)) {
       throw new Error("Unknown colour map: " + name);
     }
     lut.setColorMap(name, num);
@@ -141,7 +143,7 @@ export function addColourMap(lut, name, num) {
 }
 
 // COLOUR_MAPS lookup table.
-const COLOUR_MAPS = {
+export const COLOUR_MAPS = {
   // Qualitative colour maps.
   tableau10: tableau10CM,
   tableau20: tableau20CM,
@@ -152,9 +154,29 @@ const COLOUR_MAPS = {
   magma: magmaCM,
 };
 
-const DEFAULT_MAPS = [
-    "cooltowarm",
-    "rainbow",
-    "blackbody",
-    "grayscale",
-];
+export const DEFAULT_MAPS = {
+    "cooltowarm": 32,
+    "rainbow": 32,
+    "blackbody": 32,
+    "grayscale": 32,
+};
+
+export function getCategoricalLutConf() {
+  const storage = window.localStorage;
+
+  if (storage.getItem("categoricalColourMap") === null) {
+    storage.setItem("categoricalColourMap", JSON.stringify(DEFAULT_CATEGORICAL_LUT_CONFIG));
+  }
+
+  return JSON.parse(storage.getItem("categoricalColourMap"));
+}
+
+export function getContinuousLutConf() {
+  const storage = window.localStorage;
+
+  if (storage.getItem("continuousColourMap") === null) {
+    storage.setItem("continuousColourMap", JSON.stringify(DEFAULT_LUT_CONFIG));
+  }
+
+  return JSON.parse(storage.getItem("continuousColourMap"));
+}

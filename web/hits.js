@@ -5,10 +5,8 @@
 import * as THREE from "three";
 import { Lut } from "three/addons/math/Lut.js";
 
-import { addColourMap } from "./colourmaps.js";
+import { addColourMap, getCategoricalLutConf, getContinuousLutConf } from "./colourmaps.js";
 import {
-  DEFAULT_CATEGORICAL_LUT_CONFIG,
-  DEFAULT_LUT_CONFIG,
   materialHit,
 } from "./constants.js";
 import { hashStr } from "./helpers.js";
@@ -26,7 +24,7 @@ export function drawHits(
   hits,
   hitColours,
   hitConfig = {},
-  lutConfig = DEFAULT_LUT_CONFIG
+  lutConfig = getContinuousLutConf(),
 ) {
   if (hits.length === 0) return;
 
@@ -102,6 +100,8 @@ export function drawParticles(
     return particle.hits;
   });
 
+  let lutToUse = getCategoricalLutConf();
+
   // Particle colour here is just their index in the array,
   // modulo the number of colours in the colour map.
   const particleColours = particles.flatMap((particle, _) => {
@@ -115,15 +115,13 @@ export function drawParticles(
       }
 
       return (
-        Math.abs(hashStr(particle.id)) % DEFAULT_CATEGORICAL_LUT_CONFIG.size
+        Math.abs(hashStr(particle.id)) % lutToUse.size
       );
     });
   });
 
-  let lutToUse = DEFAULT_CATEGORICAL_LUT_CONFIG;
-
   if (activeHitProps.size > 1) {
-    lutToUse = DEFAULT_LUT_CONFIG;
+    lutToUse = getContinuousLutConf();
   }
 
   drawHits(group, hits.flat(), particleColours, hitConfig, lutToUse);
