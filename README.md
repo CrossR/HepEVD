@@ -76,4 +76,4 @@ convert and parse objects to/from JSON, such that they can be served via the HTT
 
 - How easy / how expensive is adding a hoverover action?
 
-- Select the colourmaps from a drop down.
+- Hit widths? Pain with instanced mesh though.
