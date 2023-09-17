@@ -650,15 +650,15 @@ export function pickColourscheme(states) {
   const doSave = () => {
     if (categoricalSelect.selectedIndex !== 0) {
       const map =
-        COLOUR_MAPS[continuousSelect.value] ||
-        DEFAULT_MAPS[continuousSelect.value];
+        COLOUR_MAPS[categoricalSelect.value] ||
+        DEFAULT_MAPS[categoricalSelect.value];
 
       const result = JSON.stringify({
         name: categoricalSelect.value,
         size: map.length ?? map,
       });
 
-      store.setItem("categoricaColourMap", result);
+      store.setItem("categoricalColourMap", result);
     }
 
     if (continuousSelect.selectedIndex !== 0) {
