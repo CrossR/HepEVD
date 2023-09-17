@@ -596,7 +596,6 @@ export function loadState(renderStates) {
 
 /**
  * Show a modal to pick the current colourscheme.
- *
  */
 export function pickColourscheme(states) {
   const visibleState = Array.from(states.values()).find(
