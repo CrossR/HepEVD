@@ -61,7 +61,7 @@ async function loadExternalData(url) {
 export async function getData() {
   if (isRunningOnGitHubPages()) {
     return loadExternalData(
-      "https://gist.githubusercontent.com/CrossR/f0ab94b5d945d58742586a16eb10bcf4/raw/56df99c7d3c0e17c9bd870156b7f786fa7bf5d92/testEvent.json"
+      "https://gist.githubusercontent.com/CrossR/f0ab94b5d945d58742586a16eb10bcf4/raw/bcf98bf8e3c56834c2a0fabe5eaaf4d23c867f0b/testEvent.json"
     );
   } else {
     return loadServerData();

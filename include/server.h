@@ -205,7 +205,7 @@ inline void HepEVDServer::startServer() {
     // Add a top level, dump everything endpoint.
     this->server.Get("/toJSON", [&](const Request &, Response &res) {
         json output;
-        output["geometry"] = this->geometry;
+        output["detectorGeometry"] = this->geometry;
         output["hits"] = this->hits;
         output["mcHits"] = this->mcHits;
         output["particles"] = this->particles;
