@@ -202,6 +202,17 @@ inline void HepEVDServer::startServer() {
         }
     });
 
+    // Add a top level, dump everything endpoint.
+    this->server.Get("/toJSON", [&](const Request &, Response &res) {
+        json output;
+        output["geometry"] = this->geometry;
+        output["hits"] = this->hits;
+        output["mcHits"] = this->mcHits;
+        output["particles"] = this->particles;
+        output["markers"] = this->markers;
+        res.set_content(output.dump(4), "application/json");
+    });
+
     // Management controls...
     this->server.Get("/quit", [&](const Request &, Response &) { this->server.stop(); });
 
