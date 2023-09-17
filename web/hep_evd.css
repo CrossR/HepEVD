@@ -14,8 +14,17 @@ div {
 }
 
 .navbar {
+  position: absolute;
   min-height: 2.1em;
   height: 2.1em;
+}
+
+.particle_menu {
+  position: absolute;
+  background: transparent;
+  top: 45%;
+  max-height: 40%;
+  max-width: 20%;
 }
 
 .dropdown:hover > .dropdown-menu {
@@ -46,6 +55,14 @@ div {
   top: 10%;
   left: 1%;
   visibility: hidden;
+}
+
+.toggle_options_particles {
+  position: absolute;
+  width: 8em;
+  top: 30%;
+  left: 1%;
+  visibility: block;
 }
 
 .quit_message {

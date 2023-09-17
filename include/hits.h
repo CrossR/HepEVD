@@ -33,6 +33,9 @@ class Hit {
     void setHitType(const HitType &hitType) { this->position.setHitType(hitType); }
     void setLabel(const std::string &str) { this->label = str; }
 
+    double getEnergy() const { return this->energy; }
+    HitDimension getDim() const { return this->position.dim; }
+
     // TODO: This may want to be extensible. I.e. string -> double + other
     // properties (CATEGORIC, NUMERIC) etc;
     void addProperties(std::map<std::string, double> props) {

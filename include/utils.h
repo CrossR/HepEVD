@@ -12,6 +12,7 @@ using json = nlohmann::json;
 
 #include <array>
 #include <ostream>
+#include <random>
 
 namespace HepEVD {
 
@@ -75,6 +76,25 @@ template <typename T> bool postData(const std::string &endPoint, const T &data) 
     httplib::Client cli(server);
     auto res = cli.Post(endPoint, json(data).dump(), "application/json");
     return res.error() == httplib::Error::Success;
+}
+
+// Very basic UUID generator.
+std::string getUUID() {
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_int_distribution<> dis(0, 15);
+    const char *v = "0123456789abcdef";
+    const bool dash[] = {0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 0};
+
+    std::string res;
+    for (int i = 0; i < 16; i++) {
+        if (dash[i])
+            res += "-";
+        res += v[dis(gen)];
+        res += v[dis(gen)];
+    }
+
+    return res;
 }
 
 }; // namespace HepEVD

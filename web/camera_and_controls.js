@@ -62,7 +62,7 @@ export function fitSceneInCamera(
   camera,
   controls,
   detectorGeometry,
-  cameraType,
+  cameraType
 ) {
   const offset = 1.5; // Padding factor.
 
@@ -91,10 +91,7 @@ export function fitSceneInCamera(
     controls.target = center;
     controls.maxDistance = cameraToFarEdge;
   } else {
-    const navBarH = document.getElementById("navbar").offsetHeight;
-
-    // 2.4 is just a magic number that works well, for now.
-    const yOffset = -window.innerHeight / 2.4;
+    const yOffset = -center.y;
     const xOffset = center.x;
 
     camera.setViewOffset(
@@ -103,12 +100,12 @@ export function fitSceneInCamera(
       xOffset,
       yOffset,
       window.innerWidth,
-      window.innerHeight,
+      window.innerHeight
     );
     const zoomAmount =
       Math.min(
         window.innerWidth / (boundingBox.max.x - boundingBox.min.x),
-        window.innerHeight / (boundingBox.max.y - boundingBox.min.y),
+        window.innerHeight / (boundingBox.max.y - boundingBox.min.y)
       ) * 0.85;
     camera.zoom = zoomAmount;
   }

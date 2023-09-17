@@ -6,8 +6,8 @@ import * as THREE from "three";
 import { Line2 } from "three/addons/lines/Line2.js";
 import { LineGeometry } from "three/addons/lines/LineGeometry.js";
 
+import { threeDGeoMat, twoDXMat, twoDYMat } from "./constants.js";
 import { getHitBoundaries } from "./helpers.js";
-import { twoDXMat, twoDYMat, threeDGeoMat } from "./constants.js";
 
 /**
  * Draws a box based on the hit type.

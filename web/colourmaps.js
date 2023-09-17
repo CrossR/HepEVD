@@ -2,27 +2,60 @@
 // Colour maps
 //
 
+import {
+  DEFAULT_CATEGORICAL_LUT_CONFIG,
+  DEFAULT_LUT_CONFIG,
+} from "./constants.js";
+
 // By default, THREE.js only includes 4 colour maps: 'rainbow', 'cooltowarm',
 // 'blackbody', 'grayscale'.
 //
 // This adds more, building on some of the ones built into matplotlib.
 
+// Pastel 1, see https://vega.github.io/vega/docs/schemes/#pastel1
+const pastel1Colours = [
+  0xfbb4ae, 0xb3cde3, 0xccebc5, 0xdecbe4, 0xfed9a6, 0xffffcc, 0xe5d8bd,
+  0xfddaec, 0xf2f2f2,
+];
+const pastel1CM = pastel1Colours.map((c, i) => [i / 8, c]);
+
+// Pastel 2, see https://vega.github.io/vega/docs/schemes/#pastel2
+const pastel2Colours = [
+  0xb3e2cd, 0xfddbc7, 0xcbd5e8, 0xf4cae4, 0xe6f5c9, 0xfff2ae, 0xf1e2cc,
+  0xcccccc,
+];
+const pastel2CM = pastel2Colours.map((c, i) => [i / 7, c]);
+
 // Tableau 10, see https://vega.github.io/vega/docs/schemes/#tableau10
 // prettier-ignore
 const tableau10Colours = [
-  0x1F77B4, 0xFF7F0E, 0x2CA02C, 0xD62728, 0x9467BD, 0x8C564B, 0xE377C2,
-  0x7F7F7F, 0xBCBD22, 0x17BECF,
+  0x4C78A8, 0xF58518, 0xE45756, 0x72B7B2, 0x54A24B, 0xEECA3B, 0xB279A2,
+  0xFF9DA6, 0x9D755D, 0xBAB0AC
 ];
 const tableau10CM = tableau10Colours.map((c, i) => [i / 9, c]);
 
 // Tableau 20, see https://vega.github.io/vega/docs/schemes/#tableau20
 // prettier-ignore
 const tableau20Colours = [
-    0x1F77B4, 0xAEC7E8, 0xFF7F0E, 0xFFBB78, 0x2CA02C, 0x98DF8A, 0xD62728,
-    0xFF9896, 0x9467BD, 0xC5B0D5, 0x8C564B, 0xC49C94, 0xE377C2, 0xF7B6D2,
-    0x7F7F7F, 0xC7C7C7, 0xBCBD22, 0xDBDB8D, 0x17BECF, 0x9EDAE5,
+  0x4C78A8, 0x9ECAE9, 0xF58518, 0xffbf79, 0x54A24B, 0x88D27A, 0xB79A20,
+  0xF2CF5B, 0x439894, 0x83BCB6, 0xE45756, 0xFF9D98, 0x79706E, 0xBAB0AC,
+  0xD67195, 0xFCBFD2, 0xB279A2, 0xD6A5C9, 0x9E765F, 0xD8B5A5
 ];
 const tableau20CM = tableau20Colours.map((c, i) => [i / 19, c]);
+
+const tableau20bColours = [
+  0x393b79, 0x5254a3, 0x6b6ecf, 0x9c9ede, 0x637939, 0x8ca252, 0xb5cf6b,
+  0xcedb9c, 0x8c6d31, 0xbd9e39, 0xe7ba52, 0xe7cb94, 0x843c39, 0xad494a,
+  0xd6616b, 0xe7969c, 0x7b4173, 0xa55194, 0xce6dbd, 0xde9ed6,
+];
+const tableau20bCM = tableau20bColours.map((c, i) => [i / 19, c]);
+
+const tableau20cColours = [
+  0x3182bd, 0x6baed6, 0x9ecae1, 0xc6dbef, 0xe6550d, 0xfd8d3c, 0xfdae6b,
+  0xfdd0a2, 0x31a354, 0x74c476, 0xa1d99b, 0xc7e9c0, 0x756bb1, 0x9e9ac8,
+  0xbcbddc, 0xdadaeb, 0x636363, 0x969696, 0xbdbdbd, 0xd9d9d9,
+];
+const tableau20cCM = tableau20cColours.map((c, i) => [i / 19, c]);
 
 // Now, sequential colour maps.
 
@@ -72,7 +105,7 @@ const viridisCM = viridisColours.map((c, i) => [i / 255, c]);
 
 // prettier-ignore
 const magmaColours = [
-  0xff0004, 0x010005, 0x010106, 0x010108, 0x020109, 0x02020b, 0x02020d,
+  0x010000, 0x010005, 0x010106, 0x010108, 0x020109, 0x02020b, 0x02020d,
   0x03030f, 0x030312, 0x040414, 0x050416, 0x060518, 0x06051a, 0x07061c,
   0x08071e, 0x090720, 0x0a0822, 0x0b0924, 0x0c0926, 0x0d0a29, 0x0e0b2b,
   0x100b2d, 0x110c2f, 0x120d31, 0x130d34, 0x140e36, 0x150e38, 0x160f3b,
@@ -116,18 +149,56 @@ const magmaCM = magmaColours.map((c, i) => [i / 255, c]);
 // The name must be one of the keys in COLOUR_MAPS.
 export function addColourMap(lut, name, num) {
   if (!(name in COLOUR_MAPS)) {
-    throw new Error("Unknown colour map: " + name);
+    if (!(name in DEFAULT_MAPS)) {
+      throw new Error("Unknown colour map: " + name);
+    }
+    lut.setColorMap(name, num);
+  } else {
+    lut.addColorMap(name, COLOUR_MAPS[name]);
+    lut.setColorMap(name, num);
   }
-  lut.addColorMap(name, COLOUR_MAPS[name]);
-  lut.setColorMap(name, num);
 }
 
 // COLOUR_MAPS lookup table.
-const COLOUR_MAPS = {
+export const COLOUR_MAPS = {
   // Qualitative colour maps.
+  pastel1: pastel1CM,
+  pastel2: pastel2CM,
   tableau10: tableau10CM,
   tableau20: tableau20CM,
+  tableau20b: tableau20bCM,
+  tableau20c: tableau20cCM,
   // Sequential colour maps.
   viridis: viridisCM,
   magma: magmaCM,
 };
+
+export const DEFAULT_MAPS = {
+  cooltowarm: 128,
+  rainbow: 128,
+  blackbody: 128,
+  grayscale: 128,
+};
+
+export function getCategoricalLutConf() {
+  const storage = window.localStorage;
+
+  if (storage.getItem("categoricalColourMap") === null) {
+    storage.setItem(
+      "categoricalColourMap",
+      JSON.stringify(DEFAULT_CATEGORICAL_LUT_CONFIG)
+    );
+  }
+
+  return JSON.parse(storage.getItem("categoricalColourMap"));
+}
+
+export function getContinuousLutConf() {
+  const storage = window.localStorage;
+
+  if (storage.getItem("continuousColourMap") === null) {
+    storage.setItem("continuousColourMap", JSON.stringify(DEFAULT_LUT_CONFIG));
+  }
+
+  return JSON.parse(storage.getItem("continuousColourMap"));
+}

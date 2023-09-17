@@ -6,14 +6,14 @@ A header-only web-based event display for particle physics events.
 
 The codebase is split into two sections: the C++ code, and the Javascript code:
 
- - `include` contains all the actual C++ library code that is responsible for storing
-the basic objects needed (hits, detector layouts, event markers), as well as the HTTP
-server that then serves these objects up for the WebUI to show. A HTTP server (serving
-a JSON API and the UI frontend) was chosen as it works nicely on remote systems, and
-allows quick changes to be made to the UI without re-running anything.
+- `include` contains all the actual C++ library code that is responsible for storing
+  the basic objects needed (hits, detector layouts, event markers), as well as the HTTP
+  server that then serves these objects up for the WebUI to show. A HTTP server (serving
+  a JSON API and the UI frontend) was chosen as it works nicely on remote systems, and
+  allows quick changes to be made to the UI without re-running anything.
 
- - `web` contains the actual Javascript code for the event display, utilising `THREE.js`
-heavily.
+- `web` contains the actual Javascript code for the event display, utilising `THREE.js`
+  heavily.
 
 ## Installation + Usage
 
@@ -38,18 +38,18 @@ algorithms are operating.
 
 However, most built-in or available event displays have two main issues:
 
- - Lack of availability: In a lot of cases, you can not easily spin up an event display
-   whenever you want, meaning that if what you want to look at is not an input or an
-   output, the raw hits or the final reconstruction, you are out of luck. This is not
-   always the case however, but still, general availability of "I want an event display
-   here, to show this thing" was a large motivation.
+- Lack of availability: In a lot of cases, you can not easily spin up an event display
+  whenever you want, meaning that if what you want to look at is not an input or an
+  output, the raw hits or the final reconstruction, you are out of luck. This is not
+  always the case however, but still, general availability of "I want an event display
+  here, to show this thing" was a large motivation.
 
- - A secondary, and arguably even bigger limitation is the sorts of available event
-   displays. You may be able to spin up an event display wherever you want in some
-   cases, but they are limited by C++ based GUIs, restricting you to basic figures and
-   requiring hacks and dodgy workarounds to show the actual information you want, rather
-   than utilising more modern and easily hackable interfaces, such as those provided in
-   the web browser.
+- A secondary, and arguably even bigger limitation is the sorts of available event
+  displays. You may be able to spin up an event display wherever you want in some
+  cases, but they are limited by C++ based GUIs, restricting you to basic figures and
+  requiring hacks and dodgy workarounds to show the actual information you want, rather
+  than utilising more modern and easily hackable interfaces, such as those provided in
+  the web browser.
 
 The final goal of this library aims to fix those two issues: a simple, header-only
 include that can be dropped in without changes to a build system or more, and allows
@@ -66,12 +66,14 @@ convert and parse objects to/from JSON, such that they can be served via the HTT
 
 ## Future Work
 
- - Setup the larger objects: Cluster, Particles. This should include the ability to
-   toggle individual particles or clusters, and perhaps a highlighting option. Like
-   easiest way to do this is a single object, with a cluster being a flat version of the
-   particle object, and particles being more nested to represent relationships.
+- Setup the larger objects: Cluster, Particles. This should include the ability
+  toggle individual particles or clusters, and perhaps a highlighting option. Like
+  easiest way to do this is a single object, with a cluster being a flat version
+  of the particle object, and particles being more nested to represent
+  relationships.
 
- - More helper functions.
+- More helper functions.
 
- - Hit widths? Need to work out the best way to support that + instanced meshes.
+- How easy / how expensive is adding a hoverover action?
 
+- Hit widths? Pain with instanced mesh though.

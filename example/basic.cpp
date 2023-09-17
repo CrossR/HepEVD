@@ -9,14 +9,8 @@ int main(void) {
     Hits hits;
     MCHits mcHits;
 
-    BoxVolume volume1(
-        Position({-182.954544067, 0, 696.293762207}),
-        359.415008545, 1207.84753418, 1394.33996582
-    );
-    BoxVolume volume2(
-        Position({182.954544067, 0, 696.293762207}),
-        359.415008545, 1207.84753418, 1394.33996582
-    );
+    BoxVolume volume1(Position({-182.954544067, 0, 696.293762207}), 359.415008545, 1207.84753418, 1394.33996582);
+    BoxVolume volume2(Position({182.954544067, 0, 696.293762207}), 359.415008545, 1207.84753418, 1394.33996582);
     Volumes vols({volume1, volume2});
 
     std::random_device rd;
@@ -38,8 +32,8 @@ int main(void) {
         const double z = disZ(gen);
         const double e = x + y + z;
 
-        Hit* hit = new Hit({x, y, z}, e);
-        MCHit* mcHit = new MCHit({disX(gen), disY(gen), disZ(gen)}, pdgCodes[disPdg(gen)]);
+        Hit *hit = new Hit({x, y, z}, e);
+        MCHit *mcHit = new MCHit({disX(gen), disY(gen), disZ(gen)}, pdgCodes[disPdg(gen)]);
 
         std::map<std::string, double> properties;
 
@@ -74,21 +68,19 @@ int main(void) {
             const double z = disZ(gen);
             const double e = x + z;
 
-            Hit* hit = new Hit({x, 0.f, z}, e);
+            Hit *hit = new Hit({x, 0.f, z}, e);
             hit->setDim(TWO_D);
             hit->setHitType(views[i]);
             hits.push_back(hit);
 
-            MCHit* mcHit = new MCHit({disX(gen), 0.f, disZ(gen)}, pdgCodes[disPdg(gen)]);
+            MCHit *mcHit = new MCHit({disX(gen), 0.f, disZ(gen)}, pdgCodes[disPdg(gen)]);
             mcHit->setDim(TWO_D);
             mcHit->setHitType(views[i]);
             mcHits.push_back(mcHit);
         }
     }
 
-    HepEVDServer server(
-        DetectorGeometry(vols), hits, mcHits
-    );
+    HepEVDServer server(DetectorGeometry(vols), hits, mcHits);
 
     Ring ring({0.0, 0.0, 0.0}, 1.0, 1.5);
     Point point({0.0, 0.0, 0.0});

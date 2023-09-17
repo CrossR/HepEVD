@@ -1,4 +1,4 @@
-<!doctype html>
+<!DOCTYPE html>
 <html>
   <head>
     <meta charset="utf-8" />
@@ -61,7 +61,18 @@
       <div class="flex justify-end flex-1 px-2">
         <div class="dropdown dropdown-hover">
           <label class="btn btn-primary m-1"> ⚙️ Options </label>
-          <div class="dropdown-content">
+          <!-- <div class="dropdown-content"> -->
+          <div
+            class="dropdown-content z-[1] menu p-1 shadow bg-base-100 rounded-box"
+          >
+            <button
+              class="btn btn-primary btn-outline m-1 w-44"
+              id="lut_button"
+              data-act-class="ACTIVECLASS"
+              onClick="pickColourscheme()"
+            >
+              🎨 Set Colours
+            </button>
             <button
               class="btn btn-primary btn-outline m-1 w-44"
               id="theme_button"
@@ -103,6 +114,29 @@
       </div>
     </div>
 
+    <ul
+      id="particle_menu_2D"
+      class="particle_menu menu menu-xs bg-base-200 rounded-lg overflow-auto"
+    >
+      <li>
+        <details id="particle_menu_items_2D" closed />
+        <summary>
+          <span class="label-text pr-8">All Particles</span>
+        </summary>
+      </li>
+    </ul>
+    <ul
+      id="particle_menu_3D"
+      class="particle_menu menu menu-xs bg-base-200 rounded-lg overflow-auto"
+    >
+      <li>
+        <details id="particle_menu_items_3D" closed />
+        <summary>
+          <span class="label-text pr-8">All Particles</span>
+        </summary>
+      </li>
+    </ul>
+
     <div id="all_toggle_options">
       <div class="flex flex-col toggle_options" id="types_2D"></div>
       <div class="flex flex-col toggle_options" id="types_3D"></div>
@@ -112,6 +146,15 @@
 
       <div class="toggle_options_mc" id="types_MC_2D"></div>
       <div class="toggle_options_mc" id="types_MC_3D"></div>
+
+      <div
+        class="flex flex-col toggle_options_particles"
+        id="particles_2D"
+      ></div>
+      <div
+        class="flex flex-col toggle_options_particles"
+        id="particles_3D"
+      ></div>
     </div>
 
     <div style="overflow: hidden" id="axisLabels"></div>
@@ -136,7 +179,7 @@
     <!-- Generic input modal -->
     <dialog id="input_modal" class="modal">
       <form method="dialog" class="modal-box w-fit">
-        <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">
+        <button id="input_close" class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">
           ✕
         </button>
         <div class="join p-4">
@@ -161,7 +204,7 @@
     <!-- Generic selection modal -->
     <dialog id="select_modal" class="modal">
       <form method="dialog" class="modal-box w-fit">
-        <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">
+        <button id="select_close" class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">
           ✕
         </button>
         <div class="join p-4">
