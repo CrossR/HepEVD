@@ -6,7 +6,6 @@ import * as THREE from "three";
 import Stats from "three/addons/libs/stats.module.js";
 
 import { THEME } from "./constants.js";
-import { createParticleMenu } from "./particle_menu.js";
 import { RenderState } from "./render_state.js";
 import { animate, onWindowResize } from "./rendering.js";
 import {
@@ -18,6 +17,7 @@ import {
   screenshotEvd,
   setTheme,
 } from "./ui.js";
+import { getData } from "./data_loader.js";
 
 // Do some initial threejs setup...
 const threeDCamera = new THREE.PerspectiveCamera(
@@ -51,13 +51,8 @@ document.body.appendChild(renderer.domElement);
 document.body.appendChild(stats.dom);
 
 // Pull in the basic data from the API...
-const detectorGeometry = await fetch("geometry").then((response) =>
-  response.json()
-);
-let hits = await fetch("hits").then((response) => response.json());
-const mcHits = await fetch("mcHits").then((response) => response.json());
-const markers = await fetch("markers").then((response) => response.json());
-const particles = await fetch("particles").then((response) => response.json());
+const data = await getData();
+const { hits, mcHits, markers, particles, detectorGeometry } = data;
 
 // And use that data to setup the initial rendering states.
 const threeDRenderer = new RenderState(
