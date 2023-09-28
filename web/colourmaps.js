@@ -153,10 +153,14 @@ export function addColourMap(lut, name, num) {
       throw new Error("Unknown colour map: " + name);
     }
     lut.setColorMap(name, num);
+    lut.setMax(1.0);
   } else {
     lut.addColorMap(name, COLOUR_MAPS[name]);
     lut.setColorMap(name, num);
+    lut.setMax(MAP_MAX_SIZE[name]);
   }
+
+  lut.setMin(0);
 }
 
 // COLOUR_MAPS lookup table.
@@ -180,13 +184,28 @@ export const DEFAULT_MAPS = {
   grayscale: 128,
 };
 
+const MAP_MAX_SIZE = {
+  cooltowarm: 128,
+  rainbow: 128,
+  blackbody: 128,
+  grayscale: 128,
+  pastel1: 9,
+  pastel2: 8,
+  tableau10: 10,
+  tableau20: 20,
+  tableau20b: 20,
+  tableau20c: 20,
+  viridis: 256,
+  magma: 256,
+};
+
 export function getCategoricalLutConf() {
   const storage = window.localStorage;
 
   if (storage.getItem("categoricalColourMap") === null) {
     storage.setItem(
       "categoricalColourMap",
-      JSON.stringify(DEFAULT_CATEGORICAL_LUT_CONFIG)
+      JSON.stringify(DEFAULT_CATEGORICAL_LUT_CONFIG),
     );
   }
 

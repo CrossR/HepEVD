@@ -27,11 +27,13 @@ export const TO_THEME = {
 export const DEFAULT_HIT_CLASS = "Hit";
 
 export const DEFAULT_LUT_CONFIG = {
+  style: "continuous",
   name: "cooltowarm",
   size: 128,
 };
 
 export const DEFAULT_CATEGORICAL_LUT_CONFIG = {
+  style: "categorical",
   name: "tableau20",
   size: 20,
 };

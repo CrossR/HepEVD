@@ -5,10 +5,12 @@
 import * as THREE from "three";
 import { Lut } from "three/addons/math/Lut.js";
 
-import { addColourMap, getCategoricalLutConf, getContinuousLutConf } from "./colourmaps.js";
 import {
-  materialHit,
-} from "./constants.js";
+  addColourMap,
+  getCategoricalLutConf,
+  getContinuousLutConf,
+} from "./colourmaps.js";
+import { materialHit } from "./constants.js";
 import { hashStr } from "./helpers.js";
 
 /**
@@ -34,7 +36,7 @@ export function drawHits(
   let usingColour = hitColours.length === hits.length;
   let usingLut = typeof hitColours[0] === "number";
 
-  if (usingColour && usingLut) {
+  if (usingColour && usingLut && lutConfig.style !== "categorical") {
     let minColourValue = Infinity;
     let maxColourValue = Number.NEGATIVE_INFINITY;
     hitColours.forEach((value) => {
@@ -42,7 +44,7 @@ export function drawHits(
       if (value > maxColourValue) maxColourValue = value;
     });
 
-    // Set to the maximum value between the calcualted max, and the LUT default.
+    // Set to the maximum value between the calculated max, and the LUT default.
     colourLut.setMax(maxColourValue);
     colourLut.setMin(minColourValue);
 
@@ -56,7 +58,7 @@ export function drawHits(
   const hitMesh = new THREE.InstancedMesh(
     hitGeometry,
     materialHit,
-    hits.length
+    hits.length,
   );
 
   hits.forEach(function (hit, index) {
@@ -85,7 +87,8 @@ export function drawHits(
  * Draws particles on a given group element.
  *
  * @param {THREE.Group} group - The group to which the particles should be added.
- * @param {Array} particles - An array of particle objects, each with an array of hits.
+ * @param {Array} particles - All the particle objects, to find absolute positions for colouring.
+ * @param {Array} activeParticles - The active particle objects, each with an array of hits.
  * @param {Array} activeHitProps - An array of active hit properties, used for colouring.
  * @param {Map} hitPropMap - A map from hit property names to their values.
  * @param {Object} hitConfig - An object containing configuration options for the hit mesh.
@@ -93,19 +96,28 @@ export function drawHits(
 export function drawParticles(
   group,
   particles,
+  activeParticles,
   activeHitProps,
   hitPropMap,
-  hitConfig
+  hitConfig,
 ) {
-  const hits = particles.map((particle) => {
+  // Build up a map of particle to absolute index.
+  // This lets the colouring be consistent regardless of
+  // the currently applied filters.
+  const absoluteIndices = new Map();
+  particles.forEach((particle, index) => {
+    absoluteIndices.set(particle.id, index);
+  });
+
+  const hits = activeParticles.map((particle) => {
     return particle.hits;
   });
 
   let lutToUse = getCategoricalLutConf();
 
-  // Particle colour here is just their index in the array,
-  // modulo the number of colours in the colour map.
-  const particleColours = particles.flatMap((particle, _) => {
+  // Particle colour is based on the absolute index of the particle, modulo the LUT size.
+  // If there are multiple active hit properties, use that instead.
+  const particleColours = activeParticles.flatMap((particle, _) => {
     return particle.hits.map((hit) => {
       if (activeHitProps.size > 1) {
         return Array.from(activeHitProps)
@@ -115,9 +127,7 @@ export function drawParticles(
           })[0];
       }
 
-      return (
-        Math.abs(hashStr(particle.id)) % lutToUse.size
-      );
+      return absoluteIndices.get(particle.id) % lutToUse.size;
     });
   });
 
