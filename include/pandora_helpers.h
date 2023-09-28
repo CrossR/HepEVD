@@ -68,8 +68,11 @@ static void startServer(const bool verbose = false) {
 }
 
 static void resetServer(const bool resetGeo = false) {
-    if (isServerInitialised(true))
-        hepEVDServer->resetServer(resetGeo);
+    if (!isServerInitialised(true))
+        return;
+
+    hepEVDServer->resetServer(resetGeo);
+    caloHitToEvdHit.clear();
 }
 
 static void setHepEVDGeometry(const pandora::GeometryManager *manager) {
