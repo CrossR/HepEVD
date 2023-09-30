@@ -79,6 +79,14 @@ class HepEVDServer {
         if (this->eventStates.find(state) != this->eventStates.end())
             this->currentState = state;
     }
+    void nextEventState() {
+        if (this->currentState < this->eventStates.size() - 1)
+            this->currentState++;
+    }
+    void previousEventState() {
+        if (this->currentState > 0)
+            this->currentState--;
+    }
 
     // Start the event display server, blocking until exit is called by the
     // server.
