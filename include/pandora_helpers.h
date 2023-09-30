@@ -54,7 +54,7 @@ static bool isServerInitialised(const bool quiet = false) {
 }
 
 static void startServer(const bool verbose = false) {
-    if (! isServerInitialised())
+    if (!isServerInitialised())
         return;
 
     if (verbose) {
@@ -197,10 +197,8 @@ static void addMCHits(const pandora::Algorithm &pAlgorithm, const pandora::CaloH
 // Helper function, as the "GetAllCaloHits" function isn't in some older versions of Pandora.
 void getAllCaloHits(const pandora::ParticleFlowObject *pPfo, pandora::CaloHitList &caloHitList) {
 
-    std::vector<pandora::HitType> views({
-        pandora::HitType::TPC_VIEW_U, pandora::HitType::TPC_VIEW_V,
-        pandora::HitType::TPC_VIEW_W, pandora::HitType::TPC_3D
-    });
+    std::vector<pandora::HitType> views({pandora::HitType::TPC_VIEW_U, pandora::HitType::TPC_VIEW_V,
+                                         pandora::HitType::TPC_VIEW_W, pandora::HitType::TPC_3D});
 
     for (auto view : views) {
         lar_content::LArPfoHelper::GetCaloHits(pPfo, view, caloHitList);
@@ -237,18 +235,19 @@ Particle *addParticle(const pandora::Pandora &pPandora, const pandora::ParticleF
 
     Markers vertices;
     Point recoVertex3D({vertex->GetPosition().GetX(), vertex->GetPosition().GetY(), vertex->GetPosition().GetZ()});
-    if (particle->getInteractionType() == InteractionType::COSMIC) recoVertex3D.setColour("yellow");
+    if (particle->getInteractionType() == InteractionType::COSMIC)
+        recoVertex3D.setColour("yellow");
     vertices.push_back(recoVertex3D);
 
-    std::vector<pandora::HitType> views({
-        pandora::HitType::TPC_VIEW_U, pandora::HitType::TPC_VIEW_V, pandora::HitType::TPC_VIEW_W
-    });
+    std::vector<pandora::HitType> views(
+        {pandora::HitType::TPC_VIEW_U, pandora::HitType::TPC_VIEW_V, pandora::HitType::TPC_VIEW_W});
     for (auto view : views) {
         const pandora::CartesianVector vertex2D =
             lar_content::LArGeometryHelper::ProjectPosition(pPandora, vertex->GetPosition(), view);
         Point recoVertex2D({vertex2D.GetX(), vertex2D.GetY(), vertex2D.GetZ()}, HitDimension::TWO_D,
                            getHepEVDHitType(view));
-        if (particle->getInteractionType() == InteractionType::COSMIC) recoVertex2D.setColour("yellow");
+        if (particle->getInteractionType() == InteractionType::COSMIC)
+            recoVertex2D.setColour("yellow");
         vertices.push_back(recoVertex2D);
     }
 
