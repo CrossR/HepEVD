@@ -100,8 +100,8 @@ int main(void) {
     point.setDim(TWO_D);
     server.addMarkers({ring, point});
 
-    server.addEventState({}, eventTwoHits, {}, {}, "");
-    server.addEventState({}, eventThreeHits, {}, {}, "");
+    server.addEventState("second", {}, eventTwoHits, {}, {}, "");
+    server.addEventState("third", {}, eventThreeHits, {}, {}, "");
 
     server.startServer();
     return 0;

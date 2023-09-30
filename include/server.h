@@ -26,10 +26,12 @@ namespace HepEVD {
 // parts of the same event.
 class EventState {
   public:
-    EventState(Particles particles = {}, Hits hits = {}, MCHits mcHits = {}, Markers markers = {},
+    EventState() : name(""), particles(), hits(), mcHits(), markers(), mcTruth("") {}
+    EventState(std::string name, Particles particles = {}, Hits hits = {}, MCHits mcHits = {}, Markers markers = {},
                std::string mcTruth = "")
-        : particles(particles), hits(hits), mcHits(mcHits), markers(markers), mcTruth(mcTruth) {}
+        : name(name), particles(particles), hits(hits), mcHits(mcHits), markers(markers), mcTruth(mcTruth) {}
 
+    std::string name;
     Particles particles;
     Hits hits;
     MCHits mcHits;
@@ -40,10 +42,17 @@ class EventState {
 class HepEVDServer {
   public:
     HepEVDServer() : geometry({}), eventStates() {}
-    HepEVDServer(const DetectorGeometry &geo = {}, const Hits &hits = {}, const MCHits &mc = {})
+    HepEVDServer(const DetectorGeometry &geo = {}, const Hits &hits = {},
+                 const MCHits &mc = {})
         : geometry(geo), eventStates() {
         currentState = 0;
-        eventStates[currentState] = EventState({}, hits, mc, {}, "");
+        eventStates[currentState] = EventState("", {}, hits, mc, {}, "");
+    }
+    HepEVDServer(std::string name, const DetectorGeometry &geo = {}, const Hits &hits = {},
+                 const MCHits &mc = {})
+        : geometry(geo), eventStates() {
+        currentState = 0;
+        eventStates[currentState] = EventState(name, {}, hits, mc, {}, "");
     }
 
     ~HepEVDServer() { this->eventStates.clear(); }
@@ -69,15 +78,23 @@ class HepEVDServer {
     // Add a new event state.
     // This will be used to store multiple events, or multiple
     // parts of the same event.
-    void addEventState(Particles particles = {}, Hits hits = {}, MCHits mcHits = {}, Markers markers = {},
-                       std::string mcTruth = "") {
-        this->eventStates[this->eventStates.size()] = EventState(particles, hits, mcHits, markers, mcTruth);
+    void addEventState(std::string name = "", Particles particles = {}, Hits hits = {}, MCHits mcHits = {},
+                       Markers markers = {}, std::string mcTruth = "") {
+        this->eventStates[this->eventStates.size()] = EventState(name, particles, hits, mcHits, markers, mcTruth);
     }
 
     // Swap to a different event state.
     void swapEventState(const int state) {
         if (this->eventStates.find(state) != this->eventStates.end())
             this->currentState = state;
+    }
+    void swapEventState(const std::string name) {
+        for (auto &state : this->eventStates) {
+            if (state.second.name == name) {
+                this->currentState = state.first;
+                return;
+            }
+        }
     }
     void nextEventState() {
         if (this->currentState < this->eventStates.size() - 1)
@@ -158,7 +175,7 @@ class HepEVDServer {
     httplib::Server server;
 
     DetectorGeometry geometry;
-    int currentState;
+    unsigned int currentState;
     std::map<int, EventState> eventStates;
 };
 
@@ -249,9 +266,17 @@ inline void HepEVDServer::startServer() {
     });
 
     // Management controls...
-    this->server.Get("/swap/:id", [&](const Request &req, Response &res) {
+    this->server.Get("/swap/id/:id", [&](const Request &req, Response &res) {
         try {
             this->swapEventState(std::stoi(req.path_params.at("id")));
+            res.set_content("OK", "text/plain");
+        } catch (const std::exception &e) {
+            res.set_content("Error: " + std::string(e.what()), "text/plain");
+        }
+    });
+    this->server.Get("/swap/name/:name", [&](const Request &req, Response &res) {
+        try {
+            this->swapEventState(req.path_params.at("name"));
             res.set_content("OK", "text/plain");
         } catch (const std::exception &e) {
             res.set_content("Error: " + std::string(e.what()), "text/plain");
