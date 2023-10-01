@@ -73,3 +73,6 @@ convert and parse objects to/from JSON, such that they can be served via the HTT
 - Hit widths? Pain with instanced mesh though.
 
 - Fill out URL data loading: User configurable, loading bar.
+
+- Consider how easy / useful / annoying it would be to maintain camera position
+when swapping between event states.
