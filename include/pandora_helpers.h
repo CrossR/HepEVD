@@ -67,26 +67,27 @@ static void startServer(const bool verbose = false) {
     hepEVDServer->startServer();
 }
 
-static void saveState(const std::string stateName, const int minSize = 0) {
+static void saveState(const std::string stateName, const int minSize = 0, const bool clearOnShow = true) {
     if (!isServerInitialised())
         return;
 
     // Set the name of the current state...
     hepEVDServer->setName(stateName);
     
-    // Then start a new state and make sure it's the current one.
-    const int numStates = hepEVDServer->getNumberOfEventStates();
-    hepEVDServer->addEventState();
-    hepEVDServer->nextEventState();
-
     // If prior to adding the new state, the size of the current state was
     // greater than the minimum size, then start the server.
     //
     // This is useful so you can save states as you go, but start the
     // server after a certain number of states have been saved.
-    if (minSize != 0 && numStates > minSize) {
+    if (minSize != 0 && hepEVDServer->getNumberOfEventStates() > minSize) {
         hepEVDServer->startServer();
+        hepEVDServer->resetServer();
+        return;
     }
+
+    // Finally, start a new state and make sure it's the current one.
+    hepEVDServer->addEventState();
+    hepEVDServer->nextEventState();
 }
 
 static void resetServer(const bool resetGeo = false) {

@@ -49,6 +49,7 @@ class HepEVDServer {
 
         this->eventStates.clear();
         this->currentState = 0;
+        this->eventStates[this->currentState] = EventState("Initial", {}, {}, {}, {}, "");
 
         if (resetGeo)
             this->geometry.clear();
