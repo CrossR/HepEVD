@@ -87,6 +87,7 @@ class HepEVDServer {
         if (this->currentState > 0)
             this->currentState--;
     }
+    int getNumberOfEventStates() { return this->eventStates.size(); }
 
     // Start the event display server, blocking until exit is called by the
     // server.

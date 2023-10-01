@@ -53,7 +53,7 @@ static bool isServerInitialised(const bool quiet = false) {
     return isInit;
 }
 
-static void startServer(const bool verbose = false) {
+static void startServer(const int minStates = 0, const bool verbose = false) {
     if (!isServerInitialised())
         return;
 
@@ -64,7 +64,10 @@ static void startServer(const bool verbose = false) {
         std::cout << "There are " << hepEVDServer->getMarkers().size() << " markers registered!" << std::endl;
     }
 
-    hepEVDServer->startServer();
+    if (minStates != 0 && hepEVDServer->getNumberOfEventStates() > minStates)
+        hepEVDServer->startServer();
+    else
+        hepEVDServer->startServer();
 }
 
 static void resetServer(const bool resetGeo = false) {
