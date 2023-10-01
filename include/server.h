@@ -13,6 +13,7 @@
 #include "hits.h"
 #include "marker.h"
 #include "particle.h"
+#include "state.h"
 
 #include "extern/httplib.h"
 
@@ -21,24 +22,6 @@ using json = nlohmann::json;
 
 namespace HepEVD {
 
-// Top level state object, that contains everything about the current state of the
-// event. This means we can more easily store multiple events or multiple
-// parts of the same event.
-class EventState {
-  public:
-    EventState() : name(""), particles(), hits(), mcHits(), markers(), mcTruth("") {}
-    EventState(std::string name, Particles particles = {}, Hits hits = {}, MCHits mcHits = {}, Markers markers = {},
-               std::string mcTruth = "")
-        : name(name), particles(particles), hits(hits), mcHits(mcHits), markers(markers), mcTruth(mcTruth) {}
-
-    std::string name;
-    Particles particles;
-    Hits hits;
-    MCHits mcHits;
-    Markers markers;
-    std::string mcTruth;
-};
-
 class HepEVDServer {
   public:
     HepEVDServer() : geometry({}), eventStates() {}
@@ -46,7 +29,7 @@ class HepEVDServer {
                  const MCHits &mc = {})
         : geometry(geo), eventStates() {
         currentState = 0;
-        eventStates[currentState] = EventState("", {}, hits, mc, {}, "");
+        eventStates[currentState] = EventState("Initial", {}, hits, mc, {}, "");
     }
     HepEVDServer(std::string name, const DetectorGeometry &geo = {}, const Hits &hits = {},
                  const MCHits &mc = {})
@@ -176,7 +159,7 @@ class HepEVDServer {
 
     DetectorGeometry geometry;
     unsigned int currentState;
-    std::map<int, EventState> eventStates;
+    EventStates eventStates;
 };
 
 // Run the actual server, spinning up the API endpoints and serving the
@@ -265,7 +248,13 @@ inline void HepEVDServer::startServer() {
         res.set_content(output.dump(4), "application/json");
     });
 
-    // Management controls...
+    // State controls...
+    this->server.Get("/allStateInfo", [&](const Request &, Response &res) {
+        res.set_content(json(this->eventStates).dump(), "text/plain");
+    });
+    this->server.Get("/stateInfo", [&](const Request &, Response &res) {
+        res.set_content(json(this->getState()).dump(), "text/plain");
+    });
     this->server.Get("/swap/id/:id", [&](const Request &req, Response &res) {
         try {
             this->swapEventState(std::stoi(req.path_params.at("id")));
@@ -282,6 +271,16 @@ inline void HepEVDServer::startServer() {
             res.set_content("Error: " + std::string(e.what()), "text/plain");
         }
     });
+    this->server.Get("/nextState", [&](const Request &, Response &res) {
+        this->nextEventState();
+        res.set_content("OK", "text/plain");
+    });
+    this->server.Get("/previousState", [&](const Request &, Response &res) {
+        this->previousEventState();
+        res.set_content("OK", "text/plain");
+    });
+
+    // Management controls...
     this->server.Get("/quit", [&](const Request &, Response &) { this->server.stop(); });
 
     // Finally, mount the www folder, which contains the actual HepEVD JS code.
