@@ -330,6 +330,7 @@ export class RenderState {
         return;
       Array.from(this.activeHitProps)
         .reverse()
+        .filter((property) => property !== BUTTON_ID.All)
         .forEach((property) => {
           if (!this.hitProperties.get(hit).has(property)) return;
           if (newHits.has(hit)) return;
@@ -337,6 +338,15 @@ export class RenderState {
           newHits.add(hit);
           newHitColours.push(this.hitProperties.get(hit).get(property));
         });
+
+      // If we've already added this hit, we don't need to do anything else.
+      if (newHits.has(hit)) return;
+
+      // Otherwise, check if the all button is active, and if so, add it at the end.
+      if (this.activeHitProps.has(BUTTON_ID.All)) {
+        newHits.add(hit);
+        newHitColours.push(this.hitProperties.get(hit).get(BUTTON_ID.All));
+      }
     });
 
     // Then repeat for the MC hits, but skip the hit properties bit.
