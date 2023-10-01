@@ -15,6 +15,8 @@ import { getData, isRunningOnGitHubPages } from "./data_loader.js";
  */
 export async function updateStateUI(renderStates) {
 
+  const stateDiv = document.getElementById("stateSwapper");
+
   // Stop running straight away on GitHub pages.
   if (isRunningOnGitHubPages()) {
     stateDiv.style.display = "none";
@@ -22,7 +24,6 @@ export async function updateStateUI(renderStates) {
   }
 
   const stateIdPairs = await getAllStateInfo();
-  const stateDiv = document.getElementById("stateSwapper");
 
   // Only show the state swapper if there are multiple states.
   if (stateIdPairs.length == 1 ) {
