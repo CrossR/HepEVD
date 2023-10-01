@@ -58,10 +58,28 @@
         </div>
       </div>
 
+      <div id="stateSwapper" class="flex justify-center flex-1 px-2">
+        <!-- Divs for next button, previous button, and event number dropdown -->
+        <button class="btn btn-primary btn-outline m-1" onclick="prevState()">
+          ⏮️ Prev
+        </button>
+        <div class="dropdown dropdown-hover">
+          <label id="state_dropdown_button" class="btn btn-primary m-1">
+            State
+          </label>
+          <ul
+            id="state_dropdown"
+            class="dropdown-content z-[1] menu p-1 shadow bg-base-100 rounded-box"
+          ></ul>
+          <button class="btn btn-primary btn-outline m-1" onclick="nextState()">
+            Next ⏭️
+          </button>
+        </div>
+      </div>
+
       <div class="flex justify-end flex-1 px-2">
         <div class="dropdown dropdown-hover">
           <label class="btn btn-primary m-1"> ⚙️ Options </label>
-          <!-- <div class="dropdown-content"> -->
           <div
             class="dropdown-content z-[1] menu p-1 shadow bg-base-100 rounded-box"
           >
@@ -121,7 +139,7 @@
       <li>
         <details id="particle_menu_items_2D" closed />
         <summary>
-          <span class="label-text pr-8">All Particles</span>
+          <span class="label-text pr-8">Details</span>
         </summary>
       </li>
     </ul>
@@ -132,7 +150,7 @@
       <li>
         <details id="particle_menu_items_3D" closed />
         <summary>
-          <span class="label-text pr-8">All Particles</span>
+          <span class="label-text pr-8">Details</span>
         </summary>
       </li>
     </ul>
@@ -179,7 +197,10 @@
     <!-- Generic input modal -->
     <dialog id="input_modal" class="modal">
       <form method="dialog" class="modal-box w-fit">
-        <button id="input_close" class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">
+        <button
+          id="input_close"
+          class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"
+        >
           ✕
         </button>
         <div class="join p-4">
@@ -204,7 +225,10 @@
     <!-- Generic selection modal -->
     <dialog id="select_modal" class="modal">
       <form method="dialog" class="modal-box w-fit">
-        <button id="select_close" class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">
+        <button
+          id="select_close"
+          class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"
+        >
           ✕
         </button>
         <div class="join p-4">

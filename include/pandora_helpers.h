@@ -54,17 +54,40 @@ static bool isServerInitialised(const bool quiet = false) {
 }
 
 static void startServer(const bool verbose = false) {
-    if (! isServerInitialised())
+    if (!isServerInitialised())
         return;
 
     if (verbose) {
-        std::cout << "There are " << hepEVDServer->getHits().size() << " hits registered!" << std::endl;
-        std::cout << "There are " << hepEVDServer->getMCHits().size() << " MC hits registered!" << std::endl;
-        std::cout << "There are " << hepEVDServer->getParticles().size() << " particles registered!" << std::endl;
-        std::cout << "There are " << hepEVDServer->getMarkers().size() << " markers registered!" << std::endl;
+        std::cout << "HepEVD: There are " << hepEVDServer->getHits().size() << " hits registered!" << std::endl;
+        std::cout << "HepEVD: There are " << hepEVDServer->getMCHits().size() << " MC hits registered!" << std::endl;
+        std::cout << "HepEVD: There are " << hepEVDServer->getParticles().size() << " particles registered!" << std::endl;
+        std::cout << "HepEVD: There are " << hepEVDServer->getMarkers().size() << " markers registered!" << std::endl;
     }
 
     hepEVDServer->startServer();
+}
+
+static void saveState(const std::string stateName, const int minSize = 0, const bool clearOnShow = true) {
+    if (!isServerInitialised())
+        return;
+
+    // Set the name of the current state...
+    hepEVDServer->setName(stateName);
+    
+    // If prior to adding the new state, the size of the current state was
+    // greater than the minimum size, then start the server.
+    //
+    // This is useful so you can save states as you go, but start the
+    // server after a certain number of states have been saved.
+    if (minSize != 0 && hepEVDServer->getNumberOfEventStates() > minSize) {
+        hepEVDServer->startServer();
+        hepEVDServer->resetServer();
+        return;
+    }
+
+    // Finally, start a new state and make sure it's the current one.
+    hepEVDServer->addEventState();
+    hepEVDServer->nextEventState();
 }
 
 static void resetServer(const bool resetGeo = false) {
@@ -197,10 +220,8 @@ static void addMCHits(const pandora::Algorithm &pAlgorithm, const pandora::CaloH
 // Helper function, as the "GetAllCaloHits" function isn't in some older versions of Pandora.
 void getAllCaloHits(const pandora::ParticleFlowObject *pPfo, pandora::CaloHitList &caloHitList) {
 
-    std::vector<pandora::HitType> views({
-        pandora::HitType::TPC_VIEW_U, pandora::HitType::TPC_VIEW_V,
-        pandora::HitType::TPC_VIEW_W, pandora::HitType::TPC_3D
-    });
+    std::vector<pandora::HitType> views({pandora::HitType::TPC_VIEW_U, pandora::HitType::TPC_VIEW_V,
+                                         pandora::HitType::TPC_VIEW_W, pandora::HitType::TPC_3D});
 
     for (auto view : views) {
         lar_content::LArPfoHelper::GetCaloHits(pPfo, view, caloHitList);
@@ -233,22 +254,30 @@ Particle *addParticle(const pandora::Pandora &pPandora, const pandora::ParticleF
     else
         particle->setInteractionType(InteractionType::COSMIC);
 
-    const pandora::Vertex *vertex = lar_content::LArPfoHelper::GetVertex(pPfo);
+    const pandora::Vertex *vertex(nullptr);
+
+    try {
+        vertex = lar_content::LArPfoHelper::GetVertex(pPfo);
+    } catch (pandora::StatusCodeException &) {
+        std::cout << "HepEVD: Failed to get vertex for PFO!" << std::endl;
+        return particle;
+    }
 
     Markers vertices;
     Point recoVertex3D({vertex->GetPosition().GetX(), vertex->GetPosition().GetY(), vertex->GetPosition().GetZ()});
-    if (particle->getInteractionType() == InteractionType::COSMIC) recoVertex3D.setColour("yellow");
+    if (particle->getInteractionType() == InteractionType::COSMIC)
+        recoVertex3D.setColour("yellow");
     vertices.push_back(recoVertex3D);
 
-    std::vector<pandora::HitType> views({
-        pandora::HitType::TPC_VIEW_U, pandora::HitType::TPC_VIEW_V, pandora::HitType::TPC_VIEW_W
-    });
+    std::vector<pandora::HitType> views(
+        {pandora::HitType::TPC_VIEW_U, pandora::HitType::TPC_VIEW_V, pandora::HitType::TPC_VIEW_W});
     for (auto view : views) {
         const pandora::CartesianVector vertex2D =
             lar_content::LArGeometryHelper::ProjectPosition(pPandora, vertex->GetPosition(), view);
         Point recoVertex2D({vertex2D.GetX(), vertex2D.GetY(), vertex2D.GetZ()}, HitDimension::TWO_D,
                            getHepEVDHitType(view));
-        if (particle->getInteractionType() == InteractionType::COSMIC) recoVertex2D.setColour("yellow");
+        if (particle->getInteractionType() == InteractionType::COSMIC)
+            recoVertex2D.setColour("yellow");
         vertices.push_back(recoVertex2D);
     }
 
@@ -267,7 +296,6 @@ static void addPFOs(const pandora::Pandora &pPandora, const pandora::PfoList *pP
 
     Particles particles;
     std::map<const pandora::ParticleFlowObject *, Particle *> pfoToParticleMap;
-    const pandora::ParticleFlowObject *targetPfo = nullptr;
 
     // First, get a HepEVD::Particle for every Pandora::PFO.
     for (const pandora::ParticleFlowObject *const pPfo : *pPfoList) {
@@ -292,12 +320,6 @@ static void addPFOs(const pandora::Pandora &pPandora, const pandora::PfoList *pP
 
             parent->addChild(child->getID());
             child->setParentID(parent->getID());
-
-            // We will need the target PFO later, so lets store it now.
-            if (parent->getInteractionType() == InteractionType::NEUTRINO)
-                targetPfo = pPfo;
-            if (parent->getInteractionType() == InteractionType::BEAM)
-                targetPfo = pPfo;
         }
     }
 

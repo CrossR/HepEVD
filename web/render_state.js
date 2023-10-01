@@ -37,7 +37,7 @@ export class RenderState {
     hits,
     mcHits,
     markers,
-    geometry,
+    geometry
   ) {
     // Basic, crucial information...
     this.name = name;
@@ -54,12 +54,65 @@ export class RenderState {
     this.mcHitGroup = new THREE.Group();
     this.markerGroup = new THREE.Group();
 
+    // Setup the data...
+    this.updateData(particles, hits, mcHits, markers, geometry);
+
     // Add all the groups...
     this.scene.add(this.detGeoGroup);
     this.scene.add(this.hitGroup);
     this.scene.add(this.mcHitGroup);
     this.scene.add(this.markerGroup);
 
+    // Finally, store a reference to the other renderer.
+    // If this renderer turns on, we need to turn the other off.
+    this.otherRenderer = undefined;
+  }
+
+  // Store class callbacks...
+  #eventListeners = {};
+
+  /**
+   * Returns the number of hits in the current state.
+   * @returns {number} The number of hits.
+   */
+  get hitSize() {
+    if (this.particles.length > 0) return this.particles.length;
+    return this.hits.length;
+  }
+
+  /**
+   * Returns a boolean indicating whether the scene is currently visible.
+   * @returns {boolean} Whether the scene is visible.
+   */
+  get visible() {
+    return this.scene.visible;
+  }
+
+  /**
+   * Setup event listeners. This is mainly used for hooking up rendering on change.
+   */
+  addEventListener(name, callback) {
+    if (!this.#eventListeners[name]) this.#eventListeners[name] = [];
+    this.#eventListeners[name].push(callback);
+  }
+
+  /**
+   * Event trigger, which will run all the callbacks for that event.
+   */
+  triggerEvent(name, args) {
+    this.#eventListeners[name]?.forEach((f) => f.apply(this, args));
+  }
+
+  /**
+   * Updates the data used by the renderer.
+   *
+   * @param {Array} particles - The particles to render.
+   * @param {Array} hits - The hits to render.
+   * @param {Array} mcHits - The MC hits to render.
+   * @param {Array} markers - The markers to render.
+   * @param {Object} geometry - The detector geometry to render.
+   */
+  updateData(particles, hits, mcHits, markers, geometry) {
     // Data Setup, first the top level static arrays...
     this.detectorGeometry = geometry;
     this.hits = hits;
@@ -71,10 +124,10 @@ export class RenderState {
     this.particles = particles.flatMap((particle) => {
       const newParticle = { ...particle };
       newParticle.hits = particle.hits.filter(
-        (hit) => hit.position.dim === this.hitDim,
+        (hit) => hit.position.dim === this.hitDim
       );
       newParticle.vertices = particle.vertices.filter(
-        (vertex) => vertex.position.dim === this.hitDim,
+        (vertex) => vertex.position.dim === this.hitDim
       );
 
       // Ignore particles with no hits, but also
@@ -121,45 +174,6 @@ export class RenderState {
 
     // Actually fill the active arrays with their initial values.
     this.#updateActiveArrays();
-
-    // Finally, store a reference to the other renderer.
-    // If this renderer turns on, we need to turn the other off.
-    this.otherRenderer = undefined;
-  }
-
-  // Store class callbacks...
-  #eventListeners = {};
-
-  /**
-   * Returns the number of hits in the current state.
-   * @returns {number} The number of hits.
-   */
-  get hitSize() {
-    if (this.particles.length > 0) return this.particles.length;
-    return this.hits.length;
-  }
-
-  /**
-   * Returns a boolean indicating whether the scene is currently visible.
-   * @returns {boolean} Whether the scene is visible.
-   */
-  get visible() {
-    return this.scene.visible;
-  }
-
-  /**
-   * Setup event listeners. This is mainly used for hooking up rendering on change.
-   */
-  addEventListener(name, callback) {
-    if (!this.#eventListeners[name]) this.#eventListeners[name] = [];
-    this.#eventListeners[name].push(callback);
-  }
-
-  /**
-   * Event trigger, which will run all the callbacks for that event.
-   */
-  triggerEvent(name, args) {
-    this.#eventListeners[name]?.forEach((f) => f.apply(this, args));
   }
 
   /**
@@ -171,7 +185,7 @@ export class RenderState {
 
     // For now, just render the box geometry and nothing else.
     const boxVolumes = this.detectorGeometry.volumes.filter(
-      (volume) => volume.volumeType === "box",
+      (volume) => volume.volumeType === "box"
     );
 
     // Since the 2D renderer needs the hits to calculate the box, we need to
@@ -183,7 +197,7 @@ export class RenderState {
     }
 
     boxVolumes.forEach((box) =>
-      drawBox(this.hitDim, this.detGeoGroup, hits, box),
+      drawBox(this.hitDim, this.detGeoGroup, hits, box)
     );
 
     this.detGeoGroup.matrixAutoUpdate = false;
@@ -204,7 +218,7 @@ export class RenderState {
       this.activeParticles,
       this.activeHitProps,
       this.hitProperties,
-      HIT_CONFIG[this.hitDim],
+      HIT_CONFIG[this.hitDim]
     );
 
     this.hitGroup.matrixAutoUpdate = false;
@@ -223,7 +237,7 @@ export class RenderState {
       this.hitGroup,
       this.activeHits,
       this.activeHitColours,
-      HIT_CONFIG[this.hitDim],
+      HIT_CONFIG[this.hitDim]
     );
 
     this.hitGroup.matrixAutoUpdate = false;
@@ -235,7 +249,7 @@ export class RenderState {
    * Top level event render function, which will render all the different
    * hits of the event, picking between either the particles or the hits.
    */
-  renderEvent() {
+  renderEvent(fullRender = false) {
     // Update all the active arrays, and check if the
     // number of markers changes.
     const markerNum = this.activeMarkers.length;
@@ -251,7 +265,7 @@ export class RenderState {
 
     // Its possible that the marker list has changed, so we need to update
     // the marker UI as well.
-    if (markerNum !== newMarkerNum) {
+    if (markerNum !== newMarkerNum || fullRender) {
       this.renderMarkers();
     }
   }
@@ -269,7 +283,7 @@ export class RenderState {
       this.mcHitGroup,
       this.activeMC,
       mcColours,
-      HIT_CONFIG[this.hitDim],
+      HIT_CONFIG[this.hitDim]
     );
 
     this.mcHitGroup.matrixAutoUpdate = false;
@@ -286,11 +300,11 @@ export class RenderState {
 
     drawRings(
       this.activeMarkers.filter((marker) => marker.markerType === "Ring"),
-      this.markerGroup,
+      this.markerGroup
     );
     drawPoints(
       this.activeMarkers.filter((marker) => marker.markerType === "Point"),
-      this.markerGroup,
+      this.markerGroup
     );
 
     this.markerGroup.matrixAutoUpdate = false;
@@ -316,6 +330,7 @@ export class RenderState {
         return;
       Array.from(this.activeHitProps)
         .reverse()
+        .filter((property) => property !== BUTTON_ID.All)
         .forEach((property) => {
           if (!this.hitProperties.get(hit).has(property)) return;
           if (newHits.has(hit)) return;
@@ -323,6 +338,15 @@ export class RenderState {
           newHits.add(hit);
           newHitColours.push(this.hitProperties.get(hit).get(property));
         });
+
+      // If we've already added this hit, we don't need to do anything else.
+      if (newHits.has(hit)) return;
+
+      // Otherwise, check if the all button is active, and if so, add it at the end.
+      if (this.activeHitProps.has(BUTTON_ID.All)) {
+        newHits.add(hit);
+        newHitColours.push(this.hitProperties.get(hit).get(BUTTON_ID.All));
+      }
     });
 
     // Then repeat for the MC hits, but skip the hit properties bit.
@@ -547,22 +571,22 @@ export class RenderState {
 
     // Fill in any dropdown entries, or hit class toggles.
     populateDropdown(this.hitDim, this.hitProperties, (prop) =>
-      this.onHitPropertyChange(prop),
+      this.onHitPropertyChange(prop)
     );
     populateTypeToggle(this.hitDim, this.hitTypes, (hitType) =>
-      this.onHitTypeChange(hitType),
+      this.onHitTypeChange(hitType)
     );
     populateMarkerToggle(
       this.hitDim,
       this.markers,
       this.particles,
-      (markerType) => this.onMarkerChange(markerType),
+      (markerType) => this.onMarkerChange(markerType)
     );
     enableMCToggle(this.hitDim, this.mcHits, () => this.onMCToggle());
     enableInteractionTypeToggle(
       this.hitDim,
       this.particles,
-      (interactionType) => this.onInteractionTypeChange(interactionType),
+      (interactionType) => this.onInteractionTypeChange(interactionType)
     );
 
     // Move the scene/camera around to best fit it in.

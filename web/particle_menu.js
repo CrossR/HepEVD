@@ -53,7 +53,18 @@ function createMenuItem(
 
   particle.childIDs
     .sort((a, b) => {
-      return particlesMap.get(a).hits.length < particlesMap.get(b).hits.length;
+      const particleA = particlesMap.get(a);
+      const particleB = particlesMap.get(b);
+
+      if (particleA === undefined && particleB === undefined) {
+        return 0;
+      } else if (particleA === undefined) {
+        return 1;
+      } else if (particleB === undefined) {
+        return -1;
+      }
+
+      return particleA.hits.length < particleB.hits.length;
     })
     .map((childID) => {
       const childParticle = particlesMap.get(childID);
@@ -99,7 +110,15 @@ function createMenuItem(
  * @returns {void}
  */
 export function createParticleMenu(hitDim, particlesMap, onClick) {
+
+  // Get the menu, and clear it out to start.
   const menu = document.getElementById(`particle_menu_items_${hitDim}`);
+  menu.innerHTML = "";
+
+  if (particlesMap.size === 0) {
+    menu.hidden = true;
+    return;
+  }
 
   // Filter then sort the particles. Filtering is used to
   // remove the child particles from the list, as they will

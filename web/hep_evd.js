@@ -18,6 +18,7 @@ import {
   setTheme,
 } from "./ui.js";
 import { getData } from "./data_loader.js";
+import { nextState, previousState, updateStateUI } from "./states.js";
 
 // Do some initial threejs setup...
 const threeDCamera = new THREE.PerspectiveCamera(
@@ -97,7 +98,7 @@ animate(renderer, renderStates, stats);
 // Now that we've animated once, hook up event listeners for any change.
 renderStates.forEach((state) => {
   state.addEventListener("fullUpdate", () => {
-    state.renderEvent();
+    state.renderEvent(true);
     animate(renderer, renderStates, stats);
   });
   state.addEventListener("change", () =>
@@ -116,6 +117,8 @@ document.setTheme = () => setTheme(renderStates);
 document.saveState = () => saveState(renderStates);
 document.loadState = () => loadState(renderStates);
 document.pickColourscheme = () => pickColourscheme(renderStates);
+document.nextState = () => nextState(renderStates);
+document.prevState = () => previousState(renderStates);
 window.addEventListener(
   "resize",
   () => {
@@ -129,3 +132,4 @@ document.resetView = () => {
   twoDRenderer.resetView();
 };
 fixThemeButton(true);
+updateStateUI(renderStates);

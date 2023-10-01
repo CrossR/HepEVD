@@ -7,6 +7,8 @@ int main(void) {
     using namespace HepEVD;
 
     Hits hits;
+    Hits eventTwoHits;
+    Hits eventThreeHits;
     MCHits mcHits;
 
     BoxVolume volume1(Position({-182.954544067, 0, 696.293762207}), 359.415008545, 1207.84753418, 1394.33996582);
@@ -55,6 +57,16 @@ int main(void) {
         hit->addProperties(properties);
         hits.push_back(hit);
         mcHits.push_back(mcHit);
+
+        // Setup a second event, where the hits are only those in the left volume
+        if (x < 0.0) {
+            eventTwoHits.push_back(hit);
+        }
+
+        // Setup a third event, where the hits are only those in the right volume
+        if (x > 0.0) {
+            eventThreeHits.push_back(hit);
+        }
     }
 
     // Repeat for the 2D views
@@ -87,6 +99,9 @@ int main(void) {
     ring.setDim(TWO_D);
     point.setDim(TWO_D);
     server.addMarkers({ring, point});
+
+    server.addEventState("Second", {}, eventTwoHits, {}, {}, "");
+    server.addEventState("Third", {}, eventThreeHits, {}, {}, "");
 
     server.startServer();
     return 0;
