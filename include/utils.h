@@ -6,6 +6,8 @@
 #ifndef HEP_EVD_POSITION_H
 #define HEP_EVD_POSITION_H
 
+#include "config.h"
+
 #include "extern/httplib.h"
 #include "extern/json.hpp"
 using json = nlohmann::json;
