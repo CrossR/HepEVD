@@ -73,5 +73,3 @@ convert and parse objects to/from JSON, such that they can be served via the HTT
 - Hit widths? Pain with instanced mesh though.
 
 - Fill out URL data loading: User configurable, loading bar.
-
-- Fix UI on state change: Dropdown entries, visible buttons etc.

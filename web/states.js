@@ -55,6 +55,8 @@ export async function reloadDataForCurrentState(renderStates) {
   const data = await getData();
   const { hits, mcHits, markers, particles, detectorGeometry } = data;
 
+  const drawTarget = renderStates.get("3D").visible ? "3D" : "2D";
+
   renderStates.forEach((state) => {
     state.updateData(
       particles,
@@ -63,6 +65,7 @@ export async function reloadDataForCurrentState(renderStates) {
       markers.filter((marker) => marker.position.dim === state.hitDim),
       detectorGeometry
     );
+    state.setupUI(drawTarget);
     state.triggerEvent("fullUpdate");
   });
 }

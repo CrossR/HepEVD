@@ -18,7 +18,11 @@ import { COLOUR_MAPS, DEFAULT_MAPS } from "./colourmaps.js";
  * @param {function} onClick - The function to be called when a button is clicked.
  */
 export function populateDropdown(hitDim, hitPropMap, onClick = (_) => {}) {
+
+  // Get the div to populate, and clear it to start.
   const dropDown = document.getElementById(`${hitDim}_dropdown`);
+  dropDown.innerHTML = "";
+
   const entries = new Set();
 
   // Add the default "None" option.
@@ -42,6 +46,7 @@ export function populateDropdown(hitDim, hitPropMap, onClick = (_) => {}) {
   });
 
   // Add dropdown on click to send empty string.
+  // Clone the button to remove any other event listeners.
   const dropDownButton = document.getElementById(`${hitDim}_dropdown_button`);
   dropDownButton.addEventListener("click", () => onClick(""));
 
@@ -57,7 +62,10 @@ export function populateDropdown(hitDim, hitPropMap, onClick = (_) => {}) {
  * @param {function} onClick - The function to be called when a button is clicked.
  */
 export function populateTypeToggle(hitDim, hitTypesMap, onClick = (_) => {}) {
+
+  // Get the div to populate, and clear it to start.
   const classDiv = document.getElementById(`types_${hitDim}`);
+  classDiv.innerHTML = "";
   const entries = new Set();
 
   hitTypesMap.forEach((_, hitTypeString) => {
@@ -97,7 +105,11 @@ export function populateMarkerToggle(
   particles,
   onClick = (_) => {}
 ) {
+
+  // Get the div to populate, and clear it to start.
   const classDiv = document.getElementById(`markers_${hitDim}`);
+  classDiv.innerHTML = "";
+
   const entries = new Set();
 
   // TODO: Could potentially be extended, to use labels etc.
@@ -110,6 +122,7 @@ export function populateMarkerToggle(
 
   // If there is no entries, don't bother.
   if (entries.size < 1) {
+    classDiv.style.visibility = "hidden";
     return;
   }
 
@@ -141,9 +154,13 @@ export function populateMarkerToggle(
  * @param {function} onClick - The function to be called when the MC toggle button is clicked.
  */
 export function enableMCToggle(hitType, mcHits, onClick) {
+  
+  // Get the div to populate, and clear it to start.
   const classDiv = document.getElementById(`types_MC_${hitType}`);
+  classDiv.innerHTML = "";
 
   if (mcHits.length === 0) {
+    classDiv.style.visibility = "hidden";
     return;
   }
 
@@ -167,8 +184,10 @@ export function enableMCToggle(hitType, mcHits, onClick) {
  */
 export function enableInteractionTypeToggle(hitType, particles, onClick) {
   const classDiv = document.getElementById(`particles_${hitType}`);
+  classDiv.innerHTML = "";
 
   if (particles.length === 0) {
+    classDiv.style.visibility = "hidden";
     return;
   }
 

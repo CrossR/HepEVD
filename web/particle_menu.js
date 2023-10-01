@@ -99,7 +99,15 @@ function createMenuItem(
  * @returns {void}
  */
 export function createParticleMenu(hitDim, particlesMap, onClick) {
+
+  // Get the menu, and clear it out to start.
   const menu = document.getElementById(`particle_menu_items_${hitDim}`);
+  menu.innerHTML = "";
+
+  if (particlesMap.size === 0) {
+    menu.hidden = true;
+    return;
+  }
 
   // Filter then sort the particles. Filtering is used to
   // remove the child particles from the list, as they will
