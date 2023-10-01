@@ -14,11 +14,18 @@ import { getData, isRunningOnGitHubPages } from "./data_loader.js";
  * @returns {Promise<void>} - A Promise that resolves when the UI has been updated.
  */
 export async function updateStateUI(renderStates) {
+
+  // Stop running straight away on GitHub pages.
+  if (isRunningOnGitHubPages()) {
+    stateDiv.style.display = "none";
+    return;
+  }
+
   const stateIdPairs = await getAllStateInfo();
   const stateDiv = document.getElementById("stateSwapper");
 
   // Only show the state swapper if there are multiple states.
-  if (stateIdPairs.length == 1 || isRunningOnGitHubPages()) {
+  if (stateIdPairs.length == 1 ) {
     stateDiv.style.display = "none";
     return;
   }
