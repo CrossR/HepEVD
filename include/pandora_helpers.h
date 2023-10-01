@@ -58,10 +58,10 @@ static void startServer(const bool verbose = false) {
         return;
 
     if (verbose) {
-        std::cout << "There are " << hepEVDServer->getHits().size() << " hits registered!" << std::endl;
-        std::cout << "There are " << hepEVDServer->getMCHits().size() << " MC hits registered!" << std::endl;
-        std::cout << "There are " << hepEVDServer->getParticles().size() << " particles registered!" << std::endl;
-        std::cout << "There are " << hepEVDServer->getMarkers().size() << " markers registered!" << std::endl;
+        std::cout << "HepEVD: There are " << hepEVDServer->getHits().size() << " hits registered!" << std::endl;
+        std::cout << "HepEVD: There are " << hepEVDServer->getMCHits().size() << " MC hits registered!" << std::endl;
+        std::cout << "HepEVD: There are " << hepEVDServer->getParticles().size() << " particles registered!" << std::endl;
+        std::cout << "HepEVD: There are " << hepEVDServer->getMarkers().size() << " markers registered!" << std::endl;
     }
 
     hepEVDServer->startServer();
@@ -254,7 +254,14 @@ Particle *addParticle(const pandora::Pandora &pPandora, const pandora::ParticleF
     else
         particle->setInteractionType(InteractionType::COSMIC);
 
-    const pandora::Vertex *vertex = lar_content::LArPfoHelper::GetVertex(pPfo);
+    const pandora::Vertex *vertex(nullptr);
+
+    try {
+        vertex = lar_content::LArPfoHelper::GetVertex(pPfo);
+    } catch (pandora::StatusCodeException &) {
+        std::cout << "HepEVD: Failed to get vertex for PFO!" << std::endl;
+        return particle;
+    }
 
     Markers vertices;
     Point recoVertex3D({vertex->GetPosition().GetX(), vertex->GetPosition().GetY(), vertex->GetPosition().GetZ()});
@@ -289,7 +296,6 @@ static void addPFOs(const pandora::Pandora &pPandora, const pandora::PfoList *pP
 
     Particles particles;
     std::map<const pandora::ParticleFlowObject *, Particle *> pfoToParticleMap;
-    const pandora::ParticleFlowObject *targetPfo = nullptr;
 
     // First, get a HepEVD::Particle for every Pandora::PFO.
     for (const pandora::ParticleFlowObject *const pPfo : *pPfoList) {
@@ -314,12 +320,6 @@ static void addPFOs(const pandora::Pandora &pPandora, const pandora::PfoList *pP
 
             parent->addChild(child->getID());
             child->setParentID(parent->getID());
-
-            // We will need the target PFO later, so lets store it now.
-            if (parent->getInteractionType() == InteractionType::NEUTRINO)
-                targetPfo = pPfo;
-            if (parent->getInteractionType() == InteractionType::BEAM)
-                targetPfo = pPfo;
         }
     }
 

@@ -53,7 +53,18 @@ function createMenuItem(
 
   particle.childIDs
     .sort((a, b) => {
-      return particlesMap.get(a).hits.length < particlesMap.get(b).hits.length;
+      const particleA = particlesMap.get(a);
+      const particleB = particlesMap.get(b);
+
+      if (particleA === undefined && particleB === undefined) {
+        return 0;
+      } else if (particleA === undefined) {
+        return 1;
+      } else if (particleB === undefined) {
+        return -1;
+      }
+
+      return particleA.hits.length < particleB.hits.length;
     })
     .map((childID) => {
       const childParticle = particlesMap.get(childID);
