@@ -88,6 +88,7 @@ class HepEVDServer {
             this->currentState--;
     }
     int getNumberOfEventStates() { return this->eventStates.size(); }
+    void setName(const std::string name) { this->getState().name = name; }
 
     // Start the event display server, blocking until exit is called by the
     // server.
