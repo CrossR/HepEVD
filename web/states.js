@@ -2,12 +2,23 @@
 // Event / state management for the web interface.
 //
 
-export async function updateStateUI() {
+// TODO: Won't work on GitHub pages, since it's not a server.
+//       Need to figure out best way to supply multiple states there.
+
+import { getData, isRunningOnGitHubPages } from "./data_loader.js";
+
+/**
+ * Updates the UI for the state swapper based on the current state.
+ * 
+ * @param {Function} renderStates - Map of render states.
+ * @returns {Promise<void>} - A Promise that resolves when the UI has been updated.
+ */
+export async function updateStateUI(renderStates) {
   const stateIdPairs = await getAllStateInfo();
   const stateDiv = document.getElementById("stateSwapper");
 
   // Only show the state swapper if there are multiple states.
-  if (stateIdPairs.length == 1) {
+  if (stateIdPairs.length == 1 || isRunningOnGitHubPages()) {
     stateDiv.style.display = "none";
     return;
   }
@@ -28,45 +39,86 @@ export async function updateStateUI() {
     newButton.style.textTransform = "capitalize";
     newButton.innerText = state.name;
     newButton.id = `state_${state.name}_${idStatePair.id}`;
-    newButton.addEventListener("click", () => setState(idStatePair.id));
+    newButton.addEventListener("click", () =>
+      setState(idStatePair.id, renderStates)
+    );
     listElement.appendChild(newButton);
     stateList.appendChild(listElement);
   });
 
   const currentState = await getCurrentStateInfo();
   const currentStateButton = document.getElementById(`state_dropdown_button`);
-
   currentStateButton.innerText = currentState.name;
 }
 
+export async function reloadDataForCurrentState(renderStates) {
+  const data = await getData();
+  const { hits, mcHits, markers, particles, detectorGeometry } = data;
+
+  renderStates.forEach((state) => {
+    state.updateData(
+      particles,
+      hits.filter((hit) => hit.position.dim === state.hitDim),
+      mcHits.filter((hit) => hit.position.dim === state.hitDim),
+      markers.filter((marker) => marker.position.dim === state.hitDim),
+      detectorGeometry
+    );
+    state.triggerEvent("fullUpdate");
+  });
+}
+
+/**
+ * Retrieves the current state information from the server.
+ *
+ * @returns {Promise} A Promise that resolves with the JSON state information.
+ */
 export function getCurrentStateInfo() {
   return fetch("/stateInfo").then((response) => response.json());
 }
 
+/**
+ * Fetches all state information.
+ *
+ * @returns {Promise} A Promise that resolves to a map of state IDs to state.
+ */
 export function getAllStateInfo() {
   return fetch("/allStateInfo").then((response) => response.json());
 }
 
-// Swa to the given state.
-export function setState(stateId) {
+/**
+ * Sets the state of the application to the given state ID.
+ *
+ * @param {number} stateId - The ID of the state to set.
+ * @param {Function} renderStates - Map of render states.
+ */
+export function setState(stateId, renderStates) {
   fetch(`/swap/id/${stateId}`);
-  updateStateUI();
+  updateStateUI(renderStates);
+  reloadDataForCurrentState(renderStates);
 }
 
-// Swap the data source to the next event / state.
-export function nextState() {
-  // TODO: Extend this to work with GitHub Gist URLs.
-  //       Probably need some form or list of URLs to iterate through.
-
+/**
+ * Fetches the next state and updates the UI accordingly.
+ *
+ * @param {Function} renderStates - Map of render states.
+ *
+ * @returns {void}
+ */
+export function nextState(renderStates) {
   fetch("/nextState");
-  updateStateUI();
+  updateStateUI(renderStates);
+  reloadDataForCurrentState(renderStates);
 }
 
-// Swap the data source to the previous event / state.
-export function previousState() {
-  // TODO: Extend this to work with GitHub Gist URLs.
-  //       Probably need some form or list of URLs to iterate through.
-
+/**
+ * Fetches the previous state and updates the UI accordingly.
+ *
+ * @param {Function} renderStates - Map of render states.
+ *
+ * @returns {void}
+ */
+export function previousState(renderStates) {
   fetch("/previousState");
-  updateStateUI();
+  updateStateUI(renderStates);
+  reloadDataForCurrentState(renderStates);
 }

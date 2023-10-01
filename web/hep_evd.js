@@ -117,8 +117,8 @@ document.setTheme = () => setTheme(renderStates);
 document.saveState = () => saveState(renderStates);
 document.loadState = () => loadState(renderStates);
 document.pickColourscheme = () => pickColourscheme(renderStates);
-document.nextState = () => nextState();
-document.prevState = () => previousState();
+document.nextState = () => nextState(renderStates);
+document.prevState = () => previousState(renderStates);
 window.addEventListener(
   "resize",
   () => {
@@ -132,4 +132,4 @@ document.resetView = () => {
   twoDRenderer.resetView();
 };
 fixThemeButton(true);
-updateStateUI();
+updateStateUI(renderStates);
