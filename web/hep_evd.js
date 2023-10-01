@@ -98,7 +98,7 @@ animate(renderer, renderStates, stats);
 // Now that we've animated once, hook up event listeners for any change.
 renderStates.forEach((state) => {
   state.addEventListener("fullUpdate", () => {
-    state.renderEvent();
+    state.renderEvent(true);
     animate(renderer, renderStates, stats);
   });
   state.addEventListener("change", () =>

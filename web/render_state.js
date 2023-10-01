@@ -249,7 +249,7 @@ export class RenderState {
    * Top level event render function, which will render all the different
    * hits of the event, picking between either the particles or the hits.
    */
-  renderEvent() {
+  renderEvent(fullRender = false) {
     // Update all the active arrays, and check if the
     // number of markers changes.
     const markerNum = this.activeMarkers.length;
@@ -265,7 +265,7 @@ export class RenderState {
 
     // Its possible that the marker list has changed, so we need to update
     // the marker UI as well.
-    if (markerNum !== newMarkerNum) {
+    if (markerNum !== newMarkerNum || fullRender) {
       this.renderMarkers();
     }
   }
