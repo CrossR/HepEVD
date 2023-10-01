@@ -48,6 +48,9 @@ using EventStates = std::map<int, EventState>;
 
 inline void to_json(json &j, const EventStates &states) {
     for (const auto &state : states) {
+        // Don't include empty states.
+        if (state.second.hits.size() == 0 && state.second.mcHits.size() == 0 && state.second.markers.size() == 0 && state.second.particles.size() == 0)
+            continue;
         j.push_back({{"id", state.first}, {"state", state.second}});
     }
 }

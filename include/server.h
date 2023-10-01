@@ -25,14 +25,12 @@ namespace HepEVD {
 class HepEVDServer {
   public:
     HepEVDServer() : geometry({}), eventStates() {}
-    HepEVDServer(const DetectorGeometry &geo = {}, const Hits &hits = {},
-                 const MCHits &mc = {})
+    HepEVDServer(const DetectorGeometry &geo = {}, const Hits &hits = {}, const MCHits &mc = {})
         : geometry(geo), eventStates() {
         currentState = 0;
         eventStates[currentState] = EventState("Initial", {}, hits, mc, {}, "");
     }
-    HepEVDServer(std::string name, const DetectorGeometry &geo = {}, const Hits &hits = {},
-                 const MCHits &mc = {})
+    HepEVDServer(std::string name, const DetectorGeometry &geo = {}, const Hits &hits = {}, const MCHits &mc = {})
         : geometry(geo), eventStates() {
         currentState = 0;
         eventStates[currentState] = EventState(name, {}, hits, mc, {}, "");
@@ -88,7 +86,7 @@ class HepEVDServer {
             this->currentState--;
     }
     int getNumberOfEventStates() { return this->eventStates.size(); }
-    void setName(const std::string name) { this->getState().name = name; }
+    void setName(const std::string name) { this->getState()->name = name; }
 
     // Start the event display server, blocking until exit is called by the
     // server.
@@ -98,64 +96,64 @@ class HepEVDServer {
     // TODO: Verify the information passed over.
     bool addHits(const Hits &inputHits) {
 
-        if (this->getState().hits.size() == 0) {
-            this->getState().hits = inputHits;
+        if (this->getState()->hits.size() == 0) {
+            this->getState()->hits = inputHits;
             return true;
         }
 
-        Hits newHits = this->getState().hits;
+        Hits newHits = this->getState()->hits;
         newHits.insert(newHits.end(), inputHits.begin(), inputHits.end());
-        this->getState().hits = newHits;
+        this->getState()->hits = newHits;
 
         return true;
     }
-    Hits getHits() { return this->getState().hits; }
+    Hits getHits() { return this->getState()->hits; }
 
     bool addMarkers(const Markers &inputMarkers) {
 
-        if (this->getState().markers.size() == 0) {
-            this->getState().markers = inputMarkers;
+        if (this->getState()->markers.size() == 0) {
+            this->getState()->markers = inputMarkers;
             return true;
         }
 
-        Markers newMarkers = this->getState().markers;
+        Markers newMarkers = this->getState()->markers;
         newMarkers.insert(newMarkers.end(), inputMarkers.begin(), inputMarkers.end());
-        this->getState().markers = newMarkers;
+        this->getState()->markers = newMarkers;
 
         return true;
     }
-    Markers getMarkers() { return this->getState().markers; }
+    Markers getMarkers() { return this->getState()->markers; }
 
     bool addMCHits(const MCHits &inputMCHits) {
-        if (this->getState().mcHits.size() == 0) {
-            this->getState().mcHits = inputMCHits;
+        if (this->getState()->mcHits.size() == 0) {
+            this->getState()->mcHits = inputMCHits;
             return true;
         }
 
-        MCHits newHits = this->getState().mcHits;
+        MCHits newHits = this->getState()->mcHits;
         newHits.insert(newHits.end(), inputMCHits.begin(), inputMCHits.end());
-        this->getState().mcHits = newHits;
+        this->getState()->mcHits = newHits;
 
         return true;
     }
-    MCHits getMCHits() { return this->getState().mcHits; }
+    MCHits getMCHits() { return this->getState()->mcHits; }
 
     bool addParticles(const Particles &inputParticles) {
-        if (this->getState().particles.size() == 0) {
-            this->getState().particles = inputParticles;
+        if (this->getState()->particles.size() == 0) {
+            this->getState()->particles = inputParticles;
             return true;
         }
 
-        Particles newParticles = this->getState().particles;
+        Particles newParticles = this->getState()->particles;
         newParticles.insert(newParticles.end(), inputParticles.begin(), inputParticles.end());
-        this->getState().particles = newParticles;
+        this->getState()->particles = newParticles;
 
         return true;
     }
-    Particles getParticles() { return this->getState().particles; }
+    Particles getParticles() { return this->getState()->particles; }
 
   private:
-    EventState getState() { return this->eventStates[this->currentState]; }
+    EventState *getState() { return &this->eventStates[this->currentState]; }
 
     httplib::Server server;
 
@@ -255,7 +253,7 @@ inline void HepEVDServer::startServer() {
         res.set_content(json(this->eventStates).dump(), "text/plain");
     });
     this->server.Get("/stateInfo", [&](const Request &, Response &res) {
-        res.set_content(json(this->getState()).dump(), "text/plain");
+        res.set_content(json(*this->getState()).dump(), "text/plain");
     });
     this->server.Get("/swap/id/:id", [&](const Request &req, Response &res) {
         try {
