@@ -7,17 +7,60 @@ export function isRunningOnGitHubPages() {
   return window.location.hostname.includes("github.io");
 }
 
+async function getDataWithProgress(url) {
+    const response = await fetch(url);
+
+    const reader = response.body.getReader();
+    const contentLength = +response.headers.get('Content-Length');
+    const loadingBar = document.getElementById("loading_bar_data");
+
+    if (contentLength && contentLength > 250) {
+      loadingBar.style.display = "block";
+    } else {
+      loadingBar.style.display = "none";
+    }
+
+    let receivedLength = 0; // received that many bytes at the moment
+    let chunks = []; // array of received binary chunks (comprises the body)
+    while(true) {
+      const {done, value} = await reader.read();
+
+      if (done) {
+        break;
+      }
+
+      chunks.push(value);
+      receivedLength += value.length;
+
+      const percent = Math.round((receivedLength / contentLength) * 100);
+
+      if (contentLength && contentLength > 250)
+        loadingBar.style.width = percent + "%";
+    }
+
+    let chunksAll = new Uint8Array(receivedLength); // (4.1)
+    let position = 0;
+    for(let chunk of chunks) {
+      chunksAll.set(chunk, position); // (4.2)
+      position += chunk.length;
+    }
+
+    let result = new TextDecoder("utf-8").decode(chunksAll);
+
+    if (contentLength && contentLength > 250)
+      loadingBar.style.display = "none";
+
+    return JSON.parse(result);
+}
+
 // Simple function to pull down all data from the server.
 async function loadServerData() {
-  const detectorGeometry = await fetch("geometry").then((response) =>
-    response.json()
-  );
-  const hits = await fetch("hits").then((response) => response.json());
-  const mcHits = await fetch("mcHits").then((response) => response.json());
-  const markers = await fetch("markers").then((response) => response.json());
-  const particles = await fetch("particles").then((response) =>
-    response.json()
-  );
+
+  const detectorGeometry = await getDataWithProgress("geometry");
+  const hits = await getDataWithProgress("hits");
+  const mcHits = await getDataWithProgress("mcHits");
+  const markers = await getDataWithProgress("markers");
+  const particles = await getDataWithProgress("particles");
 
   return {
     hits: hits,

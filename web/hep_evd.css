@@ -19,6 +19,14 @@ div {
   height: 2.1em;
 }
 
+.loading_bar_data {
+  position: absolute;
+  top: 2.1em;
+  width: 0%;
+  height: 3px;
+  background-color: #009fff;
+}
+
 .particle_menu {
   position: absolute;
   background: transparent;
