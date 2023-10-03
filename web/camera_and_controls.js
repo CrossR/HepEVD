@@ -62,7 +62,7 @@ export function fitSceneInCamera(
   camera,
   controls,
   detectorGeometry,
-  cameraType
+  cameraType,
 ) {
   const offset = 1.5; // Padding factor.
 
@@ -100,12 +100,12 @@ export function fitSceneInCamera(
       xOffset,
       yOffset,
       window.innerWidth,
-      window.innerHeight
+      window.innerHeight,
     );
     const zoomAmount =
       Math.min(
         window.innerWidth / (boundingBox.max.x - boundingBox.min.x),
-        window.innerHeight / (boundingBox.max.y - boundingBox.min.y)
+        window.innerHeight / (boundingBox.max.y - boundingBox.min.y),
       ) * 0.85;
     camera.zoom = zoomAmount;
   }

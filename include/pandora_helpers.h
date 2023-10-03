@@ -60,7 +60,8 @@ static void startServer(const bool verbose = false) {
     if (verbose) {
         std::cout << "HepEVD: There are " << hepEVDServer->getHits().size() << " hits registered!" << std::endl;
         std::cout << "HepEVD: There are " << hepEVDServer->getMCHits().size() << " MC hits registered!" << std::endl;
-        std::cout << "HepEVD: There are " << hepEVDServer->getParticles().size() << " particles registered!" << std::endl;
+        std::cout << "HepEVD: There are " << hepEVDServer->getParticles().size() << " particles registered!"
+                  << std::endl;
         std::cout << "HepEVD: There are " << hepEVDServer->getMarkers().size() << " markers registered!" << std::endl;
     }
 

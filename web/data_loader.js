@@ -8,54 +8,53 @@ export function isRunningOnGitHubPages() {
 }
 
 async function getDataWithProgress(url) {
-    const response = await fetch(url);
+  const response = await fetch(url);
 
-    const reader = response.body.getReader();
-    const contentLength = +response.headers.get('Content-Length');
-    const loadingBar = document.getElementById("loading_bar_data");
+  const reader = response.body.getReader();
+  const contentLength = +response.headers.get("Content-Length");
+  const loadingBar = document.getElementById("loading_bar_data");
 
-    if (contentLength && contentLength > 250) {
-      loadingBar.style.display = "block";
-    } else {
-      loadingBar.style.display = "none";
+  if (contentLength && contentLength > 250) {
+    loadingBar.style.display = "block";
+  } else {
+    loadingBar.style.display = "none";
+  }
+
+  let receivedLength = 0;
+  let chunks = [];
+
+  while (true) {
+    const { done, value } = await reader.read();
+
+    if (done) {
+      break;
     }
 
-    let receivedLength = 0; // received that many bytes at the moment
-    let chunks = []; // array of received binary chunks (comprises the body)
-    while(true) {
-      const {done, value} = await reader.read();
+    chunks.push(value);
+    receivedLength += value.length;
 
-      if (done) {
-        break;
-      }
-
-      chunks.push(value);
-      receivedLength += value.length;
-
-      const percent = Math.round((receivedLength / contentLength) * 100);
-
-      if (contentLength && contentLength > 250)
-        loadingBar.style.width = percent + "%";
-    }
-
-    let chunksAll = new Uint8Array(receivedLength); // (4.1)
-    let position = 0;
-    for(let chunk of chunks) {
-      chunksAll.set(chunk, position); // (4.2)
-      position += chunk.length;
-    }
-
-    let result = new TextDecoder("utf-8").decode(chunksAll);
+    const percent = Math.round((receivedLength / contentLength) * 100);
 
     if (contentLength && contentLength > 250)
-      loadingBar.style.display = "none";
+      loadingBar.style.width = percent + "%";
+  }
 
-    return JSON.parse(result);
+  let chunksAll = new Uint8Array(receivedLength);
+  let position = 0;
+  for (let chunk of chunks) {
+    chunksAll.set(chunk, position);
+    position += chunk.length;
+  }
+
+  let result = new TextDecoder("utf-8").decode(chunksAll);
+
+  if (contentLength && contentLength > 250) loadingBar.style.display = "none";
+
+  return JSON.parse(result);
 }
 
 // Simple function to pull down all data from the server.
 async function loadServerData() {
-
   const detectorGeometry = await getDataWithProgress("geometry");
   const hits = await getDataWithProgress("hits");
   const mcHits = await getDataWithProgress("mcHits");
@@ -104,7 +103,7 @@ async function loadExternalData(url) {
 export async function getData() {
   if (isRunningOnGitHubPages()) {
     return loadExternalData(
-      "https://gist.githubusercontent.com/CrossR/f0ab94b5d945d58742586a16eb10bcf4/raw/bcf98bf8e3c56834c2a0fabe5eaaf4d23c867f0b/testEvent.json"
+      "https://gist.githubusercontent.com/CrossR/f0ab94b5d945d58742586a16eb10bcf4/raw/bcf98bf8e3c56834c2a0fabe5eaaf4d23c867f0b/testEvent.json",
     );
   } else {
     return loadServerData();

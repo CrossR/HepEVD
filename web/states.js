@@ -9,12 +9,11 @@ import { getData, isRunningOnGitHubPages } from "./data_loader.js";
 
 /**
  * Updates the UI for the state swapper based on the current state.
- * 
+ *
  * @param {Function} renderStates - Map of render states.
  * @returns {Promise<void>} - A Promise that resolves when the UI has been updated.
  */
 export async function updateStateUI(renderStates) {
-
   const stateDiv = document.getElementById("stateSwapper");
 
   // Stop running straight away on GitHub pages.
@@ -26,7 +25,7 @@ export async function updateStateUI(renderStates) {
   const stateIdPairs = await getAllStateInfo();
 
   // Only show the state swapper if there are multiple states.
-  if (stateIdPairs.length == 1 ) {
+  if (stateIdPairs.length == 1) {
     stateDiv.style.display = "none";
     return;
   }
@@ -48,7 +47,7 @@ export async function updateStateUI(renderStates) {
     newButton.innerText = state.name;
     newButton.id = `state_${state.name}_${idStatePair.id}`;
     newButton.addEventListener("click", () =>
-      setState(idStatePair.id, renderStates)
+      setState(idStatePair.id, renderStates),
     );
     listElement.appendChild(newButton);
     stateList.appendChild(listElement);
@@ -71,7 +70,7 @@ export async function reloadDataForCurrentState(renderStates) {
       hits.filter((hit) => hit.position.dim === state.hitDim),
       mcHits.filter((hit) => hit.position.dim === state.hitDim),
       markers.filter((marker) => marker.position.dim === state.hitDim),
-      detectorGeometry
+      detectorGeometry,
     );
     state.setupUI(drawTarget);
     state.triggerEvent("fullUpdate");

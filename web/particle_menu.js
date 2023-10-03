@@ -21,7 +21,7 @@ function createMenuItem(
   particle,
   onClick,
   particlesMap,
-  parentElement
+  parentElement,
 ) {
   // Make the top level menu item for the particle.
   const menuItem = document.createElement("li");
@@ -110,7 +110,6 @@ function createMenuItem(
  * @returns {void}
  */
 export function createParticleMenu(hitDim, particlesMap, onClick) {
-
   // Get the menu, and clear it out to start.
   const menu = document.getElementById(`particle_menu_items_${hitDim}`);
   menu.innerHTML = "";
