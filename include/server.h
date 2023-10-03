@@ -3,7 +3,8 @@
 //
 // Once constructed and given a detector geometry and hits,
 // running the server will spin up the event display on
-// localhost::HEP_EVD_PORT.
+// localhost::HEP_EVD_PORT, or use an environment variable,
+// if present.
 
 #ifndef HEP_EVD_SERVER_H
 #define HEP_EVD_SERVER_H
@@ -289,8 +290,8 @@ inline void HepEVDServer::startServer() {
     const std::string includeFolder(headerFilePath.substr(0, headerFilePath.rfind("/")));
     this->server.set_mount_point("/", includeFolder + "/../web/");
 
-    std::cout << "Starting a server on http://localhost:" << HEP_EVD_PORT << "..." << std::endl;
-    this->server.listen("localhost", HEP_EVD_PORT);
+    std::cout << "Starting a server on http://localhost:" << EVD_PORT() << "..." << std::endl;
+    this->server.listen("localhost", EVD_PORT());
     std::cout << "Server closed, continuing..." << std::endl;
 }
 

@@ -73,7 +73,7 @@ static void saveState(const std::string stateName, const int minSize = 0, const 
 
     // Set the name of the current state...
     hepEVDServer->setName(stateName);
-    
+
     // If prior to adding the new state, the size of the current state was
     // greater than the minimum size, then start the server.
     //
@@ -218,7 +218,7 @@ static void addMCHits(const pandora::Algorithm &pAlgorithm, const pandora::CaloH
 }
 
 // Helper function, as the "GetAllCaloHits" function isn't in some older versions of Pandora.
-void getAllCaloHits(const pandora::ParticleFlowObject *pPfo, pandora::CaloHitList &caloHitList) {
+static void getAllCaloHits(const pandora::ParticleFlowObject *pPfo, pandora::CaloHitList &caloHitList) {
 
     std::vector<pandora::HitType> views({pandora::HitType::TPC_VIEW_U, pandora::HitType::TPC_VIEW_V,
                                          pandora::HitType::TPC_VIEW_W, pandora::HitType::TPC_3D});
@@ -229,7 +229,7 @@ void getAllCaloHits(const pandora::ParticleFlowObject *pPfo, pandora::CaloHitLis
     }
 }
 
-Particle *addParticle(const pandora::Pandora &pPandora, const pandora::ParticleFlowObject *pPfo) {
+static Particle *addParticle(const pandora::Pandora &pPandora, const pandora::ParticleFlowObject *pPfo) {
 
     Hits hits;
     pandora::CaloHitList caloHitList;

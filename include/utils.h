@@ -74,14 +74,14 @@ class Position {
 
 // General templated utility function to POST data to a URL.
 template <typename T> bool postData(const std::string &endPoint, const T &data) {
-    const std::string server = "localhost:" + std::to_string(HEP_EVD_PORT);
+    const std::string server = "localhost:" + std::to_string(EVD_PORT());
     httplib::Client cli(server);
     auto res = cli.Post(endPoint, json(data).dump(), "application/json");
     return res.error() == httplib::Error::Success;
 }
 
 // Very basic UUID generator.
-std::string getUUID() {
+static std::string getUUID() {
     std::random_device rd;
     std::mt19937 gen(rd());
     std::uniform_int_distribution<> dis(0, 15);
