@@ -563,7 +563,7 @@ export class RenderState {
   // Setup the UI, should only be called once.
   // Populate various drop downs and buttons based on the state,
   // and then reset the camera.
-  setupUI(renderTarget) {
+  setupUI(renderTarget, resetUI = false) {
     if (this.uiSetup) return;
 
     this.renderGeometry();
@@ -590,9 +590,11 @@ export class RenderState {
     );
 
     // Move the scene/camera around to best fit it in.
-    fitSceneInCamera(this.camera, this.controls, this.detGeoGroup, this.hitDim);
-    setupControls(this.hitDim, this.controls);
-    this.scene.add(this.camera);
+    if (! resetUI) {
+        fitSceneInCamera(this.camera, this.controls, this.detGeoGroup, this.hitDim);
+        setupControls(this.hitDim, this.controls);
+        this.scene.add(this.camera);
+    }
 
     // Setup the default button.
     toggleButton(this.hitDim, BUTTON_ID.All);

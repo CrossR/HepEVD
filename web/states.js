@@ -72,7 +72,7 @@ export async function reloadDataForCurrentState(renderStates) {
       markers.filter((marker) => marker.position.dim === state.hitDim),
       detectorGeometry,
     );
-    state.setupUI(drawTarget);
+    state.setupUI(drawTarget, true);
     state.triggerEvent("fullUpdate");
   });
 }
