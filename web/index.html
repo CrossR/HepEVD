@@ -61,7 +61,7 @@
       <div id="stateSwapper" class="flex justify-center flex-1 px-2">
         <!-- Divs for next button, previous button, and event number dropdown -->
         <button class="btn btn-primary btn-outline m-1" onclick="prevState()">
-          ⏮️ Prev
+          ⏮️ 
         </button>
         <div class="dropdown dropdown-hover">
           <label id="state_dropdown_button" class="btn btn-primary m-1">
@@ -71,15 +71,15 @@
             id="state_dropdown"
             class="dropdown-content z-[1] menu p-1 shadow bg-base-100 rounded-box"
           ></ul>
-          <button class="btn btn-primary btn-outline m-1" onclick="nextState()">
-            Next ⏭️
-          </button>
         </div>
+        <button class="btn btn-primary btn-outline m-1" onclick="nextState()">
+          ⏭️
+        </button>
       </div>
 
       <div class="flex justify-end flex-1 px-2">
         <div class="dropdown dropdown-hover">
-          <label class="btn btn-primary m-1"> ⚙️ Options </label>
+          <label class="btn btn-primary m-1" onclick="resetView()"> ⚙️ Options </label>
           <div
             class="dropdown-content z-[1] menu p-1 shadow bg-base-100 rounded-box"
           >
@@ -209,7 +209,7 @@
           <input
             type="text"
             id="input_modal_input"
-            class="input input-bordered join-item text-white"
+            class="input input-bordered join-item"
           />
           <button
             id="input_modal_save"
@@ -237,7 +237,7 @@
           <select
             type="text"
             id="select_modal_options"
-            class="select select-bordered join-item text-white"
+            class="select select-bordered join-item"
           ></select>
           <button
             id="select_modal_choose"
