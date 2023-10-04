@@ -89,6 +89,8 @@ static void saveState(const std::string stateName, const int minSize = 0, const 
     // Finally, start a new state and make sure it's the current one.
     hepEVDServer->addEventState();
     hepEVDServer->nextEventState();
+
+    caloHitToEvdHit.clear();
 }
 
 static void resetServer(const bool resetGeo = false) {
