@@ -53,7 +53,7 @@ static bool isServerInitialised(const bool quiet = false) {
     return isInit;
 }
 
-static void startServer(const bool verbose = false) {
+static void startServer(const bool verbose = false, const int startState = -1) {
     if (!isServerInitialised())
         return;
 
@@ -65,30 +65,43 @@ static void startServer(const bool verbose = false) {
         std::cout << "HepEVD: There are " << hepEVDServer->getMarkers().size() << " markers registered!" << std::endl;
     }
 
+    if (startState != -1)
+        hepEVDServer->swapEventState(startState);
+    else if (hepEVDServer->getState()->isEmpty())
+        hepEVDServer->previousEventState();
+
+
     hepEVDServer->startServer();
 }
 
-static void saveState(const std::string stateName, const int minSize = 0, const bool clearOnShow = true) {
+static void saveState(const std::string stateName, const int minSize = -1, const bool clearOnShow = true) {
+
     if (!isServerInitialised())
         return;
 
     // Set the name of the current state...
     hepEVDServer->setName(stateName);
+    bool shouldIncState = true;
 
     // If prior to adding the new state, the size of the current state was
     // greater than the minimum size, then start the server.
     //
     // This is useful so you can save states as you go, but start the
     // server after a certain number of states have been saved.
-    if (minSize != 0 && hepEVDServer->getNumberOfEventStates() > minSize) {
+    if (minSize != -1 && hepEVDServer->getNumberOfEventStates() >= minSize) {
         hepEVDServer->startServer();
-        hepEVDServer->resetServer();
-        return;
+
+        if (clearOnShow) {
+            hepEVDServer->resetServer();
+            shouldIncState = false;
+        }
     }
 
     // Finally, start a new state and make sure it's the current one.
-    hepEVDServer->addEventState();
-    hepEVDServer->nextEventState();
+    if (shouldIncState) {
+        hepEVDServer->addEventState();
+        hepEVDServer->nextEventState();
+    }
 
     caloHitToEvdHit.clear();
 }

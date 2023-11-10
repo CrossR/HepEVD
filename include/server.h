@@ -61,6 +61,7 @@ class HepEVDServer {
     // Add a new event state.
     // This will be used to store multiple events, or multiple
     // parts of the same event.
+    EventState *getState() { return &this->eventStates[this->currentState]; }
     void addEventState(std::string name = "", Particles particles = {}, Hits hits = {}, MCHits mcHits = {},
                        Markers markers = {}, std::string mcTruth = "") {
         this->eventStates[this->eventStates.size()] = EventState(name, particles, hits, mcHits, markers, mcTruth);
@@ -155,7 +156,6 @@ class HepEVDServer {
     Particles getParticles() { return this->getState()->particles; }
 
   private:
-    EventState *getState() { return &this->eventStates[this->currentState]; }
 
     httplib::Server server;
 

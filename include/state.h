@@ -6,7 +6,7 @@
 // different parts of the same event, or multiple events.
 
 #ifndef HEP_EVD_STATE_H
-#define HEP_EVD_SERVER_H
+#define HEP_EVD_STATE_H
 
 #include "config.h"
 #include "geometry.h"
@@ -28,6 +28,11 @@ class EventState {
     EventState(std::string name, Particles particles = {}, Hits hits = {}, MCHits mcHits = {}, Markers markers = {},
                std::string mcTruth = "")
         : name(name), particles(particles), hits(hits), mcHits(mcHits), markers(markers), mcTruth(mcTruth) {}
+
+
+    bool isEmpty() {
+        return name.size() == 0 && particles.empty() && hits.empty() && mcHits.empty() && markers.empty() && mcTruth.size() == 0;
+    }
 
     // Only need a to JSON method, as we don't need to read in the state.
     // We also only want to pass the metadata, not the actual data.
