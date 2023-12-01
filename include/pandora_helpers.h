@@ -17,6 +17,7 @@
 #include "Pandora/AlgorithmHeaders.h"
 
 // LArContent Includes
+#include "larpandoracontent/LArControlFlow/SlicingAlgorithm.h"
 #include "larpandoracontent/LArHelpers/LArGeometryHelper.h"
 #include "larpandoracontent/LArHelpers/LArMCParticleHelper.h"
 #include "larpandoracontent/LArHelpers/LArPfoHelper.h"
@@ -214,6 +215,29 @@ static void addClusterProperties(const pandora::Cluster *cluster, std::map<std::
         }
     }
 }
+
+static void addSlices(const lar_content::SlicingAlgorithm::SliceList *slices,
+                      std::string label = "") {
+
+    if (!isServerInitialised())
+        return;
+
+    for (unsigned int sliceNumber = 0; sliceNumber < slices->size(); ++sliceNumber) {
+        const auto slice = (*slices)[sliceNumber];
+
+        HepEVD::addHits(&slice.m_caloHitListU, label);
+        HepEVD::addHits(&slice.m_caloHitListV, label);
+        HepEVD::addHits(&slice.m_caloHitListW, label);
+
+        for (const auto &pCaloHit : slice.m_caloHitListU)
+            caloHitToEvdHit[pCaloHit]->addProperties({{"SliceNumber", sliceNumber}});
+        for (const auto &pCaloHit : slice.m_caloHitListV)
+            caloHitToEvdHit[pCaloHit]->addProperties({{"SliceNumber", sliceNumber}});
+        for (const auto &pCaloHit : slice.m_caloHitListW)
+            caloHitToEvdHit[pCaloHit]->addProperties({{"SliceNumber", sliceNumber}});
+    }
+}
+
 static void addMarkers(const Markers &markers) {
     if (!isServerInitialised())
         return;
@@ -275,15 +299,20 @@ static void getAllCaloHits(const pandora::ParticleFlowObject *pPfo, pandora::Cal
     }
 }
 
-static Particle *addParticle(const pandora::Pandora &pPandora, const pandora::ParticleFlowObject *pPfo) {
+static Particle *addParticle(
+    const pandora::Pandora &pPandora, const pandora::ParticleFlowObject *pPfo, std::string label = ""
+) {
 
     Hits hits;
     pandora::CaloHitList caloHitList;
-    getAllCaloHits(pPfo, caloHitList);
+    HepEVD::getAllCaloHits(pPfo, caloHitList);
 
     for (const pandora::CaloHit *const pCaloHit : caloHitList) {
         const auto pos = pCaloHit->GetPositionVector();
         Hit *hit = new Hit({pos.GetX(), pos.GetY(), pos.GetZ()}, pCaloHit->GetMipEquivalentEnergy());
+
+        if (label != "")
+            hit->setLabel(label);
 
         hit->setDim(getHepEVDHitDimension(pCaloHit->GetHitType()));
         hit->setHitType(getHepEVDHitType(pCaloHit->GetHitType()));
@@ -332,7 +361,7 @@ static Particle *addParticle(const pandora::Pandora &pPandora, const pandora::Pa
     return particle;
 }
 
-static void addPFOs(const pandora::Pandora &pPandora, const pandora::PfoList *pPfoList) {
+static void addPFOs(const pandora::Pandora &pPandora, const pandora::PfoList *pPfoList, std::string label = "") {
 
     if (!isServerInitialised())
         return;
@@ -345,9 +374,15 @@ static void addPFOs(const pandora::Pandora &pPandora, const pandora::PfoList *pP
 
     // First, get a HepEVD::Particle for every Pandora::PFO.
     for (const pandora::ParticleFlowObject *const pPfo : *pPfoList) {
-        const auto particle = addParticle(pPandora, pPfo);
+        const auto particle = addParticle(pPandora, pPfo, label);
         particles.push_back(particle);
         pfoToParticleMap.insert({pPfo, particle});
+
+        for (const auto childPfo : pPfo->GetDaughterPfoList()) {
+            const auto child = addParticle(pPandora, pPfo);
+            particles.push_back(child);
+            pfoToParticleMap.insert({childPfo, child});
+        }
     }
 
     // Now, we can add the parent/child relationships.
