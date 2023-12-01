@@ -169,6 +169,9 @@ class HepEVDServer {
 inline void HepEVDServer::startServer() {
     using namespace httplib;
 
+    if (std::getenv("HEPEVD_NO_DISPLAY"))
+        return;
+
     // Every endpoint has two parts:
     // 1. Get: Access the data.
     // 2. Post: Update the data.
