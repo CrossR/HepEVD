@@ -160,7 +160,7 @@ static HitType getHepEVDHitType(pandora::HitType pandoraHitType) {
     }
 }
 
-static void add2DHits(const pandora::CaloHitList *caloHits, std::string label = "") {
+static void addHits(const pandora::CaloHitList *caloHits, std::string label = "") {
 
     if (!isServerInitialised())
         return;
@@ -174,7 +174,7 @@ static void add2DHits(const pandora::CaloHitList *caloHits, std::string label = 
         if (label != "")
             hit->setLabel(label);
 
-        hit->setDim(HitDimension::TWO_D);
+        hit->setDim(getHepEVDHitDimension(pCaloHit->GetHitType()));
         hit->setHitType(getHepEVDHitType(pCaloHit->GetHitType()));
 
         hits.push_back(hit);
