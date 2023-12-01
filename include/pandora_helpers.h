@@ -196,7 +196,7 @@ static void addClusters(const pandora::ClusterList *clusters, std::string label 
         return;
 
     for (const pandora::Cluster *const pCluster : *clusters) {
-        CaloHitList clusterCaloHits;
+        pandora::CaloHitList clusterCaloHits;
         HepEVD::getAllCaloHits(pCluster, clusterCaloHits);
         HepEVD::addHits(&clusterCaloHits, label);
     }
