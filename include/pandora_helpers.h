@@ -184,6 +184,36 @@ static void addHits(const pandora::CaloHitList *caloHits, std::string label = ""
     hepEVDServer->addHits(hits);
 }
 
+static void getAllCaloHits(const pandora::Cluster *pCluster, pandora::CaloHitList &caloHitList) {
+    pCluster->GetOrderedCaloHitList().FillCaloHitList(caloHitList);
+    caloHitList.insert(caloHitList.end(), pCluster->GetIsolatedCaloHitList().begin(), pCluster->GetIsolatedCaloHitList().end());
+}
+
+static void addClusters(const pandora::ClusterList *clusters, std::string label = "") {
+
+    if (!isServerInitialised())
+        return;
+
+    for (const pandora::Cluster *const pCluster : *clusters) {
+        CaloHitList clusterCaloHits;
+        HepEVD::getAllCaloHits(pCluster, clusterCaloHits);
+        HepEVD::addHits(&clusterCaloHits, label);
+    }
+}
+
+static void addClusterProperties(const pandora::Cluster *cluster, std::map<std::string, double> props) {
+
+    if (!isServerInitialised())
+        return;
+
+    for (const auto &orderedList : cluster->GetOrderedCaloHitList()) {
+        for (const auto caloHit : *(orderedList.second)) {
+            if (caloHitToEvdHit.count(caloHit) == 0) continue;
+
+            caloHitToEvdHit[caloHit]->addProperties(props);
+        }
+    }
+}
 static void addMarkers(const Markers &markers) {
     if (!isServerInitialised())
         return;
