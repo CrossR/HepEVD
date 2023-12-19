@@ -194,6 +194,7 @@ export class RenderState {
 
     if (hits.length === 0 && this.particles.length > 0) {
       hits = this.particles.flatMap((particle) => particle.hits);
+      this.hits = hits;
     }
 
     boxVolumes.forEach((box) =>
