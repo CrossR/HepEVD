@@ -8,6 +8,7 @@ import { LineGeometry } from "three/addons/lines/LineGeometry.js";
 
 import { threeDGeoMat, twoDXMat, twoDYMat } from "./constants.js";
 import { getHitBoundaries } from "./helpers.js";
+import { draw2DScaleBar } from "./markers.js";
 
 /**
  * Draws a box based on the hit type.
@@ -83,6 +84,7 @@ export function animate(renderer, states, stats) {
     renderer.render(state.scene, state.camera);
     state.scene.matrixAutoUpdate = false;
     state.scene.autoUpdate = false;
+    draw2DScaleBar(state);
   });
   stats.update();
 }

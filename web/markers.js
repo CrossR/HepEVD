@@ -106,12 +106,12 @@ export function drawRings(rings, group) {
 
   bufferGeometry.setAttribute(
     "position",
-    new THREE.Float32BufferAttribute(vertices, 3),
+    new THREE.Float32BufferAttribute(vertices, 3)
   );
   bufferGeometry.setIndex(indicies);
   bufferGeometry.setAttribute(
     "color",
-    new THREE.Float32BufferAttribute(colors, 4),
+    new THREE.Float32BufferAttribute(colors, 4)
   );
 
   const ringMaterial = new THREE.MeshBasicMaterial({
@@ -154,7 +154,7 @@ export function drawPoints(points, group) {
   const pointMesh = new THREE.InstancedMesh(
     pointGeo,
     materialPoint,
-    points.length,
+    points.length
   );
 
   const lut = new Lut("cooltowarm", 512);
@@ -190,46 +190,52 @@ export function drawPoints(points, group) {
   group.add(pointMesh);
 }
 
-export function testScaleBar(hits2D, camera) {
+/**
+ * Draws a 2D scale bar on the screen based on the provided hits and camera.
+ *
+ * @param {RenderState} state - The render state to update
+ */
+export function draw2DScaleBar(state) {
+  const scaleBar = document.getElementById("scale_bar");
+  const scaleBarText = document.getElementById("scale_bar_text");
+
+  // Don't bother for 3D.
+  if (state.name !== "2D" && state.visible) {
+    scaleBar.style.visibility = "hidden";
+    scaleBarText.style.visibility = "hidden";
+    return;
+  } else if (state.name !== "2D") {
+    return;
+  }
+
   // First, get the X width of the detector.
-  const xBoundary = getHitBoundaries(hits2D, "x");
+  const xBoundary = getHitBoundaries(state.hits, "x");
   const xWidth = xBoundary.max - xBoundary.min;
   const xStart = 0 - xWidth / 2;
   const xEnd = xWidth / 2;
 
   // Project these points into the camera.
-  const xStartVector = new THREE.Vector3(xStart, 0, 0).project(camera);
-  const xEndVector = new THREE.Vector3(xEnd, 0, 0).project(camera);
+  const xStartVector = new THREE.Vector3(xStart, 0, 0).project(state.camera);
+  const xEndVector = new THREE.Vector3(xEnd, 0, 0).project(state.camera);
 
   // Scale the points to the screen size.
-  const xStartScaled = (xStartVector.x + 1) / 2 * window.innerWidth;
-  const xEndScaled = (xEndVector.x + 1) / 2 * window.innerWidth;
+  const xStartScaled = ((xStartVector.x + 1) / 2) * window.innerWidth;
+  const xEndScaled = ((xEndVector.x + 1) / 2) * window.innerWidth;
 
-  // Now, make a line that covers 50cm.
-  // We know the start and end pixels and the width of the detector.
-  // So, we can work out the scale factor.
+  // Now, make a line that covers Xcm.
   const pixelPerCm = (xEndScaled - xStartScaled) / xWidth;
   const targetSizes = [1, 2, 5, 10, 20, 50, 100];
-  const targetSize = targetSizes.find((size) => (size * pixelPerCm > 100));
-
-  // If none of the target sizes are big enough, just use 100cm.
-  const pixelsRequired = targetSize ? targetSize * pixelPerCm : 100 * pixelPerCm;
-
-  console.log("Scale bar test results:");
-  console.log("Pixel per cm: " + pixelPerCm);
-  console.log("Target size: " + targetSize);
-  console.log("Pixels required: " + pixelsRequired);  
-  console.log("X width: " + xWidth);
+  const targetSize = targetSizes.find((size) => size * pixelPerCm > 100);
+  const pixelsRequired = targetSize
+    ? targetSize * pixelPerCm
+    : 100 * pixelPerCm;
 
   // We know the pixels required, so we can draw a line.
-  const scaleBar = document.getElementById("scale_bar");
   scaleBar.style.visibility = "visible";
-  scaleBar.style.width = pixelsRequired + "px";
-
-  const scaleBarText = document.getElementById("scale_bar_text");
   scaleBarText.style.visibility = "visible";
+  scaleBar.style.width = pixelsRequired + "px";
   scaleBarText.innerHTML = targetSize ? targetSize + "cm" : "100cm";
-   
+
   // Finally, set the parent div to be draggable.
   const scaleBarContainer = document.getElementById("scale_bar_div");
   dragElement(scaleBarContainer);
