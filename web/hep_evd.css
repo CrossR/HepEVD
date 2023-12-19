@@ -73,6 +73,23 @@ div {
   visibility: block;
 }
 
+#scale_bar_div {
+  position: absolute;
+  height: 5em;
+  bottom: 5%;
+  left: 2%;
+}
+
+#scale_bar {
+  width: 20em;
+  height: 0.5em;
+  visibility: hidden;
+}
+
+#scale_bar_text {
+  visibility: hidden;
+}
+
 .quit_message {
   position: absolute;
   top: 50%;

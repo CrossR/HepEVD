@@ -19,6 +19,7 @@ import {
 } from "./ui.js";
 import { getData } from "./data_loader.js";
 import { nextState, previousState, updateStateUI } from "./states.js";
+import { testScaleBar } from "./markers.js";
 
 // Do some initial threejs setup...
 const threeDCamera = new THREE.PerspectiveCamera(
@@ -100,13 +101,16 @@ renderStates.forEach((state) => {
   state.addEventListener("fullUpdate", () => {
     state.renderEvent(true);
     animate(renderer, renderStates, stats);
+    testScaleBar(state.hits, state.camera);
   });
-  state.addEventListener("change", () =>
-    animate(renderer, renderStates, stats),
-  );
-  state.controls.addEventListener("change", () =>
-    animate(renderer, renderStates, stats),
-  );
+  state.addEventListener("change", () => {
+    animate(renderer, renderStates, stats);
+    testScaleBar(state.hits, state.camera);
+  });
+  state.controls.addEventListener("change", () => {
+    animate(renderer, renderStates, stats);
+    testScaleBar(state.hits, state.camera);
+  });
 });
 
 // Final tidy ups.

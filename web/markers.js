@@ -6,6 +6,8 @@ import * as THREE from "three";
 import { Lut } from "three/addons/math/Lut.js";
 
 import { MARKER_CONFIG } from "./constants.js";
+import { getHitBoundaries } from "./helpers.js";
+import { dragElement } from "./ui.js";
 
 /**
  * Draws rings using the provided data and adds them to the specified group.
@@ -186,4 +188,49 @@ export function drawPoints(points, group) {
   pointMesh.instanceColor.needsUpdate = true;
 
   group.add(pointMesh);
+}
+
+export function testScaleBar(hits2D, camera) {
+  // First, get the X width of the detector.
+  const xBoundary = getHitBoundaries(hits2D, "x");
+  const xWidth = xBoundary.max - xBoundary.min;
+  const xStart = 0 - xWidth / 2;
+  const xEnd = xWidth / 2;
+
+  // Project these points into the camera.
+  const xStartVector = new THREE.Vector3(xStart, 0, 0).project(camera);
+  const xEndVector = new THREE.Vector3(xEnd, 0, 0).project(camera);
+
+  // Scale the points to the screen size.
+  const xStartScaled = (xStartVector.x + 1) / 2 * window.innerWidth;
+  const xEndScaled = (xEndVector.x + 1) / 2 * window.innerWidth;
+
+  // Now, make a line that covers 50cm.
+  // We know the start and end pixels and the width of the detector.
+  // So, we can work out the scale factor.
+  const pixelPerCm = (xEndScaled - xStartScaled) / xWidth;
+  const targetSizes = [1, 2, 5, 10, 20, 50, 100];
+  const targetSize = targetSizes.find((size) => (size * pixelPerCm > 100));
+
+  // If none of the target sizes are big enough, just use 100cm.
+  const pixelsRequired = targetSize ? targetSize * pixelPerCm : 100 * pixelPerCm;
+
+  console.log("Scale bar test results:");
+  console.log("Pixel per cm: " + pixelPerCm);
+  console.log("Target size: " + targetSize);
+  console.log("Pixels required: " + pixelsRequired);  
+  console.log("X width: " + xWidth);
+
+  // We know the pixels required, so we can draw a line.
+  const scaleBar = document.getElementById("scale_bar");
+  scaleBar.style.visibility = "visible";
+  scaleBar.style.width = pixelsRequired + "px";
+
+  const scaleBarText = document.getElementById("scale_bar_text");
+  scaleBarText.style.visibility = "visible";
+  scaleBarText.innerHTML = targetSize ? targetSize + "cm" : "100cm";
+   
+  // Finally, set the parent div to be draggable.
+  const scaleBarContainer = document.getElementById("scale_bar_div");
+  dragElement(scaleBarContainer);
 }

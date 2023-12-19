@@ -713,3 +713,35 @@ export function pickColourscheme(states) {
     { once: true },
   );
 }
+
+export function dragElement(element) {
+
+  console.log(element);
+  let startX = 0, startY = 0, endX = 0, endY = 0;
+  element.onmousedown = dragMouseDown;
+  
+  function dragMouseDown(e) {
+    e = e || window.event;
+    e.preventDefault();
+    startX = e.clientX;
+    startY = e.clientY;
+    document.onmouseup = closeDragElement;
+    document.onmousemove = elementDrag;
+  }
+
+  function elementDrag(e) {
+    e = e || window.event;
+    e.preventDefault();
+    endX = startX - e.clientX;
+    endY = startY - e.clientY;
+    startX = e.clientX;
+    startY = e.clientY;
+    element.style.top = (element.offsetTop - endY) + "px";
+    element.style.left = (element.offsetLeft - endX) + "px";
+  }
+
+  function closeDragElement() {
+    document.onmouseup = null;
+    document.onmousemove = null;
+  }
+}
