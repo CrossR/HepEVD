@@ -156,7 +156,6 @@ class HepEVDServer {
     Particles getParticles() { return this->getState()->particles; }
 
   private:
-
     httplib::Server server;
 
     DetectorGeometry geometry;

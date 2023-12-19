@@ -71,7 +71,6 @@ static void startServer(const bool verbose = false, const int startState = -1) {
     else if (hepEVDServer->getState()->isEmpty())
         hepEVDServer->previousEventState();
 
-
     hepEVDServer->startServer();
 }
 
@@ -187,7 +186,8 @@ static void addHits(const pandora::CaloHitList *caloHits, std::string label = ""
 
 static void getAllCaloHits(const pandora::Cluster *pCluster, pandora::CaloHitList &caloHitList) {
     pCluster->GetOrderedCaloHitList().FillCaloHitList(caloHitList);
-    caloHitList.insert(caloHitList.end(), pCluster->GetIsolatedCaloHitList().begin(), pCluster->GetIsolatedCaloHitList().end());
+    caloHitList.insert(caloHitList.end(), pCluster->GetIsolatedCaloHitList().begin(),
+                       pCluster->GetIsolatedCaloHitList().end());
 }
 
 static void addClusters(const pandora::ClusterList *clusters, std::string label = "") {
@@ -209,15 +209,15 @@ static void addClusterProperties(const pandora::Cluster *cluster, std::map<std::
 
     for (const auto &orderedList : cluster->GetOrderedCaloHitList()) {
         for (const auto caloHit : *(orderedList.second)) {
-            if (caloHitToEvdHit.count(caloHit) == 0) continue;
+            if (caloHitToEvdHit.count(caloHit) == 0)
+                continue;
 
             caloHitToEvdHit[caloHit]->addProperties(props);
         }
     }
 }
 
-static void addSlices(const lar_content::SlicingAlgorithm::SliceList *slices,
-                      std::string label = "") {
+static void addSlices(const lar_content::SlicingAlgorithm::SliceList *slices, std::string label = "") {
 
     if (!isServerInitialised())
         return;
@@ -299,9 +299,8 @@ static void getAllCaloHits(const pandora::ParticleFlowObject *pPfo, pandora::Cal
     }
 }
 
-static Particle *addParticle(
-    const pandora::Pandora &pPandora, const pandora::ParticleFlowObject *pPfo, std::string label = ""
-) {
+static Particle *addParticle(const pandora::Pandora &pPandora, const pandora::ParticleFlowObject *pPfo,
+                             std::string label = "") {
 
     Hits hits;
     pandora::CaloHitList caloHitList;
