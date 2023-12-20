@@ -37,7 +37,7 @@ export class RenderState {
     hits,
     mcHits,
     markers,
-    geometry,
+    geometry
   ) {
     // Basic, crucial information...
     this.name = name;
@@ -53,6 +53,9 @@ export class RenderState {
     this.hitGroup = new THREE.Group();
     this.mcHitGroup = new THREE.Group();
     this.markerGroup = new THREE.Group();
+
+    // Initial setup of the groups...
+    this.mcHitGroup.visible = false;
 
     // Setup the data...
     this.updateData(particles, hits, mcHits, markers, geometry);
@@ -124,10 +127,10 @@ export class RenderState {
     this.particles = particles.flatMap((particle) => {
       const newParticle = { ...particle };
       newParticle.hits = particle.hits.filter(
-        (hit) => hit.position.dim === this.hitDim,
+        (hit) => hit.position.dim === this.hitDim
       );
       newParticle.vertices = particle.vertices.filter(
-        (vertex) => vertex.position.dim === this.hitDim,
+        (vertex) => vertex.position.dim === this.hitDim
       );
 
       // Ignore particles with no hits, but also
@@ -185,7 +188,7 @@ export class RenderState {
 
     // For now, just render the box geometry and nothing else.
     const boxVolumes = this.detectorGeometry.volumes.filter(
-      (volume) => volume.volumeType === "box",
+      (volume) => volume.volumeType === "box"
     );
 
     // Since the 2D renderer needs the hits to calculate the box, we need to
@@ -198,7 +201,7 @@ export class RenderState {
     }
 
     boxVolumes.forEach((box) =>
-      drawBox(this.hitDim, this.detGeoGroup, hits, box),
+      drawBox(this.hitDim, this.detGeoGroup, hits, box)
     );
 
     this.detGeoGroup.matrixAutoUpdate = false;
@@ -219,7 +222,7 @@ export class RenderState {
       this.activeParticles,
       this.activeHitProps,
       this.hitProperties,
-      HIT_CONFIG[this.hitDim],
+      HIT_CONFIG[this.hitDim]
     );
 
     this.hitGroup.matrixAutoUpdate = false;
@@ -238,7 +241,7 @@ export class RenderState {
       this.hitGroup,
       this.activeHits,
       this.activeHitColours,
-      HIT_CONFIG[this.hitDim],
+      HIT_CONFIG[this.hitDim]
     );
 
     this.hitGroup.matrixAutoUpdate = false;
@@ -269,6 +272,11 @@ export class RenderState {
     if (markerNum !== newMarkerNum || fullRender) {
       this.renderMarkers();
     }
+
+    // Similarly, if the MC hits are active, we need to render them out.
+    if (this.mcHitGroup.visible) {
+      this.renderMCHits();
+    }
   }
 
   /**
@@ -284,7 +292,7 @@ export class RenderState {
       this.mcHitGroup,
       this.activeMC,
       mcColours,
-      HIT_CONFIG[this.hitDim],
+      HIT_CONFIG[this.hitDim]
     );
 
     this.mcHitGroup.matrixAutoUpdate = false;
@@ -301,11 +309,11 @@ export class RenderState {
 
     drawRings(
       this.activeMarkers.filter((marker) => marker.markerType === "Ring"),
-      this.markerGroup,
+      this.markerGroup
     );
     drawPoints(
       this.activeMarkers.filter((marker) => marker.markerType === "Point"),
-      this.markerGroup,
+      this.markerGroup
     );
 
     this.markerGroup.matrixAutoUpdate = false;
@@ -460,6 +468,11 @@ export class RenderState {
     this.#updateMarkers();
   }
 
+  tempUpdate() {
+    this.#updateHitArrays();
+    this.#updateMarkers();
+  }
+
   // What to do if the hit property option changes:
   //  - Update the active hit properties list.
   //  - We need to update any UI around them.
@@ -498,6 +511,9 @@ export class RenderState {
 
   // Similar to the property change, update the hit type list.
   onHitTypeChange(hitType) {
+
+    console.log(hitType)
+
     // Add or remove the toggled class as needed...
     if (this.activeHitTypes.has(hitType)) {
       this.activeHitTypes.delete(hitType);
@@ -572,29 +588,34 @@ export class RenderState {
 
     // Fill in any dropdown entries, or hit class toggles.
     populateDropdown(this.hitDim, this.hitProperties, (prop) =>
-      this.onHitPropertyChange(prop),
+      this.onHitPropertyChange(prop)
     );
     populateTypeToggle(this.hitDim, this.hitTypes, (hitType) =>
-      this.onHitTypeChange(hitType),
+      this.onHitTypeChange(hitType)
     );
     populateMarkerToggle(
       this.hitDim,
       this.markers,
       this.particles,
-      (markerType) => this.onMarkerChange(markerType),
+      (markerType) => this.onMarkerChange(markerType)
     );
     enableMCToggle(this.hitDim, this.mcHits, () => this.onMCToggle());
     enableInteractionTypeToggle(
       this.hitDim,
       this.particles,
-      (interactionType) => this.onInteractionTypeChange(interactionType),
+      (interactionType) => this.onInteractionTypeChange(interactionType)
     );
 
     // Move the scene/camera around to best fit it in.
-    if (! resetUI) {
-        fitSceneInCamera(this.camera, this.controls, this.detGeoGroup, this.hitDim);
-        setupControls(this.hitDim, this.controls);
-        this.scene.add(this.camera);
+    if (!resetUI) {
+      fitSceneInCamera(
+        this.camera,
+        this.controls,
+        this.detGeoGroup,
+        this.hitDim
+      );
+      setupControls(this.hitDim, this.controls);
+      this.scene.add(this.camera);
     }
 
     // Setup the default button.
