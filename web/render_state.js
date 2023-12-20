@@ -232,13 +232,15 @@ export class RenderState {
    * Renders the hits for the current state, based on the active hit types and properties.
    * Clears the hit group and then draws the hits with the active hit colours.
    */
-  renderHits() {
-    this.hitGroup.clear();
+  renderHits(hits = this.activeHits, colours = this.activeHitColours, clear = true) {
+
+    if (clear)
+      this.hitGroup.clear();
 
     drawHits(
       this.hitGroup,
-      this.activeHits,
-      this.activeHitColours,
+      hits,
+      colours,
       HIT_CONFIG[this.hitDim]
     );
 

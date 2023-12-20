@@ -179,3 +179,57 @@ canvas.addEventListener("dblclick", (event) => {
     }
   });
 });
+
+canvas.addEventListener("click", (event) => {
+
+  // Only handle single clicks.
+  if (event.detail !== 1) return;
+
+  const mouse = new THREE.Vector2();
+  mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+  mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+  renderStates.forEach((state) => {
+    if (!state.visible) {
+      return;
+    }
+
+    const raycaster = new THREE.Raycaster();
+    raycaster.setFromCamera(mouse, state.camera);
+    const intersects = raycaster.intersectObjects(state.scene.children, true);
+    if (intersects.length > 0) {
+      const intersectObject = intersects[0];
+
+      if (intersectObject.object.type !== "Mesh") {
+        return;
+      }
+
+      const hitId = intersectObject.instanceId;
+      const activeHit = state.activeHits[hitId];
+      let activeParticle;
+
+      try {
+        const activeParticleId = state.hitToParticleMap.get(activeHit.id);
+        activeParticle = state.particleMap.get(activeParticleId);
+        console.log(`Hit ${activeHit.id} is part of particle ${activeParticleId}.`)
+      } catch {
+        return;
+      }
+
+      console.log(activeParticle);
+      const selectedParticleHits = activeParticle.hits;
+      if (activeParticle.childIDs.length > 0) {
+        activeParticle.childIDs.forEach((childId) => {
+          const child = state.particleMap.get(childId);
+          selectedParticleHits.push(...child.hits);
+        });
+      }
+
+      const hitColours = selectedParticleHits.map((_) => "red");
+      state.renderHits(selectedParticleHits, hitColours, false);
+    } else {
+      state.ignoredParticles = new Set();
+      state.triggerEvent("fullUpdate");
+    }
+  });
+});
