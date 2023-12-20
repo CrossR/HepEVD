@@ -1,6 +1,8 @@
-# HEP EVD
+# HEPEvd - ![Demo](https://img.shields.io/badge/Demo_Build-GitHub_Pages-blue)
 
 A header-only web-based event display for particle physics events.
+
+![image](https://github.com/CrossR/hep_evd/assets/10038688/badd2e8d-9a88-492f-8f1e-b41094af7e72)
 
 ## Code Layout
 
