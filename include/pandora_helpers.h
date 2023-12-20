@@ -245,12 +245,19 @@ static void addMarkers(const Markers &markers) {
     hepEVDServer->addMarkers(markers);
 }
 
-static void addMCHits(const pandora::Algorithm &pAlgorithm, const pandora::CaloHitList *pCaloHitList) {
+static void showCurrentMC(const pandora::Algorithm &pAlgorithm) {
 
     if (!isServerInitialised())
         return;
 
     MCHits mcHits;
+
+    const pandora::CaloHitList *pCaloHitList(nullptr);
+    try {
+        PandoraContentApi::GetCurrentList(pAlgorithm, pCaloHitList);
+    } catch (pandora::StatusCodeException &) {
+        return;
+    }
 
     const pandora::MCParticleList *pMCParticleList(nullptr);
     try {
