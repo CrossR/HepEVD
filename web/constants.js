@@ -78,10 +78,17 @@ export const materialHit = new THREE.MeshBasicMaterial({
 //==============================================================================
 
 export const PDG_TO_COLOUR = {
-  11: "skyblue", // Elecron : Light Blue
-  13: "green", // Muon : Green
-  211: "orange", // Pion : Orange
-  2212: "red", // Proton : Red
+  11: "skyblue", // e-
+  13: "palegreen", // mu-
+  22: "yellow", // Photon
+  211: "coral", // Pi+
+  2212: "crimson", // Proton
+
+  // Vaguely inverse of the above
+  "-11": "darkblue", // e+
+  "-13": "darkgreen", // mu+
+  "-211": "darkorange", // Pi-
+  "-2212": "darkred", // Anti proton
 };
 
 export const INTERACTION_TYPE_SCORE = {
