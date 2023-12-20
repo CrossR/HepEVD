@@ -6,8 +6,10 @@ import * as THREE from "three";
 import Stats from "three/addons/libs/stats.module.js";
 
 import { THEME } from "./constants.js";
+import { getData } from "./data_loader.js";
 import { RenderState } from "./render_state.js";
 import { animate, onWindowResize } from "./rendering.js";
+import { nextState, previousState, updateStateUI } from "./states.js";
 import {
   fixThemeButton,
   loadState,
@@ -17,9 +19,6 @@ import {
   screenshotEvd,
   setTheme,
 } from "./ui.js";
-import { getData } from "./data_loader.js";
-import { nextState, previousState, updateStateUI } from "./states.js";
-import { draw2DScaleBar } from "./markers.js";
 
 // Do some initial threejs setup...
 const threeDCamera = new THREE.PerspectiveCamera(

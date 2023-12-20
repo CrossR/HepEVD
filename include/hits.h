@@ -25,9 +25,9 @@ namespace HepEVD {
 
 class Hit {
   public:
-    Hit() : position(), energy(0.0) {}
-    Hit(const Position &pos, double e = 0) : position(pos), energy(e) {}
-    Hit(const PosArray &pos, double e = 0) : position(pos), energy(e) {}
+    Hit() : id(getUUID()), position(), energy(0.0) {}
+    Hit(const Position &pos, double e = 0) : id(getUUID()), position(pos), energy(e) {}
+    Hit(const PosArray &pos, double e = 0) : id(getUUID()), position(pos), energy(e) {}
 
     void setDim(const HitDimension &dim) { this->position.setDim(dim); }
     void setHitType(const HitType &hitType) { this->position.setHitType(hitType); }
@@ -45,9 +45,10 @@ class Hit {
         return;
     }
 
-    NLOHMANN_DEFINE_TYPE_INTRUSIVE(Hit, position, energy, label, properties);
+    NLOHMANN_DEFINE_TYPE_INTRUSIVE(Hit, id, position, energy, label, properties);
 
   protected:
+    std::string id;
     Position position;
     double energy;
     std::string label;

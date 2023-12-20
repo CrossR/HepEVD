@@ -12,6 +12,7 @@ import { LineMaterial } from "three/addons/lines/LineMaterial.js";
 export const BUTTON_ID = {
   None: "None",
   All: "All",
+  Ignored: ["id"]
 };
 
 export const THEME = {

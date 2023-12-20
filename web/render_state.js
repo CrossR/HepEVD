@@ -144,8 +144,12 @@ export class RenderState {
     });
 
     this.particleMap = new Map();
+    this.hitToParticleMap = new Map();
     this.particles.forEach((particle) => {
       this.particleMap.set(particle.id, particle);
+      particle.hits.forEach((hit) => {
+        this.hitToParticleMap.set(hit.id, particle.id);
+      });
     });
 
     // The generated property lists...
@@ -191,14 +195,8 @@ export class RenderState {
       (volume) => volume.volumeType === "box"
     );
 
-    // Since the 2D renderer needs the hits to calculate the box, we need to
-    // check if there are any hits, and if not, use the particles instead.
-    let hits = this.hits;
-
-    if (hits.length === 0 && this.particles.length > 0) {
-      hits = this.particles.flatMap((particle) => particle.hits);
-      this.hits = hits;
-    }
+    // Use either the hits or active hits (based on the particles)
+    const hits = this.hits.length > 0 ? this.hits : this.activeHits;
 
     boxVolumes.forEach((box) =>
       drawBox(this.hitDim, this.detGeoGroup, hits, box)
@@ -326,7 +324,8 @@ export class RenderState {
    * type and properties.
    */
   #updateHitArrays() {
-    const newHits = new Set();
+    console.log("Updating hit arrays")
+    let newHits = new Set();
     const newMCHits = [];
     const newHitColours = [];
 
@@ -399,6 +398,11 @@ export class RenderState {
       return newParticle;
     });
 
+    if (newHits.size === 0 && newParticles.length > 0) {
+      const hits = newParticles.flatMap((particle) => particle.hits);
+      newHits = hits;
+    }
+
     this.activeHits = [...newHits];
     this.activeHitColours = newHitColours;
     this.activeMC = newMCHits;
@@ -464,11 +468,6 @@ export class RenderState {
    * Run all the update functions for the active arrays.
    */
   #updateActiveArrays() {
-    this.#updateHitArrays();
-    this.#updateMarkers();
-  }
-
-  tempUpdate() {
     this.#updateHitArrays();
     this.#updateMarkers();
   }

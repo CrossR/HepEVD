@@ -30,7 +30,10 @@ export function populateDropdown(hitDim, hitPropMap, onClick = (_) => {}) {
   if (hitPropMap.size != 0) entries.add(BUTTON_ID.All);
 
   hitPropMap.forEach((properties, _) => {
-    properties.forEach((_, propString) => entries.add(propString));
+    properties.forEach((_, propString) => {
+      if (BUTTON_ID.Ignored.includes(propString)) return;
+      entries.add(propString)
+    });
   });
 
   entries.forEach((entry) => {

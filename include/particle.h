@@ -26,7 +26,7 @@ NLOHMANN_JSON_SERIALIZE_ENUM(InteractionType,
 class Particle {
   public:
     Particle() : hits({}), label(""), id(""), parentID(""), childIDs({}) {}
-    Particle(const Hits &hits, const std::string id = 0, const std::string &label = "")
+    Particle(const Hits &hits, const std::string id = "", const std::string &label = "")
         : hits(hits), label(label), id(id), parentID(""), childIDs({}) {}
 
     double getEnergy() const {
