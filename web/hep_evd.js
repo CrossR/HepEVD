@@ -133,3 +133,49 @@ document.resetView = () => {
 };
 fixThemeButton(true);
 updateStateUI(renderStates);
+
+// Hook up test on mouse move.
+const canvas = renderer.domElement;
+canvas.addEventListener("dblclick", (event) => {
+  const mouse = new THREE.Vector2();
+  mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+  mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+  renderStates.forEach((state) => {
+    if (!state.visible) {
+      return;
+    }
+
+    const raycaster = new THREE.Raycaster();
+    raycaster.setFromCamera(mouse, state.camera);
+    const intersects = raycaster.intersectObjects(state.scene.children, true);
+    if (intersects.length > 0) {
+      const intersectObject = intersects[0];
+
+      if (intersectObject.object.type !== "Mesh") {
+        return;
+      }
+
+      const hitId = intersectObject.instanceId;
+      const activeHit = state.activeHits[hitId];
+      const activeParticleId = state.hitToParticleMap.get(activeHit.id);
+      const activeParticle = state.particleMap.get(activeParticleId);
+
+      console.log(`Hit ${activeHit.id} is part of particle ${activeParticleId}.`)
+
+      console.log(activeParticle);
+
+      const allOtherParticleIds = new Set(
+        Array.from(state.particleMap.keys()).filter(
+          (key) => key !== activeParticleId
+        ) ?? []
+      );
+
+      state.ignoredParticles = allOtherParticleIds;
+      state.triggerEvent("fullUpdate");
+    } else {
+      state.ignoredParticles = new Set();
+      state.triggerEvent("fullUpdate");
+    }
+  });
+});
