@@ -512,8 +512,6 @@ export class RenderState {
   // Similar to the property change, update the hit type list.
   onHitTypeChange(hitType) {
 
-    console.log(hitType)
-
     // Add or remove the toggled class as needed...
     if (this.activeHitTypes.has(hitType)) {
       this.activeHitTypes.delete(hitType);
