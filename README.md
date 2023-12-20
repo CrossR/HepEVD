@@ -1,4 +1,4 @@
-# HEPEvd - ![Demo](https://img.shields.io/badge/Demo_Build-GitHub_Pages-blue)
+# HEPEvd - <a href="https://crossr.github.io/hep_evd/" alt="Contributors"><img src="https://img.shields.io/badge/Live_Demo-blue" /></a>
 
 A header-only web-based event display for particle physics events.
 
