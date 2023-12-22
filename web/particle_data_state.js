@@ -2,8 +2,8 @@
 // Particle Data State
 //
 
-import { HitDataState } from "./hit_data_state";
-import { HitTypeState } from "./hit_type_state";
+import { HitDataState } from "./hit_data_state.js";
+import { HitTypeState } from "./hit_type_state.js";
 
 export class ParticleDataState {
   constructor(particles) {

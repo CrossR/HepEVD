@@ -2,7 +2,7 @@
 // MC Data State
 //
 
-import { HitTypeState } from "./hit_type_state";
+import { HitTypeState } from "./hit_type_state.js";
 
 export class MCDataState {
   constructor(mcHits) {
