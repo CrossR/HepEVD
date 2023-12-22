@@ -150,16 +150,6 @@ export function createParticleMenu(hitDim, particlesMap, onClick) {
       return (aNumHits < bNumHits) - (aNumHits > bNumHits);
     });
 
-  console.log(particles);
-  particles.map((particle) => {
-    console.log(particle);
-    console.log(particle.childIDs.reduce((acc, childID) => {
-      if (particlesMap.has(childID))
-        return acc + particlesMap.get(childID).hits.length;
-      else return acc;
-    }, particle.hits.length));
-  });
-
   if (particles.length === 0) {
     menu.hidden = true;
     return;

@@ -408,22 +408,14 @@ static void addPFOs(const pandora::Pandora &pPandora, const pandora::PfoList *pP
             continue;
 
         const auto pPfo = parentChildPair.first;
-
-        if (pPfo->GetParticleId() != 13)
-            std::cout << "HepEVD: PFO with ID " << pPfo->GetParticleId() << " has " << pPfo->GetNDaughterPfos()
-                      << " daughter PFOs!" << std::endl;
+        const auto parent = pfoToParticleMap.at(pPfo);
 
         for (const auto childPfo : parentChildPair.second) {
 
             if (pPfo == childPfo)
                 continue;
 
-            const auto parent = pfoToParticleMap.at(pPfo);
             const auto child = pfoToParticleMap.at(childPfo);
-
-            if (pPfo->GetParticleId() != 13) {
-                std::cout << "HepEVD: Parent ID " << parent->getID() << " has child ID " << child->getID() << std::endl;
-            }
 
             parent->addChild(child->getID());
             child->setParentID(parent->getID());
