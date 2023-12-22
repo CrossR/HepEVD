@@ -23,6 +23,8 @@ import {
   updateUI,
 } from "./ui.js";
 import { HitDataState } from "./hit_data_state.js";
+import { MCDataState } from "./mc_data_state.js";
+import { MarkerDataState } from "./marker_data_state.js";
 
 /**
  * Represents the state of the rendering process, including the scene, camera,
@@ -119,8 +121,6 @@ export class RenderState {
   updateData(particles, hits, mcHits, markers, geometry) {
     // Data Setup, first the top level static arrays...
     this.detectorGeometry = geometry;
-    this.mcHits = mcHits;
-    this.markers = markers;
 
     // Filter the particles to only those that have hits in the current
     // dimension.
@@ -161,14 +161,13 @@ export class RenderState {
     // This can differ from the static arrays above, as we may
     // only want to show certain hits/markers etc.
     this.hitData = new HitDataState(this.particles, hits);
+    this.mcData = new MCDataState(mcHits);
+    this.markerData = new MarkerDataState(markers);
     this.activeParticles = [];
-    this.activeMC = [];
-    this.activeMarkers = [];
 
     // Similarly, this stores the active properties, which
     // is used to build the active lists above, by filtering
     // the static lists.
-    this.activeMarkerTypes = new Set();
     this.activeInteractionTypes = new Set();
     this.ignoredParticles = new Set();
 
@@ -246,9 +245,9 @@ export class RenderState {
   renderEvent(fullRender = false) {
     // Update all the active arrays, and check if the
     // number of markers changes.
-    const markerNum = this.activeMarkers.length;
+    const markerNum = this.markerData.length;
     this.#updateActiveArrays();
-    const newMarkerNum = this.activeMarkers.length;
+    const newMarkerNum = this.markerData.length;
 
     // Render the hits out.
     if (this.particles.length > 0) {
@@ -276,11 +275,11 @@ export class RenderState {
   renderMCHits() {
     this.mcHitGroup.clear();
 
-    const mcColours = getMCColouring(this.activeMC);
+    const mcColours = getMCColouring(this.mcData.mc);
 
     drawHits(
       this.mcHitGroup,
-      this.activeMC,
+      this.mcData.mc,
       mcColours,
       HIT_CONFIG[this.hitDim]
     );
@@ -298,11 +297,11 @@ export class RenderState {
     this.markerGroup.clear();
 
     drawRings(
-      this.activeMarkers.filter((marker) => marker.markerType === "Ring"),
+      this.markerData.getMarkersOfType("Ring"),
       this.markerGroup
     );
     drawPoints(
-      this.activeMarkers.filter((marker) => marker.markerType === "Point"),
+      this.markerData.getMarkersOfType("Point"),
       this.markerGroup
     );
 
@@ -317,17 +316,6 @@ export class RenderState {
    */
   #updateHitArrays() {
     console.log("Updating hit arrays")
-    const newMCHits = [];
-
-    // Then repeat for the MC hits, but skip the hit properties bit.
-    this.mcHits.forEach((hit) => {
-      if (
-        this.hitData.activeTypes.size > 0 &&
-        !this.hitData.activeTypes.has(hit.position.hitType)
-      )
-        return;
-      newMCHits.push(hit);
-    });
 
     // Finally, update the active particles.
     const newParticles = this.particles.flatMap((particle) => {
@@ -360,9 +348,9 @@ export class RenderState {
       return newParticle;
     });
 
-    this.hitData.updateActiveHits(newParticles);
+    this.hitData.updateActive(newParticles);
+    this.mcData.updateActive();
 
-    this.activeMC = newMCHits;
     this.activeParticles = newParticles;
   }
 
@@ -372,53 +360,7 @@ export class RenderState {
    * type.
    */
   #updateMarkers() {
-    const newMarkers = new Set();
-
-    // Check if there are any active markers, and if not, just return.
-    if (this.activeMarkerTypes.size === 0) {
-      this.activeMarkers = [];
-      return;
-    }
-
-    // Otherwise, loop over the markers and add them if they're active.
-    this.activeMarkerTypes.forEach((markerType) => {
-      this.markers.forEach((marker) => {
-        if (
-          this.hitData.activeTypes.size > 0 &&
-          !this.hitData.activeTypes.has(marker.position.hitType)
-        )
-          return;
-        if (marker.markerType === markerType) newMarkers.add(marker);
-      });
-    });
-
-    // If there are no markers still, but there are particles
-    // we want to add the vertex markers.
-    if (this.particles.length > 0) {
-      this.particles.forEach((particle) => {
-        if (
-          this.activeInteractionTypes.size > 0 &&
-          !this.activeInteractionTypes.has(particle.interactionType)
-        )
-          return;
-
-        if (this.ignoredParticles.has(particle.id)) {
-          return;
-        }
-
-        particle.vertices.forEach((vertex) => {
-          if (
-            this.hitData.activeTypes.size > 0 &&
-            !this.hitData.activeTypes.has(vertex.position.hitType)
-          )
-            return;
-
-          newMarkers.add(vertex);
-        });
-      });
-    }
-
-    this.activeMarkers = [...newMarkers];
+    this.markerData.updateActive(this.particles);
   }
 
   /*
@@ -471,14 +413,9 @@ export class RenderState {
 
   // If any markers are toggled, update the list.
   onMarkerChange(markerType) {
-    // Add or remove the toggled class as needed...
-    if (this.activeMarkerTypes.has(markerType)) {
-      this.activeMarkerTypes.delete(markerType);
-    } else {
-      this.activeMarkerTypes.add(markerType);
-    }
 
     // Fix the active markers for this change...
+    this.markerData.toggleMarkerType(markerType);
     this.#updateMarkers();
 
     // Now that the internal state is correct, correct the UI.
@@ -535,11 +472,11 @@ export class RenderState {
     );
     populateMarkerToggle(
       this.hitDim,
-      this.markers,
+      this.markerData.markers,
       this.particles,
       (markerType) => this.onMarkerChange(markerType)
     );
-    enableMCToggle(this.hitDim, this.mcHits, () => this.onMCToggle());
+    enableMCToggle(this.hitDim, this.mcData.mc, () => this.onMCToggle());
     enableInteractionTypeToggle(
       this.hitDim,
       this.particles,

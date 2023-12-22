@@ -44,7 +44,7 @@ export class HitDataState {
     }
   }
 
-  updateActiveHits(particles) {
+  updateActive(particles) {
     let newHits = new Set();
     const newHitColours = [];
 
