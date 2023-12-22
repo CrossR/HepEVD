@@ -279,20 +279,12 @@ export function setupParticleMenu(renderState) {
     );
     const label = particleMenuEntry.querySelector("span");
 
-    if (renderState.ignoredParticles.has(particleID)) {
-      renderState.ignoredParticles.delete(particleID);
+    if (renderState.particleData.checkIgnored(particle)) {
+      renderState.particleData.unignoreParticle(particle);
       label.classList.remove("line-through");
-
-      particle.childIDs.map((childID) => {
-        renderState.ignoredParticles.delete(childID);
-      });
     } else {
-      renderState.ignoredParticles.add(particleID);
+      renderState.particleData.ignoreParticle(particle);
       label.classList.add("line-through");
-
-      particle.childIDs.map((childID) => {
-        renderState.ignoredParticles.add(childID);
-      });
     }
 
     renderState.renderEvent();
@@ -300,7 +292,7 @@ export function setupParticleMenu(renderState) {
 
   createParticleMenu(
     renderState.hitDim,
-    renderState.particleMap,
+    renderState.particleData.particleMap,
     onClickAction
   );
 }

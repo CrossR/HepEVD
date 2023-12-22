@@ -4,6 +4,7 @@
 
 import { BUTTON_ID } from "./constants.js";
 import { getHitProperties } from "./helpers.js";
+import { HitTypeState } from "./hit_type_state.js";
 
 export class HitDataState {
   constructor(particles, hits) {
@@ -16,12 +17,29 @@ export class HitDataState {
     this.activeProps = new Set([BUTTON_ID.All]);
   }
 
-  // Property accessors
+  /**
+   * Get the active hits, either the activeHits array or the allHits array.
+   * 
+   * @returns {Array} The hits array.
+   */
   get hits() {
     return this.activeHits.length > 0 ? this.activeHits : this.allHits;
   }
 
-  // Property mutators
+  /**
+   * Gets the length of the hits array.
+   *
+   * @returns {number} The length of the hits array.
+   */
+  get length() {
+    return this.hits.length;
+  }
+
+  /**
+   * Toggles the hit property.
+   * 
+   * @param {string} prop - The property to toggle.
+   */
   toggleHitProperty(prop) {
     if (prop === BUTTON_ID.None) {
       this.activeProps.clear();
@@ -34,6 +52,12 @@ export class HitDataState {
     }
   }
 
+  /**
+   * Top level update function, to update what the active hits are.
+   * 
+   * @param {Array} particles - The particles to consider for updating the active hits.
+   * @param {HitTypeState} hitTypeState - The hit type state object.
+   */
   updateActive(particles, hitTypeState) {
     let newHits = new Set();
     const newHitColours = [];

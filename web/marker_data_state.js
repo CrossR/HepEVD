@@ -2,6 +2,8 @@
 // Marker Data State
 //
 
+import { HitTypeState } from "./hit_type_state";
+
 export class MarkerDataState {
   constructor(markers) {
     this.markers = markers;
@@ -10,10 +12,20 @@ export class MarkerDataState {
     this.activeMarkerTypes = new Set();
   }
 
+  /**
+   * Gets the length of the activeMarkers array.
+   *
+   * @returns {number} The length of the activeMarkers array.
+   */
   get length() {
     return this.activeMarkers.length;
   }
 
+  /**
+   * Toggles the marker type in the activeMarkerTypes set.
+   * 
+   * @param {string} type - The marker type to toggle.
+   */
   toggleMarkerType(type) {
     if (this.activeMarkerTypes.has(type)) {
       this.activeMarkerTypes.delete(type);
@@ -22,10 +34,22 @@ export class MarkerDataState {
     }
   }
 
+  /**
+   * Returns an array of markers of the specified type.
+   * 
+   * @param {string} type - The type of markers to filter.
+   * @returns {Array} - An array of markers.
+   */
   getMarkersOfType(type) {
     return this.activeMarkers.filter((marker) => marker.markerType === type);
   }
 
+  /**
+   * Top level update function, to update the active markers.
+   * 
+   * @param {Array} particles - The particles to consider for adding vertices as markers.
+   * @param {HitTypeState} hitTypeState - The hit type state object used to check if a hit type is active.
+   */
   updateActive(particles, hitTypeState) {
     if (this.activeMarkerTypes.size === 0) {
       this.activeMarkers = [];

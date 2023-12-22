@@ -12,6 +12,8 @@ import {
 } from "./colourmaps.js";
 import { materialHit } from "./constants.js";
 import { hashStr } from "./helpers.js";
+import { ParticleDataState } from "./particle_data_state.js";
+import { HitDataState } from "./hit_data_state.js";
 
 /**
  * Draws a set of hits as a 3D mesh using Three.js.
@@ -87,20 +89,22 @@ export function drawHits(
  * Draws particles on a given group element.
  *
  * @param {THREE.Group} group - The group to which the particles should be added.
- * @param {Array} particles - All the particle objects, to find absolute positions for colouring.
- * @param {Array} activeParticles - The active particle objects, each with an array of hits.
- * @param {Array} activeHitProps - An array of active hit properties, used for colouring.
- * @param {Map} hitPropMap - A map from hit property names to their values.
+ * @param {ParticleDataState} particleDataState - All the particle objects, to find absolute positions for colouring.
+ * @param {HitDataState} hitDataState - An array of active hit properties, used for colouring.
  * @param {Object} hitConfig - An object containing configuration options for the hit mesh.
  */
 export function drawParticles(
   group,
-  particles,
-  activeParticles,
-  activeHitProps,
-  hitPropMap,
+  particleDataState,
+  hitDataState,
   hitConfig,
 ) {
+
+  const particles = particleDataState.allParticles;
+  const activeParticles = particleDataState.particles;
+  const activeHitProps = hitDataState.activeProps;
+  const hitPropMap = hitDataState.props;
+
   // Build up a map of particle to absolute index.
   // This lets the colouring be consistent regardless of
   // the currently applied filters.

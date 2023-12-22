@@ -10,6 +10,7 @@ import { BUTTON_ID, HIT_CONFIG } from "./constants.js";
 import { getMCColouring } from "./helpers.js";
 import { HitDataState } from "./hit_data_state.js";
 import { HitTypeState } from "./hit_type_state.js";
+import { ParticleDataState } from "./particle_data_state.js";
 import { drawHits, drawParticles } from "./hits.js";
 import { MarkerDataState } from "./marker_data_state.js";
 import { drawPoints, drawRings } from "./markers.js";
@@ -83,8 +84,8 @@ export class RenderState {
    * @returns {number} The number of hits.
    */
   get hitSize() {
-    if (this.particles.length > 0) return this.particles.length;
-    return this.hitData.hits.length;
+    if (this.particleData.length > 0) return this.particleData.length;
+    return this.hitData.length;
   }
 
   /**
@@ -125,7 +126,7 @@ export class RenderState {
 
     // Filter the particles to only those that have hits in the current
     // dimension.
-    this.particles = particles.flatMap((particle) => {
+    const filteredParticles = particles.flatMap((particle) => {
       const newParticle = { ...particle };
       newParticle.hits = particle.hits.filter(
         (hit) => hit.position.dim === this.hitDim
@@ -144,15 +145,6 @@ export class RenderState {
       return newParticle;
     });
 
-    this.particleMap = new Map();
-    this.hitToParticleMap = new Map();
-    this.particles.forEach((particle) => {
-      this.particleMap.set(particle.id, particle);
-      particle.hits.forEach((hit) => {
-        this.hitToParticleMap.set(hit.id, particle.id);
-      });
-    });
-
     // Setup the dynamic bits, the state that will change.
     // This includes the in use hits/markers etc, as well as
     // their types and labels etc...
@@ -161,17 +153,11 @@ export class RenderState {
     // These store the actual hits/markers etc that are in use.
     // This can differ from the static arrays above, as we may
     // only want to show certain hits/markers etc.
-    this.hitTypeState = new HitTypeState(this.particles, hits);
-    this.hitData = new HitDataState(this.particles, hits);
+    this.hitTypeState = new HitTypeState(filteredParticles, hits);
+    this.particleData = new ParticleDataState(filteredParticles);
+    this.hitData = new HitDataState(filteredParticles, hits);
     this.mcData = new MCDataState(mcHits);
     this.markerData = new MarkerDataState(markers);
-    this.activeParticles = [];
-
-    // Similarly, this stores the active properties, which
-    // is used to build the active lists above, by filtering
-    // the static lists.
-    this.activeInteractionTypes = new Set();
-    this.ignoredParticles = new Set();
 
     // Actually fill the active arrays with their initial values.
     this.#updateActiveArrays();
@@ -207,10 +193,8 @@ export class RenderState {
 
     drawParticles(
       this.hitGroup,
-      this.particles,
-      this.activeParticles,
-      this.hitData.activeProps,
-      this.hitData.props,
+      this.particleData,
+      this.hitData,
       HIT_CONFIG[this.hitDim]
     );
 
@@ -249,7 +233,7 @@ export class RenderState {
     const newMarkerNum = this.markerData.length;
 
     // Render the hits out.
-    if (this.particles.length > 0) {
+    if (this.particleData.length > 0) {
       this.renderParticles();
     } else {
       this.renderHits();
@@ -310,41 +294,9 @@ export class RenderState {
   #updateHitArrays() {
     console.log("Updating hit arrays");
 
-    // Finally, update the active particles.
-    const newParticles = this.particles.flatMap((particle) => {
-      if (
-        this.activeInteractionTypes.size > 0 &&
-        !this.activeInteractionTypes.has(particle.interactionType)
-      )
-        return [];
-
-      if (this.ignoredParticles.has(particle.id)) {
-        return [];
-      }
-
-      const newParticle = { ...particle };
-
-      newParticle.hits = newParticle.hits.filter((hit) => {
-        if (
-          this.hitData.activeTypes.size > 0 &&
-          !this.hitData.activeTypes.has(hit.position.hitType)
-        )
-          return false;
-
-        return Array.from(this.hitData.activeProps).some((property) => {
-          return this.hitData.props.get(hit).has(property);
-        });
-      });
-
-      if (newParticle.hits.length === 0) return [];
-
-      return newParticle;
-    });
-
-    this.hitData.updateActive(newParticles, this.hitTypeState);
+    this.particleData.updateActive(this.hitData, this.hitTypeState);
+    this.hitData.updateActive(this.particleData.particles, this.hitTypeState);
     this.mcData.updateActive(this.hitTypeState);
-
-    this.activeParticles = newParticles;
   }
 
   /**
@@ -353,7 +305,7 @@ export class RenderState {
    * type.
    */
   #updateMarkers() {
-    this.markerData.updateActive(this.particles, this.hitTypeState);
+    this.markerData.updateActive(this.particleData.particles, this.hitTypeState);
   }
 
   /*
@@ -420,11 +372,7 @@ export class RenderState {
   // If any particle interaction types are toggled, update the list.
   onInteractionTypeChange(interactionType) {
     // Add or remove the toggled class as needed...
-    if (this.activeInteractionTypes.has(interactionType)) {
-      this.activeInteractionTypes.delete(interactionType);
-    } else {
-      this.activeInteractionTypes.add(interactionType);
-    }
+    this.particleData.toggleInteractionType(interactionType);
 
     // Now that the internal state is correct, correct the UI.
     toggleButton(`particles_${this.hitDim}`, interactionType, false);
@@ -464,13 +412,13 @@ export class RenderState {
     populateMarkerToggle(
       this.hitDim,
       this.markerData.markers,
-      this.particles,
+      this.particleData.particles,
       (markerType) => this.onMarkerChange(markerType)
     );
     enableMCToggle(this.hitDim, this.mcData.mc, () => this.onMCToggle());
     enableInteractionTypeToggle(
       this.hitDim,
-      this.particles,
+      this.particleData.particles,
       (interactionType) => this.onInteractionTypeChange(interactionType)
     );
 
