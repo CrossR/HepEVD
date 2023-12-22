@@ -21,7 +21,7 @@ function createMenuItem(
   particle,
   onClick,
   particlesMap,
-  parentElement,
+  parentElement
 ) {
   // Make the top level menu item for the particle.
   const menuItem = document.createElement("li");
@@ -138,19 +138,27 @@ export function createParticleMenu(hitDim, particlesMap, onClick) {
 
       const aNumHits = a.childIDs.reduce((acc, childID) => {
         if (particlesMap.has(childID))
-            return acc + particlesMap.get(childID).hits.length;
-        else
-            return acc;
+          return acc + particlesMap.get(childID).hits.length;
+        else return acc;
       }, a.hits.length);
       const bNumHits = b.childIDs.reduce((acc, childID) => {
         if (particlesMap.has(childID))
-            return acc + particlesMap.get(childID).hits.length;
-        else
-            return acc;
+          return acc + particlesMap.get(childID).hits.length;
+        else return acc;
       }, b.hits.length);
 
-      return aNumHits < bNumHits;
+      return (aNumHits < bNumHits) - (aNumHits > bNumHits);
     });
+
+  console.log(particles);
+  particles.map((particle) => {
+    console.log(particle);
+    console.log(particle.childIDs.reduce((acc, childID) => {
+      if (particlesMap.has(childID))
+        return acc + particlesMap.get(childID).hits.length;
+      else return acc;
+    }, particle.hits.length));
+  });
 
   if (particles.length === 0) {
     menu.hidden = true;

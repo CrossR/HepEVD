@@ -383,12 +383,6 @@ static void addPFOs(const pandora::Pandora &pPandora, const pandora::PfoList *pP
         const auto particle = addParticle(pPandora, pPfo, label);
         particles.push_back(particle);
         pfoToParticleMap.insert({pPfo, particle});
-
-        for (const auto childPfo : pPfo->GetDaughterPfoList()) {
-            const auto child = addParticle(pPandora, pPfo);
-            particles.push_back(child);
-            pfoToParticleMap.insert({childPfo, child});
-        }
     }
 
     // Now, we can add the parent/child relationships.
@@ -396,14 +390,40 @@ static void addPFOs(const pandora::Pandora &pPandora, const pandora::PfoList *pP
     // Its a little easier to do this in two steps, just to avoid
     // having to worry about the order of the PFOs in the list or any
     // double counting.
+    std::map<const pandora::ParticleFlowObject *, const pandora::PfoList> parentToChildMap;
     for (const pandora::ParticleFlowObject *const pPfo : *pPfoList) {
-        if (pPfo->GetNDaughterPfos() == 0)
+        const auto parentPfo = lar_content::LArPfoHelper::GetParentPfo(pPfo);
+
+        if (parentPfo == nullptr || parentToChildMap.count(parentPfo) == 1)
             continue;
 
-        for (const auto childPfo : pPfo->GetDaughterPfoList()) {
+        pandora::PfoList allChildren;
+        lar_content::LArPfoHelper::GetAllDownstreamPfos(pPfo, allChildren);
+        parentToChildMap.insert({parentPfo, allChildren});
+    }
+
+    for (const auto parentChildPair : parentToChildMap) {
+
+        if (parentChildPair.second.empty())
+            continue;
+
+        const auto pPfo = parentChildPair.first;
+
+        if (pPfo->GetParticleId() != 13)
+            std::cout << "HepEVD: PFO with ID " << pPfo->GetParticleId() << " has " << pPfo->GetNDaughterPfos()
+                      << " daughter PFOs!" << std::endl;
+
+        for (const auto childPfo : parentChildPair.second) {
+
+            if (pPfo == childPfo)
+                continue;
 
             const auto parent = pfoToParticleMap.at(pPfo);
             const auto child = pfoToParticleMap.at(childPfo);
+
+            if (pPfo->GetParticleId() != 13) {
+                std::cout << "HepEVD: Parent ID " << parent->getID() << " has child ID " << child->getID() << std::endl;
+            }
 
             parent->addChild(child->getID());
             child->setParentID(parent->getID());
