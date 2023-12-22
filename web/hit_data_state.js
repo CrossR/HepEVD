@@ -3,7 +3,7 @@
 //
 
 import { BUTTON_ID } from "./constants.js";
-import { getHitProperties, getHitTypes } from "./helpers.js";
+import { getHitProperties } from "./helpers.js";
 
 export class HitDataState {
   constructor(particles, hits) {
@@ -14,9 +14,6 @@ export class HitDataState {
 
     this.props = getHitProperties(particles, hits);
     this.activeProps = new Set([BUTTON_ID.All]);
-
-    this.types = getHitTypes(particles, hits);
-    this.activeTypes = new Set();
   }
 
   // Property accessors
@@ -25,13 +22,6 @@ export class HitDataState {
   }
 
   // Property mutators
-  toggleHitType(type) {
-    if (this.activeTypes.has(type)) {
-      this.activeTypes.delete(type);
-    } else {
-      this.activeTypes.add(type);
-    }
-  }
   toggleHitProperty(prop) {
     if (prop === BUTTON_ID.None) {
       this.activeProps.clear();
@@ -44,15 +34,13 @@ export class HitDataState {
     }
   }
 
-  updateActive(particles) {
+  updateActive(particles, hitTypeState) {
     let newHits = new Set();
     const newHitColours = [];
 
     this.allHits.forEach((hit) => {
       // Skip if hit type is not active
-      if (this.activeTypes.size > 0 && !this.activeTypes.has(hit.type)) {
-        return;
-      }
+      if (! hitTypeState.checkHitType(hit)) return;
 
       // Otherwise, add it if it matches the active properties
       Array.from(this.activeProps)

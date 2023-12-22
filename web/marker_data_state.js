@@ -7,21 +7,11 @@ export class MarkerDataState {
     this.markers = markers;
     this.activeMarkers = [];
 
-    this.activeHitTypes = new Set();
     this.activeMarkerTypes = new Set();
   }
 
   get length() {
     return this.activeMarkers.length;
-  }
-
-  // Property mutators
-  toggleHitType(type) {
-    if (this.activeHitTypes.has(type)) {
-      this.activeHitTypes.delete(type);
-    } else {
-      this.activeHitTypes.add(type);
-    }
   }
 
   toggleMarkerType(type) {
@@ -36,7 +26,7 @@ export class MarkerDataState {
     return this.activeMarkers.filter((marker) => marker.markerType === type);
   }
 
-  updateActive(particles) {
+  updateActive(particles, hitTypeState) {
     if (this.activeMarkerTypes.size === 0) {
       this.activeMarkers = [];
       return;
@@ -46,12 +36,7 @@ export class MarkerDataState {
 
     this.markers.forEach((marker) => {
       // Skip if hit type is not active
-      if (
-        this.activeHitTypes.size > 0 &&
-        !this.activeHitTypes.has(marker.hitType)
-      ) {
-        return;
-      }
+      if (!hitTypeState.checkHitType(marker)) return;
 
       // Skip if marker type is not active
       if (
@@ -61,7 +46,7 @@ export class MarkerDataState {
         return;
       }
 
-      newMarkers.push(marker);  
+      newMarkers.push(marker);
     });
 
     // If there is particles, we can also add their vertices as markers.

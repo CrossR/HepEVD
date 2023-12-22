@@ -7,9 +7,13 @@ import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 
 import { fitSceneInCamera, setupControls } from "./camera_and_controls.js";
 import { BUTTON_ID, HIT_CONFIG } from "./constants.js";
-import { getHitProperties, getHitTypes, getMCColouring } from "./helpers.js";
+import { getMCColouring } from "./helpers.js";
+import { HitDataState } from "./hit_data_state.js";
+import { HitTypeState } from "./hit_type_state.js";
 import { drawHits, drawParticles } from "./hits.js";
+import { MarkerDataState } from "./marker_data_state.js";
 import { drawPoints, drawRings } from "./markers.js";
+import { MCDataState } from "./mc_data_state.js";
 import { drawBox } from "./rendering.js";
 import {
   enableInteractionTypeToggle,
@@ -22,9 +26,6 @@ import {
   toggleButton,
   updateUI,
 } from "./ui.js";
-import { HitDataState } from "./hit_data_state.js";
-import { MCDataState } from "./mc_data_state.js";
-import { MarkerDataState } from "./marker_data_state.js";
 
 /**
  * Represents the state of the rendering process, including the scene, camera,
@@ -160,6 +161,7 @@ export class RenderState {
     // These store the actual hits/markers etc that are in use.
     // This can differ from the static arrays above, as we may
     // only want to show certain hits/markers etc.
+    this.hitTypeState = new HitTypeState(this.particles, hits);
     this.hitData = new HitDataState(this.particles, hits);
     this.mcData = new MCDataState(mcHits);
     this.markerData = new MarkerDataState(markers);
@@ -221,17 +223,14 @@ export class RenderState {
    * Renders the hits for the current state, based on the active hit types and properties.
    * Clears the hit group and then draws the hits with the active hit colours.
    */
-  renderHits(hits = this.hitData.hits, colours = this.hitData.colours, clear = true) {
+  renderHits(
+    hits = this.hitData.hits,
+    colours = this.hitData.colours,
+    clear = true
+  ) {
+    if (clear) this.hitGroup.clear();
 
-    if (clear)
-      this.hitGroup.clear();
-
-    drawHits(
-      this.hitGroup,
-      hits,
-      colours,
-      HIT_CONFIG[this.hitDim]
-    );
+    drawHits(this.hitGroup, hits, colours, HIT_CONFIG[this.hitDim]);
 
     this.hitGroup.matrixAutoUpdate = false;
     this.hitGroup.matrixWorldAutoUpdate = false;
@@ -296,14 +295,8 @@ export class RenderState {
   renderMarkers() {
     this.markerGroup.clear();
 
-    drawRings(
-      this.markerData.getMarkersOfType("Ring"),
-      this.markerGroup
-    );
-    drawPoints(
-      this.markerData.getMarkersOfType("Point"),
-      this.markerGroup
-    );
+    drawRings(this.markerData.getMarkersOfType("Ring"), this.markerGroup);
+    drawPoints(this.markerData.getMarkersOfType("Point"), this.markerGroup);
 
     this.markerGroup.matrixAutoUpdate = false;
     this.markerGroup.matrixWorldAutoUpdate = false;
@@ -315,7 +308,7 @@ export class RenderState {
    * type and properties.
    */
   #updateHitArrays() {
-    console.log("Updating hit arrays")
+    console.log("Updating hit arrays");
 
     // Finally, update the active particles.
     const newParticles = this.particles.flatMap((particle) => {
@@ -348,8 +341,8 @@ export class RenderState {
       return newParticle;
     });
 
-    this.hitData.updateActive(newParticles);
-    this.mcData.updateActive();
+    this.hitData.updateActive(newParticles, this.hitTypeState);
+    this.mcData.updateActive(this.hitTypeState);
 
     this.activeParticles = newParticles;
   }
@@ -360,7 +353,7 @@ export class RenderState {
    * type.
    */
   #updateMarkers() {
-    this.markerData.updateActive(this.particles);
+    this.markerData.updateActive(this.particles, this.hitTypeState);
   }
 
   /*
@@ -399,9 +392,8 @@ export class RenderState {
 
   // Similar to the property change, update the hit type list.
   onHitTypeChange(hitType) {
-
     // Add or remove the toggled class as needed...
-    this.hitData.toggleHitType(hitType);
+    this.hitTypeState.toggleHitType(hitType);
 
     // Now that the internal state is correct, correct the UI.
     toggleButton("types", hitType, false);
@@ -413,7 +405,6 @@ export class RenderState {
 
   // If any markers are toggled, update the list.
   onMarkerChange(markerType) {
-
     // Fix the active markers for this change...
     this.markerData.toggleMarkerType(markerType);
     this.#updateMarkers();
@@ -467,7 +458,7 @@ export class RenderState {
     populateDropdown(this.hitDim, this.hitData.props, (prop) =>
       this.onHitPropertyChange(prop)
     );
-    populateTypeToggle(this.hitDim, this.hitData.types, (hitType) =>
+    populateTypeToggle(this.hitDim, this.hitTypeState.types, (hitType) =>
       this.onHitTypeChange(hitType)
     );
     populateMarkerToggle(

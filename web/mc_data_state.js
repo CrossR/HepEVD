@@ -6,8 +6,6 @@ export class MCDataState {
   constructor(mcHits) {
     this.mcHits = mcHits;
     this.activeMC = [];
-
-    this.activeTypes = new Set();
   }
 
   // Property accessors
@@ -15,22 +13,10 @@ export class MCDataState {
     return this.activeMC;
   }
 
-  // Property mutators
-  toggleHitType(type) {
-    if (this.activeTypes.has(type)) {
-      this.activeTypes.delete(type);
-    } else {
-      this.activeTypes.add(type);
-    }
-  }
-
-  updateActive() {
+  updateActive(hitTypeState) {
     this.activeMC = this.mcHits.filter((mcHit) => {
-
       // Skip if hit type is not active
-      if (this.activeTypes.size > 0 && !this.activeTypes.has(mcHit.position.hitType)) {
-        return false;
-      }
+      if (!hitTypeState.checkHitType(mcHit)) return false;
 
       return true;
     });
