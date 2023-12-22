@@ -10,10 +10,9 @@ import {
   getCategoricalLutConf,
   getContinuousLutConf,
 } from "./colourmaps.js";
-import { materialHit } from "./constants.js";
-import { hashStr } from "./helpers.js";
 import { ParticleDataState } from "./particle_data_state.js";
 import { HitDataState } from "./hit_data_state.js";
+import { materialHit } from "./constants.js";
 
 /**
  * Draws a set of hits as a 3D mesh using Three.js.
@@ -32,11 +31,14 @@ export function drawHits(
 ) {
   if (hits.length === 0) return;
 
+  console.log(hitConfig);
+
   // Check if we are using colour, and set it up if we are.
-  const colourLut = new Lut("cooltowarm", 10);
-  addColourMap(colourLut, lutConfig.name, lutConfig.size);
   let usingColour = hitColours.length === hits.length;
   let usingLut = typeof hitColours[0] === "number";
+
+  const colourLut = new Lut("cooltowarm", 10);
+  addColourMap(colourLut, lutConfig.name, lutConfig.size);
 
   if (usingColour && usingLut && lutConfig.style !== "categorical") {
     let minColourValue = Infinity;
@@ -59,7 +61,7 @@ export function drawHits(
   const dummyObject = new THREE.Object3D();
   const hitMesh = new THREE.InstancedMesh(
     hitGeometry,
-    materialHit,
+    hitConfig.materialHit ?? materialHit,
     hits.length,
   );
 
@@ -140,4 +142,47 @@ export function drawParticles(
   }
 
   drawHits(group, hits.flat(), particleColours, hitConfig, lutToUse);
+}
+
+/**
+ * Draws an overlay over the hits of a given particle.
+ *
+ * @param {THREE.Group} group - The group to which the particles should be added.
+ * @param {ParticleDataState} particleDataState - All the particle objects, to find absolute positions for colouring.
+ * @param {HitDataState} hitDataState - An array of active hit properties, used for colouring.
+ * @param {Object} hitConfig - An object containing configuration options for the hit mesh.
+ * @param {Object} particle - The particle to draw the overlay for.
+ */
+export function drawParticleOverlay(
+  group,
+  particleDataState,
+  hitDataState,
+  hitConfig,
+  targetParticle
+) {
+
+  const activeHitProps = hitDataState.activeProps;
+  const hitPropMap = hitDataState.props;
+
+  const hits = targetParticle.hits;
+  targetParticle.childIDs.map((childId) => {
+    const childParticle = particleDataState.particleMap.get(childId);
+    hits.push(...childParticle.hits);
+  });
+
+  const activeHits = hits.filter((hit) => {
+    return activeHitProps.size > 0 && Array.from(activeHitProps).every((prop) => {
+      return hitPropMap.get(hit).has(prop);
+    });
+  });
+
+  const newConfig = {...hitConfig};
+  hitConfig.materialHit = new THREE.MeshStandardMaterial({
+    side: THREE.DoubleSide,
+    transparent: true,
+    opacity: 0.1,
+    emissive: 0xFFFF00,
+  });
+
+  drawHits(group, activeHits, [], hitConfig);
 }

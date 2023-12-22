@@ -22,6 +22,18 @@ export class ParticleDataState {
         this.hitToParticleMap.set(hit.id, particle.id);
       });
     });
+
+    // Map from child particles, to top level parent particle.
+    this.childToParentMap = new Map();
+    this.particles.forEach((particle) => {
+      let currentParticle = particle;
+      while (currentParticle.parentID !== "") {
+        const parentParticle = this.particleMap.get(currentParticle.parentID);
+        currentParticle = parentParticle;
+      }
+
+      this.childToParentMap.set(particle, currentParticle);
+    });
   }
 
   /**

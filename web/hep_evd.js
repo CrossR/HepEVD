@@ -5,7 +5,7 @@
 import * as THREE from "three";
 import Stats from "three/addons/libs/stats.module.js";
 
-import { THEME } from "./constants.js";
+import { HIT_CONFIG, THEME } from "./constants.js";
 import { getData } from "./data_loader.js";
 import { RenderState } from "./render_state.js";
 import { animate, onWindowResize } from "./rendering.js";
@@ -19,6 +19,7 @@ import {
   screenshotEvd,
   setTheme,
 } from "./ui.js";
+import { drawParticleOverlay } from "./hits.js";
 
 // Do some initial threejs setup...
 const threeDCamera = new THREE.PerspectiveCamera(
@@ -134,52 +135,7 @@ document.resetView = () => {
 fixThemeButton(true);
 updateStateUI(renderStates);
 
-// Hook up test on mouse move.
 const canvas = renderer.domElement;
-canvas.addEventListener("dblclick", (event) => {
-  const mouse = new THREE.Vector2();
-  mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
-  mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
-
-  renderStates.forEach((state) => {
-    if (!state.visible) {
-      return;
-    }
-
-    const raycaster = new THREE.Raycaster();
-    raycaster.setFromCamera(mouse, state.camera);
-    const intersects = raycaster.intersectObjects(state.scene.children, true);
-    if (intersects.length > 0) {
-      const intersectObject = intersects[0];
-
-      if (intersectObject.object.type !== "Mesh") {
-        return;
-      }
-
-      const hitId = intersectObject.instanceId;
-      const activeHit = state.activeHits[hitId];
-      const activeParticleId = state.hitToParticleMap.get(activeHit.id);
-      const activeParticle = state.particleMap.get(activeParticleId);
-
-      console.log(`Hit ${activeHit.id} is part of particle ${activeParticleId}.`)
-
-      console.log(activeParticle);
-
-      const allOtherParticleIds = new Set(
-        Array.from(state.particleMap.keys()).filter(
-          (key) => key !== activeParticleId
-        ) ?? []
-      );
-
-      state.ignoredParticles = allOtherParticleIds;
-      state.triggerEvent("fullUpdate");
-    } else {
-      state.ignoredParticles = new Set();
-      state.triggerEvent("fullUpdate");
-    }
-  });
-});
-
 canvas.addEventListener("click", (event) => {
 
   // Only handle single clicks.
@@ -205,31 +161,24 @@ canvas.addEventListener("click", (event) => {
       }
 
       const hitId = intersectObject.instanceId;
-      const activeHit = state.activeHits[hitId];
+      const activeHit = state.hitData.activeHits[hitId];
       let activeParticle;
 
       try {
-        const activeParticleId = state.hitToParticleMap.get(activeHit.id);
-        activeParticle = state.particleMap.get(activeParticleId);
+        const activeParticleId = state.particleData.hitToParticleMap.get(activeHit.id);
+        activeParticle = state.particleData.particleMap.get(activeParticleId);
         console.log(`Hit ${activeHit.id} is part of particle ${activeParticleId}.`)
       } catch {
         return;
       }
 
+      const parentParticle = state.particleData.childToParentMap.get(activeParticle);
       console.log(activeParticle);
-      const selectedParticleHits = activeParticle.hits;
-      if (activeParticle.childIDs.length > 0) {
-        activeParticle.childIDs.forEach((childId) => {
-          const child = state.particleMap.get(childId);
-          selectedParticleHits.push(...child.hits);
-        });
-      }
+      console.log(parentParticle);
 
-      const hitColours = selectedParticleHits.map((_) => "red");
-      state.renderHits(selectedParticleHits, hitColours, false);
-    } else {
-      state.ignoredParticles = new Set();
-      state.triggerEvent("fullUpdate");
+      // Finally, lets render out all the hits of this particle, but with a unique glow.
+      drawParticleOverlay(state.hitGroup, state.particleData, state.hitData, HIT_CONFIG[state.hitDim], activeParticle);
+      state.triggerEvent("change");
     }
   });
 });
