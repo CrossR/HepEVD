@@ -22,6 +22,7 @@ import {
   toggleButton,
   updateUI,
 } from "./ui.js";
+import { HitDataState } from "./hit_data_state.js";
 
 /**
  * Represents the state of the rendering process, including the scene, camera,
@@ -80,7 +81,7 @@ export class RenderState {
    */
   get hitSize() {
     if (this.particles.length > 0) return this.particles.length;
-    return this.hits.length;
+    return this.hitData.hits.length;
   }
 
   /**
@@ -118,7 +119,6 @@ export class RenderState {
   updateData(particles, hits, mcHits, markers, geometry) {
     // Data Setup, first the top level static arrays...
     this.detectorGeometry = geometry;
-    this.hits = hits;
     this.mcHits = mcHits;
     this.markers = markers;
 
@@ -152,10 +152,6 @@ export class RenderState {
       });
     });
 
-    // The generated property lists...
-    this.hitProperties = getHitProperties(this.particles, this.hits);
-    this.hitTypes = getHitTypes(this.particles, this.hits);
-
     // Setup the dynamic bits, the state that will change.
     // This includes the in use hits/markers etc, as well as
     // their types and labels etc...
@@ -164,17 +160,14 @@ export class RenderState {
     // These store the actual hits/markers etc that are in use.
     // This can differ from the static arrays above, as we may
     // only want to show certain hits/markers etc.
+    this.hitData = new HitDataState(this.particles, hits);
     this.activeParticles = [];
-    this.activeHits = [];
-    this.activeHitColours = [];
     this.activeMC = [];
     this.activeMarkers = [];
 
     // Similarly, this stores the active properties, which
     // is used to build the active lists above, by filtering
     // the static lists.
-    this.activeHitProps = new Set([BUTTON_ID.All]);
-    this.activeHitTypes = new Set();
     this.activeMarkerTypes = new Set();
     this.activeInteractionTypes = new Set();
     this.ignoredParticles = new Set();
@@ -195,11 +188,8 @@ export class RenderState {
       (volume) => volume.volumeType === "box"
     );
 
-    // Use either the hits or active hits (based on the particles)
-    const hits = this.hits.length > 0 ? this.hits : this.activeHits;
-
     boxVolumes.forEach((box) =>
-      drawBox(this.hitDim, this.detGeoGroup, hits, box)
+      drawBox(this.hitDim, this.detGeoGroup, this.hitData.hits, box)
     );
 
     this.detGeoGroup.matrixAutoUpdate = false;
@@ -218,8 +208,8 @@ export class RenderState {
       this.hitGroup,
       this.particles,
       this.activeParticles,
-      this.activeHitProps,
-      this.hitProperties,
+      this.hitData.activeProps,
+      this.hitData.props,
       HIT_CONFIG[this.hitDim]
     );
 
@@ -232,7 +222,7 @@ export class RenderState {
    * Renders the hits for the current state, based on the active hit types and properties.
    * Clears the hit group and then draws the hits with the active hit colours.
    */
-  renderHits(hits = this.activeHits, colours = this.activeHitColours, clear = true) {
+  renderHits(hits = this.hitData.hits, colours = this.hitData.colours, clear = true) {
 
     if (clear)
       this.hitGroup.clear();
@@ -327,43 +317,13 @@ export class RenderState {
    */
   #updateHitArrays() {
     console.log("Updating hit arrays")
-    let newHits = new Set();
     const newMCHits = [];
-    const newHitColours = [];
-
-    // First, do the actual hits...
-    this.hits.forEach((hit) => {
-      if (
-        this.activeHitTypes.size > 0 &&
-        !this.activeHitTypes.has(hit.position.hitType)
-      )
-        return;
-      Array.from(this.activeHitProps)
-        .reverse()
-        .filter((property) => property !== BUTTON_ID.All)
-        .forEach((property) => {
-          if (!this.hitProperties.get(hit).has(property)) return;
-          if (newHits.has(hit)) return;
-
-          newHits.add(hit);
-          newHitColours.push(this.hitProperties.get(hit).get(property));
-        });
-
-      // If we've already added this hit, we don't need to do anything else.
-      if (newHits.has(hit)) return;
-
-      // Otherwise, check if the all button is active, and if so, add it at the end.
-      if (this.activeHitProps.has(BUTTON_ID.All)) {
-        newHits.add(hit);
-        newHitColours.push(this.hitProperties.get(hit).get(BUTTON_ID.All));
-      }
-    });
 
     // Then repeat for the MC hits, but skip the hit properties bit.
     this.mcHits.forEach((hit) => {
       if (
-        this.activeHitTypes.size > 0 &&
-        !this.activeHitTypes.has(hit.position.hitType)
+        this.hitData.activeTypes.size > 0 &&
+        !this.hitData.activeTypes.has(hit.position.hitType)
       )
         return;
       newMCHits.push(hit);
@@ -385,13 +345,13 @@ export class RenderState {
 
       newParticle.hits = newParticle.hits.filter((hit) => {
         if (
-          this.activeHitTypes.size > 0 &&
-          !this.activeHitTypes.has(hit.position.hitType)
+          this.hitData.activeTypes.size > 0 &&
+          !this.hitData.activeTypes.has(hit.position.hitType)
         )
           return false;
 
-        return Array.from(this.activeHitProps).some((property) => {
-          return this.hitProperties.get(hit).has(property);
+        return Array.from(this.hitData.activeProps).some((property) => {
+          return this.hitData.props.get(hit).has(property);
         });
       });
 
@@ -400,13 +360,8 @@ export class RenderState {
       return newParticle;
     });
 
-    if (newHits.size === 0 && newParticles.length > 0) {
-      const hits = newParticles.flatMap((particle) => particle.hits);
-      newHits = hits;
-    }
+    this.hitData.updateActiveHits(newParticles);
 
-    this.activeHits = [...newHits];
-    this.activeHitColours = newHitColours;
     this.activeMC = newMCHits;
     this.activeParticles = newParticles;
   }
@@ -429,8 +384,8 @@ export class RenderState {
     this.activeMarkerTypes.forEach((markerType) => {
       this.markers.forEach((marker) => {
         if (
-          this.activeHitTypes.size > 0 &&
-          !this.activeHitTypes.has(marker.position.hitType)
+          this.hitData.activeTypes.size > 0 &&
+          !this.hitData.activeTypes.has(marker.position.hitType)
         )
           return;
         if (marker.markerType === markerType) newMarkers.add(marker);
@@ -453,8 +408,8 @@ export class RenderState {
 
         particle.vertices.forEach((vertex) => {
           if (
-            this.activeHitTypes.size > 0 &&
-            !this.activeHitTypes.has(vertex.position.hitType)
+            this.hitData.activeTypes.size > 0 &&
+            !this.hitData.activeTypes.has(vertex.position.hitType)
           )
             return;
 
@@ -489,18 +444,8 @@ export class RenderState {
       return;
     }
 
-    // If the "None" property is clicked, we want to toggle everything off.
-    // Otherwise, add or remove this property from the list.
-    if (hitProperty === BUTTON_ID.None) {
-      this.activeHitProps.clear();
-    } else {
-      // Add or remove the toggled property as needed...
-      if (this.activeHitProps.has(hitProperty)) {
-        this.activeHitProps.delete(hitProperty);
-      } else {
-        this.activeHitProps.add(hitProperty);
-      }
-    }
+    // Add or remove the toggled class as needed...
+    this.hitData.toggleHitProperty(hitProperty);
 
     // Now that the internal state is correct, correct the UI.
     toggleButton(this.hitDim, hitProperty);
@@ -514,11 +459,7 @@ export class RenderState {
   onHitTypeChange(hitType) {
 
     // Add or remove the toggled class as needed...
-    if (this.activeHitTypes.has(hitType)) {
-      this.activeHitTypes.delete(hitType);
-    } else {
-      this.activeHitTypes.add(hitType);
-    }
+    this.hitData.toggleHitType(hitType);
 
     // Now that the internal state is correct, correct the UI.
     toggleButton("types", hitType, false);
@@ -586,10 +527,10 @@ export class RenderState {
     this.renderEvent();
 
     // Fill in any dropdown entries, or hit class toggles.
-    populateDropdown(this.hitDim, this.hitProperties, (prop) =>
+    populateDropdown(this.hitDim, this.hitData.props, (prop) =>
       this.onHitPropertyChange(prop)
     );
-    populateTypeToggle(this.hitDim, this.hitTypes, (hitType) =>
+    populateTypeToggle(this.hitDim, this.hitData.types, (hitType) =>
       this.onHitTypeChange(hitType)
     );
     populateMarkerToggle(
