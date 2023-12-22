@@ -81,6 +81,7 @@ export class MarkerDataState {
 
     particles.forEach((particle) => {
       particle.vertices.forEach((vertex) => {
+        if (!hitTypeState.checkHitType(vertex)) return;
         newMarkers.push(vertex);
       });
     });
