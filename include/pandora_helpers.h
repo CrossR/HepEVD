@@ -245,7 +245,7 @@ static void addMarkers(const Markers &markers) {
     hepEVDServer->addMarkers(markers);
 }
 
-static void showCurrentMC(const pandora::Algorithm &pAlgorithm) {
+static void showMC(const pandora::Algorithm &pAlgorithm, const std::string &listName = "") {
 
     if (!isServerInitialised())
         return;
@@ -261,7 +261,10 @@ static void showCurrentMC(const pandora::Algorithm &pAlgorithm) {
 
     const pandora::MCParticleList *pMCParticleList(nullptr);
     try {
-        PandoraContentApi::GetCurrentList(pAlgorithm, pMCParticleList);
+        if (listName.empty())
+            PandoraContentApi::GetCurrentList(pAlgorithm, pMCParticleList);
+        else
+            PandoraContentApi::GetList(pAlgorithm, listName, pMCParticleList);
     } catch (pandora::StatusCodeException &) {
         return;
     }
