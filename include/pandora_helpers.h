@@ -38,6 +38,7 @@ using HepHitMap = std::map<const pandora::CaloHit *, Hit *>;
 // or awkwardness around using across multiple functions.
 inline HepEVDServer *hepEVDServer;
 inline HepHitMap caloHitToEvdHit;
+inline bool verboseLogging = false;
 
 static HepHitMap *getHitMap() { return &caloHitToEvdHit; }
 static HepEVDServer *getServer() { return hepEVDServer; }
@@ -45,7 +46,7 @@ static HepEVDServer *getServer() { return hepEVDServer; }
 static bool isServerInitialised(const bool quiet = false) {
     const bool isInit(hepEVDServer != nullptr && hepEVDServer->isInitialised());
 
-    if (!isInit && !quiet) {
+    if (verboseLogging || !quiet) {
         std::cout << "HepEVD Server is not initialised!" << std::endl;
         std::cout << "Please call HepEVD::setHepEVDGeometry(this->GetPandora.GetGeometry()) or similar." << std::endl;
         std::cout << "This should be done before any other calls to the event display." << std::endl;
@@ -54,11 +55,11 @@ static bool isServerInitialised(const bool quiet = false) {
     return isInit;
 }
 
-static void startServer(const bool verbose = false, const int startState = -1) {
+static void startServer(const int startState = -1) {
     if (!isServerInitialised())
         return;
 
-    if (verbose) {
+    if (verboseLogging) {
         std::cout << "HepEVD: There are " << hepEVDServer->getHits().size() << " hits registered!" << std::endl;
         std::cout << "HepEVD: There are " << hepEVDServer->getMCHits().size() << " MC hits registered!" << std::endl;
         std::cout << "HepEVD: There are " << hepEVDServer->getParticles().size() << " particles registered!"
@@ -343,7 +344,8 @@ static Particle *addParticle(const pandora::Pandora &pPandora, const pandora::Pa
     try {
         vertex = lar_content::LArPfoHelper::GetVertex(pPfo);
     } catch (pandora::StatusCodeException &) {
-        std::cout << "HepEVD: Failed to get vertex for PFO!" << std::endl;
+        if (verboseLogging)
+            std::cout << "HepEVD: Failed to get vertex for PFO!" << std::endl;
         return particle;
     }
 
