@@ -12,7 +12,7 @@ import {
 } from "./colourmaps.js";
 import { ParticleDataState } from "./particle_data_state.js";
 import { HitDataState } from "./hit_data_state.js";
-import { materialHit } from "./constants.js";
+import { BUTTON_ID, materialHit } from "./constants.js";
 
 /**
  * Draws a set of hits as a 3D mesh using Three.js.
@@ -118,16 +118,17 @@ export function drawParticles(
   });
 
   let lutToUse = getCategoricalLutConf();
+  const filteredActiveHitProps = Array.from(activeHitProps).filter((p) => p != BUTTON_ID.All);
 
   // Particle colour is based on the absolute index of the particle, modulo the LUT size.
   // If there are multiple active hit properties, use that instead.
   const particleColours = activeParticles.flatMap((particle, _) => {
     return particle.hits.map((hit) => {
-      if (activeHitProps.size > 1) {
-        return Array.from(activeHitProps)
+      if (filteredActiveHitProps.length > 0) {
+        return Array.from(filteredActiveHitProps)
           .reverse()
           .map((prop) => {
-            return hitPropMap.get(hit).get(prop);
+            return hitPropMap.get(hit.id).get(prop);
           })[0];
       }
 
@@ -135,7 +136,7 @@ export function drawParticles(
     });
   });
 
-  if (activeHitProps.size > 1) {
+  if (filteredActiveHitProps.length > 0) {
     lutToUse = getContinuousLutConf();
   }
 
@@ -170,7 +171,7 @@ export function drawParticleOverlay(
 
   const activeHits = hits.filter((hit) => {
     return activeHitProps.size > 0 && Array.from(activeHitProps).every((prop) => {
-      return hitPropMap.get(hit).has(prop);
+      return hitPropMap.get(hit.id).has(prop);
     });
   });
 

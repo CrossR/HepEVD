@@ -42,9 +42,7 @@ export class ParticleDataState {
    * @returns {Array} The particles.
    */
   get particles() {
-    return this.activeParticles.length > 0
-      ? this.activeParticles
-      : this.allParticles;
+    return this.activeParticles;
   }
 
   /**
