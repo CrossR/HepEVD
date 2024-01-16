@@ -16,7 +16,7 @@ export class ParticleDataState {
     // Map from particle id to particle, as well as hit id to particle id.
     this.particleMap = new Map();
     this.hitToParticleMap = new Map();
-    this.particles.forEach((particle) => {
+    particles.forEach((particle) => {
       this.particleMap.set(particle.id, particle);
       particle.hits.forEach((hit) => {
         this.hitToParticleMap.set(hit.id, particle.id);

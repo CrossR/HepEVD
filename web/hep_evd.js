@@ -144,6 +144,8 @@ canvas.addEventListener("click", (event) => {
   mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
   mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
 
+  let highlightingParticle = false;
+
   renderStates.forEach((state) => {
     if (!state.visible) {
       return;
@@ -180,10 +182,21 @@ canvas.addEventListener("click", (event) => {
         state.hitGroup,
         state.particleData,
         state.hitData,
+        state.hitTypeState,
         HIT_CONFIG[state.hitDim],
         activeParticle,
       );
       state.triggerEvent("change");
+      highlightingParticle = true;
     }
   });
+
+  if (! highlightingParticle) {
+    renderStates.forEach((state) => {
+      if (!state.visible) {
+        return;
+      }
+      state.triggerEvent("fullUpdate");
+    });
+  }
 });

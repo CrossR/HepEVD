@@ -157,6 +157,7 @@ export function drawParticleOverlay(
   group,
   particleDataState,
   hitDataState,
+  hitTypeState,
   hitConfig,
   targetParticle,
 ) {
@@ -171,6 +172,7 @@ export function drawParticleOverlay(
 
   const activeHits = hits.filter((hit) => {
     return (
+      hitTypeState.checkHitType(hit) &&
       activeHitProps.size > 0 &&
       Array.from(activeHitProps).every((prop) => {
         return hitPropMap.get(hit.id).has(prop);
@@ -179,12 +181,13 @@ export function drawParticleOverlay(
   });
 
   const newConfig = { ...hitConfig };
-  hitConfig.materialHit = new THREE.MeshStandardMaterial({
+  newConfig.hitSize = hitConfig.hitSize + 1;
+  newConfig.materialHit = new THREE.MeshBasicMaterial({
     side: THREE.DoubleSide,
     transparent: true,
-    opacity: 0.1,
-    emissive: 0xffff00,
+    opacity: 0.02,
+    color: "yellow"
   });
 
-  drawHits(group, activeHits, [], hitConfig);
+  drawHits(group, activeHits, [], newConfig);
 }
