@@ -136,13 +136,14 @@ fixThemeButton(true);
 updateStateUI(renderStates);
 
 const canvas = renderer.domElement;
+let highlightingParticle = false;
 canvas.addEventListener("mousemove", (event) => {
 
   const mouse = new THREE.Vector2();
   mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
   mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
 
-  let highlightingParticle = false;
+  let selectedParticle = false;
 
   renderStates.forEach((state) => {
     if (!state.visible) {
@@ -186,15 +187,17 @@ canvas.addEventListener("mousemove", (event) => {
       );
       state.triggerEvent("change");
       highlightingParticle = true;
+      selectedParticle = true;
     }
   });
 
-  if (! highlightingParticle) {
+  if (highlightingParticle && ! selectedParticle) {
     renderStates.forEach((state) => {
       if (!state.visible) {
         return;
       }
       state.triggerEvent("fullUpdate");
     });
+    highlightingParticle = false;
   }
 });
