@@ -19,7 +19,7 @@ export class HitDataState {
 
   /**
    * Get the active hits, either the activeHits array or the allHits array.
-   * 
+   *
    * @returns {Array} The hits array.
    */
   get hits() {
@@ -37,7 +37,7 @@ export class HitDataState {
 
   /**
    * Toggles the hit property.
-   * 
+   *
    * @param {string} prop - The property to toggle.
    */
   toggleHitProperty(prop) {
@@ -54,7 +54,7 @@ export class HitDataState {
 
   /**
    * Top level update function, to update what the active hits are.
-   * 
+   *
    * @param {Array} particles - The particles to consider for updating the active hits.
    * @param {HitTypeState} hitTypeState - The hit type state object.
    */
@@ -71,11 +71,12 @@ export class HitDataState {
         .reverse()
         .filter((prop) => prop !== BUTTON_ID.All)
         .forEach((prop) => {
+          if (!this.props.get(hit.id)) return;
           if (!this.props.get(hit.id).has(prop)) return;
           if (newHits.has(hit)) return;
 
           newHits.add(hit);
-          newHitColours.push(this.props.get(hit).get(prop));
+          newHitColours.push(this.props.get(hit.id).get(prop));
         });
 
       // If we've added the hit, we're done.
@@ -84,7 +85,7 @@ export class HitDataState {
       // Otherwise, check if the ALL button is active
       if (this.activeProps.has(BUTTON_ID.All)) {
         newHits.add(hit);
-        newHitColours.push(this.props.get(hit).get(BUTTON_ID.All));
+        newHitColours.push(this.props.get(hit.id).get(BUTTON_ID.All));
       }
     });
 

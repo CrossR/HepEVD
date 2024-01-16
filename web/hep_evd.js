@@ -167,14 +167,11 @@ canvas.addEventListener("click", (event) => {
       try {
         const activeParticleId = state.particleData.hitToParticleMap.get(activeHit.id);
         activeParticle = state.particleData.particleMap.get(activeParticleId);
-        console.log(`Hit ${activeHit.id} is part of particle ${activeParticleId}.`)
       } catch {
         return;
       }
 
       const parentParticle = state.particleData.childToParentMap.get(activeParticle);
-      console.log(activeParticle);
-      console.log(parentParticle);
 
       // Finally, lets render out all the hits of this particle, but with a unique glow.
       drawParticleOverlay(state.hitGroup, state.particleData, state.hitData, HIT_CONFIG[state.hitDim], activeParticle);

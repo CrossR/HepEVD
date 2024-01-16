@@ -292,8 +292,6 @@ export class RenderState {
    * type and properties.
    */
   #updateHitArrays() {
-    console.log("Updating hit arrays");
-
     this.particleData.updateActive(this.hitData, this.hitTypeState);
     this.hitData.updateActive(this.particleData.particles, this.hitTypeState);
     this.mcData.updateActive(this.hitTypeState);

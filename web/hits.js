@@ -31,8 +31,6 @@ export function drawHits(
 ) {
   if (hits.length === 0) return;
 
-  console.log(hitConfig);
-
   // Check if we are using colour, and set it up if we are.
   let usingColour = hitColours.length === hits.length;
   let usingLut = typeof hitColours[0] === "number";
