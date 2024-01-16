@@ -5,7 +5,7 @@
 import * as THREE from "three";
 import Stats from "three/addons/libs/stats.module.js";
 
-import { HIT_CONFIG, THEME } from "./constants.js";
+import { THEME } from "./constants.js";
 import { getData } from "./data_loader.js";
 import { RenderState } from "./render_state.js";
 import { animate, onWindowResize } from "./rendering.js";
@@ -19,7 +19,7 @@ import {
   screenshotEvd,
   setTheme,
 } from "./ui.js";
-import { drawParticleOverlay } from "./hits.js";
+import { highlightParticleOnMouseMove } from "./interactions.js"
 
 // Do some initial threejs setup...
 const threeDCamera = new THREE.PerspectiveCamera(
@@ -135,71 +135,9 @@ document.resetView = () => {
 fixThemeButton(true);
 updateStateUI(renderStates);
 
+// Add in interactions...
+let mouseOverActive = false;
 const canvas = renderer.domElement;
-let highlightingParticle = false;
 canvas.addEventListener("mousemove", (event) => {
-
-  const mouse = new THREE.Vector2();
-  mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
-  mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
-
-  let selectedParticle = false;
-
-  renderStates.forEach((state) => {
-    if (!state.visible) {
-      return;
-    }
-
-    const raycaster = new THREE.Raycaster();
-    raycaster.setFromCamera(mouse, state.camera);
-    const intersects = raycaster.intersectObjects(state.scene.children, true);
-    if (intersects.length > 0) {
-      const intersectObject = intersects[0];
-
-      if (intersectObject.object.type !== "Mesh") {
-        return;
-      }
-
-      const hitId = intersectObject.instanceId;
-      const activeHit = state.hitData.activeHits[hitId];
-      let activeParticle;
-
-      try {
-        const activeParticleId = state.particleData.hitToParticleMap.get(
-          activeHit.id,
-        );
-        activeParticle = state.particleData.particleMap.get(activeParticleId);
-      } catch {
-        return;
-      }
-
-      const parentParticle =
-        state.particleData.childToParentMap.get(activeParticle);
-
-      if (! parentParticle) return;
-
-      // Finally, lets render out all the hits of this particle, but with a unique glow.
-      drawParticleOverlay(
-        state.hitGroup,
-        state.particleData,
-        state.hitData,
-        state.hitTypeState,
-        HIT_CONFIG[state.hitDim],
-        parentParticle,
-      );
-      state.triggerEvent("change");
-      highlightingParticle = true;
-      selectedParticle = true;
-    }
-  });
-
-  if (highlightingParticle && ! selectedParticle) {
-    renderStates.forEach((state) => {
-      if (!state.visible) {
-        return;
-      }
-      state.triggerEvent("fullUpdate");
-    });
-    highlightingParticle = false;
-  }
+  mouseOverActive = highlightParticleOnMouseMove(renderStates, mouseOverActive, event);
 });
