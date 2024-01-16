@@ -182,7 +182,7 @@ canvas.addEventListener("mousemove", (event) => {
         state.hitData,
         state.hitTypeState,
         HIT_CONFIG[state.hitDim],
-        activeParticle,
+        parentParticle,
       );
       state.triggerEvent("change");
       highlightingParticle = true;

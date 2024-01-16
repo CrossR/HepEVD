@@ -25,7 +25,7 @@ export class ParticleDataState {
 
     // Map from child particles, to top level parent particle.
     this.childToParentMap = new Map();
-    this.particles.forEach((particle) => {
+    particles.forEach((particle) => {
       let currentParticle = particle;
       while (currentParticle.parentID !== "") {
         const parentParticle = this.particleMap.get(currentParticle.parentID);
