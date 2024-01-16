@@ -136,9 +136,7 @@ fixThemeButton(true);
 updateStateUI(renderStates);
 
 const canvas = renderer.domElement;
-canvas.addEventListener("click", (event) => {
-  // Only handle single clicks.
-  if (event.detail !== 1) return;
+canvas.addEventListener("mousemove", (event) => {
 
   const mouse = new THREE.Vector2();
   mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
