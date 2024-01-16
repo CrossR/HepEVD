@@ -176,6 +176,8 @@ canvas.addEventListener("mousemove", (event) => {
       const parentParticle =
         state.particleData.childToParentMap.get(activeParticle);
 
+      if (! parentParticle) return;
+
       // Finally, lets render out all the hits of this particle, but with a unique glow.
       drawParticleOverlay(
         state.hitGroup,
