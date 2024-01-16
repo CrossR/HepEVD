@@ -186,7 +186,7 @@ export function drawParticleOverlay(
     side: THREE.DoubleSide,
     transparent: true,
     opacity: 0.02,
-    color: "yellow"
+    color: "white"
   });
 
   drawHits(group, activeHits, [], newConfig);
