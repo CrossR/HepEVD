@@ -145,7 +145,7 @@ export class ParticleDataState {
         if (!hitTypeState.checkHitType(hit)) return false;
 
         return Array.from(hitData.activeProps).some((prop) => {
-          return hitData.props.get(hit).has(prop);
+          return hitData.props.get(hit.id).has(prop);
         });
       });
 
