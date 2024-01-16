@@ -42,11 +42,12 @@ inline bool verboseLogging = false;
 
 static HepHitMap *getHitMap() { return &caloHitToEvdHit; }
 static HepEVDServer *getServer() { return hepEVDServer; }
+static void setVerboseLogging(const bool logging) { verboseLogging = logging; }
 
-static bool isServerInitialised(const bool quiet = false) {
+static bool isServerInitialised() {
     const bool isInit(hepEVDServer != nullptr && hepEVDServer->isInitialised());
 
-    if (verboseLogging || !quiet) {
+    if (verboseLogging) {
         std::cout << "HepEVD Server is not initialised!" << std::endl;
         std::cout << "Please call HepEVD::setHepEVDGeometry(this->GetPandora.GetGeometry()) or similar." << std::endl;
         std::cout << "This should be done before any other calls to the event display." << std::endl;
@@ -108,7 +109,7 @@ static void saveState(const std::string stateName, const int minSize = -1, const
 }
 
 static void resetServer(const bool resetGeo = false) {
-    if (!isServerInitialised(true))
+    if (!isServerInitialised())
         return;
 
     hepEVDServer->resetServer(resetGeo);
@@ -117,7 +118,7 @@ static void resetServer(const bool resetGeo = false) {
 
 static void setHepEVDGeometry(const pandora::GeometryManager *manager) {
 
-    if (isServerInitialised(true))
+    if (isServerInitialised())
         return;
 
     Volumes volumes;
