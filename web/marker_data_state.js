@@ -23,7 +23,7 @@ export class MarkerDataState {
 
   /**
    * Toggles the marker type in the activeMarkerTypes set.
-   * 
+   *
    * @param {string} type - The marker type to toggle.
    */
   toggleMarkerType(type) {
@@ -36,7 +36,7 @@ export class MarkerDataState {
 
   /**
    * Returns an array of markers of the specified type.
-   * 
+   *
    * @param {string} type - The type of markers to filter.
    * @returns {Array} - An array of markers.
    */
@@ -46,7 +46,7 @@ export class MarkerDataState {
 
   /**
    * Top level update function, to update the active markers.
-   * 
+   *
    * @param {Array} particles - The particles to consider for adding vertices as markers.
    * @param {HitTypeState} hitTypeState - The hit type state object used to check if a hit type is active.
    */

@@ -12,7 +12,7 @@ export class MCDataState {
 
   /**
    * Get the active MC, if any.
-   * 
+   *
    * @returns {any} The active MC.
    */
   get mc() {
@@ -21,7 +21,7 @@ export class MCDataState {
 
   /**
    * Top level update function, to update what the active MC hits are.
-   * 
+   *
    * @param {HitTypeState} hitTypeState - The hit type state object.
    */
   updateActive(hitTypeState) {

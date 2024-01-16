@@ -99,7 +99,6 @@ export function drawParticles(
   hitDataState,
   hitConfig,
 ) {
-
   const particles = particleDataState.allParticles;
   const activeParticles = particleDataState.particles;
   const activeHitProps = hitDataState.activeProps;
@@ -118,7 +117,9 @@ export function drawParticles(
   });
 
   let lutToUse = getCategoricalLutConf();
-  const filteredActiveHitProps = Array.from(activeHitProps).filter((p) => p != BUTTON_ID.All);
+  const filteredActiveHitProps = Array.from(activeHitProps).filter(
+    (p) => p != BUTTON_ID.All,
+  );
 
   // Particle colour is based on the absolute index of the particle, modulo the LUT size.
   // If there are multiple active hit properties, use that instead.
@@ -157,9 +158,8 @@ export function drawParticleOverlay(
   particleDataState,
   hitDataState,
   hitConfig,
-  targetParticle
+  targetParticle,
 ) {
-
   const activeHitProps = hitDataState.activeProps;
   const hitPropMap = hitDataState.props;
 
@@ -170,17 +170,20 @@ export function drawParticleOverlay(
   });
 
   const activeHits = hits.filter((hit) => {
-    return activeHitProps.size > 0 && Array.from(activeHitProps).every((prop) => {
-      return hitPropMap.get(hit.id).has(prop);
-    });
+    return (
+      activeHitProps.size > 0 &&
+      Array.from(activeHitProps).every((prop) => {
+        return hitPropMap.get(hit.id).has(prop);
+      })
+    );
   });
 
-  const newConfig = {...hitConfig};
+  const newConfig = { ...hitConfig };
   hitConfig.materialHit = new THREE.MeshStandardMaterial({
     side: THREE.DoubleSide,
     transparent: true,
     opacity: 0.1,
-    emissive: 0xFFFF00,
+    emissive: 0xffff00,
   });
 
   drawHits(group, activeHits, [], hitConfig);

@@ -64,7 +64,7 @@ export class HitDataState {
 
     this.allHits.forEach((hit) => {
       // Skip if hit type is not active
-      if (! hitTypeState.checkHitType(hit)) return;
+      if (!hitTypeState.checkHitType(hit)) return;
 
       // Otherwise, add it if it matches the active properties
       Array.from(this.activeProps)

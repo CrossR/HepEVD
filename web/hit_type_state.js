@@ -14,7 +14,7 @@ export class HitTypeState {
 
   /**
    * Toggles the active state of a hit type.
-   * 
+   *
    * @param {string} type - The hit type to toggle.
    */
   toggleHitType(type) {
@@ -27,11 +27,13 @@ export class HitTypeState {
 
   /**
    * Checks if the hit type is active.
-   * 
+   *
    * @param {Object} data - The hit data.
    * @returns {boolean} - True if the hit type is active, false otherwise.
    */
   checkHitType(data) {
-    return this.activeTypes.size === 0 || this.activeTypes.has(data.position.hitType);
+    return (
+      this.activeTypes.size === 0 || this.activeTypes.has(data.position.hitType)
+    );
   }
 }

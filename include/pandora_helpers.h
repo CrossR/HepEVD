@@ -419,8 +419,7 @@ static void addPFOs(const pandora::Pandora &pPandora, const pandora::PfoList *pP
         for (const auto childPfo : parentChildPair.second) {
 
             // If any particles are missing from the original top level list, add them now.
-            if (pfoToParticleMap.count(childPfo) == 0)
-            {
+            if (pfoToParticleMap.count(childPfo) == 0) {
                 const auto particle = addParticle(pPandora, childPfo, label);
                 particles.push_back(particle);
                 pfoToParticleMap.insert({childPfo, particle});

@@ -26,7 +26,7 @@ const threeDCamera = new THREE.PerspectiveCamera(
   50,
   window.innerWidth / window.innerHeight,
   0.1,
-  1e6
+  1e6,
 );
 const twoDCamera = new THREE.OrthographicCamera(
   window.innerWidth / -2,
@@ -34,7 +34,7 @@ const twoDCamera = new THREE.OrthographicCamera(
   window.innerHeight / 2,
   window.innerHeight / -2,
   -1,
-  1e6
+  1e6,
 );
 const renderer = new THREE.WebGLRenderer({
   alpha: true,
@@ -65,7 +65,7 @@ const threeDRenderer = new RenderState(
   hits.filter((hit) => hit.position.dim === "3D"),
   mcHits.filter((hit) => hit.position.dim === "3D"),
   markers.filter((marker) => marker.position.dim === "3D"),
-  detectorGeometry
+  detectorGeometry,
 );
 const twoDRenderer = new RenderState(
   "2D",
@@ -75,7 +75,7 @@ const twoDRenderer = new RenderState(
   hits.filter((hit) => hit.position.dim === "2D"),
   mcHits.filter((hit) => hit.position.dim === "2D"),
   markers.filter((marker) => marker.position.dim === "2D"),
-  detectorGeometry
+  detectorGeometry,
 );
 threeDRenderer.otherRenderer = twoDRenderer;
 twoDRenderer.otherRenderer = threeDRenderer;
@@ -126,7 +126,7 @@ window.addEventListener(
     onWindowResize(threeDRenderer, renderer);
     onWindowResize(twoDRenderer, renderer);
   },
-  false
+  false,
 );
 document.resetView = () => {
   threeDRenderer.resetView();
@@ -137,7 +137,6 @@ updateStateUI(renderStates);
 
 const canvas = renderer.domElement;
 canvas.addEventListener("click", (event) => {
-
   // Only handle single clicks.
   if (event.detail !== 1) return;
 
@@ -165,16 +164,25 @@ canvas.addEventListener("click", (event) => {
       let activeParticle;
 
       try {
-        const activeParticleId = state.particleData.hitToParticleMap.get(activeHit.id);
+        const activeParticleId = state.particleData.hitToParticleMap.get(
+          activeHit.id,
+        );
         activeParticle = state.particleData.particleMap.get(activeParticleId);
       } catch {
         return;
       }
 
-      const parentParticle = state.particleData.childToParentMap.get(activeParticle);
+      const parentParticle =
+        state.particleData.childToParentMap.get(activeParticle);
 
       // Finally, lets render out all the hits of this particle, but with a unique glow.
-      drawParticleOverlay(state.hitGroup, state.particleData, state.hitData, HIT_CONFIG[state.hitDim], activeParticle);
+      drawParticleOverlay(
+        state.hitGroup,
+        state.particleData,
+        state.hitData,
+        HIT_CONFIG[state.hitDim],
+        activeParticle,
+      );
       state.triggerEvent("change");
     }
   });
