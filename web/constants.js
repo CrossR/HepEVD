@@ -24,6 +24,20 @@ export const materialHit = new THREE.MeshBasicMaterial({
   side: THREE.DoubleSide,
 });
 
+const selectedMaterial2D = new THREE.MeshBasicMaterial({
+    side: THREE.DoubleSide,
+    transparent: true,
+    opacity: 0.02,
+    color: "yellow"
+});
+
+const selectedMaterial3D = new THREE.MeshBasicMaterial({
+    side: THREE.DoubleSide,
+    transparent: true,
+    opacity: 0.1,
+    color: "yellow"
+});
+
 //==============================================================================
 // UI Constants
 //==============================================================================
@@ -62,10 +76,12 @@ export const HIT_CONFIG = {
   "2D": {
     hitSize: 1,
     materialHit: materialHit,
+    selectedMaterial: selectedMaterial2D,
   },
   "3D": {
     hitSize: 1,
     materialHit: materialHit,
+    selectedMaterial: selectedMaterial3D,
   },
 };
 

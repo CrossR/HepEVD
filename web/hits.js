@@ -182,12 +182,7 @@ export function drawParticleOverlay(
 
   const newConfig = { ...hitConfig };
   newConfig.hitSize = hitConfig.hitSize + 1;
-  newConfig.materialHit = new THREE.MeshBasicMaterial({
-    side: THREE.DoubleSide,
-    transparent: true,
-    opacity: 0.02,
-    color: "white"
-  });
+  newConfig.materialHit = hitConfig.selectedMaterial;
 
   drawHits(group, activeHits, [], newConfig);
 }
