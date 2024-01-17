@@ -91,9 +91,10 @@ class HepEVDServer {
     int getNumberOfEventStates() { return this->eventStates.size(); }
     void setName(const std::string name) { this->getState()->name = name; }
 
-    // Start the event display server, blocking until exit is called by the
+    // Start/stop the event display server, blocking until exit is called by the
     // server.
     void startServer();
+    void stopServer();
 
     // Pass over the required event information.
     // TODO: Verify the information passed over.
@@ -295,6 +296,10 @@ inline void HepEVDServer::startServer() {
     std::cout << "Starting a server on http://localhost:" << EVD_PORT() << "..." << std::endl;
     this->server.listen("localhost", EVD_PORT());
     std::cout << "Server closed, continuing..." << std::endl;
+}
+
+inline void HepEVDServer::stopServer() {
+    this->server.stop();
 }
 
 }; // namespace HepEVD

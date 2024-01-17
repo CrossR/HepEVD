@@ -60,7 +60,7 @@ class BoxVolume {
 // Volumes vector to hold all possible detector geometry volumes.
 using AllVolumes = std::variant<BoxVolume>;
 using Volumes = std::vector<AllVolumes>;
-using VolumeMap = std::map<VolumeType, std::vector<double>>;
+using VolumeMap = std::vector<std::pair<VolumeType, std::vector<double>>>;
 
 // Define the required JSON formatters for the detector geometry volumes.
 inline static void to_json(json &j, const AllVolumes &vol) {
