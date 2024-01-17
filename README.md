@@ -32,6 +32,15 @@ make basic
 On remote machines, you should be able to use port forwarding to access the webserver
 that the example sets up from your local browser.
 
+Alternatively, to build and then install the Python bindings, you can run:
+
+```
+./get_extern_deps.sh
+cd python_bindings/
+python setup.py build_ext --inplace
+python setup.py install
+```
+
 ## Motivation
 
 It is often useful to be able to view how the interactions in a particle physics event
