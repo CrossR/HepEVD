@@ -1,3 +1,5 @@
+import random
+
 import hep_evd
 
 # Test Python Bindings
