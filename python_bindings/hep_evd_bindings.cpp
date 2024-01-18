@@ -132,6 +132,71 @@ static PyObject *py_set_geo(PyObject *self, PyObject *args) {
     Py_RETURN_TRUE;
 }
 
+// Add hits to the current server state.
+static PyObject *py_add_hits(PyObject *self, PyObject *args) {
+
+    if (!isInitialised()) {
+        Py_RETURN_FALSE;
+    }
+
+    // First, grab the full flat list of hits.
+    HepEVD::Hits hits;
+    PyObject *hitList;
+
+    if (!PyArg_ParseTuple(args, "O", &hitList)) {
+        std::cout << "HepEVD: Failed to parse hit arguments." << std::endl;
+        Py_RETURN_FALSE;
+    }
+
+    // Start iterating over that list...
+    PyObject *hitIter = PyObject_GetIter(hitList);
+    if (!hitIter) {
+        std::cout << "HepEVD: Failed to get iterator for hits." << std::endl;
+        Py_RETURN_FALSE;
+    }
+
+    // While we have hits, parse them out.
+    // That means parsing out in a few steps:
+    //  - Get the next hit object iterator.
+    //  - Parse out the position (as a new object), and the energy.
+    //  - Parse out the positions from that object.
+    while (true) {
+
+        PyObject *hitTuple = PyIter_Next(hitIter);
+        if (!hitTuple)
+            break;
+
+        // Check if we have a tuple, and if it has the right number of elements.
+        if (!PyList_Check(hitTuple) || PyList_Size(hitTuple) != 2) {
+            std::cout << "HepEVD: Failed to validate hit tuple." << std::endl;
+            Py_RETURN_FALSE;
+        }
+
+        // Parse out the position and energy.
+        // The hit object looks like this:
+        // [[x, y, z], energy]
+        // We parse out the position as another object, and the energy as a double.
+        PyObject *positionTuple = PyList_GetItem(hitTuple, 0);
+        double energy = PyFloat_AsDouble(PyList_GetItem(hitTuple, 1));
+
+        // Lets finally parse out the positions.
+        double x, y, z;
+        if (!PyArg_ParseTuple(PyList_AsTuple(positionTuple), "ddd", &x, &y, &z)) {
+            std::cout << "HepEVD: Failed to parse position tuple." << std::endl;
+            Py_RETURN_FALSE;
+        }
+
+        // Create the hit and add it to the list.
+        HepEVD::Hit *hit = new HepEVD::Hit({x, y, z}, energy);
+        hits.push_back(hit);
+    }
+
+    // Finally, add the hits to the current state.
+    hepEVDServer->addHits(hits);
+
+    Py_RETURN_TRUE;
+}
+
 // Basic bindings to run the example from the C++ code.
 static PyObject *py_run_example(PyObject *self, PyObject *args) {
 
@@ -234,11 +299,13 @@ static PyObject *py_run_example(PyObject *self, PyObject *args) {
 }
 
 // Define the methods we want to expose to Python.
-static PyMethodDef methods[] = {{"run_example", py_run_example, METH_VARARGS, "Run HepEVD example."},
-                                {"is_init", py_is_initialised, METH_VARARGS, "Check if the HepEVD server is initialised."},
-                                {"start_server", py_start_server, METH_VARARGS, "Start the HepEVD server."},
-                                {"set_geo", py_set_geo, METH_VARARGS, "Set the detector geometry."},
-                                {NULL, NULL, 0, NULL}};
+static PyMethodDef methods[] = {
+    {"run_example", py_run_example, METH_VARARGS, "Run HepEVD example."},
+    {"is_init", py_is_initialised, METH_VARARGS, "Check if the HepEVD server is initialised."},
+    {"start_server", py_start_server, METH_VARARGS, "Start the HepEVD server."},
+    {"set_geo", py_set_geo, METH_VARARGS, "Set the detector geometry."},
+    {"add_hits", py_add_hits, METH_VARARGS, "Add hits to the current event state."},
+    {NULL, NULL, 0, NULL}};
 
 // Actually define the module.
 static struct PyModuleDef module = {PyModuleDef_HEAD_INIT, "hep_evd", "HepEVD server bindings.", -1, methods};
