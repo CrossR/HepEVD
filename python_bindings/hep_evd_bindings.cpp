@@ -78,6 +78,18 @@ static PyObject *py_start_server(PyObject *self, PyObject *args) {
     Py_RETURN_TRUE;
 }
 
+// Reset the server.
+static PyObject *py_reset_server(PyObject *self, PyObject *args) {
+
+    if (!isInitialised()) {
+        Py_RETURN_FALSE;
+    }
+
+    hepEVDServer->resetServer();
+
+    Py_RETURN_TRUE;
+}
+
 // Receive detector geometry and initialise the server.
 static PyObject *py_set_geo(PyObject *self, PyObject *args) {
 
@@ -186,10 +198,11 @@ static PyObject *py_add_hits(PyObject *self, PyObject *args) {
 
         // Parse out the position and energy.
         // The hit object looks like this:
-        // [[x, y, z], energy]
+        // [[x, y, z], energy, hitType, properties]
         // We parse out the position as another object, and the energy as a double.
         PyObject *positionTuple = PyList_GetItem(hitTuple, 0);
         double energy = PyFloat_AsDouble(PyList_GetItem(hitTuple, 1));
+        HepEVD::HitType hitType = HepEVD::HitType::THREE_D;
 
         // Lets finally parse out the positions.
         double x, y, z;
@@ -237,6 +250,7 @@ static PyObject *py_save_state(PyObject *self, PyObject *args) {
     // This is useful so you can save states as you go, but start the
     // server after a certain number of states have been saved.
     if (minSize != -1 && hepEVDServer->getNumberOfEventStates() >= minSize) {
+        catch_signals();
         hepEVDServer->startServer();
 
         if (clearOnShow) {
