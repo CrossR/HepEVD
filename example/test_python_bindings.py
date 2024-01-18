@@ -33,6 +33,20 @@ hits = [
 ]
 hep_evd.add_hits(hits)
 
+print("Save the current state...")
+hep_evd.set_verbose(True)
+hep_evd.save_state("First")
+
+print("Add some more hits...")
+left_hits = [hit for hit in hits if hit[0][0] < 0]
+hep_evd.add_hits(left_hits)
+hep_evd.save_state("Second")
+
+print("Adding even more hits...")
+right_hits = [hit for hit in hits if hit[0][0] > 0]
+hep_evd.add_hits(right_hits)
+hep_evd.save_state("Third")
+
 print("Testing event display")
 hep_evd.start_server()
 
