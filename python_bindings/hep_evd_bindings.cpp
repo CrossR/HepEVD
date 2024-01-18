@@ -374,6 +374,7 @@ static PyMethodDef methods[] = {
     {"run_example", py_run_example, METH_VARARGS, "Run HepEVD example."},
     {"is_init", py_is_initialised, METH_VARARGS, "Check if the HepEVD server is initialised."},
     {"start_server", py_start_server, METH_VARARGS, "Start the HepEVD server."},
+    {"reset_server", py_reset_server, METH_VARARGS, "Reset the HepEVD server."},
     {"set_geo", py_set_geo, METH_VARARGS, "Set the detector geometry."},
     {"add_hits", py_add_hits, METH_VARARGS, "Add hits to the current event state."},
     {"save_state", py_save_state, METH_VARARGS, "Save the current event state."},
@@ -381,7 +382,31 @@ static PyMethodDef methods[] = {
     {NULL, NULL, 0, NULL}};
 
 // Actually define the module.
-static struct PyModuleDef module = {PyModuleDef_HEAD_INIT, "hep_evd", "HepEVD server bindings.", -1, methods};
+static struct PyModuleDef module_def = {PyModuleDef_HEAD_INIT, "hep_evd", "HepEVD server bindings.", -1, methods};
+
+// Define submodules for the two enums.
+static struct PyModuleDef hit_dimension_def = {PyModuleDef_HEAD_INIT, "HIT_DIM", "HepEVD hit dimensions.", -1, NULL};
+static struct PyModuleDef hit_type_def = {PyModuleDef_HEAD_INIT, "HIT_TYPE", "HepEVD hit types.", -1, NULL};
 
 // And finally, initialise the module.
-PyMODINIT_FUNC PyInit_hep_evd(void) { return PyModule_Create(&module); }
+PyMODINIT_FUNC PyInit_hep_evd(void) {
+
+    PyObject *module = PyModule_Create(&module_def);
+
+    // Add the enum values to their respective modules.
+    PyObject *hit_dimension_module = PyModule_Create(&hit_dimension_def);
+    PyModule_AddIntConstant(hit_dimension_module, "THREE_D", HepEVD::THREE_D);
+    PyModule_AddIntConstant(hit_dimension_module, "TWO_D", HepEVD::TWO_D);
+
+    PyObject *hit_type_module = PyModule_Create(&hit_type_def);
+    PyModule_AddIntConstant(hit_type_module, "GENERAL", HepEVD::GENERAL);
+    PyModule_AddIntConstant(hit_type_module, "TWO_D_U", HepEVD::TWO_D_U);
+    PyModule_AddIntConstant(hit_type_module, "TWO_D_V", HepEVD::TWO_D_V);
+    PyModule_AddIntConstant(hit_type_module, "TWO_D_W", HepEVD::TWO_D_W);
+
+    // Add the submodules to the main module.
+    PyModule_AddObject(module, "HIT_DIM", hit_dimension_module);
+    PyModule_AddObject(module, "HIT_TYPE", hit_type_module);
+
+    return module;
+}
