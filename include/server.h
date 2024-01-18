@@ -26,7 +26,7 @@ namespace HepEVD {
 class HepEVDServer {
   public:
     HepEVDServer() : geometry({}), eventStates() {}
-    HepEVDServer(const DetectorGeometry &geo = {}, const Hits &hits = {}, const MCHits &mc = {})
+    HepEVDServer(const DetectorGeometry &geo, const Hits &hits = {}, const MCHits &mc = {})
         : geometry(geo), eventStates() {
         currentState = 0;
         eventStates[currentState] = EventState("Initial", {}, hits, mc, {}, "");
@@ -255,10 +255,10 @@ inline void HepEVDServer::startServer() {
 
     // State controls...
     this->server.Get("/allStateInfo", [&](const Request &, Response &res) {
-        res.set_content(json(this->eventStates).dump(), "text/plain");
+        res.set_content(json(this->eventStates).dump(), "application/json");
     });
     this->server.Get("/stateInfo", [&](const Request &, Response &res) {
-        res.set_content(json(*this->getState()).dump(), "text/plain");
+        res.set_content(json(*this->getState()).dump(), "application/json");
     });
     this->server.Get("/swap/id/:id", [&](const Request &req, Response &res) {
         try {

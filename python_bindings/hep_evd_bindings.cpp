@@ -40,6 +40,19 @@ static PyObject *py_is_initialised(PyObject *self, PyObject *args) {
     Py_RETURN_TRUE;
 }
 
+// Toggle verbose logging.
+static PyObject *py_verbose_logging(PyObject *self, PyObject *args) {
+    bool verbose;
+    if (!PyArg_ParseTuple(args, "b", &verbose)) {
+        std::cout << "HepEVD: Failed to parse verbose logging arguments." << std::endl;
+        Py_RETURN_FALSE;
+    }
+
+    verboseLogging = verbose;
+
+    Py_RETURN_TRUE;
+}
+
 // Start the server.
 static PyObject *py_start_server(PyObject *self, PyObject *args) {
 
@@ -47,18 +60,17 @@ static PyObject *py_start_server(PyObject *self, PyObject *args) {
         Py_RETURN_FALSE;
     }
 
+    // Swap the state back to the previous one if we have an empty state.
+    // The current state is likely empty due to a call to save_state.
+    if (hepEVDServer->getState()->isEmpty())
+        hepEVDServer->previousEventState();
+
     if (verboseLogging) {
         std::cout << "HepEVD: There are " << hepEVDServer->getHits().size() << " hits." << std::endl;
         std::cout << "HepEVD: There are " << hepEVDServer->getMCHits().size() << " MC hits." << std::endl;
         std::cout << "HepEVD: There are " << hepEVDServer->getParticles().size() << " particles." << std::endl;
         std::cout << "HepEVD: There are " << hepEVDServer->getMarkers().size() << " markers." << std::endl;
     }
-
-    unsigned int startState = -1;
-    if (PyArg_ParseTuple(args, "|I", &startState) && startState >= 0)
-        hepEVDServer->swapEventState(startState);
-    else if (hepEVDServer->getState()->isEmpty())
-        hepEVDServer->previousEventState();
 
     catch_signals();
     hepEVDServer->startServer();
@@ -197,6 +209,51 @@ static PyObject *py_add_hits(PyObject *self, PyObject *args) {
     Py_RETURN_TRUE;
 }
 
+// Save the current state, and start a new one.
+static PyObject *py_save_state(PyObject *self, PyObject *args) {
+
+    if (!isInitialised()) {
+        Py_RETURN_FALSE;
+    }
+
+    // There is three parameters:
+    //  - The name of the state.
+    //  - The minimum size of the current state before starting the server (optional).
+    //  - Whether to clear the current state on show (optional).
+    char* stateName;
+    int minSize = -1;
+    bool clearOnShow = true;
+    if (!PyArg_ParseTuple(args, "s|ib", &stateName, &minSize, &clearOnShow)) {
+        std::cout << "HepEVD: Failed to parse state arguments." << std::endl;
+        Py_RETURN_FALSE;
+    }
+
+    hepEVDServer->setName(stateName);
+    bool shouldIncState = true;
+
+    // If prior to adding the new state, the size of the current state was
+    // greater than the minimum size, then start the server.
+    //
+    // This is useful so you can save states as you go, but start the
+    // server after a certain number of states have been saved.
+    if (minSize != -1 && hepEVDServer->getNumberOfEventStates() >= minSize) {
+        hepEVDServer->startServer();
+
+        if (clearOnShow) {
+            hepEVDServer->resetServer();
+            shouldIncState = false;
+        }
+    }
+
+    // Finally, add a new state if needed.
+    if (shouldIncState) {
+        hepEVDServer->addEventState();
+        hepEVDServer->nextEventState();
+    }
+
+    Py_RETURN_TRUE;
+}
+
 // Basic bindings to run the example from the C++ code.
 static PyObject *py_run_example(PyObject *self, PyObject *args) {
 
@@ -305,6 +362,8 @@ static PyMethodDef methods[] = {
     {"start_server", py_start_server, METH_VARARGS, "Start the HepEVD server."},
     {"set_geo", py_set_geo, METH_VARARGS, "Set the detector geometry."},
     {"add_hits", py_add_hits, METH_VARARGS, "Add hits to the current event state."},
+    {"save_state", py_save_state, METH_VARARGS, "Save the current event state."},
+    {"set_verbose", py_verbose_logging, METH_VARARGS, "Toggle verbose logging."},
     {NULL, NULL, 0, NULL}};
 
 // Actually define the module.
