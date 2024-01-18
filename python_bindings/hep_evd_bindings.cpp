@@ -191,18 +191,26 @@ static PyObject *py_add_hits(PyObject *self, PyObject *args) {
             break;
 
         // Check if we have a tuple, and if it has the right number of elements.
-        if (!PyList_Check(hitTuple) || PyList_Size(hitTuple) != 2) {
+        if (!PyList_Check(hitTuple) || PyList_Size(hitTuple) < 2) {
             std::cout << "HepEVD: Failed to validate hit tuple." << std::endl;
             Py_RETURN_FALSE;
         }
 
         // Parse out the position and energy.
         // The hit object looks like this:
-        // [[x, y, z], energy, hitType, properties]
+        // [[x, y, z], energy, dimension?, hitType?]
         // We parse out the position as another object, and the energy as a double.
         PyObject *positionTuple = PyList_GetItem(hitTuple, 0);
         double energy = PyFloat_AsDouble(PyList_GetItem(hitTuple, 1));
-        HepEVD::HitType hitType = HepEVD::HitType::THREE_D;
+
+        // These are both optional, so we need to check if they exist.
+        HepEVD::HitDimension dimension = HepEVD::HitDimension::THREE_D;
+        if (PyList_Size(hitTuple) >= 3)
+            dimension = static_cast<HepEVD::HitDimension>(PyLong_AsLong(PyList_GetItem(hitTuple, 2)));
+
+        HepEVD::HitType hitType = HepEVD::HitType::GENERAL;
+        if (PyList_Size(hitTuple) >= 4)
+            hitType = static_cast<HepEVD::HitType>(PyLong_AsLong(PyList_GetItem(hitTuple, 3)));
 
         // Lets finally parse out the positions.
         double x, y, z;
@@ -213,6 +221,9 @@ static PyObject *py_add_hits(PyObject *self, PyObject *args) {
 
         // Create the hit and add it to the list.
         HepEVD::Hit *hit = new HepEVD::Hit({x, y, z}, energy);
+        hit->setDim(dimension);
+        hit->setHitType(hitType);
+
         hits.push_back(hit);
     }
 
