@@ -136,8 +136,8 @@ fixThemeButton(true);
 updateStateUI(renderStates);
 
 // Add in interactions...
-let mouseOverActive = false;
+let currentlyHighlighting = [];
 const canvas = renderer.domElement;
 canvas.addEventListener("mousemove", (event) => {
-  mouseOverActive = highlightParticleOnMouseMove(renderStates, mouseOverActive, event);
+  currentlyHighlighting = highlightParticleOnMouseMove(renderStates, currentlyHighlighting, event);
 });

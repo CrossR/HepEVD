@@ -115,6 +115,7 @@ export function drawParticles(
   const hits = activeParticles.map((particle) => {
     return particle.hits;
   });
+  particleDataState.activelyDrawnHits = hits.flat();
 
   let lutToUse = getCategoricalLutConf();
   const filteredActiveHitProps = Array.from(activeHitProps).filter(
@@ -165,7 +166,9 @@ export function drawParticleOverlay(
   const hitPropMap = hitDataState.props;
 
   const hits = targetParticle.hits;
+  let particlesDrawn = [targetParticle.id];
   targetParticle.childIDs.map((childId) => {
+    particlesDrawn.push(childId);
     const childParticle = particleDataState.particleMap.get(childId);
     hits.push(...childParticle.hits);
   });

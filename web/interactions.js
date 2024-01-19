@@ -7,13 +7,25 @@ import * as THREE from "three";
 import { HIT_CONFIG } from "./constants.js";
 import { drawParticleOverlay } from "./hits.js";
 
-export function highlightParticleOnMouseMove(renderStates, currentlyHighlighting, event) {
+export function highlightParticleOnMouseMove(
+  renderStates,
+  currentlyHighlighting,
+  event,
+) {
+  // This only works if we have a particle data state,
+  // since we can't relate unassociated hits.
+  if (
+    !Array.from(renderStates.values()).some(
+      (state) => state.particleData.length !== 0,
+    )
+  )
+    return [];
 
   const mouse = new THREE.Vector2();
   mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
   mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
 
-  let particleSelected = false;
+  let selectedParticles = [];
 
   renderStates.forEach((state) => {
     if (!state.visible) {
@@ -23,15 +35,18 @@ export function highlightParticleOnMouseMove(renderStates, currentlyHighlighting
     const raycaster = new THREE.Raycaster();
     raycaster.setFromCamera(mouse, state.camera);
     const intersects = raycaster.intersectObjects(state.scene.children, true);
-    if (intersects.length > 0) {
-      const intersectObject = intersects[0];
+    const visibleIntersects = intersects.filter((intersect) => {
+      return intersect.object.material.opacity > 0.75;
+    });
+    if (visibleIntersects.length > 0) {
+      const intersectObject = visibleIntersects[0];
 
       if (intersectObject.object.type !== "Mesh") {
         return;
       }
 
-      const hitId = intersectObject.instanceId;
-      const activeHit = state.hitData.activeHits[hitId];
+      const hitNum = intersectObject.instanceId;
+      const activeHit = state.particleData.activelyDrawnHits[hitNum];
       let activeParticle;
 
       try {
@@ -43,10 +58,21 @@ export function highlightParticleOnMouseMove(renderStates, currentlyHighlighting
         return;
       }
 
-      const parentParticle =
-        state.particleData.childToParentMap.get(activeParticle);
+      const parentParticle = state.particleData.getParent(activeParticle);
 
-      if (! parentParticle) return;
+      if (!parentParticle) return;
+
+      selectedParticles.push(parentParticle.id);
+
+      // If we're already highlighting this particle, don't do anything.
+      if (currentlyHighlighting.includes(parentParticle.id)) {
+        return;
+      }
+
+      // If we are highlighting a new particle, we need to clear the old one.
+      if (currentlyHighlighting.find((id) => id !== parentParticle.id)) {
+        state.triggerEvent("fullUpdate");
+      }
 
       // Finally, lets render out all the hits of this particle, but with a unique glow.
       drawParticleOverlay(
@@ -55,14 +81,14 @@ export function highlightParticleOnMouseMove(renderStates, currentlyHighlighting
         state.hitData,
         state.hitTypeState,
         HIT_CONFIG[state.hitDim],
-        parentParticle,
+        activeParticle,
       );
+
       state.triggerEvent("change");
-      particleSelected = true;
     }
   });
 
-  if (currentlyHighlighting && ! particleSelected) {
+  if (currentlyHighlighting.length > 0 && selectedParticles.length === 0) {
     renderStates.forEach((state) => {
       if (!state.visible) {
         return;
@@ -71,5 +97,5 @@ export function highlightParticleOnMouseMove(renderStates, currentlyHighlighting
     });
   }
 
-  return particleSelected;
+  return selectedParticles;
 }
