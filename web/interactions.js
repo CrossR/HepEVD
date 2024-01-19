@@ -28,6 +28,10 @@ export function highlightParticleOnMouseMove(
   // If shift is pressed, we want to highlight the parent particle.
   const shiftPressed = event.shiftKey;
 
+  // On the other hand, if its ctrl, highlight the current particle only.
+  // i.e. no child particles, as is default.
+  const ctrlPressed = event.ctrlKey;
+
   let selectedParticles = [];
 
   renderStates.forEach((state) => {
@@ -62,29 +66,35 @@ export function highlightParticleOnMouseMove(
       }
 
       const parentParticle = state.particleData.getParent(activeParticle);
+      const targetParticle = shiftPressed ? parentParticle : activeParticle;
 
-      if (!parentParticle) return;
+      if (!targetParticle) return;
 
-      selectedParticles.push(parentParticle.id);
+      selectedParticles.push(targetParticle.id);
 
       // If we're already highlighting this particle, don't do anything.
-      if (currentlyHighlighting.includes(parentParticle.id)) {
+      if (currentlyHighlighting.includes(targetParticle.id)) {
         return;
       }
 
       // If we are highlighting a new particle, we need to clear the old one.
-      if (currentlyHighlighting.find((id) => id !== parentParticle.id)) {
+      if (currentlyHighlighting.find((id) => id !== targetParticle.id)) {
         state.triggerEvent("fullUpdate");
       }
 
       // Finally, lets render out all the hits of this particle, but with a unique glow.
+      // By default, its just the selected particle.
+      // Holding ctrl instead shows the children of the selected particle.
+      // Holding Shift swaps to the full particle (i.e. parent down).
+      //    Holding shift also implies rendering of children.
       drawParticleOverlay(
         state.hitGroup,
         state.particleData,
         state.hitData,
         state.hitTypeState,
         HIT_CONFIG[state.hitDim],
-        shiftPressed ? parentParticle : activeParticle,
+        targetParticle,
+        ctrlPressed || shiftPressed,
       );
 
       state.triggerEvent("change");

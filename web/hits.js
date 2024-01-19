@@ -161,17 +161,19 @@ export function drawParticleOverlay(
   hitTypeState,
   hitConfig,
   targetParticle,
+  renderChildren,
 ) {
   const activeHitProps = hitDataState.activeProps;
   const hitPropMap = hitDataState.props;
 
-  const hits = targetParticle.hits;
-  let particlesDrawn = [targetParticle.id];
-  targetParticle.childIDs.map((childId) => {
-    particlesDrawn.push(childId);
-    const childParticle = particleDataState.particleMap.get(childId);
-    hits.push(...childParticle.hits);
-  });
+  const hits = targetParticle.hits.slice();
+
+  if (renderChildren) {
+    targetParticle.childIDs.map((childId) => {
+      const childParticle = particleDataState.particleMap.get(childId);
+      hits.push(...childParticle.hits);
+    });
+  }
 
   const activeHits = hits.filter((hit) => {
     return (
