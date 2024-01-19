@@ -19,7 +19,7 @@ import {
   screenshotEvd,
   setTheme,
 } from "./ui.js";
-import { highlightParticleOnMouseMove } from "./interactions.js"
+import { highlightParticleOnMouseMove } from "./interactions.js";
 
 // Do some initial threejs setup...
 const threeDCamera = new THREE.PerspectiveCamera(
@@ -139,5 +139,9 @@ updateStateUI(renderStates);
 let currentlyHighlighting = [];
 const canvas = renderer.domElement;
 canvas.addEventListener("mousemove", (event) => {
-  currentlyHighlighting = highlightParticleOnMouseMove(renderStates, currentlyHighlighting, event);
+  currentlyHighlighting = highlightParticleOnMouseMove(
+    renderStates,
+    currentlyHighlighting,
+    event,
+  );
 });

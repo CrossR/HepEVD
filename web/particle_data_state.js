@@ -75,8 +75,7 @@ export class ParticleDataState {
   getParent(particle) {
     const parentID = this.childToParentMap.get(particle.id);
 
-    if (parentID)
-      return this.particleMap.get(parentID);
+    if (parentID) return this.particleMap.get(parentID);
 
     return particle;
   }

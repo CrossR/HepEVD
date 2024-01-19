@@ -25,17 +25,17 @@ export const materialHit = new THREE.MeshBasicMaterial({
 });
 
 const selectedMaterial2D = new THREE.MeshBasicMaterial({
-    side: THREE.DoubleSide,
-    transparent: true,
-    opacity: 0.02,
-    color: "yellow"
+  side: THREE.DoubleSide,
+  transparent: true,
+  opacity: 0.02,
+  color: "yellow",
 });
 
 const selectedMaterial3D = new THREE.MeshBasicMaterial({
-    side: THREE.DoubleSide,
-    transparent: true,
-    opacity: 0.1,
-    color: "yellow"
+  side: THREE.DoubleSide,
+  transparent: true,
+  opacity: 0.1,
+  color: "yellow",
 });
 
 //==============================================================================
