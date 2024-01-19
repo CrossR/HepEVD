@@ -298,9 +298,7 @@ inline void HepEVDServer::startServer() {
     std::cout << "Server closed, continuing..." << std::endl;
 }
 
-inline void HepEVDServer::stopServer() {
-    this->server.stop();
-}
+inline void HepEVDServer::stopServer() { this->server.stop(); }
 
 }; // namespace HepEVD
 
