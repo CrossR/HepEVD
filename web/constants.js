@@ -27,7 +27,7 @@ export const materialHit = new THREE.MeshBasicMaterial({
 const selectedMaterial2D = new THREE.MeshBasicMaterial({
   side: THREE.DoubleSide,
   transparent: true,
-  opacity: 0.02,
+  opacity: 0.08,
   color: "yellow",
 });
 
