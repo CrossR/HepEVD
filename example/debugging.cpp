@@ -52,7 +52,7 @@ int main(void) {
             const double x = corner.x + disX(gen);
             const double y = corner.y + disY(gen);
             const double z = corner.z + disZ(gen);
-            const double e = particles.size() + i;
+            const double e = particles.size() + 1;
 
             Hit *hit = new Hit({x, y, z}, e);
             particleHits.push_back(hit);
