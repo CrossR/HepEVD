@@ -81,7 +81,7 @@ export function highlightParticleOnMouseMove(
         state.hitData,
         state.hitTypeState,
         HIT_CONFIG[state.hitDim],
-        activeParticle,
+        parentParticle,
       );
 
       state.triggerEvent("change");
