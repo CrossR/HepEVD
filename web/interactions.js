@@ -25,6 +25,9 @@ export function highlightParticleOnMouseMove(
   mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
   mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
 
+  // If shift is pressed, we want to highlight the parent particle.
+  const shiftPressed = event.shiftKey;
+
   let selectedParticles = [];
 
   renderStates.forEach((state) => {
@@ -81,7 +84,7 @@ export function highlightParticleOnMouseMove(
         state.hitData,
         state.hitTypeState,
         HIT_CONFIG[state.hitDim],
-        parentParticle,
+        shiftPressed ? parentParticle : activeParticle,
       );
 
       state.triggerEvent("change");
