@@ -26,7 +26,7 @@ namespace HepEVD {
 class HepEVDServer {
   public:
     HepEVDServer() : geometry({}), eventStates() {}
-    HepEVDServer(const DetectorGeometry &geo = {}, const Hits &hits = {}, const MCHits &mc = {})
+    HepEVDServer(const DetectorGeometry &geo, const Hits &hits = {}, const MCHits &mc = {})
         : geometry(geo), eventStates() {
         currentState = 0;
         eventStates[currentState] = EventState("Initial", {}, hits, mc, {}, "");
@@ -91,9 +91,10 @@ class HepEVDServer {
     int getNumberOfEventStates() { return this->eventStates.size(); }
     void setName(const std::string name) { this->getState()->name = name; }
 
-    // Start the event display server, blocking until exit is called by the
+    // Start/stop the event display server, blocking until exit is called by the
     // server.
     void startServer();
+    void stopServer();
 
     // Pass over the required event information.
     // TODO: Verify the information passed over.
@@ -254,10 +255,10 @@ inline void HepEVDServer::startServer() {
 
     // State controls...
     this->server.Get("/allStateInfo", [&](const Request &, Response &res) {
-        res.set_content(json(this->eventStates).dump(), "text/plain");
+        res.set_content(json(this->eventStates).dump(), "application/json");
     });
     this->server.Get("/stateInfo", [&](const Request &, Response &res) {
-        res.set_content(json(*this->getState()).dump(), "text/plain");
+        res.set_content(json(*this->getState()).dump(), "application/json");
     });
     this->server.Get("/swap/id/:id", [&](const Request &req, Response &res) {
         try {
@@ -296,6 +297,8 @@ inline void HepEVDServer::startServer() {
     this->server.listen("localhost", EVD_PORT());
     std::cout << "Server closed, continuing..." << std::endl;
 }
+
+inline void HepEVDServer::stopServer() { this->server.stop(); }
 
 }; // namespace HepEVD
 

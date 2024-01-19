@@ -38,14 +38,16 @@ using HepHitMap = std::map<const pandora::CaloHit *, Hit *>;
 // or awkwardness around using across multiple functions.
 inline HepEVDServer *hepEVDServer;
 inline HepHitMap caloHitToEvdHit;
+inline bool verboseLogging = false;
 
 static HepHitMap *getHitMap() { return &caloHitToEvdHit; }
 static HepEVDServer *getServer() { return hepEVDServer; }
+static void setVerboseLogging(const bool logging) { verboseLogging = logging; }
 
-static bool isServerInitialised(const bool quiet = false) {
+static bool isServerInitialised() {
     const bool isInit(hepEVDServer != nullptr && hepEVDServer->isInitialised());
 
-    if (!isInit && !quiet) {
+    if (verboseLogging) {
         std::cout << "HepEVD Server is not initialised!" << std::endl;
         std::cout << "Please call HepEVD::setHepEVDGeometry(this->GetPandora.GetGeometry()) or similar." << std::endl;
         std::cout << "This should be done before any other calls to the event display." << std::endl;
@@ -54,11 +56,11 @@ static bool isServerInitialised(const bool quiet = false) {
     return isInit;
 }
 
-static void startServer(const bool verbose = false, const int startState = -1) {
+static void startServer(const int startState = -1) {
     if (!isServerInitialised())
         return;
 
-    if (verbose) {
+    if (verboseLogging) {
         std::cout << "HepEVD: There are " << hepEVDServer->getHits().size() << " hits registered!" << std::endl;
         std::cout << "HepEVD: There are " << hepEVDServer->getMCHits().size() << " MC hits registered!" << std::endl;
         std::cout << "HepEVD: There are " << hepEVDServer->getParticles().size() << " particles registered!"
@@ -107,7 +109,7 @@ static void saveState(const std::string stateName, const int minSize = -1, const
 }
 
 static void resetServer(const bool resetGeo = false) {
-    if (!isServerInitialised(true))
+    if (!isServerInitialised())
         return;
 
     hepEVDServer->resetServer(resetGeo);
@@ -116,7 +118,7 @@ static void resetServer(const bool resetGeo = false) {
 
 static void setHepEVDGeometry(const pandora::GeometryManager *manager) {
 
-    if (isServerInitialised(true))
+    if (isServerInitialised())
         return;
 
     Volumes volumes;
@@ -245,7 +247,7 @@ static void addMarkers(const Markers &markers) {
     hepEVDServer->addMarkers(markers);
 }
 
-static void showCurrentMC(const pandora::Algorithm &pAlgorithm) {
+static void showMC(const pandora::Algorithm &pAlgorithm, const std::string &listName = "") {
 
     if (!isServerInitialised())
         return;
@@ -261,7 +263,10 @@ static void showCurrentMC(const pandora::Algorithm &pAlgorithm) {
 
     const pandora::MCParticleList *pMCParticleList(nullptr);
     try {
-        PandoraContentApi::GetCurrentList(pAlgorithm, pMCParticleList);
+        if (listName.empty())
+            PandoraContentApi::GetCurrentList(pAlgorithm, pMCParticleList);
+        else
+            PandoraContentApi::GetList(pAlgorithm, listName, pMCParticleList);
     } catch (pandora::StatusCodeException &) {
         return;
     }
@@ -340,7 +345,8 @@ static Particle *addParticle(const pandora::Pandora &pPandora, const pandora::Pa
     try {
         vertex = lar_content::LArPfoHelper::GetVertex(pPfo);
     } catch (pandora::StatusCodeException &) {
-        std::cout << "HepEVD: Failed to get vertex for PFO!" << std::endl;
+        if (verboseLogging)
+            std::cout << "HepEVD: Failed to get vertex for PFO!" << std::endl;
         return particle;
     }
 
@@ -383,12 +389,6 @@ static void addPFOs(const pandora::Pandora &pPandora, const pandora::PfoList *pP
         const auto particle = addParticle(pPandora, pPfo, label);
         particles.push_back(particle);
         pfoToParticleMap.insert({pPfo, particle});
-
-        for (const auto childPfo : pPfo->GetDaughterPfoList()) {
-            const auto child = addParticle(pPandora, pPfo);
-            particles.push_back(child);
-            pfoToParticleMap.insert({childPfo, child});
-        }
     }
 
     // Now, we can add the parent/child relationships.
@@ -396,13 +396,38 @@ static void addPFOs(const pandora::Pandora &pPandora, const pandora::PfoList *pP
     // Its a little easier to do this in two steps, just to avoid
     // having to worry about the order of the PFOs in the list or any
     // double counting.
+    std::map<const pandora::ParticleFlowObject *, const pandora::PfoList> parentToChildMap;
     for (const pandora::ParticleFlowObject *const pPfo : *pPfoList) {
-        if (pPfo->GetNDaughterPfos() == 0)
+        const auto parentPfo = lar_content::LArPfoHelper::GetParentPfo(pPfo);
+
+        if (parentPfo == nullptr || parentToChildMap.count(parentPfo) == 1)
             continue;
 
-        for (const auto childPfo : pPfo->GetDaughterPfoList()) {
+        pandora::PfoList allChildren;
+        lar_content::LArPfoHelper::GetAllDownstreamPfos(pPfo, allChildren);
+        parentToChildMap.insert({parentPfo, allChildren});
+    }
 
-            const auto parent = pfoToParticleMap.at(pPfo);
+    for (const auto parentChildPair : parentToChildMap) {
+
+        if (parentChildPair.second.empty())
+            continue;
+
+        const auto pPfo = parentChildPair.first;
+        const auto parent = pfoToParticleMap.at(pPfo);
+
+        for (const auto childPfo : parentChildPair.second) {
+
+            // If any particles are missing from the original top level list, add them now.
+            if (pfoToParticleMap.count(childPfo) == 0) {
+                const auto particle = addParticle(pPandora, childPfo, label);
+                particles.push_back(particle);
+                pfoToParticleMap.insert({childPfo, particle});
+            }
+
+            if (pPfo == childPfo)
+                continue;
+
             const auto child = pfoToParticleMap.at(childPfo);
 
             parent->addChild(child->getID());

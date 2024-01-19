@@ -6,13 +6,46 @@ import * as THREE from "three";
 import { LineMaterial } from "three/addons/lines/LineMaterial.js";
 
 //==============================================================================
+// Three.js Constants
+//==============================================================================
+
+export const threeDGeoMat = new THREE.LineBasicMaterial({
+  color: "darkred",
+});
+export const twoDXMat = new LineMaterial({
+  color: "darkred",
+  linewidth: 0.002,
+});
+export const twoDYMat = new LineMaterial({
+  color: "darkgreen",
+  linewidth: 0.002,
+});
+export const materialHit = new THREE.MeshBasicMaterial({
+  side: THREE.DoubleSide,
+});
+
+const selectedMaterial2D = new THREE.MeshBasicMaterial({
+  side: THREE.DoubleSide,
+  transparent: true,
+  opacity: 0.02,
+  color: "yellow",
+});
+
+const selectedMaterial3D = new THREE.MeshBasicMaterial({
+  side: THREE.DoubleSide,
+  transparent: true,
+  opacity: 0.1,
+  color: "yellow",
+});
+
+//==============================================================================
 // UI Constants
 //==============================================================================
 
 export const BUTTON_ID = {
   None: "None",
   All: "All",
-  Ignored: ["id"]
+  Ignored: ["id"],
 };
 
 export const THEME = {
@@ -42,9 +75,13 @@ export const DEFAULT_CATEGORICAL_LUT_CONFIG = {
 export const HIT_CONFIG = {
   "2D": {
     hitSize: 1,
+    materialHit: materialHit,
+    selectedMaterial: selectedMaterial2D,
   },
   "3D": {
     hitSize: 1,
+    materialHit: materialHit,
+    selectedMaterial: selectedMaterial3D,
   },
 };
 
@@ -54,25 +91,6 @@ export const MARKER_CONFIG = {
     colour: "red",
   },
 };
-
-//==============================================================================
-// Three.js Constants
-//==============================================================================
-
-export const threeDGeoMat = new THREE.LineBasicMaterial({
-  color: "darkred",
-});
-export const twoDXMat = new LineMaterial({
-  color: "darkred",
-  linewidth: 0.002,
-});
-export const twoDYMat = new LineMaterial({
-  color: "darkgreen",
-  linewidth: 0.002,
-});
-export const materialHit = new THREE.MeshBasicMaterial({
-  side: THREE.DoubleSide,
-});
 
 //==============================================================================
 // Physics Constants

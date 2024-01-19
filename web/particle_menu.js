@@ -138,18 +138,16 @@ export function createParticleMenu(hitDim, particlesMap, onClick) {
 
       const aNumHits = a.childIDs.reduce((acc, childID) => {
         if (particlesMap.has(childID))
-            return acc + particlesMap.get(childID).hits.length;
-        else
-            return acc;
+          return acc + particlesMap.get(childID).hits.length;
+        else return acc;
       }, a.hits.length);
       const bNumHits = b.childIDs.reduce((acc, childID) => {
         if (particlesMap.has(childID))
-            return acc + particlesMap.get(childID).hits.length;
-        else
-            return acc;
+          return acc + particlesMap.get(childID).hits.length;
+        else return acc;
       }, b.hits.length);
 
-      return aNumHits < bNumHits;
+      return (aNumHits < bNumHits) - (aNumHits > bNumHits);
     });
 
   if (particles.length === 0) {

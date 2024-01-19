@@ -73,7 +73,7 @@ export function fitSceneInCamera(
   const size = boundingBox.getSize(new THREE.Vector3());
   const center = boundingBox.getCenter(new THREE.Vector3());
 
-  if (cameraType == "3D") {
+  if (cameraType === "3D") {
     // Get the maximum dimension of the bounding box...
     const maxDim = Math.max(size.x, size.y, size.z);
     const cameraFOV = camera.fov * (Math.PI / 180);

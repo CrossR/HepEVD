@@ -25,7 +25,7 @@ export async function updateStateUI(renderStates) {
   const stateIdPairs = await getAllStateInfo();
 
   // Only show the state swapper if there are multiple states.
-  if (stateIdPairs.length == 1) {
+  if (stateIdPairs.length === 1) {
     stateDiv.style.display = "none";
     return;
   }

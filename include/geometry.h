@@ -35,6 +35,9 @@ class BoxVolume {
         : position(pos), xWidth(xWidth), yWidth(yWidth), zWidth(zWidth) {}
 
     Position getCenter() const { return this->position; }
+    double getXWidth() const { return this->xWidth; }
+    double getYWidth() const { return this->yWidth; }
+    double getZWidth() const { return this->zWidth; }
 
     // Use custom to/from_json to allow including the volume type.
     friend void to_json(json &j, const BoxVolume &box) {
@@ -60,7 +63,7 @@ class BoxVolume {
 // Volumes vector to hold all possible detector geometry volumes.
 using AllVolumes = std::variant<BoxVolume>;
 using Volumes = std::vector<AllVolumes>;
-using VolumeMap = std::map<VolumeType, std::vector<double>>;
+using VolumeMap = std::vector<std::pair<VolumeType, std::vector<double>>>;
 
 // Define the required JSON formatters for the detector geometry volumes.
 inline static void to_json(json &j, const AllVolumes &vol) {

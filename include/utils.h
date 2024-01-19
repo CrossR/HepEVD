@@ -37,6 +37,22 @@ class Position {
     void setDim(HitDimension d) { dim = d; }
     void setHitType(HitType t) { hitType = t; }
 
+    // Implement comparison operators so we can sort Positions.
+    bool operator<(const Position &other) const {
+        if (this->x != other.x)
+            return this->x < other.x;
+
+        if (this->y != other.y)
+            return this->y < other.y;
+
+        return this->z < other.z;
+    }
+
+    // Implement equality operators so we can remove duplicates.
+    bool operator==(const Position &other) const {
+        return this->x == other.x && this->y == other.y && this->z == other.z;
+    }
+
     // When converting to JSON, we want to convert 2D positoins to use
     // XY, not XZ.
     friend void to_json(json &j, const Position &pos) {
@@ -71,6 +87,9 @@ class Position {
     HitDimension dim = THREE_D;
     HitType hitType = GENERAL;
 };
+
+// General helper definition.
+using Positions = std::vector<Position>;
 
 // General templated utility function to POST data to a URL.
 template <typename T> bool postData(const std::string &endPoint, const T &data) {

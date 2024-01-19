@@ -29,9 +29,9 @@ class EventState {
                std::string mcTruth = "")
         : name(name), particles(particles), hits(hits), mcHits(mcHits), markers(markers), mcTruth(mcTruth) {}
 
-
     bool isEmpty() {
-        return name.size() == 0 && particles.empty() && hits.empty() && mcHits.empty() && markers.empty() && mcTruth.size() == 0;
+        return name.size() == 0 && particles.empty() && hits.empty() && mcHits.empty() && markers.empty() &&
+               mcTruth.size() == 0;
     }
 
     // Only need a to JSON method, as we don't need to read in the state.

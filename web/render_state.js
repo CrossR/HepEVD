@@ -7,9 +7,14 @@ import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 
 import { fitSceneInCamera, setupControls } from "./camera_and_controls.js";
 import { BUTTON_ID, HIT_CONFIG } from "./constants.js";
-import { getHitProperties, getHitTypes, getMCColouring } from "./helpers.js";
+import { getMCColouring } from "./helpers.js";
+import { HitDataState } from "./hit_data_state.js";
+import { HitTypeState } from "./hit_type_state.js";
+import { ParticleDataState } from "./particle_data_state.js";
 import { drawHits, drawParticles } from "./hits.js";
+import { MarkerDataState } from "./marker_data_state.js";
 import { drawPoints, drawRings } from "./markers.js";
+import { MCDataState } from "./mc_data_state.js";
 import { drawBox } from "./rendering.js";
 import {
   enableInteractionTypeToggle,
@@ -37,7 +42,7 @@ export class RenderState {
     hits,
     mcHits,
     markers,
-    geometry
+    geometry,
   ) {
     // Basic, crucial information...
     this.name = name;
@@ -79,8 +84,8 @@ export class RenderState {
    * @returns {number} The number of hits.
    */
   get hitSize() {
-    if (this.particles.length > 0) return this.particles.length;
-    return this.hits.length;
+    if (this.particleData.length > 0) return this.particleData.length;
+    return this.hitData.length;
   }
 
   /**
@@ -118,19 +123,16 @@ export class RenderState {
   updateData(particles, hits, mcHits, markers, geometry) {
     // Data Setup, first the top level static arrays...
     this.detectorGeometry = geometry;
-    this.hits = hits;
-    this.mcHits = mcHits;
-    this.markers = markers;
 
     // Filter the particles to only those that have hits in the current
     // dimension.
-    this.particles = particles.flatMap((particle) => {
+    const filteredParticles = particles.flatMap((particle) => {
       const newParticle = { ...particle };
       newParticle.hits = particle.hits.filter(
-        (hit) => hit.position.dim === this.hitDim
+        (hit) => hit.position.dim === this.hitDim,
       );
       newParticle.vertices = particle.vertices.filter(
-        (vertex) => vertex.position.dim === this.hitDim
+        (vertex) => vertex.position.dim === this.hitDim,
       );
 
       // Ignore particles with no hits, but also
@@ -143,19 +145,6 @@ export class RenderState {
       return newParticle;
     });
 
-    this.particleMap = new Map();
-    this.hitToParticleMap = new Map();
-    this.particles.forEach((particle) => {
-      this.particleMap.set(particle.id, particle);
-      particle.hits.forEach((hit) => {
-        this.hitToParticleMap.set(hit.id, particle.id);
-      });
-    });
-
-    // The generated property lists...
-    this.hitProperties = getHitProperties(this.particles, this.hits);
-    this.hitTypes = getHitTypes(this.particles, this.hits);
-
     // Setup the dynamic bits, the state that will change.
     // This includes the in use hits/markers etc, as well as
     // their types and labels etc...
@@ -164,20 +153,11 @@ export class RenderState {
     // These store the actual hits/markers etc that are in use.
     // This can differ from the static arrays above, as we may
     // only want to show certain hits/markers etc.
-    this.activeParticles = [];
-    this.activeHits = [];
-    this.activeHitColours = [];
-    this.activeMC = [];
-    this.activeMarkers = [];
-
-    // Similarly, this stores the active properties, which
-    // is used to build the active lists above, by filtering
-    // the static lists.
-    this.activeHitProps = new Set([BUTTON_ID.All]);
-    this.activeHitTypes = new Set();
-    this.activeMarkerTypes = new Set();
-    this.activeInteractionTypes = new Set();
-    this.ignoredParticles = new Set();
+    this.hitTypeState = new HitTypeState(filteredParticles, hits);
+    this.particleData = new ParticleDataState(filteredParticles);
+    this.hitData = new HitDataState(filteredParticles, hits);
+    this.mcData = new MCDataState(mcHits);
+    this.markerData = new MarkerDataState(markers);
 
     // Actually fill the active arrays with their initial values.
     this.#updateActiveArrays();
@@ -192,14 +172,11 @@ export class RenderState {
 
     // For now, just render the box geometry and nothing else.
     const boxVolumes = this.detectorGeometry.volumes.filter(
-      (volume) => volume.volumeType === "box"
+      (volume) => volume.volumeType === "box",
     );
 
-    // Use either the hits or active hits (based on the particles)
-    const hits = this.hits.length > 0 ? this.hits : this.activeHits;
-
     boxVolumes.forEach((box) =>
-      drawBox(this.hitDim, this.detGeoGroup, hits, box)
+      drawBox(this.hitDim, this.detGeoGroup, this.hitData.hits, box),
     );
 
     this.detGeoGroup.matrixAutoUpdate = false;
@@ -216,11 +193,9 @@ export class RenderState {
 
     drawParticles(
       this.hitGroup,
-      this.particles,
-      this.activeParticles,
-      this.activeHitProps,
-      this.hitProperties,
-      HIT_CONFIG[this.hitDim]
+      this.particleData,
+      this.hitData,
+      HIT_CONFIG[this.hitDim],
     );
 
     this.hitGroup.matrixAutoUpdate = false;
@@ -232,15 +207,14 @@ export class RenderState {
    * Renders the hits for the current state, based on the active hit types and properties.
    * Clears the hit group and then draws the hits with the active hit colours.
    */
-  renderHits() {
-    this.hitGroup.clear();
+  renderHits(
+    hits = this.hitData.hits,
+    colours = this.hitData.colours,
+    clear = true,
+  ) {
+    if (clear) this.hitGroup.clear();
 
-    drawHits(
-      this.hitGroup,
-      this.activeHits,
-      this.activeHitColours,
-      HIT_CONFIG[this.hitDim]
-    );
+    drawHits(this.hitGroup, hits, colours, HIT_CONFIG[this.hitDim]);
 
     this.hitGroup.matrixAutoUpdate = false;
     this.hitGroup.matrixWorldAutoUpdate = false;
@@ -254,12 +228,12 @@ export class RenderState {
   renderEvent(fullRender = false) {
     // Update all the active arrays, and check if the
     // number of markers changes.
-    const markerNum = this.activeMarkers.length;
+    const markerNum = this.markerData.length;
     this.#updateActiveArrays();
-    const newMarkerNum = this.activeMarkers.length;
+    const newMarkerNum = this.markerData.length;
 
     // Render the hits out.
-    if (this.particles.length > 0) {
+    if (this.particleData.length > 0) {
       this.renderParticles();
     } else {
       this.renderHits();
@@ -284,13 +258,13 @@ export class RenderState {
   renderMCHits() {
     this.mcHitGroup.clear();
 
-    const mcColours = getMCColouring(this.activeMC);
+    const mcColours = getMCColouring(this.mcData.mc);
 
     drawHits(
       this.mcHitGroup,
-      this.activeMC,
+      this.mcData.mc,
       mcColours,
-      HIT_CONFIG[this.hitDim]
+      HIT_CONFIG[this.hitDim],
     );
 
     this.mcHitGroup.matrixAutoUpdate = false;
@@ -305,14 +279,8 @@ export class RenderState {
   renderMarkers() {
     this.markerGroup.clear();
 
-    drawRings(
-      this.activeMarkers.filter((marker) => marker.markerType === "Ring"),
-      this.markerGroup
-    );
-    drawPoints(
-      this.activeMarkers.filter((marker) => marker.markerType === "Point"),
-      this.markerGroup
-    );
+    drawRings(this.markerData.getMarkersOfType("Ring"), this.markerGroup);
+    drawPoints(this.markerData.getMarkersOfType("Point"), this.markerGroup);
 
     this.markerGroup.matrixAutoUpdate = false;
     this.markerGroup.matrixWorldAutoUpdate = false;
@@ -324,89 +292,9 @@ export class RenderState {
    * type and properties.
    */
   #updateHitArrays() {
-    console.log("Updating hit arrays")
-    let newHits = new Set();
-    const newMCHits = [];
-    const newHitColours = [];
-
-    // First, do the actual hits...
-    this.hits.forEach((hit) => {
-      if (
-        this.activeHitTypes.size > 0 &&
-        !this.activeHitTypes.has(hit.position.hitType)
-      )
-        return;
-      Array.from(this.activeHitProps)
-        .reverse()
-        .filter((property) => property !== BUTTON_ID.All)
-        .forEach((property) => {
-          if (!this.hitProperties.get(hit).has(property)) return;
-          if (newHits.has(hit)) return;
-
-          newHits.add(hit);
-          newHitColours.push(this.hitProperties.get(hit).get(property));
-        });
-
-      // If we've already added this hit, we don't need to do anything else.
-      if (newHits.has(hit)) return;
-
-      // Otherwise, check if the all button is active, and if so, add it at the end.
-      if (this.activeHitProps.has(BUTTON_ID.All)) {
-        newHits.add(hit);
-        newHitColours.push(this.hitProperties.get(hit).get(BUTTON_ID.All));
-      }
-    });
-
-    // Then repeat for the MC hits, but skip the hit properties bit.
-    this.mcHits.forEach((hit) => {
-      if (
-        this.activeHitTypes.size > 0 &&
-        !this.activeHitTypes.has(hit.position.hitType)
-      )
-        return;
-      newMCHits.push(hit);
-    });
-
-    // Finally, update the active particles.
-    const newParticles = this.particles.flatMap((particle) => {
-      if (
-        this.activeInteractionTypes.size > 0 &&
-        !this.activeInteractionTypes.has(particle.interactionType)
-      )
-        return [];
-
-      if (this.ignoredParticles.has(particle.id)) {
-        return [];
-      }
-
-      const newParticle = { ...particle };
-
-      newParticle.hits = newParticle.hits.filter((hit) => {
-        if (
-          this.activeHitTypes.size > 0 &&
-          !this.activeHitTypes.has(hit.position.hitType)
-        )
-          return false;
-
-        return Array.from(this.activeHitProps).some((property) => {
-          return this.hitProperties.get(hit).has(property);
-        });
-      });
-
-      if (newParticle.hits.length === 0) return [];
-
-      return newParticle;
-    });
-
-    if (newHits.size === 0 && newParticles.length > 0) {
-      const hits = newParticles.flatMap((particle) => particle.hits);
-      newHits = hits;
-    }
-
-    this.activeHits = [...newHits];
-    this.activeHitColours = newHitColours;
-    this.activeMC = newMCHits;
-    this.activeParticles = newParticles;
+    this.particleData.updateActive(this.hitData, this.hitTypeState);
+    this.hitData.updateActive(this.particleData.particles, this.hitTypeState);
+    this.mcData.updateActive(this.hitTypeState);
   }
 
   /**
@@ -415,53 +303,10 @@ export class RenderState {
    * type.
    */
   #updateMarkers() {
-    const newMarkers = new Set();
-
-    // Check if there are any active markers, and if not, just return.
-    if (this.activeMarkerTypes.size === 0) {
-      this.activeMarkers = [];
-      return;
-    }
-
-    // Otherwise, loop over the markers and add them if they're active.
-    this.activeMarkerTypes.forEach((markerType) => {
-      this.markers.forEach((marker) => {
-        if (
-          this.activeHitTypes.size > 0 &&
-          !this.activeHitTypes.has(marker.position.hitType)
-        )
-          return;
-        if (marker.markerType === markerType) newMarkers.add(marker);
-      });
-    });
-
-    // If there are no markers still, but there are particles
-    // we want to add the vertex markers.
-    if (this.particles.length > 0) {
-      this.particles.forEach((particle) => {
-        if (
-          this.activeInteractionTypes.size > 0 &&
-          !this.activeInteractionTypes.has(particle.interactionType)
-        )
-          return;
-
-        if (this.ignoredParticles.has(particle.id)) {
-          return;
-        }
-
-        particle.vertices.forEach((vertex) => {
-          if (
-            this.activeHitTypes.size > 0 &&
-            !this.activeHitTypes.has(vertex.position.hitType)
-          )
-            return;
-
-          newMarkers.add(vertex);
-        });
-      });
-    }
-
-    this.activeMarkers = [...newMarkers];
+    this.markerData.updateActive(
+      this.particleData.particles,
+      this.hitTypeState,
+    );
   }
 
   /*
@@ -487,18 +332,8 @@ export class RenderState {
       return;
     }
 
-    // If the "None" property is clicked, we want to toggle everything off.
-    // Otherwise, add or remove this property from the list.
-    if (hitProperty === BUTTON_ID.None) {
-      this.activeHitProps.clear();
-    } else {
-      // Add or remove the toggled property as needed...
-      if (this.activeHitProps.has(hitProperty)) {
-        this.activeHitProps.delete(hitProperty);
-      } else {
-        this.activeHitProps.add(hitProperty);
-      }
-    }
+    // Add or remove the toggled class as needed...
+    this.hitData.toggleHitProperty(hitProperty);
 
     // Now that the internal state is correct, correct the UI.
     toggleButton(this.hitDim, hitProperty);
@@ -510,13 +345,8 @@ export class RenderState {
 
   // Similar to the property change, update the hit type list.
   onHitTypeChange(hitType) {
-
     // Add or remove the toggled class as needed...
-    if (this.activeHitTypes.has(hitType)) {
-      this.activeHitTypes.delete(hitType);
-    } else {
-      this.activeHitTypes.add(hitType);
-    }
+    this.hitTypeState.toggleHitType(hitType);
 
     // Now that the internal state is correct, correct the UI.
     toggleButton("types", hitType, false);
@@ -528,14 +358,8 @@ export class RenderState {
 
   // If any markers are toggled, update the list.
   onMarkerChange(markerType) {
-    // Add or remove the toggled class as needed...
-    if (this.activeMarkerTypes.has(markerType)) {
-      this.activeMarkerTypes.delete(markerType);
-    } else {
-      this.activeMarkerTypes.add(markerType);
-    }
-
     // Fix the active markers for this change...
+    this.markerData.toggleMarkerType(markerType);
     this.#updateMarkers();
 
     // Now that the internal state is correct, correct the UI.
@@ -549,11 +373,7 @@ export class RenderState {
   // If any particle interaction types are toggled, update the list.
   onInteractionTypeChange(interactionType) {
     // Add or remove the toggled class as needed...
-    if (this.activeInteractionTypes.has(interactionType)) {
-      this.activeInteractionTypes.delete(interactionType);
-    } else {
-      this.activeInteractionTypes.add(interactionType);
-    }
+    this.particleData.toggleInteractionType(interactionType);
 
     // Now that the internal state is correct, correct the UI.
     toggleButton(`particles_${this.hitDim}`, interactionType, false);
@@ -584,23 +404,23 @@ export class RenderState {
     this.renderEvent();
 
     // Fill in any dropdown entries, or hit class toggles.
-    populateDropdown(this.hitDim, this.hitProperties, (prop) =>
-      this.onHitPropertyChange(prop)
+    populateDropdown(this.hitDim, this.hitData.props, (prop) =>
+      this.onHitPropertyChange(prop),
     );
-    populateTypeToggle(this.hitDim, this.hitTypes, (hitType) =>
-      this.onHitTypeChange(hitType)
+    populateTypeToggle(this.hitDim, this.hitTypeState.types, (hitType) =>
+      this.onHitTypeChange(hitType),
     );
     populateMarkerToggle(
       this.hitDim,
-      this.markers,
-      this.particles,
-      (markerType) => this.onMarkerChange(markerType)
+      this.markerData.markers,
+      this.particleData.particles,
+      (markerType) => this.onMarkerChange(markerType),
     );
-    enableMCToggle(this.hitDim, this.mcHits, () => this.onMCToggle());
+    enableMCToggle(this.hitDim, this.mcData.mc, () => this.onMCToggle());
     enableInteractionTypeToggle(
       this.hitDim,
-      this.particles,
-      (interactionType) => this.onInteractionTypeChange(interactionType)
+      this.particleData.particles,
+      (interactionType) => this.onInteractionTypeChange(interactionType),
     );
 
     // Move the scene/camera around to best fit it in.
@@ -609,7 +429,7 @@ export class RenderState {
         this.camera,
         this.controls,
         this.detGeoGroup,
-        this.hitDim
+        this.hitDim,
       );
       setupControls(this.hitDim, this.controls);
       this.scene.add(this.camera);

@@ -10,8 +10,9 @@ import {
   getCategoricalLutConf,
   getContinuousLutConf,
 } from "./colourmaps.js";
-import { materialHit } from "./constants.js";
-import { hashStr } from "./helpers.js";
+import { ParticleDataState } from "./particle_data_state.js";
+import { HitDataState } from "./hit_data_state.js";
+import { BUTTON_ID, materialHit } from "./constants.js";
 
 /**
  * Draws a set of hits as a 3D mesh using Three.js.
@@ -31,10 +32,11 @@ export function drawHits(
   if (hits.length === 0) return;
 
   // Check if we are using colour, and set it up if we are.
-  const colourLut = new Lut("cooltowarm", 10);
-  addColourMap(colourLut, lutConfig.name, lutConfig.size);
   let usingColour = hitColours.length === hits.length;
   let usingLut = typeof hitColours[0] === "number";
+
+  const colourLut = new Lut("cooltowarm", 10);
+  addColourMap(colourLut, lutConfig.name, lutConfig.size);
 
   if (usingColour && usingLut && lutConfig.style !== "categorical") {
     let minColourValue = Infinity;
@@ -57,7 +59,7 @@ export function drawHits(
   const dummyObject = new THREE.Object3D();
   const hitMesh = new THREE.InstancedMesh(
     hitGeometry,
-    materialHit,
+    hitConfig.materialHit ?? materialHit,
     hits.length,
   );
 
@@ -87,20 +89,21 @@ export function drawHits(
  * Draws particles on a given group element.
  *
  * @param {THREE.Group} group - The group to which the particles should be added.
- * @param {Array} particles - All the particle objects, to find absolute positions for colouring.
- * @param {Array} activeParticles - The active particle objects, each with an array of hits.
- * @param {Array} activeHitProps - An array of active hit properties, used for colouring.
- * @param {Map} hitPropMap - A map from hit property names to their values.
+ * @param {ParticleDataState} particleDataState - All the particle objects, to find absolute positions for colouring.
+ * @param {HitDataState} hitDataState - An array of active hit properties, used for colouring.
  * @param {Object} hitConfig - An object containing configuration options for the hit mesh.
  */
 export function drawParticles(
   group,
-  particles,
-  activeParticles,
-  activeHitProps,
-  hitPropMap,
+  particleDataState,
+  hitDataState,
   hitConfig,
 ) {
+  const particles = particleDataState.allParticles;
+  const activeParticles = particleDataState.particles;
+  const activeHitProps = hitDataState.activeProps;
+  const hitPropMap = hitDataState.props;
+
   // Build up a map of particle to absolute index.
   // This lets the colouring be consistent regardless of
   // the currently applied filters.
@@ -112,18 +115,22 @@ export function drawParticles(
   const hits = activeParticles.map((particle) => {
     return particle.hits;
   });
+  particleDataState.activelyDrawnHits = hits.flat();
 
   let lutToUse = getCategoricalLutConf();
+  const filteredActiveHitProps = Array.from(activeHitProps).filter(
+    (p) => p != BUTTON_ID.All,
+  );
 
   // Particle colour is based on the absolute index of the particle, modulo the LUT size.
   // If there are multiple active hit properties, use that instead.
   const particleColours = activeParticles.flatMap((particle, _) => {
     return particle.hits.map((hit) => {
-      if (activeHitProps.size > 1) {
-        return Array.from(activeHitProps)
+      if (filteredActiveHitProps.length > 0) {
+        return Array.from(filteredActiveHitProps)
           .reverse()
           .map((prop) => {
-            return hitPropMap.get(hit).get(prop);
+            return hitPropMap.get(hit.id).get(prop);
           })[0];
       }
 
@@ -131,9 +138,54 @@ export function drawParticles(
     });
   });
 
-  if (activeHitProps.size > 1) {
+  if (filteredActiveHitProps.length > 0) {
     lutToUse = getContinuousLutConf();
   }
 
   drawHits(group, hits.flat(), particleColours, hitConfig, lutToUse);
+}
+
+/**
+ * Draws an overlay over the hits of a given particle.
+ *
+ * @param {THREE.Group} group - The group to which the particles should be added.
+ * @param {ParticleDataState} particleDataState - All the particle objects, to find absolute positions for colouring.
+ * @param {HitDataState} hitDataState - An array of active hit properties, used for colouring.
+ * @param {Object} hitConfig - An object containing configuration options for the hit mesh.
+ * @param {Object} particle - The particle to draw the overlay for.
+ */
+export function drawParticleOverlay(
+  group,
+  particleDataState,
+  hitDataState,
+  hitTypeState,
+  hitConfig,
+  targetParticle,
+) {
+  const activeHitProps = hitDataState.activeProps;
+  const hitPropMap = hitDataState.props;
+
+  const hits = targetParticle.hits;
+  let particlesDrawn = [targetParticle.id];
+  targetParticle.childIDs.map((childId) => {
+    particlesDrawn.push(childId);
+    const childParticle = particleDataState.particleMap.get(childId);
+    hits.push(...childParticle.hits);
+  });
+
+  const activeHits = hits.filter((hit) => {
+    return (
+      hitTypeState.checkHitType(hit) &&
+      activeHitProps.size > 0 &&
+      Array.from(activeHitProps).every((prop) => {
+        return hitPropMap.get(hit.id).has(prop);
+      })
+    );
+  });
+
+  const newConfig = { ...hitConfig };
+  newConfig.hitSize = hitConfig.hitSize + 1;
+  newConfig.materialHit = hitConfig.selectedMaterial;
+
+  drawHits(group, activeHits, [], newConfig);
 }

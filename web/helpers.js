@@ -61,16 +61,16 @@ export function getHitProperties(particles, hits) {
   //  - If a hit is labelled.
   //  - If a hit has a property map associated.
   allHits.forEach((hit) => {
-    hitPropMaps.set(hit, new Map([[BUTTON_ID.All, 0.0]]));
-    hitPropMaps.get(hit).set("energy", hit.energy);
+    hitPropMaps.set(hit.id, new Map([[BUTTON_ID.All, 0.0]]));
+    hitPropMaps.get(hit.id).set("energy", hit.energy);
 
     if (hit.label !== "") {
-      hitPropMaps.get(hit).set(hit.label, 1.0);
+      hitPropMaps.get(hit.id).set(hit.label, 1.0);
     }
 
     if (Object.keys(hit.properties).length > 0) {
       Object.entries(hit.properties).forEach((prop) => {
-        hitPropMaps.get(hit).set(prop[0], prop[1]);
+        hitPropMaps.get(hit.id).set(prop[0], prop[1]);
       });
     }
   });
