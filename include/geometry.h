@@ -35,6 +35,9 @@ class BoxVolume {
         : position(pos), xWidth(xWidth), yWidth(yWidth), zWidth(zWidth) {}
 
     Position getCenter() const { return this->position; }
+    double getXWidth() const { return this->xWidth; }
+    double getYWidth() const { return this->yWidth; }
+    double getZWidth() const { return this->zWidth; }
 
     // Use custom to/from_json to allow including the volume type.
     friend void to_json(json &j, const BoxVolume &box) {

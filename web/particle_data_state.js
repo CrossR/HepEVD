@@ -32,8 +32,10 @@ export class ParticleDataState {
         currentParticle = parentParticle;
       }
 
-      this.childToParentMap.set(particle, currentParticle);
+      this.childToParentMap.set(particle.id, currentParticle.id);
     });
+
+    this.activelyDrawnHits = [];
   }
 
   /**
@@ -62,6 +64,21 @@ export class ParticleDataState {
    */
   checkIgnored(particle) {
     return this.ignoredParticles.has(particle.id);
+  }
+
+  /**
+   * Get the parent particle for the given particle.
+   * @param {Object} particle - The particle object to get the parent of.
+   *
+   * @returns {Object} - The parent particle, or the particle itself if it has no parent.
+   */
+  getParent(particle) {
+    const parentID = this.childToParentMap.get(particle.id);
+
+    if (parentID)
+      return this.particleMap.get(parentID);
+
+    return particle;
   }
 
   /**
