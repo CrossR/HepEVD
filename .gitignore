@@ -43,3 +43,11 @@ example/basic
 example/server
 example/client
 example/debugging
+
+# Python Virtual Environment
+.venv
+
+# Python bindings
+python_bindings/UNKNOWN.egg-info/
+python_bindings/build/
+python_bindings/dist/

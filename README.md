@@ -6,7 +6,8 @@ A header-only web-based event display for particle physics events.
 
 ## Code Layout
 
-The codebase is split into two sections: the C++ code, and the Javascript code:
+The main codebase is split into two sections: the C++ code, and the Javascript code.
+There is then two further folders, containing the example code, and the Python bindings.
 
 - `include` contains all the actual C++ library code that is responsible for storing
   the basic objects needed (hits, detector layouts, event markers), as well as the HTTP
@@ -16,6 +17,14 @@ The codebase is split into two sections: the C++ code, and the Javascript code:
 
 - `web` contains the actual Javascript code for the event display, utilising `THREE.js`
   heavily.
+
+- `python_bindings` contains the Python bindings for the C++ code, allowing the C++
+  library to be used from Python.
+
+- `example` contains example code, showing how to use the library. This includes a simple
+  example, showing randomly placed hits in a DUNE FD sized module, as well as an optional
+  client/server example, which demonstrates how to use the library in a client/server mode,
+  which can be useful to preserve state between events. Finally, there is an example of how the Python bindings can be used.
 
 ## Installation + Usage
 
@@ -36,8 +45,25 @@ Alternatively, to build and then install the Python bindings, you can run:
 
 ```
 ./get_extern_deps.sh
+
+# You may want to setup a Python Venv for this first...
+# https://docs.python.org/3/library/venv.html
+python -m venv .venv
+source .venv/bin/activate
+
+# Swap to the Python bindings directory.
 cd python_bindings/
+
+# Build the bindings.
+# In Python 3.11 and below, this uses distutils which is built-in.
+# However, in Python 3.12, distutils is deprecated, and setuptools is used instead.
+# This is not built-in, so you may need to install it first, though it is usually
+# installed by default, alongside pip.
+
 python setup.py build_ext --inplace
+
+# Install the bindings to your venv Python version...
+
 python setup.py install
 ```
 
@@ -78,8 +104,6 @@ convert and parse objects to/from JSON, such that they can be served via the HTT
 ## Future Work
 
 - More helper functions.
-
-- How easy / how expensive is adding a hoverover action?
 
 - Hit widths? Pain with instanced mesh though.
 

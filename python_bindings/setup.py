@@ -1,4 +1,12 @@
-from distutils.core import setup, Extension
+# Top level setup.py for the python bindings
+
+# Prior to Python 3.12 distutils was the standard way to build python extensions
+# distutils is now deprecated in favor of setuptools
+
+try:
+    from setuptools import setup, Extension
+except ImportError:
+    from distutils.core import setup, Extension
 
 hep_evd =  Extension(
     'hep_evd',
