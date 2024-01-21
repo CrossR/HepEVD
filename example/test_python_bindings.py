@@ -48,6 +48,27 @@ twoD_hits = [
 hep_evd.add_hits(threeD_hits)
 hep_evd.add_hits(twoD_hits)
 
+print("Add propreties to all hits...")
+for hit in threeD_hits:
+    properties = {}
+
+    if hit[0][0] < -250:
+        properties["Left"] = 1.0
+    if hit[0][0] > 250:
+        properties["Right"] = 1.0
+
+    if hit[0][1] < -500:
+        properties["Bottom"] = 1.0
+    if hit[0][1] > 500:
+        properties["Top"] = 1.0
+
+    if hit[0][2] < 100:
+        properties["Front"] = 1.0
+    if hit[0][2] > 1200:
+        properties["Back"] = 1.0
+
+    hep_evd.add_hit_props(hit, properties)
+
 print("Save the current state...")
 hep_evd.set_verbose(True)
 hep_evd.save_state("First")

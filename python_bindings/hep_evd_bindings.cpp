@@ -11,6 +11,10 @@
 inline HepEVD::HepEVDServer *hepEVDServer;
 inline bool verboseLogging = false;
 
+// Define a basic type to store the full information about a hit.
+using PyHit = std::tuple<HepEVD::Position, double, HepEVD::HitDimension, HepEVD::HitType>;
+inline std::map<PyHit, HepEVD::Hit *> hitMap;
+
 // Define a signal handler to catch SIGINT, SIGTERM, SIGKILL.
 // This is so we can gracefully shutdown the server.
 void catch_signals() {
@@ -27,6 +31,9 @@ void catch_signals() {
 }
 
 // Check if the server is initialised.
+// We've got two versions of this, one for C++ and one for Python.
+// The C++ version is used internally, and the Python version is
+// used to expose the function to Python.
 bool isInitialised() {
     if (hepEVDServer == nullptr || !hepEVDServer->isInitialised())
         return false;
@@ -54,6 +61,8 @@ static PyObject *py_verbose_logging(PyObject *self, PyObject *args) {
 }
 
 // Start the server.
+// This is the main function that starts the server, and it waits
+// until the server is stopped before returning.
 static PyObject *py_start_server(PyObject *self, PyObject *args) {
 
     if (!isInitialised()) {
@@ -200,6 +209,7 @@ static PyObject *py_add_hits(PyObject *self, PyObject *args) {
         // The hit object looks like this:
         // [[x, y, z], energy, dimension?, hitType?]
         // We parse out the position as another object, and the energy as a double.
+        // The dimension and hit type are optional, so we need to check if they exist.
         PyObject *positionTuple = PyList_GetItem(hitTuple, 0);
         double energy = PyFloat_AsDouble(PyList_GetItem(hitTuple, 1));
 
@@ -225,10 +235,98 @@ static PyObject *py_add_hits(PyObject *self, PyObject *args) {
         hit->setHitType(hitType);
 
         hits.push_back(hit);
+
+        // We also need to store the hit in a map, so we can add properties to it later.
+        PyHit pyHit = std::make_tuple(HepEVD::Position({x, y, z}), energy, dimension, hitType);
+        hitMap[pyHit] = hit;
     }
 
     // Finally, add the hits to the current state.
     hepEVDServer->addHits(hits);
+
+    Py_RETURN_TRUE;
+}
+
+// Add properties to a hit.
+// This should be easier than surfacing the hit map to Python,
+// and then updating it there.
+static PyObject *py_add_hit_props(PyObject *self, PyObject *args) {
+
+    if (!isInitialised()) {
+        Py_RETURN_FALSE;
+    }
+
+    // First, grab the top level hit object.
+    PyObject *hitObj;
+    PyObject *propsDict;
+    if (!PyArg_ParseTuple(args, "OO", &hitObj, &propsDict)) {
+        std::cout << "HepEVD: Failed to parse hit property arguments." << std::endl;
+        Py_RETURN_FALSE;
+    }
+
+    // Check if we have a tuple, and if it has the right number of elements.
+    if (!PyList_Check(hitObj) || PyList_Size(hitObj) < 2 || PyList_Size(hitObj) > 4) {
+        std::cout << "HepEVD: Failed to validate hit properties hit information." << std::endl;
+        Py_RETURN_FALSE;
+    }
+    if (!PyDict_Check(propsDict)) {
+        std::cout << "HepEVD: Failed to validate hit properties dictionary." << std::endl;
+        Py_RETURN_FALSE;
+    }
+
+    // Parse out the position and energy, same as adding this hit.
+    PyObject *positionTuple = PyList_GetItem(hitObj, 0);
+    double energy = PyFloat_AsDouble(PyList_GetItem(hitObj, 1));
+
+    // These are both optional, so we need to check if they exist.
+    HepEVD::HitDimension dimension = HepEVD::HitDimension::THREE_D;
+    if (PyList_Size(hitObj) >= 3)
+        dimension = static_cast<HepEVD::HitDimension>(PyLong_AsLong(PyList_GetItem(hitObj, 2)));
+
+    HepEVD::HitType hitType = HepEVD::HitType::GENERAL;
+    if (PyList_Size(hitObj) >= 4)
+        hitType = static_cast<HepEVD::HitType>(PyLong_AsLong(PyList_GetItem(hitObj, 3)));
+
+    // Lets finally parse out the positions.
+    double x, y, z;
+    if (!PyArg_ParseTuple(PyList_AsTuple(positionTuple), "ddd", &x, &y, &z)) {
+        std::cout << "HepEVD: Failed to parse position tuple." << std::endl;
+        Py_RETURN_FALSE;
+    }
+
+    // Make a PyHit object, and check if we have it in the map.
+    PyHit pyHit = std::make_tuple(HepEVD::Position({x, y, z}), energy, dimension, hitType);
+    if (hitMap.find(pyHit) == hitMap.end()) {
+        std::cout << "HepEVD: Failed to find hit in map." << std::endl;
+        Py_RETURN_FALSE;
+    }
+
+    // Grab the hit from the map...
+    HepEVD::Hit *hit = hitMap[pyHit];
+
+    // Start iterating over that list...
+    PyObject *propsIter = PyObject_GetIter(propsDict);
+    if (!propsIter) {
+        std::cout << "HepEVD: Failed to get iterator for hit properties." << std::endl;
+        Py_RETURN_FALSE;
+    }
+
+    // While we have properties, parse them out.
+    PyObject *key, *value;
+    Py_ssize_t pos = 0;
+    while (PyDict_Next(propsDict, &pos, &key, &value)) {
+
+        // Parse out the property name and value.
+        std::string propName = PyUnicode_AsUTF8(key);
+        double propValue = PyFloat_AsDouble(value);
+
+        // Add the property to the hit.
+        hit->addProperties({{propName, propValue}});
+
+        if (verboseLogging) {
+            std::cout << "HepEVD: Setting property " << propName << " to " << propValue << std::endl;
+        }
+    }
 
     Py_RETURN_TRUE;
 }
@@ -286,6 +384,7 @@ static PyMethodDef methods[] = {
     {"reset_server", py_reset_server, METH_VARARGS, "Reset the HepEVD server."},
     {"set_geo", py_set_geo, METH_VARARGS, "Set the detector geometry."},
     {"add_hits", py_add_hits, METH_VARARGS, "Add hits to the current event state."},
+    {"add_hit_props", py_add_hit_props, METH_VARARGS, "Add properties to a hit."},
     {"save_state", py_save_state, METH_VARARGS, "Save the current event state."},
     {"set_verbose", py_verbose_logging, METH_VARARGS, "Toggle verbose logging."},
     {NULL, NULL, 0, NULL}};
