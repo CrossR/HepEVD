@@ -18,12 +18,21 @@ export class HitDataState {
   }
 
   /**
-   * Get the active hits, either the activeHits array or the allHits array.
+   * Get the active hits;
    *
    * @returns {Array} The hits array.
    */
   get hits() {
-    return this.activeHits.length > 0 ? this.activeHits : this.allHits;
+    return this.activeHits;
+  }
+
+  /**
+   * Get all the hits.
+   * 
+   * @returns {Array} The hits array.
+   */
+  get all() {
+    return this.allHits;
   }
 
   /**

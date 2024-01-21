@@ -26,11 +26,14 @@ threeD_hits = [
             random.uniform(-350, 350),
             random.uniform(-600, 600),
             random.uniform(0, 1300),
-        ],
-        random.uniform(0, 25),
+        ]
     ]
     for _ in range(25000)
 ]
+
+# Update the hits to include an energy, which is just the sum of the coordinates
+threeD_hits = [ [hit[0], sum(hit[0])] for hit in threeD_hits ]
+
 views = [hep_evd.HIT_TYPE.TWO_D_U, hep_evd.HIT_TYPE.TWO_D_V, hep_evd.HIT_TYPE.TWO_D_W]
 twoD_hits = [
     [
