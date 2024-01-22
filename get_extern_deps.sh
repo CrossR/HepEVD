@@ -16,6 +16,16 @@ HTTPLIB_FILE_PATH="${EXTERN_PATH}/httplib.h"
 JSON_URL="https://raw.githubusercontent.com/nlohmann/json/develop/single_include/nlohmann/json.hpp"
 JSON_PATH="${EXTERN_PATH}/json.hpp"
 
+JS_LIBS=(
+    "https://cdn.tailwindcss.com/3.4.1"
+    "https://cdn.jsdelivr.net/npm/daisyui@4.6.0/dist/full.css"
+    "https://cdn.jsdelivr.net/npm/theme-change@2.5.0/index.js"
+    "https://ga.jspm.io/npm:es-module-shims@1.8.0/dist/es-module-shims.js"
+    "https://github.com/mrdoob/three.js/archive/refs/tags/r154.tar.gz"
+    
+)
+JS_PATH="web/vendor"
+
 LogMessage() {
     echo -e "${GRN}$(date +'%d/%m/%Y %T') : INFO    : $*${NC}"
 }
@@ -78,6 +88,22 @@ LogMessage "Getting json.hpp..."
 RunAndCheck "wget ${JSON_URL} -O ${JSON_PATH} " \
             "Failed to download json.hpp!" \
             "ERR"
+
+LogMessage "Getting JS libs..."
+for JS_LIB in "${JS_LIBS[@]}"; do
+    RunAndCheck "wget ${JS_LIB} -P ${JS_PATH}" \
+                "Failed to download ${JS_LIB}!" \
+                "WARN"
+    
+    if [[ ${JS_LIB} == *.tar.gz ]]; then
+        RunAndCheck "tar -xzf ${JS_PATH}/$(basename ${JS_LIB}) -C ${JS_PATH}" \
+                    "Failed to extract ${JS_LIB}!" \
+                    "ERR"
+        RunAndCheck "rm ${JS_PATH}/$(basename ${JS_LIB})" \
+                    "Failed to remove ${JS_LIB}!" \
+                    "ERR"
+    fi
+done
 
 LogMessage "Done!"
 return ${SUCCESS} 2> /dev/null || exit ${SUCCESS}

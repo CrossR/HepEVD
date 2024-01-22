@@ -1,5 +1,6 @@
 # Bundled Include
 include/extern
+web/vendor
 
 # Prerequisites
 *.d
