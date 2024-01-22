@@ -33,8 +33,11 @@ class Hit {
     void setHitType(const HitType &hitType) { this->position.setHitType(hitType); }
     void setLabel(const std::string &str) { this->label = str; }
 
+    std::string getId() const { return this->id; }
+    Position getPosition() const { return this->position; }
     double getEnergy() const { return this->energy; }
     HitDimension getDim() const { return this->position.dim; }
+    HitType getHitType() const { return this->position.hitType; }
 
     // TODO: This may want to be extensible. I.e. string -> double + other
     // properties (CATEGORIC, NUMERIC) etc;
