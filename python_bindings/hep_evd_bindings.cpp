@@ -252,9 +252,7 @@ static PyObject *py_add_hits(PyObject *self, PyObject *args) {
         hits.push_back(hit);
 
         // We also need to store the hit in a map, so we can add properties to it later.
-        PyHit pyHit = std::make_tuple(
-            hit->getPosition(), hit->getEnergy(), hit->getDim(), hit->getHitType()
-        );
+        PyHit pyHit = std::make_tuple(hit->getPosition(), hit->getEnergy(), hit->getDim(), hit->getHitType());
         hitMap[pyHit] = hit;
     }
 
@@ -289,9 +287,8 @@ static PyObject *py_add_hit_props(PyObject *self, PyObject *args) {
     }
 
     // Make a PyHit object, and check if we have it in the map.
-    PyHit pyHit = std::make_tuple(
-        inputHit->getPosition(), inputHit->getEnergy(), inputHit->getDim(), inputHit->getHitType()
-    );
+    PyHit pyHit =
+        std::make_tuple(inputHit->getPosition(), inputHit->getEnergy(), inputHit->getDim(), inputHit->getHitType());
     if (hitMap.find(pyHit) == hitMap.end()) {
         std::cout << "HepEVD: Failed to find hit in map." << std::endl;
         Py_RETURN_FALSE;
@@ -338,7 +335,7 @@ static PyObject *py_save_state(PyObject *self, PyObject *args) {
     //  - The name of the state.
     //  - The minimum size of the current state before starting the server (optional).
     //  - Whether to clear the current state on show (optional).
-    char* stateName;
+    char *stateName;
     int minSize = -1;
     bool clearOnShow = true;
     if (!PyArg_ParseTuple(args, "s|ib", &stateName, &minSize, &clearOnShow)) {
