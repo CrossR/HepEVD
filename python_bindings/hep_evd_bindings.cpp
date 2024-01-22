@@ -1,6 +1,11 @@
 #include <Python.h>
 #include <signal.h>
 
+#if USE_NUMPY
+#include <numpy/arrayobject.h>
+#endif
+
+// Include the HepEVD header files.
 #include "hep_evd.h"
 
 // Broad layout is the same as the helper files, where we
