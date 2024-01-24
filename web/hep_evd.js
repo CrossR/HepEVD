@@ -21,6 +21,11 @@ import {
 } from "./ui.js";
 import { highlightParticleOnMouseMove } from "./interactions.js";
 
+// Set off the data loading straight away.
+// For big events, this can take a while, so we want to do it in parallel with
+// the rest of the setup.
+const data = getData();
+
 // Do some initial threejs setup...
 const threeDCamera = new THREE.PerspectiveCamera(
   50,
@@ -52,9 +57,8 @@ renderer.setClearColor(THEME[themeName]);
 document.body.appendChild(renderer.domElement);
 document.body.appendChild(stats.dom);
 
-// Pull in the basic data from the API...
-const data = await getData();
-const { hits, mcHits, markers, particles, detectorGeometry } = data;
+// Now we need to wait for the data to load...
+const { hits, mcHits, markers, particles, detectorGeometry } = await data;
 
 // And use that data to setup the initial rendering states.
 const threeDRenderer = new RenderState(

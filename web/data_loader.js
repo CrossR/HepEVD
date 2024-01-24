@@ -55,11 +55,20 @@ async function getDataWithProgress(url) {
 
 // Simple function to pull down all data from the server.
 async function loadServerData() {
-  const detectorGeometry = await getDataWithProgress("geometry");
-  const hits = await getDataWithProgress("hits");
-  const mcHits = await getDataWithProgress("mcHits");
-  const markers = await getDataWithProgress("markers");
-  const particles = await getDataWithProgress("particles");
+  let detectorGeometry = getDataWithProgress("geometry");
+  let hits = getDataWithProgress("hits");
+  let mcHits = getDataWithProgress("mcHits");
+  let markers = getDataWithProgress("markers");
+  let particles = getDataWithProgress("particles");
+
+  // Wait for all the data to be loaded.
+  [hits, mcHits, markers, particles, detectorGeometry] = await Promise.all([
+    hits,
+    mcHits,
+    markers,
+    particles,
+    detectorGeometry,
+  ]);
 
   return {
     hits: hits,
