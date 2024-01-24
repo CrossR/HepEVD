@@ -74,12 +74,12 @@ export const DEFAULT_CATEGORICAL_LUT_CONFIG = {
 
 export const HIT_CONFIG = {
   "2D": {
-    hitSize: 1,
+    hitSize: 2,
     materialHit: materialHit,
     selectedMaterial: selectedMaterial2D,
   },
   "3D": {
-    hitSize: 1,
+    hitSize: 2,
     materialHit: materialHit,
     selectedMaterial: selectedMaterial3D,
   },
