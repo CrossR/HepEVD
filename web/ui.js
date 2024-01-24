@@ -430,6 +430,11 @@ export function setTheme(states) {
 export function fixThemeButton(invert = false) {
   let themeName = localStorage.getItem("theme");
 
+  if (themeName === null) {
+    themeName = "dark";
+    localStorage.setItem("theme", themeName);
+  }
+
   if (invert) themeName = themeName === "light" ? "dark" : "light";
 
   const emojis = { light: "☀️", dark: "🌙" };
