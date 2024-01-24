@@ -80,23 +80,7 @@ async function loadExternalData(url) {
     return;
   }
 
-  // Now, request the data from the supplied GitHub Gist URL.
-  const request = new XMLHttpRequest();
-  request.open("GET", url, false);
-  request.send(null);
-
-  if (request.status === 404) {
-    console.error("Could not find data file");
-    return;
-  } else if (request.status !== 200) {
-    console.error("Error loading data file");
-    return;
-  }
-
-  // Now, parse the data as JSON.
-  const data = JSON.parse(request.responseText);
-
-  return data;
+  return await getDataWithProgress(url);
 }
 
 // Top-level function to load data from the server or from a GitHub Gist URL.
