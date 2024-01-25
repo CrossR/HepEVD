@@ -408,12 +408,16 @@ export function quitEvd() {
  *
  * @param {Map} states - The states to animate.
  */
-export function setTheme(states) {
+export function toggleTheme(states) {
   const themeName = localStorage.getItem("theme");
 
   // This occurs too quickly for the local storage to be correct.
   // So instead of setting it to the current value, invert the current value.
   const backgroundColor = TO_THEME[themeName];
+
+  // Set the new theme in storage, so that it is correct for the next time.
+  const newTheme = themeName === "light" ? "dark" : "light";
+  localStorage.setItem("theme", newTheme);
 
   states.forEach((state) => {
     state.scene.background = new THREE.Color(backgroundColor);
@@ -424,20 +428,20 @@ export function setTheme(states) {
 }
 
 /**
- * Simply fix the theme button, if needed. That is, set the theme emoji
- * correctly.
+ * Simply fix the theme button, by setting the text and emoji to the inverse of
+ * the current theme.
  */
-export function fixThemeButton(invert = false) {
+export function fixThemeButton() {
   let themeName = localStorage.getItem("theme");
 
+  // If there is nothing, just set it to dark.
   if (themeName === null) {
     themeName = "dark";
     localStorage.setItem("theme", themeName);
   }
 
-  if (invert) themeName = themeName === "light" ? "dark" : "light";
-
-  const emojis = { light: "☀️", dark: "🌙" };
+  // These are inverted, since we want to change to the opposite theme.
+  const emojis = { dark: "☀️", light: "🌙" };
   const themeButton = document.getElementById("theme_button");
   themeButton.innerHTML = `${emojis[themeName]} Change Theme`;
 }

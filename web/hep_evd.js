@@ -17,7 +17,7 @@ import {
   quitEvd,
   saveState,
   screenshotEvd,
-  setTheme,
+  toggleTheme,
 } from "./ui.js";
 import { highlightParticleOnMouseMove } from "./interactions.js";
 
@@ -119,7 +119,7 @@ renderStates.forEach((state) => {
 // Hook up various global events and tidy functions.
 document.screenshotEvd = () => screenshotEvd(renderer);
 document.quitEvd = () => quitEvd();
-document.setTheme = () => setTheme(renderStates);
+document.toggleTheme = () => toggleTheme(renderStates);
 document.saveState = () => saveState(renderStates);
 document.loadState = () => loadState(renderStates);
 document.pickColourscheme = () => pickColourscheme(renderStates);
@@ -137,7 +137,7 @@ document.resetView = () => {
   threeDRenderer.resetView();
   twoDRenderer.resetView();
 };
-fixThemeButton(true);
+fixThemeButton();
 updateStateUI(renderStates);
 
 // Add in interactions...
