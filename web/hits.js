@@ -27,7 +27,7 @@ export function drawHits(
   hits,
   hitColours,
   hitConfig = {},
-  lutConfig = getContinuousLutConf(),
+  lutConfig = getContinuousLutConf()
 ) {
   if (hits.length === 0) return;
 
@@ -60,7 +60,7 @@ export function drawHits(
   const hitMesh = new THREE.InstancedMesh(
     hitGeometry,
     hitConfig.materialHit ?? materialHit,
-    hits.length,
+    hits.length
   );
 
   hits.forEach(function (hit, index) {
@@ -97,7 +97,7 @@ export function drawParticles(
   group,
   particleDataState,
   hitDataState,
-  hitConfig,
+  hitConfig
 ) {
   const particles = particleDataState.allParticles;
   const activeParticles = particleDataState.particles;
@@ -119,7 +119,7 @@ export function drawParticles(
 
   let lutToUse = getCategoricalLutConf();
   const filteredActiveHitProps = Array.from(activeHitProps).filter(
-    (p) => p != BUTTON_ID.All,
+    (p) => p != BUTTON_ID.All
   );
 
   // Particle colour is based on the absolute index of the particle, modulo the LUT size.
@@ -161,7 +161,7 @@ export function drawParticleOverlay(
   hitTypeState,
   hitConfig,
   targetParticle,
-  renderChildren,
+  renderChildren
 ) {
   const activeHitProps = hitDataState.activeProps;
   const hitPropMap = hitDataState.props;

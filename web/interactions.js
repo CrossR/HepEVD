@@ -10,13 +10,13 @@ import { drawParticleOverlay } from "./hits.js";
 export function highlightParticleOnMouseMove(
   renderStates,
   currentlyHighlighting,
-  event,
+  event
 ) {
   // This only works if we have a particle data state,
   // since we can't relate unassociated hits.
   if (
     !Array.from(renderStates.values()).some(
-      (state) => state.particleData.length !== 0,
+      (state) => state.particleData.length !== 0
     )
   )
     return [];
@@ -58,7 +58,7 @@ export function highlightParticleOnMouseMove(
 
       try {
         const activeParticleId = state.particleData.hitToParticleMap.get(
-          activeHit.id,
+          activeHit.id
         );
         activeParticle = state.particleData.particleMap.get(activeParticleId);
       } catch {
@@ -94,7 +94,7 @@ export function highlightParticleOnMouseMove(
         state.hitTypeState,
         HIT_CONFIG[state.hitDim],
         targetParticle,
-        ctrlPressed || shiftPressed,
+        ctrlPressed || shiftPressed
       );
 
       state.triggerEvent("change");

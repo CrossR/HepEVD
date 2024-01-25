@@ -28,7 +28,7 @@ export class HitDataState {
 
   /**
    * Get all the hits.
-   * 
+   *
    * @returns {Array} The hits array.
    */
   get all() {
