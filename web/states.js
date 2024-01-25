@@ -14,7 +14,7 @@ import { getData, isRunningOnGitHubPages } from "./data_loader.js";
  * @returns {Promise<void>} - A Promise that resolves when the UI has been updated.
  */
 export async function updateStateUI(renderStates) {
-  const stateDiv = document.getElementById("stateSwapper");
+  const stateDiv = document.getElementById("state_swapper");
 
   // Stop running straight away on GitHub pages.
   if (isRunningOnGitHubPages()) {
@@ -56,6 +56,13 @@ export async function updateStateUI(renderStates) {
   const currentState = await getCurrentStateInfo();
   const currentStateButton = document.getElementById(`state_dropdown_button`);
   currentStateButton.innerText = currentState.name;
+
+  // Update the next/previous buttons, if we are at the start or end of the list.
+  const previousButton = document.getElementById("previous_state");
+  const nextButton = document.getElementById("next_state");
+
+  previousButton.disabled = currentState.name === stateIdPairs[0].state.name;
+  nextButton.disabled = currentState.name === stateIdPairs.slice(-1)[0].state.name;
 }
 
 export async function reloadDataForCurrentState(renderStates) {
