@@ -50,6 +50,7 @@ export function getHitBoundaries(hits, axis) {
  */
 export function getHitProperties(particles, hits) {
   const hitPropMaps = new Map();
+  const hitPropTypes = new Map();
 
   const allHits = particles.flatMap((particle) => {
     return particle.hits;
@@ -70,12 +71,21 @@ export function getHitProperties(particles, hits) {
 
     if (Object.keys(hit.properties).length > 0) {
       Object.entries(hit.properties).forEach((prop) => {
-        hitPropMaps.get(hit.id).set(prop[0], prop[1]);
+        // The prop object looks like:
+        // [propertyNumber, [ [propertyName, propertyType], propertyValue ] ]
+        const propName = prop[1][0][0];
+        const propType = prop[1][0][1];
+        const propValue = prop[1][1];
+        hitPropMaps.get(hit.id).set(propName, propValue);
+
+        if (!hitPropTypes.has(propName)) {
+          hitPropTypes.set(propName, propType);
+        }
       });
     }
   });
 
-  return hitPropMaps;
+  return { hitPropMaps: hitPropMaps, hitPropTypes: hitPropTypes };
 }
 
 /**

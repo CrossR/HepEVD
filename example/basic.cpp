@@ -37,22 +37,25 @@ int main(void) {
         Hit *hit = new Hit({x, y, z}, e);
         MCHit *mcHit = new MCHit({disX(gen), disY(gen), disZ(gen)}, pdgCodes[disPdg(gen)]);
 
-        std::map<std::string, double> properties;
+        HitProperties properties;
 
         if (x < -250.0)
-            properties["Left"] = 1.0f;
+            properties[{"Left", PropertyType::CATEGORIC}] = 1.0f;
         if (x > 250.0)
-            properties["Right"] = 1.0f;
+            properties[{"Right", PropertyType::CATEGORIC}] = 1.0f;
 
         if (y < -500.0)
-            properties["Bottom"] = 1.0f;
+            properties[{"Bottom", PropertyType::CATEGORIC}] = 1.0f;
         if (y > 500.0)
-            properties["Top"] = 1.0f;
+            properties[{"Top", PropertyType::CATEGORIC}] = 1.0f;
 
         if (z < 100.0)
-            properties["Front"] = 1.0f;
+            properties[{"Front", PropertyType::CATEGORIC}] = 1.0f;
         if (z > 1200.0)
-            properties["Back"] = 1.0f;
+            properties[{"Back", PropertyType::CATEGORIC}] = 1.0f;
+
+        // Add a continuous property, based on distance from the middle of the detector
+        properties[{"Distance", PropertyType::NUMERIC}] = std::abs(x) + std::abs(y) + std::abs(z);
 
         hit->addProperties(properties);
         hits.push_back(hit);

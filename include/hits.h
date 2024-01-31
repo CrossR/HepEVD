@@ -23,6 +23,8 @@ using json = nlohmann::json;
 
 namespace HepEVD {
 
+using HitProperties = std::map<std::tuple<std::string, PropertyType>, double>;
+
 class Hit {
   public:
     Hit() : id(getUUID()), position(), energy(0.0) {}
@@ -39,11 +41,18 @@ class Hit {
     HitDimension getDim() const { return this->position.dim; }
     HitType getHitType() const { return this->position.hitType; }
 
-    // TODO: This may want to be extensible. I.e. string -> double + other
-    // properties (CATEGORIC, NUMERIC) etc;
+    // If no type is specified, the type is assumed to be numeric.
     void addProperties(std::map<std::string, double> props) {
         for (const auto &propValuePair : props)
-            this->properties.insert({propValuePair});
+            this->properties.insert({{propValuePair.first, PropertyType::NUMERIC}, propValuePair.second});
+
+        return;
+    }
+
+    // Add hit properties with a specified type.
+    void addProperties(HitProperties props) {
+        for (const auto &propValuePair : props)
+            this->properties.insert(propValuePair);
 
         return;
     }
@@ -55,7 +64,7 @@ class Hit {
     Position position;
     double energy;
     std::string label;
-    std::map<std::string, double> properties;
+    HitProperties properties;
 };
 using Hits = std::vector<Hit *>;
 

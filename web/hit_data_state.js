@@ -13,7 +13,9 @@ export class HitDataState {
     this.activeHits = [];
     this.colours = [];
 
-    this.props = getHitProperties(particles, hits);
+    const hitProperties = getHitProperties(particles, hits);
+    this.props = hitProperties.hitPropMaps;
+    this.propTypes = hitProperties.hitPropTypes;
     this.activeProps = new Set([BUTTON_ID.All]);
   }
 

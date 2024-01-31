@@ -27,6 +27,7 @@ import {
   toggleButton,
   updateUI,
 } from "./ui.js";
+import { getCategoricalLutConf, getContinuousLutConf } from "./colourmaps.js";
 
 /**
  * Represents the state of the rendering process, including the scene, camera,
@@ -214,7 +215,20 @@ export class RenderState {
   ) {
     if (clear) this.hitGroup.clear();
 
-    drawHits(this.hitGroup, hits, colours, HIT_CONFIG[this.hitDim]);
+    // Use the continuous colouring by default.
+    let lutConfig = getContinuousLutConf();
+
+    // If any of the active hit properties are categorical, use that instead.
+    if (this.hitData.activeProps.size > 0) {
+      this.hitData.activeProps.forEach((prop) => {
+        if (this.hitData.propTypes.get(prop) === "CATEGORIC") {
+          lutConfig = getCategoricalLutConf();
+        }
+      });
+    }
+
+
+    drawHits(this.hitGroup, hits, colours, HIT_CONFIG[this.hitDim], lutConfig);
 
     this.hitGroup.matrixAutoUpdate = false;
     this.hitGroup.matrixWorldAutoUpdate = false;
