@@ -69,8 +69,6 @@ export async function reloadDataForCurrentState(renderStates) {
   const data = await getData();
   const { hits, mcHits, markers, particles, detectorGeometry } = data;
 
-  const drawTarget = renderStates.get("3D").visible ? "3D" : "2D";
-
   renderStates.forEach((state) => {
     state.updateData(
       particles,
@@ -79,9 +77,23 @@ export async function reloadDataForCurrentState(renderStates) {
       markers.filter((marker) => marker.position.dim === state.hitDim),
       detectorGeometry,
     );
+  });
+
+  const currentView = renderStates.get("3D").visible ? "3D" : "2D";
+  let drawTarget = currentView;
+
+  // If the current view is empty, swap to the other view.
+  if (currentView === "3D" && renderStates.get("3D").hitSize === 0) {
+    drawTarget = "2D";
+  } else if (currentView === "2D" && renderStates.get("2D").hitSize === 0) {
+    drawTarget = "3D";
+  }
+
+  renderStates.forEach((state) => {
     state.setupUI(drawTarget, true);
     state.triggerEvent("fullUpdate");
   });
+
 }
 
 /**

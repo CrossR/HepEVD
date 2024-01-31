@@ -114,9 +114,3 @@ convert and parse objects to/from JSON, such that they can be served via the HTT
 
 - Consider how easy / useful / annoying it would be to maintain camera position
   when swapping between event states.
-
-- Fix 2D geometry drawing (currently, faked by drawing axes around the input 2D
-  hits, rather than following the actual geometry).
-
-- Automate swapping between 2D and 3D views (if viewing 3D and swapping to an
-  event state with only 2D hits, swap to 2D view, and vice versa).
