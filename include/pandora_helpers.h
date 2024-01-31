@@ -197,10 +197,17 @@ static void addClusters(const pandora::ClusterList *clusters, std::string label 
     if (!isServerInitialised())
         return;
 
+    unsigned int clusterNumber = 0;
+
     for (const pandora::Cluster *const pCluster : *clusters) {
         pandora::CaloHitList clusterCaloHits;
         HepEVD::getAllCaloHits(pCluster, clusterCaloHits);
         HepEVD::addHits(&clusterCaloHits, label);
+
+        for (const auto &pCaloHit : clusterCaloHits)
+            caloHitToEvdHit[pCaloHit]->addProperties({{"ClusterNumber", clusterNumber}});
+
+        ++clusterNumber;
     }
 }
 
