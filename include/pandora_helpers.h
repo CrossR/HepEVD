@@ -47,7 +47,7 @@ static void setVerboseLogging(const bool logging) { verboseLogging = logging; }
 static bool isServerInitialised() {
     const bool isInit(hepEVDServer != nullptr && hepEVDServer->isInitialised());
 
-    if (verboseLogging) {
+    if (!isInit && verboseLogging) {
         std::cout << "HepEVD Server is not initialised!" << std::endl;
         std::cout << "Please call HepEVD::setHepEVDGeometry(this->GetPandora.GetGeometry()) or similar." << std::endl;
         std::cout << "This should be done before any other calls to the event display." << std::endl;
