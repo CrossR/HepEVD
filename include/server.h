@@ -250,13 +250,34 @@ inline void HepEVDServer::startServer() {
     });
 
     // Add a top level, dump everything endpoint.
-    this->server.Get("/toJSON", [&](const Request &, Response &res) {
+    this->server.Get("/stateToJson", [&](const Request &, Response &res) {
         json output;
         output["detectorGeometry"] = this->geometry;
         output["hits"] = this->getHits();
         output["mcHits"] = this->getMCHits();
         output["particles"] = this->getParticles();
         output["markers"] = this->getMarkers();
+        res.set_content(output.dump(4), "application/json");
+    });
+    this->server.Get("/allStatesToJson", [&](const Request &, Response &res) {
+        json output;
+
+        // First, write out the geometry, and the number of states.
+        // The geometry is the same for all states, so just use the current one.
+        output["detectorGeometry"] = this->geometry;
+        output["numberOfStates"] = this->eventStates.size();
+
+        // Then, write out each state into an array.
+        for (auto &state : this->eventStates) {
+            json stateJson;
+            stateJson["name"] = state.second.name;
+            stateJson["hits"] = state.second.hits;
+            stateJson["mcHits"] = state.second.mcHits;
+            stateJson["particles"] = state.second.particles;
+            stateJson["markers"] = state.second.markers;
+            output["states"].push_back(stateJson); 
+        }
+
         res.set_content(output.dump(4), "application/json");
     });
 
