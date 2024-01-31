@@ -107,7 +107,16 @@ convert and parse objects to/from JSON, such that they can be served via the HTT
 
 - Hit widths? Pain with instanced mesh though.
 
-- Fill out URL data loading: User configurable, loading bar.
+- Fill out URL data loading: User configurable URL parameters, to allow for loading
+  of data from a URL.
+
+- Fill out URL data loading to load multiple event states.
 
 - Consider how easy / useful / annoying it would be to maintain camera position
-when swapping between event states.
+  when swapping between event states.
+
+- Fix 2D geometry drawing (currently, faked by drawing axes around the input 2D
+  hits, rather than following the actual geometry).
+
+- Automate swapping between 2D and 3D views (if viewing 3D and swapping to an
+  event state with only 2D hits, swap to 2D view, and vice versa).
