@@ -205,7 +205,8 @@ static void addClusters(const pandora::ClusterList *clusters, std::string label 
         HepEVD::addHits(&clusterCaloHits, label);
 
         for (const auto &pCaloHit : clusterCaloHits)
-            caloHitToEvdHit[pCaloHit]->addProperties({{"ClusterNumber", clusterNumber}});
+            caloHitToEvdHit[pCaloHit]->addProperties(
+                {{{"ClusterNumber", HepEVD::PropertyType::CATEGORIC}, clusterNumber}});
 
         ++clusterNumber;
     }
@@ -239,11 +240,11 @@ static void addSlices(const lar_content::SlicingAlgorithm::SliceList *slices, st
         HepEVD::addHits(&slice.m_caloHitListW, label);
 
         for (const auto &pCaloHit : slice.m_caloHitListU)
-            caloHitToEvdHit[pCaloHit]->addProperties({{"SliceNumber", sliceNumber}});
+            caloHitToEvdHit[pCaloHit]->addProperties({{{"SliceNumber", HepEVD::PropertyType::CATEGORIC}, sliceNumber}});
         for (const auto &pCaloHit : slice.m_caloHitListV)
-            caloHitToEvdHit[pCaloHit]->addProperties({{"SliceNumber", sliceNumber}});
+            caloHitToEvdHit[pCaloHit]->addProperties({{{"SliceNumber", HepEVD::PropertyType::CATEGORIC}, sliceNumber}});
         for (const auto &pCaloHit : slice.m_caloHitListW)
-            caloHitToEvdHit[pCaloHit]->addProperties({{"SliceNumber", sliceNumber}});
+            caloHitToEvdHit[pCaloHit]->addProperties({{{"SliceNumber", HepEVD::PropertyType::CATEGORIC}, sliceNumber}});
     }
 }
 
