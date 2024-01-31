@@ -58,6 +58,13 @@ class HepEVDServer {
         return;
     }
 
+    // Less destructive clear function.
+    // This will clear the hits, markers, particles, and MC hits,
+    // but leave the geometry and event states alone.
+    void clearState() {
+        this->eventStates[this->currentState].clear();
+    }
+
     // Add a new event state.
     // This will be used to store multiple events, or multiple
     // parts of the same event.

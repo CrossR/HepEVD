@@ -34,6 +34,15 @@ class EventState {
                mcTruth.size() == 0;
     }
 
+    void clear() {
+        name = "";
+        particles.clear();
+        hits.clear();
+        mcHits.clear();
+        markers.clear();
+        mcTruth = "";
+    }
+
     // Only need a to JSON method, as we don't need to read in the state.
     // We also only want to pass the metadata, not the actual data.
     friend void to_json(json &j, const EventState &state) {
