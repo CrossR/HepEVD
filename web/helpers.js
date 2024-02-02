@@ -128,7 +128,7 @@ export function getMCColouring(mcHits) {
   let mcHitColours = [];
 
   mcHits.forEach((hit) => {
-    const mcPdg = hit.properties["PDG"];
+    const mcPdg = hit.properties.find((prop) => prop[0][0] === "PDG")[1];
     if (Object.hasOwn(PDG_TO_COLOUR, mcPdg)) {
       mcHitColours.push(PDG_TO_COLOUR[mcPdg]);
     } else {
