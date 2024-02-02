@@ -5,7 +5,11 @@
 // TODO: Won't work on GitHub pages, since it's not a server.
 //       Need to figure out best way to supply multiple states there.
 
-import { getData, isRunningOnGitHubPages } from "./data_loader.js";
+import {
+  getData,
+  isRunningOnGitHubPages,
+  hepEVD_GLOBAL_STATE,
+} from "./data_loader.js";
 
 /**
  * Updates the UI for the state swapper based on the current state.
@@ -15,12 +19,6 @@ import { getData, isRunningOnGitHubPages } from "./data_loader.js";
  */
 export async function updateStateUI(renderStates) {
   const stateDiv = document.getElementById("state_swapper");
-
-  // Stop running straight away on GitHub pages.
-  if (isRunningOnGitHubPages()) {
-    stateDiv.style.display = "none";
-    return;
-  }
 
   const stateIdPairs = await getAllStateInfo();
 
@@ -47,7 +45,7 @@ export async function updateStateUI(renderStates) {
     newButton.innerText = state.name;
     newButton.id = `state_${state.name}_${idStatePair.id}`;
     newButton.addEventListener("click", () =>
-      setState(idStatePair.id, renderStates),
+      setState(idStatePair.id, renderStates)
     );
     listElement.appendChild(newButton);
     stateList.appendChild(listElement);
@@ -62,7 +60,8 @@ export async function updateStateUI(renderStates) {
   const nextButton = document.getElementById("next_state");
 
   previousButton.disabled = currentState.name === stateIdPairs[0].state.name;
-  nextButton.disabled = currentState.name === stateIdPairs.slice(-1)[0].state.name;
+  nextButton.disabled =
+    currentState.name === stateIdPairs.slice(-1)[0].state.name;
 }
 
 export async function reloadDataForCurrentState(renderStates) {
@@ -75,7 +74,7 @@ export async function reloadDataForCurrentState(renderStates) {
       hits.filter((hit) => hit.position.dim === state.hitDim),
       mcHits.filter((hit) => hit.position.dim === state.hitDim),
       markers.filter((marker) => marker.position.dim === state.hitDim),
-      detectorGeometry,
+      detectorGeometry
     );
   });
 
@@ -93,7 +92,6 @@ export async function reloadDataForCurrentState(renderStates) {
     state.setupUI(drawTarget, true);
     state.triggerEvent("fullUpdate");
   });
-
 }
 
 /**
@@ -102,6 +100,12 @@ export async function reloadDataForCurrentState(renderStates) {
  * @returns {Promise} A Promise that resolves with the JSON state information.
  */
 export function getCurrentStateInfo() {
+  if (hepEVD_GLOBAL_STATE !== undefined) {
+    return Promise.resolve(
+      hepEVD_GLOBAL_STATE.states[hepEVD_GLOBAL_STATE.currentState]
+    );
+  }
+
   return fetch("/stateInfo").then((response) => response.json());
 }
 
@@ -111,6 +115,15 @@ export function getCurrentStateInfo() {
  * @returns {Promise} A Promise that resolves to a map of state IDs to state.
  */
 export function getAllStateInfo() {
+  if (hepEVD_GLOBAL_STATE !== undefined) {
+    const stateIdPairs = [];
+    hepEVD_GLOBAL_STATE.states.forEach((state, index) => {
+      stateIdPairs.push({ id: index, state });
+    });
+
+    return Promise.resolve(stateIdPairs);
+  }
+
   return fetch("/allStateInfo").then((response) => response.json());
 }
 
@@ -121,7 +134,12 @@ export function getAllStateInfo() {
  * @param {Function} renderStates - Map of render states.
  */
 export function setState(stateId, renderStates) {
-  fetch(`/swap/id/${stateId}`);
+  if (hepEVD_GLOBAL_STATE !== undefined) {
+    hepEVD_GLOBAL_STATE.currentState = stateId;
+  } else {
+    fetch(`/swap/id/${stateId}`);
+  }
+
   updateStateUI(renderStates);
   reloadDataForCurrentState(renderStates);
 }
@@ -134,7 +152,14 @@ export function setState(stateId, renderStates) {
  * @returns {void}
  */
 export function nextState(renderStates) {
-  fetch("/nextState");
+  if (hepEVD_GLOBAL_STATE !== undefined) {
+    hepEVD_GLOBAL_STATE.currentState =
+      (hepEVD_GLOBAL_STATE.currentState + 1) %
+      hepEVD_GLOBAL_STATE.states.length;
+  } else {
+    fetch("/nextState");
+  }
+
   updateStateUI(renderStates);
   reloadDataForCurrentState(renderStates);
 }
@@ -147,7 +172,15 @@ export function nextState(renderStates) {
  * @returns {void}
  */
 export function previousState(renderStates) {
-  fetch("/previousState");
+  if (hepEVD_GLOBAL_STATE !== undefined) {
+    hepEVD_GLOBAL_STATE.currentState =
+      (hepEVD_GLOBAL_STATE.currentState -
+        1 +
+        hepEVD_GLOBAL_STATE.states.length) %
+      hepEVD_GLOBAL_STATE.states.length;
+  } else {
+    fetch("/previousState");
+  }
   updateStateUI(renderStates);
   reloadDataForCurrentState(renderStates);
 }

@@ -2,6 +2,29 @@
 // Data Loader
 //
 
+// This is a global variable that will be used to store the state of the event
+// display, when running on GitHub Pages.
+//
+// Is it ideal to have a global variable like this? Obviously not, but the
+// alternative would make the code for loading data from a GitHub Gist URL
+// much more spread out, and ingrained across multiple files. The event
+// display is a development tool first and foremost, whereas the loading
+// of data from a GitHub Gist URL is only really useful for the purposes of
+// outreach or as a demo.
+//
+// When running on a server, this variable will be undefined.
+// When running on GitHub Pages, this variable will be set to an object with
+// the following structure:
+//    - numberOfStates: The number of states in the event display.
+//    - currentState: The current state of the event display.
+//    - states: An array of objects, each of which contains the following:
+//      - url: The URL for the state.
+//      - description: A description of the state.
+//    - detectorGeometry: The detector geometry for the event display.
+// If the input github gist URL is a single JSON object, then this variable
+// will be undefined.
+export let hepEVD_GLOBAL_STATE;
+
 // Are we running on GitHub Pages?
 export function isRunningOnGitHubPages() {
   return window.location.hostname.includes("github.io");
@@ -79,6 +102,24 @@ async function loadServerData() {
   };
 }
 
+/**
+ * Updates the external data by fetching new data from the specified URL.
+ * 
+ * @returns {Promise<Object>} An object containing the updated data, including hits, mcHits, markers, particles, and detectorGeometry.
+ */
+async function updateExternalData() {
+  const newDataUrl = hepEVD_GLOBAL_STATE.states[hepEVD_GLOBAL_STATE.currentState].url;
+  const newStateData = await getDataWithProgress(newDataUrl);
+
+  return {
+    hits: newStateData.hits,
+    mcHits: newStateData.mcHits,
+    markers: newStateData.markers,
+    particles: newStateData.particles,
+    detectorGeometry: hepEVD_GLOBAL_STATE.detectorGeometry,
+  };
+}
+
 // Load data from a GitHub Gist URL.
 async function loadExternalData(url) {
   // Now, request the data from the supplied GitHub Gist URL.
@@ -89,14 +130,57 @@ async function loadExternalData(url) {
     return;
   }
 
-  return await getDataWithProgress(url);
+  console.log("Loading data from GitHub Gist URL: " + url);
+
+  // Check if we've already loaded the data for this state.
+  if (hepEVD_GLOBAL_STATE !== undefined) {
+    console.log("Already loaded data for this state.")
+    return updateExternalData();
+  }
+
+  // If not, looks like it is the first time we've loaded the data.
+  // Pull down the JSON object from the URL.
+  const result = await getDataWithProgress(url);
+
+  // Two possible formats for the data:
+  // 1. A single JSON object with all the data.
+  // 2. A JSON info object, that points to a list of files, each of which
+  //    contains a different event state.
+
+  if (! result.hasOwnProperty("numberOfStates") && ! result.hasOwnProperty("states")) {
+    // This is the first format, so just return the data.
+    return result;
+  }
+
+  // This is the second format, so we need to load the data the final event state.
+  const states = result.states;
+  const numberOfStates = result.numberOfStates;
+
+  // Get the last state.
+  const lastState = states[numberOfStates - 1].url;
+  const lastStateData = await getDataWithProgress(lastState);
+
+  hepEVD_GLOBAL_STATE = {
+    numberOfStates: numberOfStates,
+    currentState: numberOfStates - 1,
+    states: states,
+    detectorGeometry: result.detectorGeometry,
+  };
+
+  return {
+    hits: lastStateData.hits,
+    mcHits: lastStateData.mcHits,
+    markers: lastStateData.markers,
+    particles: lastStateData.particles,
+    detectorGeometry: result.detectorGeometry,
+  };
 }
 
 // Top-level function to load data from the server or from a GitHub Gist URL.
 export async function getData() {
   if (isRunningOnGitHubPages()) {
     return loadExternalData(
-      "https://gist.githubusercontent.com/CrossR/f0ab94b5d945d58742586a16eb10bcf4/raw/4227132a6846cfe9729e3a28fa1619a7e2f5a8b1/testEvent.json"
+      "https://gist.githubusercontent.com/CrossR/2edd3622d13987d37ef3a4c02286207c/raw/b855f2829b7effc52ac1efc384afd22b1438cc51/eventDisplayInfo.json"
     );
   } else {
     return loadServerData();
