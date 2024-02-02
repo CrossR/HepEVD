@@ -61,9 +61,7 @@ class HepEVDServer {
     // Less destructive clear function.
     // This will clear the hits, markers, particles, and MC hits,
     // but leave the geometry and event states alone.
-    void clearState() {
-        this->eventStates[this->currentState].clear();
-    }
+    void clearState() { this->eventStates[this->currentState].clear(); }
 
     // Add a new event state.
     // This will be used to store multiple events, or multiple
@@ -259,26 +257,53 @@ inline void HepEVDServer::startServer() {
         output["markers"] = this->getMarkers();
         res.set_content(output.dump(4), "application/json");
     });
-    this->server.Get("/allStatesToJson", [&](const Request &, Response &res) {
-        json output;
+    this->server.Get("/writeOutAllStates", [&](const Request &, Response &res) {
+        // This is very different to the rest of the endpoints, as it needs to
+        // write out JSON files for each state, rather than just returning the
+        // data.
 
-        // First, write out the geometry, and the number of states.
-        // The geometry is the same for all states, so just use the current one.
-        output["detectorGeometry"] = this->geometry;
-        output["numberOfStates"] = this->eventStates.size();
+        // This was made because this is only really useful for either saving
+        // the current event display state, or for producing data for the
+        // GitHub pages version of the event display.
 
-        // Then, write out each state into an array.
+        // We want two things:
+        // 1. A top level file that contains 3 things:
+        //    - The detector geometry (static, so just define it once)
+        //    - The number of states
+        //    - An array of states names to a blank string.
+        //      The blank string can be filled in later, if needed,
+        //      with individual URLs to the state files.
+        // 2. A file for each state, containing the full state information.
+
+        // Populate the top level file.
+        json infoFile;
+        infoFile["detectorGeometry"] = this->geometry;
+        infoFile["numberOfStates"] = this->eventStates.size();
         for (auto &state : this->eventStates) {
-            json stateJson;
-            stateJson["name"] = state.second.name;
-            stateJson["hits"] = state.second.hits;
-            stateJson["mcHits"] = state.second.mcHits;
-            stateJson["particles"] = state.second.particles;
-            stateJson["markers"] = state.second.markers;
-            output["states"].push_back(stateJson); 
+            json nameUrlPair({{"name", state.second.name}, {"url", ""}});
+            infoFile["states"].push_back(nameUrlPair);
         }
 
-        res.set_content(output.dump(4), "application/json");
+        // Now write out the top level file.
+        std::ofstream infoFileOut("eventDisplayInfo.json");
+        infoFileOut << infoFile.dump(4);
+
+        // Then populate the state files...
+        for (unsigned int i = 0; i < this->eventStates.size(); i++) {
+            json stateFile;
+            stateFile["name"] = this->eventStates[i].name;
+            stateFile["hits"] = this->eventStates[i].hits;
+            stateFile["mcHits"] = this->eventStates[i].mcHits;
+            stateFile["particles"] = this->eventStates[i].particles;
+            stateFile["markers"] = this->eventStates[i].markers;
+
+            std::ofstream stateFileOut("eventDisplayState" + std::to_string(i) + ".json");
+            stateFileOut << stateFile.dump(4);
+        }
+
+        // Alert the user to the files being written out.
+        const auto currentDir = std::filesystem::current_path();
+        res.set_content("Wrote out event display state files to " + currentDir.string(), "text/plain");
     });
 
     // State controls...
