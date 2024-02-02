@@ -291,13 +291,15 @@ inline void HepEVDServer::startServer() {
         // Then populate the state files...
         for (unsigned int i = 0; i < this->eventStates.size(); i++) {
             json stateFile;
-            stateFile["name"] = this->eventStates[i].name;
-            stateFile["hits"] = this->eventStates[i].hits;
-            stateFile["mcHits"] = this->eventStates[i].mcHits;
-            stateFile["particles"] = this->eventStates[i].particles;
-            stateFile["markers"] = this->eventStates[i].markers;
+            EventState state = this->eventStates[i];
+            stateFile["name"] = state.name;
+            stateFile["hits"] = state.hits;
+            stateFile["mcHits"] = state.mcHits;
+            stateFile["particles"] = state.particles;
+            stateFile["markers"] = state.markers;
+            stateFile["mcTruth"] = state.mcTruth;
 
-            std::ofstream stateFileOut("eventDisplayState" + std::to_string(i) + ".json");
+            std::ofstream stateFileOut(state.name + "_" + std::to_string(i) + ".json");
             stateFileOut << stateFile.dump(4);
         }
 
