@@ -299,7 +299,17 @@ inline void HepEVDServer::startServer() {
             stateFile["markers"] = state.markers;
             stateFile["mcTruth"] = state.mcTruth;
 
-            std::ofstream stateFileOut(state.name + "_" + std::to_string(i) + ".json");
+            std::string formattedName = state.name;
+
+            // Replace any spaces with underscores.
+            std::replace(formattedName.begin(), formattedName.end(), ' ', '_');
+
+            // Remove any non-alphanumeric characters.
+            formattedName.erase(std::remove_if(formattedName.begin(), formattedName.end(),
+                                               [](char c) { return !std::isalnum(c) && c != '_'; }),
+                                formattedName.end());
+
+            std::ofstream stateFileOut(std::to_string(i) + "_" + formattedName + ".json");
             stateFileOut << stateFile.dump(4);
         }
 
