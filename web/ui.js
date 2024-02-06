@@ -4,9 +4,9 @@
 
 import * as THREE from "three";
 
-import { BUTTON_ID, TO_THEME } from "./constants.js";
-import { createParticleMenu } from "./particle_menu.js";
 import { COLOUR_MAPS, DEFAULT_MAPS } from "./colourmaps.js";
+import { BUTTON_ID, GITHUB_URL, TO_THEME } from "./constants.js";
+import { createParticleMenu } from "./particle_menu.js";
 
 /**
  * Populates a dropdown menu with buttons based on the given hit property map.
@@ -754,4 +754,28 @@ export function dragElement(element) {
     document.onmouseup = null;
     document.onmousemove = null;
   }
+}
+
+/**
+ * Adds a citation to the document.
+ *
+ * @param {string} citationStr - The citation string to be added.
+ * @param {string} citationURL - The URL to the citation.
+ */
+export function addCitation(citationStr, citationURL) {
+  const citationDiv = document.getElementById("citations");
+
+  // First, add the citation text, with a link to the URL.
+  const citation = document.createElement("p");
+  citation.innerHTML = `<a href="${citationURL}">${citationStr}</a>`;
+  citationDiv.appendChild(citation);
+
+  // Plus a personal citation, linking back to the GitHub.
+  const personalCitation = document.createElement("p");
+  personalCitation.innerHTML = `<a href="${GITHUB_URL}" target="_blank">Event display developed by Ryan Cross</a>`;
+  personalCitation.style.fontSize = "0.8em";
+
+  citationDiv.appendChild(personalCitation);
+
+  return;
 }

@@ -42,6 +42,8 @@ const selectedMaterial3D = new THREE.MeshBasicMaterial({
 // UI Constants
 //==============================================================================
 
+export const GITHUB_URL = "https://github.com/CrossR/HepEVD";
+
 export const BUTTON_ID = {
   None: "None",
   All: "All",

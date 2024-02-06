@@ -2,6 +2,8 @@
 // Data Loader
 //
 
+import { addCitation } from "./ui.js";
+
 // This is a global variable that will be used to store the state of the event
 // display, when running on GitHub Pages.
 //
@@ -130,11 +132,8 @@ async function loadExternalData(url) {
     return;
   }
 
-  console.log("Loading data from GitHub Gist URL: " + url);
-
   // Check if we've already loaded the data for this state.
   if (hepEVD_GLOBAL_STATE !== undefined) {
-    console.log("Already loaded data for this state.")
     return updateExternalData();
   }
 
@@ -167,6 +166,12 @@ async function loadExternalData(url) {
     detectorGeometry: result.detectorGeometry,
   };
 
+  // Set any citations, if they exist.
+  if (result.hasOwnProperty("citation")) {
+    hepEVD_GLOBAL_STATE.citation = result.citation;
+    addCitation(result.citation.text, result.citation.url);
+  }
+
   return {
     hits: lastStateData.hits,
     mcHits: lastStateData.mcHits,
@@ -180,7 +185,7 @@ async function loadExternalData(url) {
 export async function getData() {
   if (isRunningOnGitHubPages()) {
     return loadExternalData(
-      "https://gist.githubusercontent.com/CrossR/2edd3622d13987d37ef3a4c02286207c/raw/b855f2829b7effc52ac1efc384afd22b1438cc51/eventDisplayInfo.json"
+      "https://gist.githubusercontent.com/CrossR/2edd3622d13987d37ef3a4c02286207c/raw/6c5668d3e81280cdad52bccc27d50c0dd576bcc7/eventDisplayInfo.json"
     );
   } else {
     return loadServerData();

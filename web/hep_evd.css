@@ -101,6 +101,15 @@ div {
   opacity: 0;
 }
 
+.citations {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  font-size: 0.8em;
+  text-align: center;
+}
+
 input:active,
 input:focus,
 input:hover,
