@@ -310,7 +310,7 @@ inline void HepEVDServer::startServer() {
                                 formattedName.end());
 
             std::ofstream stateFileOut(std::to_string(i) + "_" + formattedName + ".json");
-            stateFileOut << stateFile.dump(4);
+            stateFileOut << stateFile.dump();
         }
 
         // Alert the user to the files being written out.
