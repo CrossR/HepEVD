@@ -122,6 +122,16 @@ static std::string getUUID() {
     return res;
 }
 
+static std::string getCWD() {
+    char buff[FILENAME_MAX];
+
+    if (getcwd(buff, FILENAME_MAX) != 0) {
+        return std::string(buff);
+    }
+
+    return "";
+}
+
 }; // namespace HepEVD
 
 #endif // HEP_EVD_POSITION_H

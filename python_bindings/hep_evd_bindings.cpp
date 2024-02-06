@@ -1,4 +1,5 @@
 #include <Python.h>
+#include <map>
 #include <signal.h>
 
 #if USE_NUMPY
@@ -305,6 +306,7 @@ static PyObject *py_add_hit_props(PyObject *self, PyObject *args) {
     }
 
     // While we have properties, parse them out.
+    std::map<std::string, double> properties;
     PyObject *key, *value;
     Py_ssize_t pos = 0;
     while (PyDict_Next(propsDict, &pos, &key, &value)) {
@@ -313,13 +315,11 @@ static PyObject *py_add_hit_props(PyObject *self, PyObject *args) {
         std::string propName = PyUnicode_AsUTF8(key);
         double propValue = PyFloat_AsDouble(value);
 
-        // Add the property to the hit.
-        hit->addProperties({{propName, propValue}});
-
-        if (verboseLogging) {
-            std::cout << "HepEVD: Setting property " << propName << " to " << propValue << std::endl;
-        }
+        properties[propName] = propValue;
     }
+
+    // Finally, add the properties to the hit.
+    hit->addProperties(properties);
 
     Py_RETURN_TRUE;
 }

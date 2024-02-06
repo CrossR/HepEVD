@@ -314,8 +314,8 @@ inline void HepEVDServer::startServer() {
         }
 
         // Alert the user to the files being written out.
-        const auto currentDir = std::filesystem::current_path();
-        res.set_content("Wrote out event display state files to " + currentDir.string(), "text/plain");
+        const auto currentDir = getCWD();
+        res.set_content("Wrote out event display state files to " + currentDir, "text/plain");
     });
 
     // State controls...
