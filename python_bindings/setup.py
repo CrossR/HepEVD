@@ -29,7 +29,7 @@ hep_evd =  Extension(
     sources = ['hep_evd_bindings.cpp'],
     include_dirs=include_dirs,
     language='c++',
-    extra_compile_args=['-std=c++17', '-O3'],
+    extra_compile_args=['-std=c++17', '-O3', "-Wno-write-strings"],
     define_macros=define_macros,
 )
 setup (ext_modules=[hep_evd], name='hep_evd', version='1.0')

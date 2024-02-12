@@ -110,7 +110,7 @@ static PyObject *py_reset_server(PyObject *self, PyObject *args) {
 }
 
 // Receive detector geometry and initialise the server.
-static PyObject *py_set_geo(PyObject *self, PyObject *args) {
+static PyObject *py_set_geo(PyObject *self, PyObject *args, PyObject *kwargs) {
 
     if (isInitialised()) {
         Py_RETURN_TRUE;
@@ -125,7 +125,8 @@ static PyObject *py_set_geo(PyObject *self, PyObject *args) {
     //    - A string, giving the name of a known geometry.
     PyObject *geometryList;
     char* geometryNameArg;
-    if (!PyArg_ParseTuple(args, "|Os", &geometryList, &geometryNameArg)) {
+    static char* kwList[] = {"geometry", "name", NULL};
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|$Os", kwList, &geometryList, &geometryNameArg)) {
         std::cout << "HepEVD: Failed to parse arguments." << std::endl;
         Py_RETURN_FALSE;
     }
@@ -362,7 +363,7 @@ static PyMethodDef methods[] = {
     {"is_init", py_is_initialised, METH_VARARGS, "Check if the HepEVD server is initialised."},
     {"start_server", py_start_server, METH_VARARGS, "Start the HepEVD server."},
     {"reset_server", py_reset_server, METH_VARARGS, "Reset the HepEVD server."},
-    {"set_geo", py_set_geo, METH_VARARGS, "Set the detector geometry."},
+    {"set_geo", (PyCFunction) py_set_geo, METH_VARARGS | METH_KEYWORDS, "Set the detector geometry."},
     {"add_hits", py_add_hits, METH_VARARGS, "Add hits to the current event state."},
     {"add_hit_props", py_add_hit_props, METH_VARARGS, "Add properties to a hit."},
     {"save_state", py_save_state, METH_VARARGS, "Save the current event state."},
