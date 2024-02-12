@@ -19,7 +19,7 @@
 // we have very different inputs compared to Pandora or
 // LArSoft.
 inline HepEVD::HepEVDServer *hepEVDServer;
-inline bool verboseLogging = false;
+inline bool verboseLogging(false);
 
 // Define a basic type to store the full information about a hit.
 using PyHit = std::tuple<HepEVD::Position, double, HepEVD::HitDimension, HepEVD::HitType>;
@@ -120,14 +120,31 @@ static PyObject *py_set_geo(PyObject *self, PyObject *args) {
     HepEVD::Volumes volumes;
 
     // First, grab the overall detector geometry volume list...
+    // We can get given the geometry in two ways:
+    //    - Passing of actual geometry objects.
+    //    - A string, giving the name of a known geometry.
     PyObject *geometryList;
-    if (!PyArg_ParseTuple(args, "O", &geometryList)) {
+    char* geometryNameArg;
+    if (!PyArg_ParseTuple(args, "|Os", &geometryList, &geometryNameArg)) {
         std::cout << "HepEVD: Failed to parse arguments." << std::endl;
         Py_RETURN_FALSE;
     }
 
+    std::string geometryName(geometryNameArg != nullptr ? geometryNameArg : "");
+
+    if (geometryName != "") {
+        if (detectors.count(geometryName) == 0) {
+            std::cout << "HepEVD: Failed to find geometry with name \"" << geometryName << "\"!" << std::endl;
+            Py_RETURN_FALSE;
+        }
+
+        hepEVDServer = new HepEVD::HepEVDServer(detectors[geometryName]);
+
+        Py_RETURN_TRUE;
+    }
+
     // Start iterating over that list...
-    PyObject *geoIter = PyObject_GetIter(geometryList);
+    PyObject *geoIter(PyObject_GetIter(geometryList));
     if (!geoIter) {
         std::cout << "HepEVD: Failed to get iterator for geometry volumes." << std::endl;
         Py_RETURN_FALSE;
@@ -140,7 +157,7 @@ static PyObject *py_set_geo(PyObject *self, PyObject *args) {
     //  - Parse out the positions from that object.
     while (true) {
 
-        PyObject *geoTuple = PyIter_Next(geoIter);
+        PyObject *geoTuple(PyIter_Next(geoIter));
         if (!geoTuple)
             break;
 
@@ -154,10 +171,10 @@ static PyObject *py_set_geo(PyObject *self, PyObject *args) {
         // The volume object (for boxes) looks like this:
         // ([x, y, z], xWidth, yWidth, zWidth)
         // We parse out the position as another object, and the dimensions as doubles.
-        PyObject *positionTuple = PyTuple_GetItem(geoTuple, 0);
-        double xWidth = PyFloat_AsDouble(PyTuple_GetItem(geoTuple, 1));
-        double yWidth = PyFloat_AsDouble(PyTuple_GetItem(geoTuple, 2));
-        double zWidth = PyFloat_AsDouble(PyTuple_GetItem(geoTuple, 3));
+        PyObject *positionTuple(PyTuple_GetItem(geoTuple, 0));
+        double xWidth(PyFloat_AsDouble(PyTuple_GetItem(geoTuple, 1)));
+        double yWidth(PyFloat_AsDouble(PyTuple_GetItem(geoTuple, 2)));
+        double zWidth(PyFloat_AsDouble(PyTuple_GetItem(geoTuple, 3)));
 
         // Lets finally parse out the positions.
         double x, y, z;
@@ -198,7 +215,7 @@ static PyObject *py_add_hits(PyObject *self, PyObject *args) {
     }
 
     // Start iterating over that list...
-    PyObject *hitIter = PyObject_GetIter(hitList);
+    PyObject *hitIter(PyObject_GetIter(hitList));
     if (!hitIter) {
         std::cout << "HepEVD: Failed to get iterator for hits." << std::endl;
         Py_RETURN_FALSE;
@@ -210,7 +227,7 @@ static PyObject *py_add_hits(PyObject *self, PyObject *args) {
     //  - Parse out the hit using the custom converter.
     while (true) {
 
-        PyObject *hitObj = PyIter_Next(hitIter);
+        PyObject *hitObj(PyIter_Next(hitIter));
         if (!hitObj)
             break;
 
@@ -223,7 +240,7 @@ static PyObject *py_add_hits(PyObject *self, PyObject *args) {
         hits.push_back(hit);
 
         // We also need to store the hit in a map, so we can add properties to it later.
-        PyHit pyHit = std::make_tuple(hit->getPosition(), hit->getEnergy(), hit->getDim(), hit->getHitType());
+        PyHit pyHit(std::make_tuple(hit->getPosition(), hit->getEnergy(), hit->getDim(), hit->getHitType()));
         hitMap[pyHit] = hit;
     }
 
@@ -266,10 +283,10 @@ static PyObject *py_add_hit_props(PyObject *self, PyObject *args) {
     }
 
     // Grab the hit from the map...
-    HepEVD::Hit *hit = hitMap[pyHit];
+    HepEVD::Hit *hit(hitMap[pyHit]);
 
     // Start iterating over that list...
-    PyObject *propsIter = PyObject_GetIter(propsDict);
+    PyObject *propsIter(PyObject_GetIter(propsDict));
     if (!propsIter) {
         std::cout << "HepEVD: Failed to get iterator for hit properties." << std::endl;
         Py_RETURN_FALSE;
@@ -278,12 +295,12 @@ static PyObject *py_add_hit_props(PyObject *self, PyObject *args) {
     // While we have properties, parse them out.
     std::map<std::string, double> properties;
     PyObject *key, *value;
-    Py_ssize_t pos = 0;
+    Py_ssize_t pos(0);
     while (PyDict_Next(propsDict, &pos, &key, &value)) {
 
         // Parse out the property name and value.
-        std::string propName = PyUnicode_AsUTF8(key);
-        double propValue = PyFloat_AsDouble(value);
+        std::string propName(PyUnicode_AsUTF8(key));
+        double propValue(PyFloat_AsDouble(value));
 
         properties[propName] = propValue;
     }
@@ -306,15 +323,15 @@ static PyObject *py_save_state(PyObject *self, PyObject *args) {
     //  - The minimum size of the current state before starting the server (optional).
     //  - Whether to clear the current state on show (optional).
     char *stateName;
-    int minSize = -1;
-    bool clearOnShow = true;
+    int minSize(-1);
+    bool clearOnShow(true);
     if (!PyArg_ParseTuple(args, "s|ib", &stateName, &minSize, &clearOnShow)) {
         std::cout << "HepEVD: Failed to parse state arguments." << std::endl;
         Py_RETURN_FALSE;
     }
 
     hepEVDServer->setName(stateName);
-    bool shouldIncState = true;
+    bool shouldIncState(true);
 
     // If prior to adding the new state, the size of the current state was
     // greater than the minimum size, then start the server.
