@@ -206,32 +206,17 @@ static PyObject *py_set_geo(PyObject *self, PyObject *args, PyObject *kwargs) {
 // In both cases, hits are represented as follows:
 //  [x, y, z, energy, dimension?, hitType?]
 // With the question marks indicating optional parameters.
-static PyObject *py_add_hits(PyObject *self, PyObject *args) {
+// Split this across three functions, one for each input type.
+static PyObject *add_hits_list(PyObject *hitList) {
 
-    if (!isInitialised()) {
-        Py_RETURN_FALSE;
-    }
-
-    // First, grab the full flat list of hits.
     HepEVD::Hits hits;
-    PyObject *hitList;
-
-    if (!PyArg_ParseTuple(args, "O", &hitList)) {
-        std::cout << "HepEVD: Failed to parse hit arguments." << std::endl;
-        Py_RETURN_FALSE;
-    }
-
-    // Start iterating over that list...
     PyObject *hitIter(PyObject_GetIter(hitList));
+
     if (!hitIter) {
         std::cout << "HepEVD: Failed to get iterator for hits." << std::endl;
         Py_RETURN_FALSE;
     }
 
-    // While we have hits, parse them out.
-    // That means parsing out in a few steps:
-    //  - Get the next hit object iterator, which is either a list or a numpy array.
-    //  - Parse out the hit using the custom converter.
     while (true) {
 
         PyObject *hitObj(PyIter_Next(hitIter));
@@ -256,6 +241,82 @@ static PyObject *py_add_hits(PyObject *self, PyObject *args) {
 
     Py_RETURN_TRUE;
 }
+
+static PyObject *add_hits_numpy(PyObject *hitList) {
+
+    HepEVD::Hits hits;
+    PyArrayObject *hitArray(reinterpret_cast<PyArrayObject *>(hitList));
+
+    // Now get the iterator for the array.
+    std::cout << "HepEVD: Getting iterator for hits." << std::endl;
+    NpyIter *hitIter(NpyIter_New(hitArray, NPY_ITER_READONLY, NPY_KEEPORDER, NPY_SAME_KIND_CASTING, NULL));
+
+    if (!hitIter) {
+        std::cout << "HepEVD: Failed to get iterator for hits." << std::endl;
+        Py_RETURN_FALSE;
+    }
+
+    // Convert the numpy array to a C-style array.
+    double **data;
+    if (PyArray_AsCArray((PyObject**)&hitArray, (void**)&data, PyArray_DIMS(hitArray), PyArray_NDIM(hitArray), PyArray_DESCR(hitArray)) < 0) {
+        std::cout << "HepEVD: Failed to convert numpy array to C-style array." << std::endl;
+        Py_RETURN_FALSE;
+    }
+
+    for (int i = 0; i < PyArray_DIM(hitArray, 0); i++) {
+
+        // Its easier to convert the numpy array to a list, and then parse it out.
+        // Keeps the code consistent with the list version.
+        PyObject *hitArgArray(PyList_New(PyArray_DIM(hitArray, 1)));
+
+        for (int j = 0; j < PyArray_DIM(hitArray, 1); j++) {
+            PyList_SetItem(hitArgArray, j, PyFloat_FromDouble(data[i][j]));
+        }
+
+        HepEVD::Hit *hit;
+
+        if (!HitConverter(hitArgArray, &hit)) {
+            std::cout << "HepEVD: Failed to parse hit." << std::endl;
+            Py_RETURN_FALSE;
+        }
+
+        hits.push_back(hit);
+
+        // We also need to store the hit in a map, so we can add properties to it later.
+        PyHit pyHit(std::make_tuple(hit->getPosition(), hit->getEnergy(), hit->getDim(), hit->getHitType()));
+        hitMap[pyHit] = hit;
+
+    }
+
+    // Finally, add the hits to the current state.
+    hepEVDServer->addHits(hits);
+
+    Py_RETURN_TRUE;
+}
+
+static PyObject *py_add_hits(PyObject *self, PyObject *args) {
+
+    if (!isInitialised()) {
+        Py_RETURN_FALSE;
+    }
+
+    // Grab the full flat list of hits.
+    PyObject *hitList;
+    if (!PyArg_ParseTuple(args, "O", &hitList)) {
+        std::cout << "HepEVD: Failed to parse hit arguments." << std::endl;
+        Py_RETURN_FALSE;
+    }
+
+    // Check the input type, to know where to pass the hits.
+    const bool isNumpyArray(PyArray_Check(hitList));
+    
+    if (isNumpyArray) {
+        return add_hits_numpy(hitList);
+    } else {
+        return add_hits_list(hitList);
+    }
+}
+
 
 // Add properties to a hit.
 // This should be easier than surfacing the hit map to Python,
@@ -385,6 +446,10 @@ static struct PyModuleDef hit_type_def = {PyModuleDef_HEAD_INIT, "HIT_TYPE", "He
 
 // And finally, initialise the module.
 PyMODINIT_FUNC PyInit_hep_evd(void) {
+
+#if USE_NUMPY
+    import_array();
+#endif
 
     PyObject *module = PyModule_Create(&module_def);
 

@@ -10,9 +10,15 @@
 #include "hep_evd.h"
 
 // Custom converter for parsing out hits.
-static int HitConverter(PyObject *obj, HepEVD::Hit **result) {
+static int HitConverter(PyObject *hitObj, HepEVD::Hit **result) {
 
     // Check if we have a tuple, and if it has the right number of elements.
+    PyObject *obj = hitObj;
+
+    if (PyArray_Check(hitObj)) {
+        obj = PyArray_ToList((PyArrayObject *)hitObj);
+    }
+
     if (!PyList_Check(obj) || PyList_Size(obj) < 4 || PyList_Size(obj) > 6) {
         std::cout << "HepEVD: Failed to validate hit tuple." << std::endl;
         std::cout << "HepEVD: Tuple had " << PyList_Size(obj)  << "entries." << std::endl;

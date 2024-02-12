@@ -1,4 +1,5 @@
 import random
+import numpy as np
 
 import hep_evd
 
@@ -40,7 +41,7 @@ threeD_hits = [
 ]
 
 # Update the hits to include an energy, which is just the sum of the coordinates
-threeD_hits = [ [*hit, sum(hit)] for hit in threeD_hits ]
+threeD_hits = np.array([ [*hit, sum(hit)] for hit in threeD_hits ])
 
 views = [hep_evd.HIT_TYPE.TWO_D_U, hep_evd.HIT_TYPE.TWO_D_V, hep_evd.HIT_TYPE.TWO_D_W]
 twoD_hits = [
@@ -55,7 +56,10 @@ twoD_hits = [
     for _ in range(5000) for view in views
 ]
 
+print("Adding 3D hits from numpy array...")
 hep_evd.add_hits(threeD_hits)
+
+print("Adding 2D hits from python list...")
 hep_evd.add_hits(twoD_hits)
 
 print("Add propreties to all hits...")
