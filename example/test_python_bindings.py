@@ -15,11 +15,16 @@ detector_geometry = [
     ((182.954544067, 0, 696.293762207), 359.415008545, 1207.84753418, 1394.33996582),
 ]
 
-print("Set geo with objects...")
-hep_evd.set_geo(detector_geometry)
+print("Set geometry with objects...")
+hep_evd.set_geo(geometry=detector_geometry)
+
+# Should now be initialised, then reset and set geometry with name
+print(f"Checking if initialised: {hep_evd.is_init()}")
+hep_evd.reset_server(True)
+print(f"Checking if initialised: {hep_evd.is_init()}")
 
 print("Set geo with name...")
-hep_evd.set_geo("dunefd_1x2x6")
+hep_evd.set_geo(name="dunefd_1x2x6")
 
 # Should now be initialised
 print(f"Checking if initialised: {hep_evd.is_init()}")
@@ -36,7 +41,6 @@ threeD_hits = [
 
 # Update the hits to include an energy, which is just the sum of the coordinates
 threeD_hits = [ [*hit, sum(hit)] for hit in threeD_hits ]
-print(threeD_hits[:5])
 
 views = [hep_evd.HIT_TYPE.TWO_D_U, hep_evd.HIT_TYPE.TWO_D_V, hep_evd.HIT_TYPE.TWO_D_W]
 twoD_hits = [
@@ -50,7 +54,6 @@ twoD_hits = [
     ]
     for _ in range(5000) for view in views
 ]
-print(twoD_hits[:5])
 
 hep_evd.add_hits(threeD_hits)
 hep_evd.add_hits(twoD_hits)

@@ -104,7 +104,13 @@ static PyObject *py_reset_server(PyObject *self, PyObject *args) {
         Py_RETURN_FALSE;
     }
 
-    hepEVDServer->resetServer();
+    bool resetGeo;
+    if (!PyArg_ParseTuple(args, "|b", &resetGeo)) {
+        std::cout << "HepEVD: Failed to parse reset server arguments." << std::endl;
+        Py_RETURN_FALSE;
+    }
+
+    hepEVDServer->resetServer(resetGeo);
 
     Py_RETURN_TRUE;
 }
