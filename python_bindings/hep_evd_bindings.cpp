@@ -204,12 +204,14 @@ static PyObject *py_set_geo(PyObject *self, PyObject *args, PyObject *kwargs) {
 //  - A list of hits
 //  - A numpy array of hits
 // In both cases, hits are represented as follows:
-//  [x, y, z, energy, dimension?, hitType?]
+//  [x, y, z, pdg?, energy, dimension?, hitType?]
 // With the question marks indicating optional parameters.
 // Split this across three functions, one for each input type.
+// This is also templated, so we can use it for both hits and MC hits.
+template <typename T>
 static PyObject *add_hits_list(PyObject *hitList) {
 
-    HepEVD::Hits hits;
+    std::vector<T*> hits;
     PyObject *hitIter(PyObject_GetIter(hitList));
 
     if (!hitIter) {
@@ -223,8 +225,8 @@ static PyObject *add_hits_list(PyObject *hitList) {
         if (!hitObj)
             break;
 
-        HepEVD::Hit *hit;
-        if (!HitConverter<HepEVD::Hit>(hitObj, &hit)) {
+        T *hit;
+        if (!HitConverter<T>(hitObj, &hit)) {
             std::cout << "HepEVD: Failed to parse hit." << std::endl;
             Py_RETURN_FALSE;
         }
@@ -232,23 +234,30 @@ static PyObject *add_hits_list(PyObject *hitList) {
         hits.push_back(hit);
 
         // We also need to store the hit in a map, so we can add properties to it later.
-        PyHit pyHit(std::make_tuple(hit->getPosition(), hit->getEnergy(), hit->getDim(), hit->getHitType()));
-        hitMap[pyHit] = hit;
+        // Only store the hit if it is a HepEVD::Hit, not a HepEVD::MCHit.
+        if constexpr (std::is_same<T, HepEVD::Hit>::value) {
+            PyHit pyHit(std::make_tuple(hit->getPosition(), hit->getEnergy(), hit->getDim(), hit->getHitType()));
+            hitMap[pyHit] = hit;
+        }
     }
 
     // Finally, add the hits to the current state.
-    hepEVDServer->addHits(hits);
+    if constexpr (std::is_same<T, HepEVD::Hit>::value) {
+        hepEVDServer->addHits(hits);
+    } else {
+        hepEVDServer->addMCHits(hits);
+    }
 
     Py_RETURN_TRUE;
 }
 
+template <typename T>
 static PyObject *add_hits_numpy(PyObject *hitList) {
 
-    HepEVD::Hits hits;
+    std::vector<T*> hits;
     PyArrayObject *hitArray(reinterpret_cast<PyArrayObject *>(hitList));
 
     // Now get the iterator for the array.
-    std::cout << "HepEVD: Getting iterator for hits." << std::endl;
     NpyIter *hitIter(NpyIter_New(hitArray, NPY_ITER_READONLY, NPY_KEEPORDER, NPY_SAME_KIND_CASTING, NULL));
 
     if (!hitIter) {
@@ -273,9 +282,9 @@ static PyObject *add_hits_numpy(PyObject *hitList) {
             PyList_SetItem(hitArgArray, j, PyFloat_FromDouble(data[i][j]));
         }
 
-        HepEVD::Hit *hit;
+        T *hit;
 
-        if (!HitConverter<HepEVD::Hit>(hitArgArray, &hit)) {
+        if (!HitConverter<T>(hitArgArray, &hit)) {
             std::cout << "HepEVD: Failed to parse hit." << std::endl;
             Py_RETURN_FALSE;
         }
@@ -283,17 +292,23 @@ static PyObject *add_hits_numpy(PyObject *hitList) {
         hits.push_back(hit);
 
         // We also need to store the hit in a map, so we can add properties to it later.
-        PyHit pyHit(std::make_tuple(hit->getPosition(), hit->getEnergy(), hit->getDim(), hit->getHitType()));
-        hitMap[pyHit] = hit;
-
+        if constexpr (std::is_same<T, HepEVD::Hit>::value) {
+            PyHit pyHit(std::make_tuple(hit->getPosition(), hit->getEnergy(), hit->getDim(), hit->getHitType()));
+            hitMap[pyHit] = hit;
+        }
     }
 
     // Finally, add the hits to the current state.
-    hepEVDServer->addHits(hits);
+    if constexpr (std::is_same<T, HepEVD::Hit>::value) {
+        hepEVDServer->addHits(hits);
+    } else {
+        hepEVDServer->addMCHits(hits);
+    }
 
     Py_RETURN_TRUE;
 }
 
+template <typename T>
 static PyObject *py_add_hits(PyObject *self, PyObject *args) {
 
     if (!isInitialised()) {
@@ -311,9 +326,9 @@ static PyObject *py_add_hits(PyObject *self, PyObject *args) {
     const bool isNumpyArray(PyArray_Check(hitList));
     
     if (isNumpyArray) {
-        return add_hits_numpy(hitList);
+        return add_hits_numpy<T>(hitList);
     } else {
-        return add_hits_list(hitList);
+        return add_hits_list<T>(hitList);
     }
 }
 
@@ -431,7 +446,8 @@ static PyMethodDef methods[] = {
     {"start_server", py_start_server, METH_VARARGS, "Start the HepEVD server."},
     {"reset_server", py_reset_server, METH_VARARGS, "Reset the HepEVD server."},
     {"set_geo", (PyCFunction) py_set_geo, METH_VARARGS | METH_KEYWORDS, "Set the detector geometry."},
-    {"add_hits", py_add_hits, METH_VARARGS, "Add hits to the current event state."},
+    {"add_hits", py_add_hits<HepEVD::Hit>, METH_VARARGS, "Add hits to the current event state."},
+    {"add_mc_hits", py_add_hits<HepEVD::MCHit>, METH_VARARGS, "Add MC hits to the current event state."},
     {"add_hit_props", py_add_hit_props, METH_VARARGS, "Add properties to a hit."},
     {"save_state", py_save_state, METH_VARARGS, "Save the current event state."},
     {"set_verbose", py_verbose_logging, METH_VARARGS, "Toggle verbose logging."},

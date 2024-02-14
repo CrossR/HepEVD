@@ -90,11 +90,11 @@ inline static void from_json(const json &j, Hits &hits) {
 class MCHit : public Hit {
   public:
     MCHit() : Hit() {}
-    MCHit(const Position &pos, const double energy = 0) : Hit(pos, energy) { }
-    MCHit(const Position &pos, const double pdgCode, const double energy = 0) : Hit(pos, energy) {
+    MCHit(const Position &pos, const double energy) : Hit(pos, energy) { }
+    MCHit(const Position &pos, const double pdgCode, const double energy) : Hit(pos, energy) {
         this->addProperties({{"PDG", pdgCode}});
     }
-    MCHit(const PosArray &pos, const double pdgCode, const double energy = 0) : Hit(pos, energy) {
+    MCHit(const PosArray &pos, const double pdgCode, const double energy) : Hit(pos, energy) {
         this->addProperties({{"PDG", pdgCode}});
     }
 

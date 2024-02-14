@@ -33,7 +33,7 @@ int main(void) {
         const double e = x + y + z;
 
         Hit *hit = new Hit({x, y, z}, e);
-        MCHit *mcHit = new MCHit({disX(gen), disY(gen), disZ(gen)}, pdgCodes[disPdg(gen)]);
+        MCHit *mcHit = new MCHit({disX(gen), disY(gen), disZ(gen)}, pdgCodes[disPdg(gen)], e);
 
         std::map<std::string, double> properties;
 
@@ -73,7 +73,7 @@ int main(void) {
             hit->setHitType(views[i]);
             hits.push_back(hit);
 
-            MCHit *mcHit = new MCHit({disX(gen), 0.f, disZ(gen)}, pdgCodes[disPdg(gen)]);
+            MCHit *mcHit = new MCHit({disX(gen), 0.f, disZ(gen)}, pdgCodes[disPdg(gen)], e);
             mcHit->setDim(TWO_D);
             mcHit->setHitType(views[i]);
             mcHits.push_back(mcHit);
