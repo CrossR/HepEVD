@@ -57,9 +57,10 @@ export function drawHits(
   const hitSize = hitConfig.hitSize;
   const hitGeometry = new THREE.BoxGeometry(hitSize, hitSize, hitSize);
   const dummyObject = new THREE.Object3D();
+  const hitMaterial = hitConfig.materialHit ?? materialHit;
   const hitMesh = new THREE.InstancedMesh(
     hitGeometry,
-    hitConfig.materialHit ?? materialHit,
+    hitMaterial,
     hits.length
   );
 

@@ -273,12 +273,17 @@ export class RenderState {
     this.mcHitGroup.clear();
 
     const mcColours = getMCColouring(this.mcData.mc);
+    const hitConfig = HIT_CONFIG[this.hitDim];
+
+    if (this.hitDim === "3D") {
+      hitConfig.hitSize += 0.5;
+    }
 
     drawHits(
       this.mcHitGroup,
       this.mcData.mc,
       mcColours,
-      HIT_CONFIG[this.hitDim]
+      hitConfig,
     );
 
     this.mcHitGroup.matrixAutoUpdate = false;

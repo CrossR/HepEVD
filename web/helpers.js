@@ -133,6 +133,7 @@ export function getMCColouring(mcHits) {
       mcHitColours.push(PDG_TO_COLOUR[mcPdg]);
     } else {
       console.log(`Found unknown PDG code: ${mcPdg}`);
+      mcHitColours.push("#000000");
     }
   });
 
