@@ -10,7 +10,9 @@
 #include "hep_evd.h"
 
 // Custom converter for parsing out hits.
-static int HitConverter(PyObject *hitObj, HepEVD::Hit **result) {
+// Templated to allow for different types of hits.
+template <typename T>
+static int HitConverter(PyObject *hitObj, T **result) {
 
     // Check if we have a tuple, and if it has the right number of elements.
     PyObject *obj = hitObj;
@@ -26,22 +28,34 @@ static int HitConverter(PyObject *hitObj, HepEVD::Hit **result) {
     }
 
     // Parse out the position and energy.
-    double x(PyFloat_AsDouble(PyList_GetItem(obj, 0)));
-    double y(PyFloat_AsDouble(PyList_GetItem(obj, 1)));
-    double z(PyFloat_AsDouble(PyList_GetItem(obj, 2)));
-    double energy(PyFloat_AsDouble(PyList_GetItem(obj, 3)));
+    int pos = 0;
+    double x(PyFloat_AsDouble(PyList_GetItem(obj, pos++)));
+    double y(PyFloat_AsDouble(PyList_GetItem(obj, pos++)));
+    double z(PyFloat_AsDouble(PyList_GetItem(obj, pos++)));
+    double pdg(0.0);
+
+    if (std::is_same<T, HepEVD::MCHit>::value) {
+        pdg = PyFloat_AsDouble(PyList_GetItem(obj, pos++));
+    }
+
+    double energy(PyFloat_AsDouble(PyList_GetItem(obj, pos++)));
 
     // These are both optional, so we need to check if they exist.
     HepEVD::HitDimension dimension(HepEVD::HitDimension::THREE_D);
-    if (PyList_Size(obj) >= 5)
-        dimension = static_cast<HepEVD::HitDimension>(PyLong_AsLong(PyList_GetItem(obj, 4)));
+    if (PyList_Size(obj) >= pos + 2)
+        dimension = static_cast<HepEVD::HitDimension>(PyLong_AsLong(PyList_GetItem(obj, pos++)));
 
     HepEVD::HitType hitType(HepEVD::HitType::GENERAL);
-    if (PyList_Size(obj) >= 6)
-        hitType = static_cast<HepEVD::HitType>(PyLong_AsLong(PyList_GetItem(obj, 5)));
+    if (PyList_Size(obj) >= pos + 2)
+        hitType = static_cast<HepEVD::HitType>(PyLong_AsLong(PyList_GetItem(obj, pos++)));
 
     // Create a new hit, and store it in the result.
-    HepEVD::Hit *hit = new HepEVD::Hit({x, y, z}, energy);
+    T *hit = new T(HepEVD::Position({x, y, z}), energy);
+
+    if constexpr (std::is_same<T, HepEVD::MCHit>::value) {
+        hit->setPDG(pdg);
+    }
+
     hit->setDim(dimension);
     hit->setHitType(hitType);
 

@@ -224,7 +224,7 @@ static PyObject *add_hits_list(PyObject *hitList) {
             break;
 
         HepEVD::Hit *hit;
-        if (!HitConverter(hitObj, &hit)) {
+        if (!HitConverter<HepEVD::Hit>(hitObj, &hit)) {
             std::cout << "HepEVD: Failed to parse hit." << std::endl;
             Py_RETURN_FALSE;
         }
@@ -275,7 +275,7 @@ static PyObject *add_hits_numpy(PyObject *hitList) {
 
         HepEVD::Hit *hit;
 
-        if (!HitConverter(hitArgArray, &hit)) {
+        if (!HitConverter<HepEVD::Hit>(hitArgArray, &hit)) {
             std::cout << "HepEVD: Failed to parse hit." << std::endl;
             Py_RETURN_FALSE;
         }
@@ -337,7 +337,7 @@ static PyObject *py_add_hit_props(PyObject *self, PyObject *args) {
 
     // Parse the hit object into a HepEVD::Hit.
     HepEVD::Hit *inputHit;
-    if (!HitConverter(hitObj, &inputHit)) {
+    if (!HitConverter<HepEVD::Hit>(hitObj, &inputHit)) {
         std::cout << "HepEVD: Failed to parse hit for property assignment." << std::endl;
         Py_RETURN_FALSE;
     }
