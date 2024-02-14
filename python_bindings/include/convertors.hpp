@@ -21,14 +21,23 @@ static int HitConverter(PyObject *hitObj, T **result) {
         obj = PyArray_ToList((PyArrayObject *)hitObj);
     }
 
-    if (!PyList_Check(obj) || PyList_Size(obj) < 4 || PyList_Size(obj) > 6) {
+    int pos = 0;
+    
+    // Tuple element is composed of:
+    //    - x, y, z
+    //    - pdg? (for MC hits)
+    //    - energy?
+    //    - dimension?
+    //    - hit type?
+    int tupleMaxSize(std::is_same<T, HepEVD::MCHit>::value ? 7 : 6);
+
+    if (!PyList_Check(obj) || PyList_Size(obj) < 4 || PyList_Size(obj) > tupleMaxSize) {
         std::cout << "HepEVD: Failed to validate hit tuple." << std::endl;
-        std::cout << "HepEVD: Tuple had " << PyList_Size(obj)  << "entries." << std::endl;
+        std::cout << "HepEVD: Tuple had " << PyList_Size(obj)  << " entries." << std::endl;
         return 0;
     }
 
     // Parse out the position and energy.
-    int pos = 0;
     double x(PyFloat_AsDouble(PyList_GetItem(obj, pos++)));
     double y(PyFloat_AsDouble(PyList_GetItem(obj, pos++)));
     double z(PyFloat_AsDouble(PyList_GetItem(obj, pos++)));
