@@ -1,4 +1,5 @@
 #include <Python.h>
+#include <cstdlib>
 #include <map>
 #include <signal.h>
 
@@ -33,6 +34,7 @@ void catch_signals() {
             std::cout << "HepEVD: Caught signal " << code << ", shutting down." << std::endl;
             hepEVDServer->stopServer();
         }
+        exit(0);
     };
 
     signal(SIGINT, handler);
