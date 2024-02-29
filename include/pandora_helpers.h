@@ -423,7 +423,7 @@ static void addPFOs(const pandora::Pandora &pPandora, const pandora::PfoList *pP
 
     for (const auto parentChildPair : parentToChildMap) {
 
-        if (parentChildPair.second.empty())
+        if (parentChildPair.second.empty() || pfoToParticleMap.count(parentChildPair.first) == 0)
             continue;
 
         const auto pPfo = parentChildPair.first;
