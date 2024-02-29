@@ -204,9 +204,14 @@ static void addClusters(const pandora::ClusterList *clusters, std::string label 
         HepEVD::getAllCaloHits(pCluster, clusterCaloHits);
         HepEVD::addHits(&clusterCaloHits, label);
 
-        for (const auto &pCaloHit : clusterCaloHits)
+        for (const auto &pCaloHit : clusterCaloHits) {
+
+            if (caloHitToEvdHit.count(pCaloHit) == 0)
+                continue;
+
             caloHitToEvdHit[pCaloHit]->addProperties(
                 {{{"ClusterNumber", HepEVD::PropertyType::CATEGORIC}, clusterNumber}});
+        }
 
         ++clusterNumber;
     }
