@@ -174,7 +174,8 @@ class HepEVDServer {
 inline void HepEVDServer::startServer() {
     using namespace httplib;
 
-    if (std::getenv("HEPEVD_NO_DISPLAY"))
+    const char* noDisplay = std::getenv("HEPEVD_NO_DISPLAY");
+    if (noDisplay && std::string(noDisplay) == "1")
         return;
 
     // Every endpoint has two parts:
