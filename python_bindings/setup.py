@@ -29,6 +29,7 @@ except ImportError:
 
 # Get the absolute path to the ../web directory,
 # so it can be used regardless of where HepEVD is installed.
+# TODO: Install the web directory in the package.
 web_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "web"))
 
 hep_evd = Extension(
