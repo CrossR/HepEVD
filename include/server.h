@@ -174,7 +174,7 @@ class HepEVDServer {
 inline void HepEVDServer::startServer() {
     using namespace httplib;
 
-    const char* noDisplay = std::getenv("HEPEVD_NO_DISPLAY");
+    const char* noDisplay = std::getenv("HEP_EVD_NO_DISPLAY");
     if (noDisplay && std::string(noDisplay) == "1")
         return;
 
@@ -355,9 +355,7 @@ inline void HepEVDServer::startServer() {
     this->server.Get("/quit", [&](const Request &, Response &) { this->server.stop(); });
 
     // Finally, mount the www folder, which contains the actual HepEVD JS code.
-    const std::string headerFilePath(__FILE__);
-    const std::string includeFolder(headerFilePath.substr(0, headerFilePath.rfind("/")));
-    this->server.set_mount_point("/", includeFolder + "/../web/");
+    this->server.set_mount_point("/", WEB_FOLDER());
 
     std::cout << "Starting a server on http://localhost:" << EVD_PORT() << "..." << std::endl;
     this->server.listen("localhost", EVD_PORT());
