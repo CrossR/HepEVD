@@ -49,6 +49,7 @@ example/debugging
 .venv
 
 # Python bindings
-python_bindings/UNKNOWN.egg-info/
+*.egg-info/
 python_bindings/build/
 python_bindings/dist/
+python_bindings/hep_evd-*/

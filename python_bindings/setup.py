@@ -6,9 +6,9 @@
 import os
 
 try:
-    from setuptools import setup, Extension
+    from setuptools import setup, Extension, find_packages
 except ImportError:
-    from distutils.core import setup, Extension
+    from distutils.core import setup, Extension, find_packages
 
 include_dirs = ["../"]
 define_macros = []
@@ -45,4 +45,7 @@ hep_evd = Extension(
     ],
     define_macros=define_macros,
 )
-setup(ext_modules=[hep_evd], name="hep_evd", version="1.0")
+setup(
+    ext_modules=[hep_evd], name="hep_evd", version="1.0",
+     include_package_data=True, packages=find_packages(where="data"),
+     package_dir={"": "data"})
