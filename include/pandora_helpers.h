@@ -232,7 +232,7 @@ static void addClusterProperties(const pandora::Cluster *cluster, std::map<std::
     }
 }
 
-static void addSlices(const lar_content::SlicingAlgorithm::SliceList *slices, std::string label = "") {
+static void addSlices(const lar_content::SliceList *slices, std::string label = "") {
 
     if (!isServerInitialised())
         return;
@@ -450,6 +450,38 @@ static void addPFOs(const pandora::Pandora &pPandora, const pandora::PfoList *pP
 
     hepEVDServer->addParticles(particles);
 }
+
+#ifdef HEP_EVD_PANDORA_GRAPH_HELPER
+static void addGraph(const lar_content::LArGraph &graph, std::string label = "", std::string colour = "blue") {
+
+    Markers markers;
+    const auto &edges = graph.GetEdges();
+
+    for (const auto &edge : edges) {
+        const auto &startHit = edge->m_v0;
+        const auto &endHit = edge->m_v1;
+
+        const auto &startPos = startHit->GetPositionVector();
+        const auto &endPos = endHit->GetPositionVector();
+
+        // Assume the two hits are in the same dimension / hit type.
+        const auto hitType = getHepEVDHitType(startHit->GetHitType());
+        const auto hitDim = getHepEVDHitDimension(startHit->GetHitType());
+
+        Point startPoint({startPos.GetX(), startPos.GetY(), startPos.GetZ()}, hitDim, hitType);
+        startPoint.setLabel(label);
+        Point endPoint({endPos.GetX(), endPos.GetY(), endPos.GetZ()}, hitDim, hitType);
+        endPoint.setLabel(label);
+        Line line(startPoint, endPoint);
+
+        markers.push_back(startPoint);
+        markers.push_back(endPoint);
+        markers.push_back(line);
+    }
+
+    hepEVDServer->addMarkers(markers);
+}
+#endif
 
 }; // namespace HepEVD
 

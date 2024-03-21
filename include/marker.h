@@ -30,8 +30,9 @@ class Marker {
   public:
     Marker() {}
     Marker(const PosArray &pos) : position(pos) {}
-    void setDim(const HitDimension &dim) { this->position.setDim(dim); }
-    void setHitType(const HitType &hitType) { this->position.setHitType(hitType); }
+    Marker(const Position &pos) : position(pos) {}
+    virtual void setDim(const HitDimension &dim) { this->position.setDim(dim); }
+    virtual void setHitType(const HitType &hitType) { this->position.setHitType(hitType); }
     void setColour(const std::string colour) { this->colour = colour; }
     void setLabel(const std::string label) { this->label = label; }
 
@@ -43,6 +44,8 @@ class Marker {
 
 // A point is just a single 2D/3D location.
 class Point : public Marker {
+  friend class Line;
+  friend class Ring;
   public:
     Point() {}
     Point(const PosArray &pos) : Marker(pos) {}
@@ -62,6 +65,12 @@ class Line : public Marker {
   public:
     Line() {}
     Line(const PosArray &start, const PosArray &end) : Marker(start), end(end) {}
+    Line(const Point &start, const Point &end) : Marker(start.position), end(end.position) {}
+
+    void setDim(const HitDimension &dim) override {
+        this->position.setDim(dim);
+        this->end.setDim(dim);
+    }
 
     NLOHMANN_DEFINE_TYPE_INTRUSIVE(Line, markerType, end, position, colour, label);
 
