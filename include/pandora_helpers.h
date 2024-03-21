@@ -452,7 +452,8 @@ static void addPFOs(const pandora::Pandora &pPandora, const pandora::PfoList *pP
 }
 
 #ifdef HEP_EVD_PANDORA_GRAPH_HELPER
-static void addGraph(const lar_content::LArGraph &graph, std::string label = "", std::string colour = "blue") {
+static void addGraph(const lar_content::LArGraph &graph, std::string label = "", std::string nodeColour = "grey",
+                     std::string lineColour = "blue") {
 
     Markers markers;
     const auto &edges = graph.GetEdges();
@@ -470,9 +471,15 @@ static void addGraph(const lar_content::LArGraph &graph, std::string label = "",
 
         Point startPoint({startPos.GetX(), startPos.GetY(), startPos.GetZ()}, hitDim, hitType);
         startPoint.setLabel(label);
+        startPoint.setColour(nodeColour);
+
         Point endPoint({endPos.GetX(), endPos.GetY(), endPos.GetZ()}, hitDim, hitType);
         endPoint.setLabel(label);
+        endPoint.setColour(nodeColour);
+
         Line line(startPoint, endPoint);
+        line.setLabel(label);
+        line.setColour(lineColour);
 
         markers.push_back(startPoint);
         markers.push_back(endPoint);
