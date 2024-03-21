@@ -69,10 +69,18 @@ export function populateTypeToggle(hitDim, hitTypesMap, onClick = (_) => {}) {
   classDiv.innerHTML = "";
   const entries = new Set();
 
+  // Add a button for no hits.
+  entries.add(BUTTON_ID.None);
+
   hitTypesMap.forEach((_, hitTypeString) => {
     if (hitTypeString === "All") return;
     entries.add(hitTypeString);
   });
+
+  if (entries.size < 2) {
+    classDiv.style.visibility = "hidden";
+    return;
+  }
 
   entries.forEach((entry) => {
     const newButton = document.createElement("button");

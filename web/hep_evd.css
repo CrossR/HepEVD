@@ -39,38 +39,16 @@ div {
   display: block;
 }
 
+#all_toggle_options {
+  position: absolute;
+  width: 8em;
+  top: 10%;
+  right: 0%;
+  padding: 1em;
+}
+
 .toggle_options {
-  position: absolute;
-  width: 8em;
-  top: 10%;
-  right: 0%;
-  padding: 1em;
-  visibility: hidden;
-}
-
-.toggle_options_markers {
-  position: absolute;
-  width: 8em;
-  top: 30%;
-  right: 0%;
-  padding: 1em;
-  visibility: hidden;
-}
-
-.toggle_options_mc {
-  position: absolute;
-  width: 8em;
-  top: 10%;
-  left: 1%;
-  visibility: hidden;
-}
-
-.toggle_options_particles {
-  position: absolute;
-  width: 8em;
-  top: 30%;
-  left: 1%;
-  visibility: block;
+  padding-bottom: 0.5em;
 }
 
 #scale_bar_div {
