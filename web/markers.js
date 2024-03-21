@@ -277,7 +277,7 @@ export function draw2DScaleBar(state) {
   }
 
   // First, get the X width of the detector.
-  const xBoundary = getHitBoundaries(state.hitData.hits, "x");
+  const xBoundary = getHitBoundaries(state.hitData.all, "x");
   const xWidth = xBoundary.max - xBoundary.min;
   const xStart = 0 - xWidth / 2;
   const xEnd = xWidth / 2;
