@@ -273,7 +273,7 @@ export class RenderState {
     this.mcHitGroup.clear();
 
     const mcColours = getMCColouring(this.mcData.mc);
-    const hitConfig = HIT_CONFIG[this.hitDim];
+    const hitConfig = Object.assign({}, HIT_CONFIG[this.hitDim]);
 
     if (this.hitDim === "3D") {
       hitConfig.hitSize += 0.5;
