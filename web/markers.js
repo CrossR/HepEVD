@@ -3,6 +3,9 @@
 //
 
 import * as THREE from "three";
+import { Line2 } from "three/addons/lines/Line2.js";
+import { LineGeometry } from "three/addons/lines/LineGeometry.js";
+import { LineMaterial } from "three/addons/lines/LineMaterial.js";
 import { Lut } from "three/addons/math/Lut.js";
 
 import { MARKER_CONFIG } from "./constants.js";
@@ -15,6 +18,9 @@ import { dragElement } from "./ui.js";
  * @param {THREE.Group} group - The group to which the rings will be added.
  */
 export function drawRings(rings, group) {
+
+  if (rings.length === 0) return;
+
   const bufferGeometry = new THREE.BufferGeometry();
 
   const vertexMap3D = new Map();
@@ -188,6 +194,68 @@ export function drawPoints(points, group) {
   pointMesh.instanceColor.needsUpdate = true;
 
   group.add(pointMesh);
+}
+
+/**
+ * Draws lines using the provided data and adds them to the specified group.
+ * @param {Array} lines - An array of lines data objects.
+ * @param {THREE.Group} group - The group to which the lines will be added.
+ */
+export function drawLines(lines, group) {
+  if (lines.length === 0) return;
+
+  let lineColours = [];
+
+  lines.forEach((line) => {
+    // If the line has a colour, use that.
+    if (line.colour) {
+      lineColours.push(line.colour);
+    } else {
+      lineColours.push(MARKER_CONFIG["line"].colour);
+    }
+  });
+
+  const lut = new Lut("cooltowarm", 512);
+  let usingLut = typeof lineColours[0] === "number";
+
+  if (usingLut) {
+    let minColourValue = Infinity;
+    let maxColourValue = Number.NEGATIVE_INFINITY;
+    pointColours.forEach((value) => {
+      if (value < minColourValue) minColourValue = value;
+      if (value > maxColourValue) maxColourValue = value;
+    });
+    lut.setMax(maxColourValue);
+  }
+
+  const lineMaterial = new LineMaterial({
+    linewidth: MARKER_CONFIG["line"].size,
+  });
+  const lineObjects = [];
+
+  lines.forEach(function (line, index) {
+    const start = line.position;
+    const end = line.end;
+    const points = [start.x, start.y, start.z, end.x, end.y, end.z];
+
+    if (usingLut) {
+      lineMaterial.color = lut.getColor(lineColours[index]);
+    } else {
+      lineMaterial.color = new THREE.Color(lineColours[index]);
+    }
+
+    const lineGeo = new LineGeometry().setPositions(points);
+    const lineObj = new Line2(lineGeo, lineMaterial);
+
+    lineObj.computeLineDistances();
+    lineObj.scale.set(1, 1, 1);
+
+    lineObjects.push(lineObj);
+  });
+
+  group.add(...lineObjects);
+
+  return;
 }
 
 /**
