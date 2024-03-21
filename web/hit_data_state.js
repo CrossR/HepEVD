@@ -17,6 +17,8 @@ export class HitDataState {
     this.props = hitProperties.hitPropMaps;
     this.propTypes = hitProperties.hitPropTypes;
     this.activeProps = new Set([BUTTON_ID.All]);
+
+    this.active = true;
   }
 
   /**
@@ -64,6 +66,15 @@ export class HitDataState {
   }
 
   /**
+   * Toggles the active state of the hit data.
+   * 
+   * @param {boolean} active - The active state.
+   */
+  toggleActive(active = !this.active) {
+    this.active = active;
+  }
+
+  /**
    * Top level update function, to update what the active hits are.
    *
    * @param {Array} particles - The particles to consider for updating the active hits.
@@ -72,6 +83,12 @@ export class HitDataState {
   updateActive(particles, hitTypeState) {
     let newHits = new Set();
     const newHitColours = [];
+
+    if (!this.active) {
+      this.activeHits = [];
+      this.colours = newHitColours
+      return;
+    }
 
     this.allHits.forEach((hit) => {
       // Skip if hit type is not active

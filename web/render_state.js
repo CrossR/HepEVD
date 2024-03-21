@@ -365,8 +365,17 @@ export class RenderState {
 
   // Similar to the property change, update the hit type list.
   onHitTypeChange(hitType) {
-    // Add or remove the toggled class as needed...
-    this.hitTypeState.toggleHitType(hitType);
+
+    // If this is the none button, just remove all the hits.
+    // This is a special case, as we don't want to toggle the
+    // hit type state -> Its possible the user wants to see
+    // no hits, but only X hit type markers.
+    if (hitType === BUTTON_ID.None) {
+      this.hitData.toggleActive();
+    } else {
+      // Add or remove the toggled class as needed...
+      this.hitTypeState.toggleHitType(hitType);
+    }
 
     // Now that the internal state is correct, correct the UI.
     toggleButton("types", hitType, false);
