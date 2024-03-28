@@ -133,11 +133,11 @@ export function getAllStateInfo() {
  * @param {number} stateId - The ID of the state to set.
  * @param {Function} renderStates - Map of render states.
  */
-export function setState(stateId, renderStates) {
+export async function setState(stateId, renderStates) {
   if (hepEVD_GLOBAL_STATE !== undefined) {
     hepEVD_GLOBAL_STATE.currentState = stateId;
   } else {
-    fetch(`/swap/id/${stateId}`);
+    await fetch(`/swap/id/${stateId}`);
   }
 
   updateStateUI(renderStates);
@@ -151,13 +151,13 @@ export function setState(stateId, renderStates) {
  *
  * @returns {void}
  */
-export function nextState(renderStates) {
+export async function nextState(renderStates) {
   if (hepEVD_GLOBAL_STATE !== undefined) {
     hepEVD_GLOBAL_STATE.currentState =
       (hepEVD_GLOBAL_STATE.currentState + 1) %
       hepEVD_GLOBAL_STATE.states.length;
   } else {
-    fetch("/nextState");
+    await fetch("/nextState");
   }
 
   updateStateUI(renderStates);
@@ -171,7 +171,7 @@ export function nextState(renderStates) {
  *
  * @returns {void}
  */
-export function previousState(renderStates) {
+export async function previousState(renderStates) {
   if (hepEVD_GLOBAL_STATE !== undefined) {
     hepEVD_GLOBAL_STATE.currentState =
       (hepEVD_GLOBAL_STATE.currentState -
@@ -179,7 +179,7 @@ export function previousState(renderStates) {
         hepEVD_GLOBAL_STATE.states.length) %
       hepEVD_GLOBAL_STATE.states.length;
   } else {
-    fetch("/previousState");
+    await fetch("/previousState");
   }
   updateStateUI(renderStates);
   reloadDataForCurrentState(renderStates);
