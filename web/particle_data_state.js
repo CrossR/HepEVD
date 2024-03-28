@@ -36,6 +36,7 @@ export class ParticleDataState {
     });
 
     this.activelyDrawnHits = [];
+    this.active = true;
   }
 
   /**
@@ -44,7 +45,7 @@ export class ParticleDataState {
    * @returns {Array} The particles.
    */
   get particles() {
-    return this.activeParticles;
+    return this.active ? this.activeParticles : [];
   }
 
   /**
@@ -91,6 +92,15 @@ export class ParticleDataState {
     } else {
       this.activeInteractionTypes.add(type);
     }
+  }
+
+  /**
+   * Toggles the active state of the particle data.
+   * 
+   * @param {boolean} active - The active state.
+   */
+  toggleActive(active = !this.active) {
+    this.active = active;
   }
 
   /**
@@ -150,6 +160,12 @@ export class ParticleDataState {
    * @param {HitTypeState} hitTypeState - To utilise the checkHitType function>>.
    */
   updateActive(hitData, hitTypeState) {
+
+    if (!this.active) {
+      this.activeParticles = [];
+      return;
+    }
+
     const newParticles = this.allParticles.flatMap((particle) => {
       if (!this.checkParticleIsValid(particle)) return [];
 

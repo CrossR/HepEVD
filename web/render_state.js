@@ -372,6 +372,7 @@ export class RenderState {
     // no hits, but only X hit type markers.
     if (hitType === BUTTON_ID.None) {
       this.hitData.toggleActive();
+      this.particleData.toggleActive();
     } else {
       // Add or remove the toggled class as needed...
       this.hitTypeState.toggleHitType(hitType);

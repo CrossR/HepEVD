@@ -27,7 +27,7 @@ export class HitDataState {
    * @returns {Array} The hits array.
    */
   get hits() {
-    return this.activeHits;
+    return this.active ? this.activeHits : [];
   }
 
   /**
@@ -83,12 +83,6 @@ export class HitDataState {
   updateActive(particles, hitTypeState) {
     let newHits = new Set();
     const newHitColours = [];
-
-    if (!this.active) {
-      this.activeHits = [];
-      this.colours = newHitColours
-      return;
-    }
 
     this.allHits.forEach((hit) => {
       // Skip if hit type is not active

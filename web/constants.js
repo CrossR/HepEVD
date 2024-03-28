@@ -89,7 +89,7 @@ export const HIT_CONFIG = {
 
 export const MARKER_CONFIG = {
   point: {
-    size: 1,
+    size: 1.5,
     colour: "red",
   },
   line: {
