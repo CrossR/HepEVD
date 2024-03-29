@@ -102,14 +102,10 @@ convert and parse objects to/from JSON, such that they can be served via the HTT
 
 ## Future Work
 
-- More helper functions.
+- More helper functions. The helper function core code has been abstracted out now, so
+  just needs actual implementations adding (i.e. LArSoft helper for `recob::Hit` etc.).
 
 - Hit widths? Pain with instanced mesh though.
-
-- Fill out URL data loading: User configurable URL parameters, to allow for loading
-  of data from a URL.
-
-- Fill out URL data loading to load multiple event states.
 
 - Consider how easy / useful / annoying it would be to maintain camera position
   when swapping between event states.
