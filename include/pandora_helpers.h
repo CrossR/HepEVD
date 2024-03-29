@@ -31,9 +31,9 @@ typedef lar_content::LArSlice::SliceList SliceList;
 typedef lar_content::SlicingAlgorithm::SliceList SliceList;
 #endif
 
-
 // Local Includes
 #include "geometry.h"
+#include "base_helper.h"
 #include "hits.h"
 #include "particle.h"
 #include "server.h"
@@ -41,91 +41,21 @@ typedef lar_content::SlicingAlgorithm::SliceList SliceList;
 
 namespace HepEVD {
 
-using HepHitMap = std::map<const pandora::CaloHit *, Hit *>;
+using PandoraHitMap = std::map<const pandora::CaloHit *, Hit *>;
+inline PandoraHitMap caloHitToEvdHit;
 
-// Global Server Instance + HitMap
-// This means we don't have to worry about setting it up,
-// or awkwardness around using across multiple functions.
-inline HepEVDServer *hepEVDServer;
-inline HepHitMap caloHitToEvdHit;
-inline bool verboseLogging = false;
-
-static HepHitMap *getHitMap() { return &caloHitToEvdHit; }
-static HepEVDServer *getServer() { return hepEVDServer; }
-static void setVerboseLogging(const bool logging) { verboseLogging = logging; }
-
-static bool isServerInitialised() {
-    const bool isInit(hepEVDServer != nullptr && hepEVDServer->isInitialised());
-
-    if (!isInit && verboseLogging) {
-        std::cout << "HepEVD Server is not initialised!" << std::endl;
-        std::cout << "Please call HepEVD::setHepEVDGeometry(this->GetPandora.GetGeometry()) or similar." << std::endl;
-        std::cout << "This should be done before any other calls to the event display." << std::endl;
-    }
-
-    return isInit;
+// Get the current hit map, such that properties and more can be added
+// to the HepEVD hits.
+// Also register the map to the manager, so we don't leak memory.
+static PandoraHitMap *getHitMap() {
+    HepEVD::registerClearFunction(
+        []() { caloHitToEvdHit.clear(); }
+    );
+    return &caloHitToEvdHit;
 }
 
-static void startServer(const int startState = -1) {
-    if (!isServerInitialised())
-        return;
-
-    if (verboseLogging) {
-        std::cout << "HepEVD: There are " << hepEVDServer->getHits().size() << " hits registered!" << std::endl;
-        std::cout << "HepEVD: There are " << hepEVDServer->getMCHits().size() << " MC hits registered!" << std::endl;
-        std::cout << "HepEVD: There are " << hepEVDServer->getParticles().size() << " particles registered!"
-                  << std::endl;
-        std::cout << "HepEVD: There are " << hepEVDServer->getMarkers().size() << " markers registered!" << std::endl;
-    }
-
-    if (startState != -1)
-        hepEVDServer->swapEventState(startState);
-    else if (hepEVDServer->getState()->isEmpty())
-        hepEVDServer->previousEventState();
-
-    hepEVDServer->startServer();
-}
-
-static void saveState(const std::string stateName, const int minSize = -1, const bool clearOnShow = true) {
-
-    if (!isServerInitialised())
-        return;
-
-    // Set the name of the current state...
-    hepEVDServer->setName(stateName);
-    bool shouldIncState = true;
-
-    // If prior to adding the new state, the size of the current state was
-    // greater than the minimum size, then start the server.
-    //
-    // This is useful so you can save states as you go, but start the
-    // server after a certain number of states have been saved.
-    if (minSize != -1 && hepEVDServer->getNumberOfEventStates() >= minSize) {
-        hepEVDServer->startServer();
-
-        if (clearOnShow) {
-            hepEVDServer->resetServer();
-            shouldIncState = false;
-        }
-    }
-
-    // Finally, start a new state and make sure it's the current one.
-    if (shouldIncState) {
-        hepEVDServer->addEventState();
-        hepEVDServer->nextEventState();
-    }
-
-    caloHitToEvdHit.clear();
-}
-
-static void resetServer(const bool resetGeo = false) {
-    if (!isServerInitialised())
-        return;
-
-    hepEVDServer->resetServer(resetGeo);
-    caloHitToEvdHit.clear();
-}
-
+// Set the HepEVD geometry by pulling the relevant information from the
+// Pandora GeometryManager.
 static void setHepEVDGeometry(const pandora::GeometryManager *manager) {
 
     if (isServerInitialised())
@@ -143,6 +73,7 @@ static void setHepEVDGeometry(const pandora::GeometryManager *manager) {
     hepEVDServer = new HepEVDServer(DetectorGeometry(volumes));
 }
 
+// Helper function to convert a Pandora HitType to a HepEVD Hit Dimension.
 static HitDimension getHepEVDHitDimension(pandora::HitType pandoraHitType) {
     switch (pandoraHitType) {
     case pandora::HitType::TPC_VIEW_U:
@@ -159,6 +90,7 @@ static HitDimension getHepEVDHitDimension(pandora::HitType pandoraHitType) {
     }
 }
 
+// Helper function to convert a Pandora HitType to a HepEVD Hit Type.
 static HitType getHepEVDHitType(pandora::HitType pandoraHitType) {
     switch (pandoraHitType) {
     case pandora::HitType::TPC_VIEW_U:
@@ -172,6 +104,7 @@ static HitType getHepEVDHitType(pandora::HitType pandoraHitType) {
     }
 }
 
+// Add the given CaloHits to the server.
 static void addHits(const pandora::CaloHitList *caloHits, std::string label = "") {
 
     if (!isServerInitialised())
@@ -261,13 +194,6 @@ static void addSlices(const SliceList *slices, std::string label = "") {
         for (const auto &pCaloHit : slice.m_caloHitListW)
             caloHitToEvdHit[pCaloHit]->addProperties({{{"SliceNumber", HepEVD::PropertyType::CATEGORIC}, sliceNumber}});
     }
-}
-
-static void addMarkers(const Markers &markers) {
-    if (!isServerInitialised())
-        return;
-
-    hepEVDServer->addMarkers(markers);
 }
 
 static void showMC(const pandora::Algorithm &pAlgorithm, const std::string &listName = "") {
