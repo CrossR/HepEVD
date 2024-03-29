@@ -26,6 +26,30 @@ export class HitTypeState {
   }
 
   /**
+   * Add to the active state of a hit type.
+   *
+   * @param {string} type - The hit type to toggle.
+   */
+  addHitType(type) {
+    if (this.activeTypes.has(type))
+      return;
+
+    this.activeTypes.add(type);
+  }
+
+  /**
+   * Remove from the active state of a hit type.
+   *
+   * @param {string} type - The hit type to toggle.
+   */
+  removeHitType(type) {
+    if (! this.activeTypes.has(type))
+      return;
+
+    this.activeTypes.delete(type);
+  }
+
+  /**
    * Checks if the hit type is active.
    *
    * @param {Object} data - The hit data.
