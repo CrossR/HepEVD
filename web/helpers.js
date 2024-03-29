@@ -71,11 +71,13 @@ export function getHitProperties(particles, hits) {
 
     if (Object.keys(hit.properties).length > 0) {
       Object.entries(hit.properties).forEach((prop) => {
-        // The prop object looks like:
+        // The prop object will look one of two ways:
         // [propertyNumber, [ [propertyName, propertyType], propertyValue ] ]
-        const propName = prop[1][0][0];
-        const propType = prop[1][0][1];
-        const propValue = prop[1][1];
+        // or
+        // [propertyName, propertyValue]
+        const propName = prop[1].length > 1 ? prop[1][0][0] : prop[0];
+        const propType = prop[1].length > 1 ? prop[1][0][1] : "continuous";
+        const propValue = prop[1].length > 1 ? prop[1][1] : prop[1];
         hitPropMaps.get(hit.id).set(propName, propValue);
 
         if (!hitPropTypes.has(propName)) {
