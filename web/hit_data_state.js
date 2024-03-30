@@ -104,6 +104,7 @@ export class HitDataState {
     let newHits = new Set();
     const newHitColours = [];
 
+    console.log(this.activeProps);
     this.allHits.forEach((hit) => {
       // Skip if hit type is not active
       if (!hitTypeState.checkHitType(hit)) return;
@@ -113,12 +114,16 @@ export class HitDataState {
         .reverse()
         .filter((prop) => prop !== BUTTON_ID.All)
         .forEach((prop) => {
+          const propName = typeof prop === "string" ? prop : prop.args[0];
+          const propFunc = typeof prop === "string" ? null : prop.func;
           if (!this.props.get(hit.id)) return;
-          if (!this.props.get(hit.id).has(prop)) return;
           if (newHits.has(hit)) return;
 
+          if (propFunc && !propFunc(prop.args, this.props.get(hit.id))) return;
+          else if (!this.props.get(hit.id).has(propName)) return;
+
           newHits.add(hit);
-          newHitColours.push(this.props.get(hit.id).get(prop));
+          newHitColours.push(this.props.get(hit.id).get(propName));
         });
 
       // If we've added the hit, we're done.

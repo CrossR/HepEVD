@@ -14,10 +14,13 @@ export class UserFilter {
 
     // Internal state for the filter.
     this.filtering = false;
-    this.filterCleanUp = [];
-    this.lastMatch = {};
 
     this.filterElem = document.getElementById("filter_test");
+    this.filterCleanUp = () => {
+      this.state.hitData.filterProps.clear();
+      this.state.hitTypeState.activeTypesFilter.clear();
+      this.filtering = false;
+    };
 
     // Add event listener to the filter input.
     this.filterElem.addEventListener("input", () => {
@@ -28,10 +31,9 @@ export class UserFilter {
     // Define a basic grammar for the filter.
     this.grammar = ohm.grammar(
       `Filter {
-        Exp = Exp "&&" Exp -- and
+        Exp = "(" Exp ")" -- parens
+            | Exp "&&" Exp -- and
             | Exp "||" Exp -- or
-            | "(" Exp ")" -- parens
-            | Exp Invalid -- invalid
             | "hasProp(" Str ")" -- prop
             | "prop(" Str ")" Comp DoubleValue -- propComp
             | "pdg(" IntValue ")" -- pdg
@@ -48,27 +50,63 @@ export class UserFilter {
     // Now create a semantics object to interpret the grammar.
     this.semantics = this.grammar.createSemantics();
     this.semantics.addOperation("match", {
-      Exp_invalid: (exp, rest) => {
+      Exp_parens: (_, exp, __) => {
+        console.log("Parens:", exp.sourceString);
         return exp.match();
       },
       Exp_and: (exp1, _, exp2) => {
-        return exp1.match() && exp2.match();
-      },
-      Exp_or: (exp1, _, exp2) => {
-        // Here, we can't use short-circuiting, because we need to run both
-        // sides to update the renderer.
-        return [exp1.match(), exp2.match()].some((x) => x);
-      },
-      Exp_parens: (_, exp, __) => {
-        return exp.match();
-      },
-      Exp_prop: (_, str, __) => {
-        this.state.hitData.setHitProperty(str.sourceString);
-        this.filterCleanUp.push(() => {
-          this.state.hitData.setHitProperty(str.sourceString, false);
+        console.log("And:", exp1.sourceString, exp2.sourceString);
+        const exp1Match = exp1.match();
+        const exp2Match = exp2.match();
+
+        if (!exp1Match || !exp2Match) return false;
+
+        // Otherwise, we need to merge the two results.
+        const andFilter = exp1Match;
+
+        exp1Match.type.forEach((type, i) => {
+          exp2Match.type.forEach((type2, j) => {
+            console.log(type, type2);
+            if (type === type2)
+              andFilter.args[i] = andFilter.args[i].concat(exp2Match.args[j]);
+          });
         });
 
-        return true;
+        return andFilter;
+      },
+      Exp_or: (exp1, _, exp2) => {
+        console.log("Or:", exp1.sourceString, exp2.sourceString);
+        const exp1Match = exp1.match();
+        const exp2Match = exp2.match();
+
+        if (!exp1Match && !exp2Match) return false;
+
+        // Otherwise, we need to append the two results.
+        const orFilter = {
+          args: [...exp1Match.args, ...exp2Match.args],
+          setter: [...exp1Match.setter, ...exp2Match.setter],
+          type: [...exp1Match.type, ...exp2Match.type],
+        };
+
+        return orFilter;
+      },
+      Exp_prop: (_, str, __) => {
+        const checkHitProp = (propNames, props) => {
+          return propNames.every((prop) => props.has(prop));
+        };
+        const addHitProp = {
+          args: [[str.sourceString]],
+          setter: [
+            (args) =>
+              this.state.hitData.setHitProperty({
+                args: args,
+                func: checkHitProp,
+              }),
+          ],
+          type: ["prop"],
+        };
+
+        return addHitProp;
       },
       Exp_propComp: (_, propStr, __, comp, value) => {
         console.log("Checking prop:", propStr, comp, value);
@@ -98,19 +136,19 @@ export class UserFilter {
       Exp_view: (_, value, __) => {
         const view = `${value.sourceString.toUpperCase()} View`;
         this.state.hitTypeState.addHitType(view);
-        this.filterCleanUp.push(() => {
-          this.state.hitTypeState.addHitType(view, false);
-        });
 
         return true;
       },
       Str: (chars) => {
+        console.log("String:", chars.sourceString);
         return chars.sourceString;
       },
       IntValue: (digits) => {
+        console.log("Int:", digits.sourceString);
         return parseInt(digits.sourceString, 10);
       },
       DoubleValue: (before, _, after) => {
+        console.log("Double:", before.sourceString, after.sourceString);
         return parseFloat(`${before.sourceString}.${after.sourceString}`);
       },
     });
@@ -123,8 +161,7 @@ export class UserFilter {
     const filterString = this.filterElem.value;
 
     if (filterString === undefined || filterString.trim() === "") {
-      this.filterCleanUp.forEach((f) => f());
-      this.filterCleanUp = [];
+      this.filterCleanUp();
       this.state.triggerEvent("fullUpdate");
       return;
     }
@@ -134,18 +171,34 @@ export class UserFilter {
     // If the filter string doesn't match the grammar, finish.
     // However, we may still need to update the renderer, if there
     // was a previous filter applied.
-    if (matchResult.failed()) {
+    if (matchResult.failed() && this.filtering) {
+      this.filterCleanUp();
+      this.state.triggerEvent("fullUpdate");
+      return;
+    } else if (matchResult.failed()) {
       return;
     }
 
-    // Run clean up for the previous filter, now that we have a new match.
-    this.filterCleanUp.forEach((f) => f());
-    this.filterCleanUp = [];
+    // Run clean up for the previous filters, now that we have a new match.
+    this.filterCleanUp();
 
     this.lastValidString = matchResult;
-    this.semantics(matchResult).match();
+    const filterResult = this.semantics(matchResult).match();
+
+    console.log(filterResult);
+
+    if (filterResult.length === 0) {
+      return;
+    }
+
+    // Actually apply the filters.
+    const { setter, args } = filterResult;
+    setter.forEach((set, i) => {
+      set(args[i]);
+    });
 
     // Update the renderer.
     this.state.triggerEvent("fullUpdate");
+    this.filtering = true;
   }
 }
