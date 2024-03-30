@@ -37,14 +37,15 @@ static void setVerboseLogging(const bool logging) { verboseLogging = logging; }
 // Define a HitMapManager to keep track of the hits we've added, so
 // that we can clear the maps when we need to reset the server / state.
 class HitMapManager {
-public:
+  public:
     void clear() {
         for (auto &clearFunction : clearFunctions) {
             clearFunction();
         }
     }
     void registerClearFunction(std::function<void()> clearFunction) { clearFunctions.push_back(clearFunction); }
-private:
+
+  private:
     std::vector<std::function<void()>> clearFunctions;
 };
 inline HitMapManager hepEvdHitMapManager;

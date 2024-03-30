@@ -38,11 +38,11 @@ export class HitTypeState {
    * @param {boolean} active - The active state.
    */
   addHitType(type, active = true) {
-    if (! this.activeTypesFilter.has(type) && active)
+    if (!this.activeTypesFilter.has(type) && active)
       this.activeTypesFilter.add(type);
 
-    if (this.activeTypesFilter.has(type) && ! active)
-        this.activeTypesFilter.delete(type);
+    if (this.activeTypesFilter.has(type) && !active)
+      this.activeTypesFilter.delete(type);
 
     console.log("Active types: ", this.activeTypes);
   }

@@ -28,8 +28,8 @@ NLOHMANN_JSON_SERIALIZE_ENUM(HitType,
                              {{GENERAL, "Hit"}, {TWO_D_U, "U View"}, {TWO_D_V, "V View"}, {TWO_D_W, "W View"}});
 
 enum class PropertyType { CATEGORIC, NUMERIC };
-NLOHMANN_JSON_SERIALIZE_ENUM(PropertyType, {{PropertyType::CATEGORIC, "CATEGORIC"},
-                                            {PropertyType::NUMERIC, "NUMERIC"}});
+NLOHMANN_JSON_SERIALIZE_ENUM(PropertyType,
+                             {{PropertyType::CATEGORIC, "CATEGORIC"}, {PropertyType::NUMERIC, "NUMERIC"}});
 
 // Store a 3D position, and include a helper for JSON production.
 class Position {

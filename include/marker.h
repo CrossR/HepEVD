@@ -44,8 +44,9 @@ class Marker {
 
 // A point is just a single 2D/3D location.
 class Point : public Marker {
-  friend class Line;
-  friend class Ring;
+    friend class Line;
+    friend class Ring;
+
   public:
     Point() {}
     Point(const PosArray &pos) : Marker(pos) {}

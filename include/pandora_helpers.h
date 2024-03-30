@@ -32,8 +32,8 @@ typedef lar_content::SlicingAlgorithm::SliceList SliceList;
 #endif
 
 // Local Includes
-#include "geometry.h"
 #include "base_helper.h"
+#include "geometry.h"
 #include "hits.h"
 #include "particle.h"
 #include "server.h"
@@ -48,9 +48,7 @@ inline PandoraHitMap caloHitToEvdHit;
 // to the HepEVD hits.
 // Also register the map to the manager, so we don't leak memory.
 static PandoraHitMap *getHitMap() {
-    HepEVD::registerClearFunction(
-        []() { caloHitToEvdHit.clear(); }
-    );
+    HepEVD::registerClearFunction([]() { caloHitToEvdHit.clear(); });
     return &caloHitToEvdHit;
 }
 

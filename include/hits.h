@@ -90,7 +90,7 @@ inline static void from_json(const json &j, Hits &hits) {
 class MCHit : public Hit {
   public:
     MCHit() : Hit() {}
-    MCHit(const Position &pos, const double energy) : Hit(pos, energy) { }
+    MCHit(const Position &pos, const double energy) : Hit(pos, energy) {}
     MCHit(const Position &pos, const double pdgCode, const double energy) : Hit(pos, energy) {
         this->addProperties({{"PDG", pdgCode}});
     }
@@ -99,12 +99,12 @@ class MCHit : public Hit {
     }
 
     void setPDG(const double pdgCode) { this->addProperties({{"PDG", pdgCode}}); }
-    double getPDG() const { 
+    double getPDG() const {
         if (this->properties.count({"PDG", PropertyType::NUMERIC}) == 0) {
             return 0.0;
         }
 
-        return this->properties.at({"PDG", PropertyType::NUMERIC}); 
+        return this->properties.at({"PDG", PropertyType::NUMERIC});
     }
 
     NLOHMANN_DEFINE_TYPE_INTRUSIVE(MCHit, position, energy, label, properties);
@@ -122,7 +122,7 @@ inline static void to_json(json &j, const MCHits &hits) {
 
         // Skip hits without a PDG code.
         // This is because technically you can initialize an MCHit without a PDG code.
-        // But, if you don't have a PDG code, you're not really an MCHit. 
+        // But, if you don't have a PDG code, you're not really an MCHit.
         if (hit->getPDG() == 0.0)
             continue;
 

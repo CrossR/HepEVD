@@ -27,7 +27,7 @@ export class UserFilter {
     // Using Ohm.js to parse the filter string.
     // Define a basic grammar for the filter.
     this.grammar = ohm.grammar(
-  `Filter {
+      `Filter {
         Exp = Exp "&&" Exp -- and
             | Exp "||" Exp -- or
             | "(" Exp ")" -- parens
@@ -50,7 +50,7 @@ export class UserFilter {
     this.semantics.addOperation("match", {
       Exp_invalid: (exp, rest) => {
         return exp.match();
-        },
+      },
       Exp_and: (exp1, _, exp2) => {
         return exp1.match() && exp2.match();
       },
@@ -65,7 +65,7 @@ export class UserFilter {
       Exp_prop: (_, str, __) => {
         this.state.hitData.setHitProperty(str.sourceString);
         this.filterCleanUp.push(() => {
-            this.state.hitData.setHitProperty(str.sourceString, false);
+          this.state.hitData.setHitProperty(str.sourceString, false);
         });
 
         return true;
@@ -99,7 +99,7 @@ export class UserFilter {
         const view = `${value.sourceString.toUpperCase()} View`;
         this.state.hitTypeState.addHitType(view);
         this.filterCleanUp.push(() => {
-            this.state.hitTypeState.addHitType(view, false);
+          this.state.hitTypeState.addHitType(view, false);
         });
 
         return true;
@@ -123,10 +123,10 @@ export class UserFilter {
     const filterString = this.filterElem.value;
 
     if (filterString === undefined || filterString.trim() === "") {
-        this.filterCleanUp.forEach((f) => f());
-        this.filterCleanUp = [];
-        this.state.triggerEvent("fullUpdate");
-        return;
+      this.filterCleanUp.forEach((f) => f());
+      this.filterCleanUp = [];
+      this.state.triggerEvent("fullUpdate");
+      return;
     }
 
     const matchResult = this.grammar.match(filterString);
@@ -135,7 +135,7 @@ export class UserFilter {
     // However, we may still need to update the renderer, if there
     // was a previous filter applied.
     if (matchResult.failed()) {
-        return;
+      return;
     }
 
     // Run clean up for the previous filter, now that we have a new match.

@@ -174,7 +174,7 @@ class HepEVDServer {
 inline void HepEVDServer::startServer() {
     using namespace httplib;
 
-    const char* noDisplay = std::getenv("HEP_EVD_NO_DISPLAY");
+    const char *noDisplay = std::getenv("HEP_EVD_NO_DISPLAY");
     if (noDisplay && std::string(noDisplay) == "1")
         return;
 
