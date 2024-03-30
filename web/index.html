@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
   <head>
     <meta charset="utf-8" />
@@ -7,23 +7,38 @@
 
     <!-- Metadata Tags -->
     <meta name="title" content="HepEVD" />
-    <meta name="description" content="A web-based event display for Particle Physics." />
+    <meta
+      name="description"
+      content="A web-based event display for Particle Physics."
+    />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="theme-color" content="#000000" />
 
     <!-- Open Graph / Facebook -->
-    <meta property="og:type" content="website">
-    <meta property="og:url" content="https://crossr.github.io/HepEVD/">
-    <meta property="og:title" content="HepEVD">
-    <meta property="og:description" content="A web-based event display for Particle Physics.">
-    <meta property="og:image" content="https://private-user-images.githubusercontent.com/10038688/291848277-badd2e8d-9a88-492f-8f1e-b41094af7e72.png?jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTUiLCJleHAiOjE3MDk2NjA0NTIsIm5iZiI6MTcwOTY2MDE1MiwicGF0aCI6Ii8xMDAzODY4OC8yOTE4NDgyNzctYmFkZDJlOGQtOWE4OC00OTJmLThmMWUtYjQxMDk0YWY3ZTcyLnBuZz9YLUFtei1BbGdvcml0aG09QVdTNC1ITUFDLVNIQTI1NiZYLUFtei1DcmVkZW50aWFsPUFLSUFWQ09EWUxTQTUzUFFLNFpBJTJGMjAyNDAzMDUlMkZ1cy1lYXN0LTElMkZzMyUyRmF3czRfcmVxdWVzdCZYLUFtei1EYXRlPTIwMjQwMzA1VDE3MzU1MlomWC1BbXotRXhwaXJlcz0zMDAmWC1BbXotU2lnbmF0dXJlPTdkZGY3NDFhOWMzMTVkYjYxZGI3NjFkOWQ4ZmNiMDI4N2NjNjBjZjFiNjI2ZWY1N2MwNmRhOTY2MDYyMDY2YzImWC1BbXotU2lnbmVkSGVhZGVycz1ob3N0JmFjdG9yX2lkPTAma2V5X2lkPTAmcmVwb19pZD0wIn0.JhEN-whL2S5m9x1uz8SPyM_Bh1SJ1XmjVAwZTbPKwZs">
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://crossr.github.io/HepEVD/" />
+    <meta property="og:title" content="HepEVD" />
+    <meta
+      property="og:description"
+      content="A web-based event display for Particle Physics."
+    />
+    <meta
+      property="og:image"
+      content="https://private-user-images.githubusercontent.com/10038688/291848277-badd2e8d-9a88-492f-8f1e-b41094af7e72.png?jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTUiLCJleHAiOjE3MDk2NjA0NTIsIm5iZiI6MTcwOTY2MDE1MiwicGF0aCI6Ii8xMDAzODY4OC8yOTE4NDgyNzctYmFkZDJlOGQtOWE4OC00OTJmLThmMWUtYjQxMDk0YWY3ZTcyLnBuZz9YLUFtei1BbGdvcml0aG09QVdTNC1ITUFDLVNIQTI1NiZYLUFtei1DcmVkZW50aWFsPUFLSUFWQ09EWUxTQTUzUFFLNFpBJTJGMjAyNDAzMDUlMkZ1cy1lYXN0LTElMkZzMyUyRmF3czRfcmVxdWVzdCZYLUFtei1EYXRlPTIwMjQwMzA1VDE3MzU1MlomWC1BbXotRXhwaXJlcz0zMDAmWC1BbXotU2lnbmF0dXJlPTdkZGY3NDFhOWMzMTVkYjYxZGI3NjFkOWQ4ZmNiMDI4N2NjNjBjZjFiNjI2ZWY1N2MwNmRhOTY2MDYyMDY2YzImWC1BbXotU2lnbmVkSGVhZGVycz1ob3N0JmFjdG9yX2lkPTAma2V5X2lkPTAmcmVwb19pZD0wIn0.JhEN-whL2S5m9x1uz8SPyM_Bh1SJ1XmjVAwZTbPKwZs"
+    />
 
     <!-- Twitter -->
-    <meta property="twitter:card" content="summary_large_image">
-    <meta property="twitter:url" content="https://crossr.github.io/HepEVD/">
-    <meta property="twitter:title" content="HepEVD">
-    <meta property="twitter:description" content="A web-based event display for Particle Physics.">
-    <meta property="twitter:image" content="https://private-user-images.githubusercontent.com/10038688/291848277-badd2e8d-9a88-492f-8f1e-b41094af7e72.png?jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTUiLCJleHAiOjE3MDk2NjA0NTIsIm5iZiI6MTcwOTY2MDE1MiwicGF0aCI6Ii8xMDAzODY4OC8yOTE4NDgyNzctYmFkZDJlOGQtOWE4OC00OTJmLThmMWUtYjQxMDk0YWY3ZTcyLnBuZz9YLUFtei1BbGdvcml0aG09QVdTNC1ITUFDLVNIQTI1NiZYLUFtei1DcmVkZW50aWFsPUFLSUFWQ09EWUxTQTUzUFFLNFpBJTJGMjAyNDAzMDUlMkZ1cy1lYXN0LTElMkZzMyUyRmF3czRfcmVxdWVzdCZYLUFtei1EYXRlPTIwMjQwMzA1VDE3MzU1MlomWC1BbXotRXhwaXJlcz0zMDAmWC1BbXotU2lnbmF0dXJlPTdkZGY3NDFhOWMzMTVkYjYxZGI3NjFkOWQ4ZmNiMDI4N2NjNjBjZjFiNjI2ZWY1N2MwNmRhOTY2MDYyMDY2YzImWC1BbXotU2lnbmVkSGVhZGVycz1ob3N0JmFjdG9yX2lkPTAma2V5X2lkPTAmcmVwb19pZD0wIn0.JhEN-whL2S5m9x1uz8SPyM_Bh1SJ1XmjVAwZTbPKwZs">
+    <meta property="twitter:card" content="summary_large_image" />
+    <meta property="twitter:url" content="https://crossr.github.io/HepEVD/" />
+    <meta property="twitter:title" content="HepEVD" />
+    <meta
+      property="twitter:description"
+      content="A web-based event display for Particle Physics."
+    />
+    <meta
+      property="twitter:image"
+      content="https://private-user-images.githubusercontent.com/10038688/291848277-badd2e8d-9a88-492f-8f1e-b41094af7e72.png?jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTUiLCJleHAiOjE3MDk2NjA0NTIsIm5iZiI6MTcwOTY2MDE1MiwicGF0aCI6Ii8xMDAzODY4OC8yOTE4NDgyNzctYmFkZDJlOGQtOWE4OC00OTJmLThmMWUtYjQxMDk0YWY3ZTcyLnBuZz9YLUFtei1BbGdvcml0aG09QVdTNC1ITUFDLVNIQTI1NiZYLUFtei1DcmVkZW50aWFsPUFLSUFWQ09EWUxTQTUzUFFLNFpBJTJGMjAyNDAzMDUlMkZ1cy1lYXN0LTElMkZzMyUyRmF3czRfcmVxdWVzdCZYLUFtei1EYXRlPTIwMjQwMzA1VDE3MzU1MlomWC1BbXotRXhwaXJlcz0zMDAmWC1BbXotU2lnbmF0dXJlPTdkZGY3NDFhOWMzMTVkYjYxZGI3NjFkOWQ4ZmNiMDI4N2NjNjBjZjFiNjI2ZWY1N2MwNmRhOTY2MDYyMDY2YzImWC1BbXotU2lnbmVkSGVhZGVycz1ob3N0JmFjdG9yX2lkPTAma2V5X2lkPTAmcmVwb19pZD0wIn0.JhEN-whL2S5m9x1uz8SPyM_Bh1SJ1XmjVAwZTbPKwZs"
+    />
 
     <script src="./vendor/es-module-shims.js"></script>
 
@@ -191,14 +206,8 @@
       <div class="toggle_options" id="types_MC_2D"></div>
       <div class="toggle_options" id="types_MC_3D"></div>
 
-      <div
-        class="flex flex-col toggle_options"
-        id="particles_2D"
-      ></div>
-      <div
-        class="flex flex-col toggle_optionss"
-        id="particles_3D"
-      ></div>
+      <div class="flex flex-col toggle_options" id="particles_2D"></div>
+      <div class="flex flex-col toggle_optionss" id="particles_3D"></div>
     </div>
 
     <div style="overflow: hidden" id="axisLabels"></div>
@@ -285,12 +294,12 @@
     <!-- Citations Info when publicly hosted -->
     <div id="citations" class="citations"></div>
 
-          <input
-            type="text"
-            id="filter_test"
-            style="height: 100px; width: 500px; position: absolute; top: 10%; left: 0;"
-            class="input input-bordered join-item"
-          />
+    <input
+      type="text"
+      id="filter_test"
+      style="height: 100px; width: 500px; position: absolute; top: 10%; left: 0"
+      class="input input-bordered join-item"
+    />
 
     <script async type="module" src="hep_evd.js"></script>
   </body>

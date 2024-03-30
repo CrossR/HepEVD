@@ -9,7 +9,13 @@ import { getHitTypes } from "./helpers.js";
 export class HitTypeState {
   constructor(particles, hits) {
     this.types = getHitTypes(particles, hits);
-    this.activeTypes = new Set();
+
+    this.activeTypesUI = new Set();
+    this.activeTypesFilter = new Set();
+  }
+
+  get activeTypes() {
+    return new Set([...this.activeTypesUI, ...this.activeTypesFilter]);
   }
 
   /**
@@ -18,35 +24,27 @@ export class HitTypeState {
    * @param {string} type - The hit type to toggle.
    */
   toggleHitType(type) {
-    if (this.activeTypes.has(type)) {
-      this.activeTypes.delete(type);
+    if (this.activeTypesUI.has(type)) {
+      this.activeTypesUI.delete(type);
     } else {
-      this.activeTypes.add(type);
+      this.activeTypesUI.add(type);
     }
   }
 
   /**
-   * Add to the active state of a hit type.
+   * Set the active state of a hit type.
    *
    * @param {string} type - The hit type to toggle.
+   * @param {boolean} active - The active state.
    */
-  addHitType(type) {
-    if (this.activeTypes.has(type))
-      return;
+  addHitType(type, active = true) {
+    if (! this.activeTypesFilter.has(type) && active)
+      this.activeTypesFilter.add(type);
 
-    this.activeTypes.add(type);
-  }
+    if (this.activeTypesFilter.has(type) && ! active)
+        this.activeTypesFilter.delete(type);
 
-  /**
-   * Remove from the active state of a hit type.
-   *
-   * @param {string} type - The hit type to toggle.
-   */
-  removeHitType(type) {
-    if (! this.activeTypes.has(type))
-      return;
-
-    this.activeTypes.delete(type);
+    console.log("Active types: ", this.activeTypes);
   }
 
   /**

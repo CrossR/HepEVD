@@ -96,7 +96,7 @@ export class ParticleDataState {
 
   /**
    * Toggles the active state of the particle data.
-   * 
+   *
    * @param {boolean} active - The active state.
    */
   toggleActive(active = !this.active) {
@@ -160,7 +160,6 @@ export class ParticleDataState {
    * @param {HitTypeState} hitTypeState - To utilise the checkHitType function>>.
    */
   updateActive(hitData, hitTypeState) {
-
     if (!this.active) {
       this.activeParticles = [];
       return;

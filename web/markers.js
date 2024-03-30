@@ -18,7 +18,6 @@ import { dragElement } from "./ui.js";
  * @param {THREE.Group} group - The group to which the rings will be added.
  */
 export function drawRings(rings, group) {
-
   if (rings.length === 0) return;
 
   const bufferGeometry = new THREE.BufferGeometry();
@@ -112,12 +111,12 @@ export function drawRings(rings, group) {
 
   bufferGeometry.setAttribute(
     "position",
-    new THREE.Float32BufferAttribute(vertices, 3)
+    new THREE.Float32BufferAttribute(vertices, 3),
   );
   bufferGeometry.setIndex(indicies);
   bufferGeometry.setAttribute(
     "color",
-    new THREE.Float32BufferAttribute(colors, 4)
+    new THREE.Float32BufferAttribute(colors, 4),
   );
 
   const ringMaterial = new THREE.MeshBasicMaterial({
@@ -160,7 +159,7 @@ export function drawPoints(points, group) {
   const pointMesh = new THREE.InstancedMesh(
     pointGeo,
     materialPoint,
-    points.length
+    points.length,
   );
 
   const lut = new Lut("cooltowarm", 512);

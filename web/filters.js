@@ -7,19 +7,15 @@
 //  - MC particle properties ("pdg("13")")
 //  - Hit types ("view("U"))
 
-const currentFilters = [];
-let filterActive = false;
-let previousFilter = "";
-const filterTest = document.getElementById("filter_test");
-
 export class UserFilter {
   constructor(state) {
     // Store the renderer state.
     this.state = state;
 
     // Internal state for the filter.
-    this.currentFilters = [];
-    this.currentString = "";
+    this.filtering = false;
+    this.filterCleanUp = [];
+    this.lastMatch = {};
 
     this.filterElem = document.getElementById("filter_test");
 
@@ -31,11 +27,11 @@ export class UserFilter {
     // Using Ohm.js to parse the filter string.
     // Define a basic grammar for the filter.
     this.grammar = ohm.grammar(
-    `Filter {
+  `Filter {
         Exp = Exp "&&" Exp -- and
             | Exp "||" Exp -- or
             | "(" Exp ")" -- parens
-            | "!" Exp -- not
+            | Exp Invalid -- invalid
             | "hasProp(" Str ")" -- prop
             | "prop(" Str ")" Comp DoubleValue -- propComp
             | "pdg(" IntValue ")" -- pdg
@@ -45,90 +41,111 @@ export class UserFilter {
         Comp = "<" | "<=" | "==" | "!=" | ">=" | ">"
         IntValue = digit+
         DoubleValue = digit+ "."* digit*
-    }`);
+        Invalid = any*
+    }`,
+    );
 
     // Now create a semantics object to interpret the grammar.
     this.semantics = this.grammar.createSemantics();
     this.semantics.addOperation("match", {
-        Exp_and: (exp1, _, exp2) => {
-            console.log("Checking and...");
-            return exp1.match() && exp2.match();
+      Exp_invalid: (exp, rest) => {
+        return exp.match();
         },
-        Exp_or: (exp1, _, exp2) => {
-            console.log("Checking or...");
-            return exp1.match() || exp2.match();
-        },
-        Exp_parens: (_, exp, __) => {
-            return exp.match();
-        },
-        Exp_not: (_, exp) => {
-            console.log("Checking not...");
-            return !exp.match();
-        },
-        Exp_prop: (_, str, __) => {
-            console.log("Checking hasProp:", str.sourceString);
-            // return this.state.activeHits.some((hit) => hit.properties.has(str.sourceString));
-        },
-        Exp_propComp: (_, propStr, __, comp, value) => {
-            console.log("Checking prop:", propStr, comp, value);
-            // return this.state.activeHits.some((hit) => {
-            // if (!hit.properties.has(propStr.sourceString)) return false;
-            // const prop = hit.properties.get(propStr.sourceString);
-            // switch (comp.sourceString) {
-            //     case "<":
-            //     return prop < value.match();
-            //     case "<=":
-            //     return prop <= value.match();
-            //     case "==":
-            //     return prop === value.match();
-            //     case "!=":
-            //     return prop !== value.match();
-            //     case ">=":
-            //     return prop >= value.match();
-            //     case ">":
-            //     return prop > value.match();
-            // }
-            // });
-        },
-        Exp_pdg: (_, value, __) => {
-            console.log("Checking PDG:", value.sourceString);
-            // return this.state.activeHits.some((hit) => hit.pdg === value.match());
-        },
-        Exp_view: (_, value, __) => {
-            console.log("Checking view:", value.sourceString);
-            // return this.state.activeHits.some((hit) => hit.view === value.sourceString);
-            return true;
-        },
-        Str: (chars) => {
-            return chars.sourceString;
-        },
-        IntValue: (digits) => {
-            return parseInt(digits.sourceString, 10);
-        },
-        DoubleValue: (before, _, after) => {
-            return parseFloat(`${before.sourceString}.${after.sourceString}`);
-        }
+      Exp_and: (exp1, _, exp2) => {
+        return exp1.match() && exp2.match();
+      },
+      Exp_or: (exp1, _, exp2) => {
+        // Here, we can't use short-circuiting, because we need to run both
+        // sides to update the renderer.
+        return [exp1.match(), exp2.match()].some((x) => x);
+      },
+      Exp_parens: (_, exp, __) => {
+        return exp.match();
+      },
+      Exp_prop: (_, str, __) => {
+        this.state.hitData.setHitProperty(str.sourceString);
+        this.filterCleanUp.push(() => {
+            this.state.hitData.setHitProperty(str.sourceString, false);
         });
+
+        return true;
+      },
+      Exp_propComp: (_, propStr, __, comp, value) => {
+        console.log("Checking prop:", propStr, comp, value);
+        // return this.state.activeHits.some((hit) => {
+        // if (!hit.properties.has(propStr.sourceString)) return false;
+        // const prop = hit.properties.get(propStr.sourceString);
+        // switch (comp.sourceString) {
+        //     case "<":
+        //     return prop < value.match();
+        //     case "<=":
+        //     return prop <= value.match();
+        //     case "==":
+        //     return prop === value.match();
+        //     case "!=":
+        //     return prop !== value.match();
+        //     case ">=":
+        //     return prop >= value.match();
+        //     case ">":
+        //     return prop > value.match();
+        // }
+        // });
+      },
+      Exp_pdg: (_, value, __) => {
+        console.log("Checking PDG:", value.sourceString);
+        // return this.state.activeHits.some((hit) => hit.pdg === value.match());
+      },
+      Exp_view: (_, value, __) => {
+        const view = `${value.sourceString.toUpperCase()} View`;
+        this.state.hitTypeState.addHitType(view);
+        this.filterCleanUp.push(() => {
+            this.state.hitTypeState.addHitType(view, false);
+        });
+
+        return true;
+      },
+      Str: (chars) => {
+        return chars.sourceString;
+      },
+      IntValue: (digits) => {
+        return parseInt(digits.sourceString, 10);
+      },
+      DoubleValue: (before, _, after) => {
+        return parseFloat(`${before.sourceString}.${after.sourceString}`);
+      },
+    });
   }
 
   updateFilter() {
-
-    if (! this.state.visible) return;
+    if (!this.state.visible) return;
 
     // Get the current filter string.
     const filterString = this.filterElem.value;
 
-    // If the filter string is the same as the previous one, don't update.
-    if (filterString === this.currentString) return;
-
-    console.log("Updating filter to:", filterString);
-    this.currentString = filterString;
-    const matchResult = this.grammar.match(filterString);
-
-    if (matchResult.failed()) {
-      return;
+    if (filterString === undefined || filterString.trim() === "") {
+        this.filterCleanUp.forEach((f) => f());
+        this.filterCleanUp = [];
+        this.state.triggerEvent("fullUpdate");
+        return;
     }
 
+    const matchResult = this.grammar.match(filterString);
+
+    // If the filter string doesn't match the grammar, finish.
+    // However, we may still need to update the renderer, if there
+    // was a previous filter applied.
+    if (matchResult.failed()) {
+        return;
+    }
+
+    // Run clean up for the previous filter, now that we have a new match.
+    this.filterCleanUp.forEach((f) => f());
+    this.filterCleanUp = [];
+
+    this.lastValidString = matchResult;
     this.semantics(matchResult).match();
+
+    // Update the renderer.
+    this.state.triggerEvent("fullUpdate");
   }
 }

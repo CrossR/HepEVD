@@ -16,7 +16,9 @@ export class HitDataState {
     const hitProperties = getHitProperties(particles, hits);
     this.props = hitProperties.hitPropMaps;
     this.propTypes = hitProperties.hitPropTypes;
-    this.activeProps = new Set([BUTTON_ID.All]);
+
+    this.uiProps = new Set([BUTTON_ID.All]);
+    this.filterProps = new Set([]);
 
     this.active = true;
   }
@@ -48,6 +50,10 @@ export class HitDataState {
     return this.hits.length;
   }
 
+  get activeProps() {
+    return new Set([...this.uiProps, ...this.filterProps]);
+  }
+
   /**
    * Toggles the hit property.
    *
@@ -55,19 +61,33 @@ export class HitDataState {
    */
   toggleHitProperty(prop) {
     if (prop === BUTTON_ID.None) {
-      this.activeProps.clear();
+      this.uiProps.clear();
     } else {
-      if (this.activeProps.has(prop)) {
-        this.activeProps.delete(prop);
+      if (this.uiProps.has(prop)) {
+        this.uiProps.delete(prop);
       } else {
-        this.activeProps.add(prop);
+        this.uiProps.add(prop);
       }
     }
   }
 
   /**
+   * Set filter hit properties.
+   *
+   * @param {string} prop - The property to add to the filter.
+   * @param {boolean} active - The active state.
+   */
+  setHitProperty(prop, active = true) {
+    if (active) {
+      this.filterProps.add(prop);
+    } else {
+      this.filterProps.delete(prop);
+    }
+  }
+
+  /**
    * Toggles the active state of the hit data.
-   * 
+   *
    * @param {boolean} active - The active state.
    */
   toggleActive(active = !this.active) {

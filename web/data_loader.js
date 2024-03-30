@@ -106,11 +106,12 @@ async function loadServerData() {
 
 /**
  * Updates the external data by fetching new data from the specified URL.
- * 
+ *
  * @returns {Promise<Object>} An object containing the updated data, including hits, mcHits, markers, particles, and detectorGeometry.
  */
 async function updateExternalData() {
-  const newDataUrl = hepEVD_GLOBAL_STATE.states[hepEVD_GLOBAL_STATE.currentState].url;
+  const newDataUrl =
+    hepEVD_GLOBAL_STATE.states[hepEVD_GLOBAL_STATE.currentState].url;
   const newStateData = await getDataWithProgress(newDataUrl);
 
   return {
@@ -146,7 +147,10 @@ async function loadExternalData(url) {
   // 2. A JSON info object, that points to a list of files, each of which
   //    contains a different event state.
 
-  if (! result.hasOwnProperty("numberOfStates") && ! result.hasOwnProperty("states")) {
+  if (
+    !result.hasOwnProperty("numberOfStates") &&
+    !result.hasOwnProperty("states")
+  ) {
     // This is the first format, so just return the data.
     return result;
   }
@@ -185,7 +189,7 @@ async function loadExternalData(url) {
 export async function getData() {
   if (isRunningOnGitHubPages()) {
     return loadExternalData(
-      "https://gist.githubusercontent.com/CrossR/2edd3622d13987d37ef3a4c02286207c/raw/6c5668d3e81280cdad52bccc27d50c0dd576bcc7/eventDisplayInfo.json"
+      "https://gist.githubusercontent.com/CrossR/2edd3622d13987d37ef3a4c02286207c/raw/6c5668d3e81280cdad52bccc27d50c0dd576bcc7/eventDisplayInfo.json",
     );
   } else {
     return loadServerData();
