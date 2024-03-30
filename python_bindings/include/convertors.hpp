@@ -11,8 +11,7 @@
 
 // Custom converter for parsing out hits.
 // Templated to allow for different types of hits.
-template <typename T>
-static int HitConverter(PyObject *hitObj, T **result) {
+template <typename T> static int HitConverter(PyObject *hitObj, T **result) {
 
     // Check if we have a tuple, and if it has the right number of elements.
     PyObject *obj = hitObj;
@@ -22,7 +21,7 @@ static int HitConverter(PyObject *hitObj, T **result) {
     }
 
     int pos = 0;
-    
+
     // Tuple element is composed of:
     //    - x, y, z
     //    - pdg? (for MC hits)
@@ -33,7 +32,7 @@ static int HitConverter(PyObject *hitObj, T **result) {
 
     if (!PyList_Check(obj) || PyList_Size(obj) < 4 || PyList_Size(obj) > tupleMaxSize) {
         std::cout << "HepEVD: Failed to validate hit tuple." << std::endl;
-        std::cout << "HepEVD: Tuple had " << PyList_Size(obj)  << " entries." << std::endl;
+        std::cout << "HepEVD: Tuple had " << PyList_Size(obj) << " entries." << std::endl;
         return 0;
     }
 

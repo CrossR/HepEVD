@@ -11,8 +11,8 @@
 #include "hep_evd.h"
 
 // And any local includes...
-#include "include/detectors.hpp"
 #include "include/convertors.hpp"
+#include "include/detectors.hpp"
 
 // Broad layout is the same as the helper files, where we
 // define a static, global server object, and then define
@@ -132,8 +132,8 @@ static PyObject *py_set_geo(PyObject *self, PyObject *args, PyObject *kwargs) {
     //    - Passing of actual geometry objects.
     //    - A string, giving the name of a known geometry.
     PyObject *geometryList;
-    char* geometryNameArg;
-    static char* kwList[] = {"geometry", "name", NULL};
+    char *geometryNameArg;
+    static char *kwList[] = {"geometry", "name", NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|$Os", kwList, &geometryList, &geometryNameArg)) {
         std::cout << "HepEVD: Failed to parse arguments." << std::endl;
         Py_RETURN_FALSE;
@@ -210,10 +210,9 @@ static PyObject *py_set_geo(PyObject *self, PyObject *args, PyObject *kwargs) {
 // With the question marks indicating optional parameters.
 // Split this across three functions, one for each input type.
 // This is also templated, so we can use it for both hits and MC hits.
-template <typename T>
-static PyObject *add_hits_list(PyObject *hitList) {
+template <typename T> static PyObject *add_hits_list(PyObject *hitList) {
 
-    std::vector<T*> hits;
+    std::vector<T *> hits;
     PyObject *hitIter(PyObject_GetIter(hitList));
 
     if (!hitIter) {
@@ -253,10 +252,9 @@ static PyObject *add_hits_list(PyObject *hitList) {
     Py_RETURN_TRUE;
 }
 
-template <typename T>
-static PyObject *add_hits_numpy(PyObject *hitList) {
+template <typename T> static PyObject *add_hits_numpy(PyObject *hitList) {
 
-    std::vector<T*> hits;
+    std::vector<T *> hits;
     PyArrayObject *hitArray(reinterpret_cast<PyArrayObject *>(hitList));
 
     // Now get the iterator for the array.
@@ -269,7 +267,8 @@ static PyObject *add_hits_numpy(PyObject *hitList) {
 
     // Convert the numpy array to a C-style array.
     double **data;
-    if (PyArray_AsCArray((PyObject**)&hitArray, (void**)&data, PyArray_DIMS(hitArray), PyArray_NDIM(hitArray), PyArray_DESCR(hitArray)) < 0) {
+    if (PyArray_AsCArray((PyObject **)&hitArray, (void **)&data, PyArray_DIMS(hitArray), PyArray_NDIM(hitArray),
+                         PyArray_DESCR(hitArray)) < 0) {
         std::cout << "HepEVD: Failed to convert numpy array to C-style array." << std::endl;
         Py_RETURN_FALSE;
     }
@@ -310,8 +309,7 @@ static PyObject *add_hits_numpy(PyObject *hitList) {
     Py_RETURN_TRUE;
 }
 
-template <typename T>
-static PyObject *py_add_hits(PyObject *self, PyObject *args) {
+template <typename T> static PyObject *py_add_hits(PyObject *self, PyObject *args) {
 
     if (!isInitialised()) {
         Py_RETURN_FALSE;
@@ -326,14 +324,13 @@ static PyObject *py_add_hits(PyObject *self, PyObject *args) {
 
     // Check the input type, to know where to pass the hits.
     const bool isNumpyArray(PyArray_Check(hitList));
-    
+
     if (isNumpyArray) {
         return add_hits_numpy<T>(hitList);
     } else {
         return add_hits_list<T>(hitList);
     }
 }
-
 
 // Add properties to a hit.
 // This should be easier than surfacing the hit map to Python,
@@ -447,7 +444,7 @@ static PyMethodDef methods[] = {
     {"is_init", py_is_initialised, METH_VARARGS, "Check if the HepEVD server is initialised."},
     {"start_server", py_start_server, METH_VARARGS, "Start the HepEVD server."},
     {"reset_server", py_reset_server, METH_VARARGS, "Reset the HepEVD server."},
-    {"set_geo", (PyCFunction) py_set_geo, METH_VARARGS | METH_KEYWORDS, "Set the detector geometry."},
+    {"set_geo", (PyCFunction)py_set_geo, METH_VARARGS | METH_KEYWORDS, "Set the detector geometry."},
     {"add_hits", py_add_hits<HepEVD::Hit>, METH_VARARGS, "Add hits to the current event state."},
     {"add_mc_hits", py_add_hits<HepEVD::MCHit>, METH_VARARGS, "Add MC hits to the current event state."},
     {"add_hit_props", py_add_hit_props, METH_VARARGS, "Add properties to a hit."},

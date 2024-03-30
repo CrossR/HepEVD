@@ -46,6 +46,10 @@ hep_evd = Extension(
     define_macros=define_macros,
 )
 setup(
-    ext_modules=[hep_evd], name="hep_evd", version="1.0",
-     include_package_data=True, packages=find_packages(where="data"),
-     package_dir={"": "data"})
+    ext_modules=[hep_evd],
+    name="hep_evd",
+    version="1.0",
+    include_package_data=True,
+    packages=find_packages(where="data"),
+    package_dir={"": "data"},
+)

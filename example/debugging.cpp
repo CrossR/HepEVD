@@ -58,7 +58,8 @@ int main(void) {
             particleHits.push_back(hit);
         }
 
-        Particle *particle = new Particle(particleHits, std::to_string(particles.size()), std::to_string(particles.size()));
+        Particle *particle =
+            new Particle(particleHits, std::to_string(particles.size()), std::to_string(particles.size()));
         particles.push_back(particle);
     }
 

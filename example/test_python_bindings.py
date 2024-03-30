@@ -32,16 +32,12 @@ print(f"Checking if initialised: {hep_evd.is_init()}")
 
 print("Add some hits...")
 threeD_hits = [
-    [
-        random.uniform(-350, 350),
-        random.uniform(-600, 600),
-        random.uniform(0, 1300),
-    ]
+    [random.uniform(-350, 350), random.uniform(-600, 600), random.uniform(0, 1300),]
     for _ in range(25000)
 ]
 
 # Update the hits to include an energy, which is just the sum of the coordinates
-threeD_hits = np.array([ [*hit, sum(hit)] for hit in threeD_hits ])
+threeD_hits = np.array([[*hit, sum(hit)] for hit in threeD_hits])
 
 views = [hep_evd.HIT_TYPE.TWO_D_U, hep_evd.HIT_TYPE.TWO_D_V, hep_evd.HIT_TYPE.TWO_D_W]
 twoD_hits = [
@@ -53,7 +49,8 @@ twoD_hits = [
         hep_evd.HIT_DIM.TWO_D,
         view,
     ]
-    for _ in range(5000) for view in views
+    for _ in range(5000)
+    for view in views
 ]
 
 print("Adding 3D hits from numpy array...")
