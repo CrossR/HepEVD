@@ -7,7 +7,6 @@ import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 
 import { fitSceneInCamera, setupControls } from "./camera_and_controls.js";
 import { BUTTON_ID, HIT_CONFIG } from "./constants.js";
-import { UserFilter } from "./filters.js";
 import { getMCColouring } from "./helpers.js";
 import { HitDataState } from "./hit_data_state.js";
 import { HitTypeState } from "./hit_type_state.js";
@@ -160,9 +159,6 @@ export class RenderState {
     this.hitData = new HitDataState(filteredParticles, hits);
     this.mcData = new MCDataState(mcHits);
     this.markerData = new MarkerDataState(markers);
-
-    // Setup the hit filter.
-    this.filterData = new UserFilter(this);
 
     // Actually fill the active arrays with their initial values.
     this.#updateActiveArrays();

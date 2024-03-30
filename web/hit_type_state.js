@@ -10,12 +10,7 @@ export class HitTypeState {
   constructor(particles, hits) {
     this.types = getHitTypes(particles, hits);
 
-    this.activeTypesUI = new Set();
-    this.activeTypesFilter = new Set();
-  }
-
-  get activeTypes() {
-    return new Set([...this.activeTypesUI, ...this.activeTypesFilter]);
+    this.activeTypes = new Set();
   }
 
   /**
@@ -24,27 +19,11 @@ export class HitTypeState {
    * @param {string} type - The hit type to toggle.
    */
   toggleHitType(type) {
-    if (this.activeTypesUI.has(type)) {
-      this.activeTypesUI.delete(type);
+    if (this.activeTypes.has(type)) {
+      this.activeTypes.delete(type);
     } else {
-      this.activeTypesUI.add(type);
+      this.activeTypes.add(type);
     }
-  }
-
-  /**
-   * Set the active state of a hit type.
-   *
-   * @param {string} type - The hit type to toggle.
-   * @param {boolean} active - The active state.
-   */
-  addHitType(type, active = true) {
-    if (!this.activeTypesFilter.has(type) && active)
-      this.activeTypesFilter.add(type);
-
-    if (this.activeTypesFilter.has(type) && !active)
-      this.activeTypesFilter.delete(type);
-
-    console.log("Active types: ", this.activeTypes);
   }
 
   /**
