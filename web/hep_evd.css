@@ -33,6 +33,7 @@ div {
   top: 45%;
   max-height: 40%;
   max-width: 20%;
+  display: none;
 }
 
 .dropdown:hover > .dropdown-menu {

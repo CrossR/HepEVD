@@ -5,6 +5,9 @@
     <title>HepEVD</title>
     <!-- <link rel="shortcut icon" href="favicon.ico"> -->
 
+    <!-- Instantly start the app, to start loading the data -->
+    <script async type="module" src="hep_evd.js"></script>
+
     <!-- Metadata Tags -->
     <meta name="title" content="HepEVD" />
     <meta
@@ -40,7 +43,7 @@
       content="https://private-user-images.githubusercontent.com/10038688/291848277-badd2e8d-9a88-492f-8f1e-b41094af7e72.png?jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTUiLCJleHAiOjE3MDk2NjA0NTIsIm5iZiI6MTcwOTY2MDE1MiwicGF0aCI6Ii8xMDAzODY4OC8yOTE4NDgyNzctYmFkZDJlOGQtOWE4OC00OTJmLThmMWUtYjQxMDk0YWY3ZTcyLnBuZz9YLUFtei1BbGdvcml0aG09QVdTNC1ITUFDLVNIQTI1NiZYLUFtei1DcmVkZW50aWFsPUFLSUFWQ09EWUxTQTUzUFFLNFpBJTJGMjAyNDAzMDUlMkZ1cy1lYXN0LTElMkZzMyUyRmF3czRfcmVxdWVzdCZYLUFtei1EYXRlPTIwMjQwMzA1VDE3MzU1MlomWC1BbXotRXhwaXJlcz0zMDAmWC1BbXotU2lnbmF0dXJlPTdkZGY3NDFhOWMzMTVkYjYxZGI3NjFkOWQ4ZmNiMDI4N2NjNjBjZjFiNjI2ZWY1N2MwNmRhOTY2MDYyMDY2YzImWC1BbXotU2lnbmVkSGVhZGVycz1ob3N0JmFjdG9yX2lkPTAma2V5X2lkPTAmcmVwb19pZD0wIn0.JhEN-whL2S5m9x1uz8SPyM_Bh1SJ1XmjVAwZTbPKwZs"
     />
 
-    <script src="./vendor/es-module-shims.js"></script>
+    <script async src="./vendor/es-module-shims.js"></script>
 
     <script type="importmap">
       {
@@ -53,8 +56,8 @@
 
     <link href="./vendor/full.css" rel="stylesheet" type="text/css" />
     <script src="./vendor/3.4.1"></script>
-    <script src="./vendor/index.js"></script>
     <link rel="stylesheet" type="text/css" href="hep_evd.css" />
+    <script async src="./vendor/index.js"></script>
 
     <script async crossorigin="anonymous">
       const selectedTheme = localStorage.getItem("theme") ?? "dark";
@@ -62,7 +65,7 @@
     </script>
   </head>
 
-  <body class="bg-base-200">
+  <body>
     <div id="navbar" class="navbar bg-neutral-300 rounded-box">
       <div class="flex justify-start flex-1 px-2">
         <div class="dropdown dropdown-hover">
@@ -292,7 +295,5 @@
 
     <!-- Citations Info when publicly hosted -->
     <div id="citations" class="citations"></div>
-
-    <script async type="module" src="hep_evd.js"></script>
   </body>
 </html>
