@@ -52,7 +52,7 @@ const stats = new Stats();
 stats.domElement.style.cssText = "position:absolute; bottom:0px; right:0px;";
 renderer.setSize(window.innerWidth, window.innerHeight);
 
-const themeName = localStorage.getItem("theme") ?? "dark";
+const themeName = localStorage.getItem("themeInfo") ?? "dark";
 renderer.setClearColor(THEME[themeName]);
 
 document.body.appendChild(renderer.domElement);

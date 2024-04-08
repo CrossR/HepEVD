@@ -417,7 +417,7 @@ export function quitEvd() {
  * @param {Map} states - The states to animate.
  */
 export function toggleTheme(states) {
-  const themeName = localStorage.getItem("theme");
+  const themeName = localStorage.getItem("themeInfo");
 
   // This occurs too quickly for the local storage to be correct.
   // So instead of setting it to the current value, invert the current value.
@@ -425,7 +425,7 @@ export function toggleTheme(states) {
 
   // Set the new theme in storage, so that it is correct for the next time.
   const newTheme = themeName === "light" ? "dark" : "light";
-  localStorage.setItem("theme", newTheme);
+  localStorage.setItem("themeInfo", newTheme);
 
   states.forEach((state) => {
     state.scene.background = new THREE.Color(backgroundColor);
@@ -440,12 +440,12 @@ export function toggleTheme(states) {
  * the current theme.
  */
 export function fixThemeButton() {
-  let themeName = localStorage.getItem("theme");
+  let themeName = localStorage.getItem("themeInfo");
 
   // If there is nothing, just set it to dark.
   if (themeName === null) {
     themeName = "dark";
-    localStorage.setItem("theme", themeName);
+    localStorage.setItem("themeInfo", themeName);
   }
 
   // These are inverted, since we want to change to the opposite theme.
