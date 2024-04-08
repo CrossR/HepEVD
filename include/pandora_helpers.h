@@ -46,14 +46,13 @@ inline PandoraHitMap caloHitToEvdHit;
 
 // Get the current hit map, such that properties and more can be added
 // to the HepEVD hits.
-// Also register the map to the manager, so we don't leak memory.
 static PandoraHitMap *getHitMap() {
-    HepEVD::registerClearFunction([]() { caloHitToEvdHit.clear(); });
     return &caloHitToEvdHit;
 }
 
 // Set the HepEVD geometry by pulling the relevant information from the
 // Pandora GeometryManager.
+// Also register the map to the manager, so we don't leak memory.
 static void setHepEVDGeometry(const pandora::GeometryManager *manager) {
 
     if (isServerInitialised())
@@ -69,6 +68,10 @@ static void setHepEVDGeometry(const pandora::GeometryManager *manager) {
     }
 
     hepEVDServer = new HepEVDServer(DetectorGeometry(volumes));
+
+    // Register the clear function for the hit map,
+    // so we can clear it when we need to.
+    HepEVD::registerClearFunction([&]() { caloHitToEvdHit.clear(); });
 }
 
 // Helper function to convert a Pandora HitType to a HepEVD Hit Dimension.

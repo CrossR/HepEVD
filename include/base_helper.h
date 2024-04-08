@@ -46,7 +46,7 @@ class HitMapManager {
     void registerClearFunction(std::function<void()> clearFunction) { clearFunctions.push_back(clearFunction); }
 
   private:
-    std::vector<std::function<void()>> clearFunctions;
+    std::list<std::function<void()>> clearFunctions;
 };
 inline HitMapManager hepEvdHitMapManager;
 
@@ -128,6 +128,14 @@ static void resetServer(const bool resetGeo = false) {
         return;
 
     hepEVDServer->resetServer(resetGeo);
+    hepEvdHitMapManager.clear();
+}
+
+static void clearState() {
+    if (!isServerInitialised())
+        return;
+
+    hepEVDServer->clearState();
     hepEvdHitMapManager.clear();
 }
 
