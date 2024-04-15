@@ -117,6 +117,8 @@ export function createParticleMenu(hitDim, particlesMap, onClick) {
   if (particlesMap.size === 0) {
     menu.hidden = true;
     return;
+  } else if (menu.hidden) {
+    menu.hidden = false;
   }
 
   // Filter then sort the particles. Filtering is used to
