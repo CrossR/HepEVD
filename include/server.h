@@ -168,17 +168,17 @@ class HepEVDServer {
     // or return an empty string.
     // However, if there is just one in a single event state, just assume that's the one.
     std::string getMCTruth() {
-        std::vector<std::string> truths;
+        std::set<std::string> truths;
 
         for (auto &state : this->eventStates) {
             if (state.second.mcTruth.size() > 0)
-                truths.push_back(state.second.mcTruth);
+                truths.insert(state.second.mcTruth);
         }
 
         if (truths.size() == 1)
-            return truths[0];
+            return truths.begin()->c_str();
 
-        if (truths.size() > 1 && truths[0] == truths[1])
+        if (truths.size() > 1)
             return this->getState()->mcTruth;
     }
 
@@ -349,7 +349,15 @@ inline void HepEVDServer::startServer() {
         res.set_content(json(this->eventStates).dump(), "application/json");
     });
     this->server.Get("/stateInfo", [&](const Request &, Response &res) {
-        res.set_content(json(*this->getState()).dump(), "application/json");
+        auto state = this->getState();
+        const auto mcTruth = this->getMCTruth();
+
+        // If the MC truth string and the MC truth in the state are different,
+        // then we need to add the MC truth to the state.
+        if (mcTruth.size() > 0 && state->mcTruth.size() == 0)
+            state->mcTruth = mcTruth;
+
+        res.set_content(json(*state).dump(), "application/json");
     });
     this->server.Get("/swap/id/:id", [&](const Request &req, Response &res) {
         try {
