@@ -85,14 +85,16 @@ async function loadServerData() {
   let mcHits = getDataWithProgress("mcHits");
   let markers = getDataWithProgress("markers");
   let particles = getDataWithProgress("particles");
+  let stateInfo = getDataWithProgress("stateInfo");
 
   // Wait for all the data to be loaded.
-  [hits, mcHits, markers, particles, detectorGeometry] = await Promise.all([
+  [hits, mcHits, markers, particles, detectorGeometry, stateInfo] = await Promise.all([
     hits,
     mcHits,
     markers,
     particles,
     detectorGeometry,
+    stateInfo,
   ]);
 
   return {
@@ -101,6 +103,7 @@ async function loadServerData() {
     markers: markers,
     particles: particles,
     detectorGeometry: detectorGeometry,
+    stateInfo: stateInfo,
   };
 }
 

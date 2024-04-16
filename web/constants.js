@@ -30,7 +30,6 @@ const selectedMaterial2D = (theme) => new THREE.MeshBasicMaterial({
   opacity: 0.1,
   color: theme === "dark" ? "yellow" : "darkred",
   depthFunc: THREE.AlwaysDepth,
-  blending: threeDGeoMat.NoBlending,
 });
 
 const selectedMaterial3D = (theme) => new THREE.MeshBasicMaterial({
@@ -39,7 +38,6 @@ const selectedMaterial3D = (theme) => new THREE.MeshBasicMaterial({
   opacity: 0.05,
   color: theme === "dark" ? "yellow" : "darkred",
   depthFunc: THREE.AlwaysDepth,
-  blending: threeDGeoMat.NoBlending,
 });
 
 //==============================================================================

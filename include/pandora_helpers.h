@@ -269,7 +269,7 @@ static void showMC(const pandora::Algorithm &pAlgorithm, const std::string &list
         return;
 
     mcTruth += pdgToString(pTrueNeutrino->GetParticleId(), pTrueNeutrino->GetEnergy());
-    mcTruth += " -> ";
+    mcTruth += " \\rightarrow ";
 
     // Finally, add in the primary children.
     const auto childParticles = pTrueNeutrino->GetDaughterList();

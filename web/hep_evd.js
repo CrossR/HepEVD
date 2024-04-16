@@ -59,7 +59,7 @@ document.body.appendChild(renderer.domElement);
 document.body.appendChild(stats.dom);
 
 // Now we need to wait for the data to load...
-const { hits, mcHits, markers, particles, detectorGeometry } = await data;
+const { hits, mcHits, markers, particles, detectorGeometry, stateInfo } = await data;
 
 // And use that data to setup the initial rendering states.
 const threeDRenderer = new RenderState(
@@ -149,4 +149,11 @@ canvas.addEventListener("mousemove", (event) => {
     currentlyHighlighting,
     event,
   );
+});
+
+// Test out setting the MC Truth String from the stateInfo.
+// Render out using katex.
+const mcTruthElem = document.getElementById("mc_truth");
+katex.render(stateInfo.mcTruth, mcTruthElem, {
+  throwOnError: false,
 });
