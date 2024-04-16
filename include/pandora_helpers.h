@@ -46,9 +46,7 @@ inline PandoraHitMap caloHitToEvdHit;
 
 // Get the current hit map, such that properties and more can be added
 // to the HepEVD hits.
-static PandoraHitMap *getHitMap() {
-    return &caloHitToEvdHit;
-}
+static PandoraHitMap *getHitMap() { return &caloHitToEvdHit; }
 
 // Set the HepEVD geometry by pulling the relevant information from the
 // Pandora GeometryManager.
@@ -247,6 +245,46 @@ static void showMC(const pandora::Algorithm &pAlgorithm, const std::string &list
     }
 
     hepEVDServer->addMCHits(mcHits);
+
+    // Now, build up a string to show the interaction as a string:
+    //   - \nu_e (3.18 GeV) -> e- (0.51 GeV) + n
+    std::string mcTruth;
+
+    pandora::MCParticleVector primaryMCParticles;
+    lar_content::LArMCParticleHelper::GetPrimaryMCParticleList(pMCParticleList, primaryMCParticles);
+    const pandora::MCParticle *pTrueNeutrino(nullptr);
+
+    if (primaryMCParticles.empty())
+        return;
+
+    for (const auto pMCParticle : primaryMCParticles) {
+        const pandora::MCParticleList &parents{pMCParticle->GetParentList()};
+        if (parents.size() == 1 && lar_content::LArMCParticleHelper::IsNeutrino(parents.front())) {
+            pTrueNeutrino = parents.front();
+            break;
+        }
+    }
+
+    if (pTrueNeutrino == nullptr)
+        return;
+
+    mcTruth += pdgToString(pTrueNeutrino->GetParticleId(), pTrueNeutrino->GetEnergy());
+    mcTruth += " -> ";
+
+    // Finally, add in the primary children.
+    const auto childParticles = pTrueNeutrino->GetDaughterList();
+    for (const auto pMCParticle : childParticles) {
+
+        if (pdgIsVisible(pMCParticle->GetParticleId()))
+            mcTruth += pdgToString(pMCParticle->GetParticleId(), pMCParticle->GetEnergy());
+        else 
+            continue;
+
+        if (pMCParticle != childParticles.back())
+            mcTruth += " + ";
+    }
+
+    hepEVDServer->setMCTruth(mcTruth);
 }
 
 // Helper function, as the "GetAllCaloHits" function isn't in some older versions of Pandora.

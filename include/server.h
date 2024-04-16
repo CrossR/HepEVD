@@ -161,6 +161,9 @@ class HepEVDServer {
     }
     Particles getParticles() { return this->getState()->particles; }
 
+    void setMCTruth(const std::string mcTruth) { this->getState()->mcTruth = mcTruth; }
+    std::string getMCTruth() { return this->getState()->mcTruth; }
+
   private:
     httplib::Server server;
 
@@ -207,6 +210,10 @@ inline void HepEVDServer::startServer() {
             res.set_content("Error: " + std::string(e.what()), "text/plain");
         }
     });
+
+    // And the MC truth information.
+    this->server.Get("/mcTruth",
+                     [&](const Request &, Response &res) { res.set_content(this->getMCTruth(), "text/plain"); });
 
     // Then any actual particles.
     this->server.Get("/particles", [&](const Request &, Response &res) {
