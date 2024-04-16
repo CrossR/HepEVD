@@ -17,7 +17,7 @@ export function getMinMax(arr, prop) {
     (acc, value) => {
       return [Math.min(value[prop], acc[0]), Math.max(value[prop], acc[1])];
     },
-    [Number.POSITIVE_INFINITY, Number.NEGATIVE_INFINITY],
+    [Number.POSITIVE_INFINITY, Number.NEGATIVE_INFINITY]
   );
 }
 

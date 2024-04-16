@@ -88,14 +88,15 @@ async function loadServerData() {
   let stateInfo = getDataWithProgress("stateInfo");
 
   // Wait for all the data to be loaded.
-  [hits, mcHits, markers, particles, detectorGeometry, stateInfo] = await Promise.all([
-    hits,
-    mcHits,
-    markers,
-    particles,
-    detectorGeometry,
-    stateInfo,
-  ]);
+  [hits, mcHits, markers, particles, detectorGeometry, stateInfo] =
+    await Promise.all([
+      hits,
+      mcHits,
+      markers,
+      particles,
+      detectorGeometry,
+      stateInfo,
+    ]);
 
   return {
     hits: hits,
@@ -192,7 +193,7 @@ async function loadExternalData(url) {
 export async function getData() {
   if (isRunningOnGitHubPages()) {
     return loadExternalData(
-      "https://gist.githubusercontent.com/CrossR/2edd3622d13987d37ef3a4c02286207c/raw/6c5668d3e81280cdad52bccc27d50c0dd576bcc7/eventDisplayInfo.json",
+      "https://gist.githubusercontent.com/CrossR/2edd3622d13987d37ef3a4c02286207c/raw/6c5668d3e81280cdad52bccc27d50c0dd576bcc7/eventDisplayInfo.json"
     );
   } else {
     return loadServerData();

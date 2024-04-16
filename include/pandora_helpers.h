@@ -277,7 +277,7 @@ static void showMC(const pandora::Algorithm &pAlgorithm, const std::string &list
 
         if (pdgIsVisible(pMCParticle->GetParticleId()))
             mcTruth += pdgToString(pMCParticle->GetParticleId(), pMCParticle->GetEnergy());
-        else 
+        else
             continue;
 
         if (pMCParticle != childParticles.back())

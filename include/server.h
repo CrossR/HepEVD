@@ -147,7 +147,6 @@ class HepEVDServer {
     }
     Particles getParticles() { return this->getState()->particles; }
 
-
     bool addMCHits(const MCHits &inputMCHits) {
         if (this->getState()->mcHits.size() == 0) {
             this->getState()->mcHits = inputMCHits;
@@ -163,7 +162,7 @@ class HepEVDServer {
     MCHits getMCHits() { return this->getState()->mcHits; }
 
     void setMCTruth(const std::string mcTruth) { this->getState()->mcTruth = mcTruth; }
-    
+
     // The MC truth is slightly unique, in that it should be the same across all states.
     // If there is multiple MC truths that aren't the same, either return the current one,
     // or return an empty string.

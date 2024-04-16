@@ -24,21 +24,23 @@ export const materialHit = new THREE.MeshBasicMaterial({
   side: THREE.DoubleSide,
 });
 
-const selectedMaterial2D = (theme) => new THREE.MeshBasicMaterial({
-  side: THREE.DoubleSide,
-  transparent: true,
-  opacity: 0.1,
-  color: theme === "dark" ? "yellow" : "darkred",
-  depthFunc: THREE.AlwaysDepth,
-});
+const selectedMaterial2D = (theme) =>
+  new THREE.MeshBasicMaterial({
+    side: THREE.DoubleSide,
+    transparent: true,
+    opacity: 0.1,
+    color: theme === "dark" ? "yellow" : "darkred",
+    depthFunc: THREE.AlwaysDepth,
+  });
 
-const selectedMaterial3D = (theme) => new THREE.MeshBasicMaterial({
-  side: THREE.DoubleSide,
-  transparent: true,
-  opacity: 0.05,
-  color: theme === "dark" ? "yellow" : "darkred",
-  depthFunc: THREE.AlwaysDepth,
-});
+const selectedMaterial3D = (theme) =>
+  new THREE.MeshBasicMaterial({
+    side: THREE.DoubleSide,
+    transparent: true,
+    opacity: 0.05,
+    color: theme === "dark" ? "yellow" : "darkred",
+    depthFunc: THREE.AlwaysDepth,
+  });
 
 //==============================================================================
 // UI Constants
