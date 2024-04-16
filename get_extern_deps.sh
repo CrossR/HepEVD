@@ -22,7 +22,6 @@ JS_LIBS=(
     "https://cdn.jsdelivr.net/npm/theme-change@2.5.0/index.js"
     "https://ga.jspm.io/npm:es-module-shims@1.9.0/dist/es-module-shims.js"
     "https://github.com/mrdoob/three.js/archive/refs/tags/r163.tar.gz"
-    "https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.css"
     "https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.js"
 )
 JS_LIB_NAMES=(
@@ -31,7 +30,6 @@ JS_LIB_NAMES=(
     "theme-change.js"
     "es-module-shims.js"
     "threejs"
-    "katex.css"
     "katex.js"
 )
 JS_PATH="web/vendor"
