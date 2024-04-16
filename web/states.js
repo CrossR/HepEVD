@@ -66,7 +66,7 @@ export async function updateStateUI(renderStates) {
 
 export async function reloadDataForCurrentState(renderStates) {
   const data = await getData();
-  const { hits, mcHits, markers, particles, detectorGeometry } = data;
+  const { hits, mcHits, markers, particles, detectorGeometry, stateInfo } = data;
 
   renderStates.forEach((state) => {
     state.updateData(
@@ -75,6 +75,7 @@ export async function reloadDataForCurrentState(renderStates) {
       mcHits.filter((hit) => hit.position.dim === state.hitDim),
       markers.filter((marker) => marker.position.dim === state.hitDim),
       detectorGeometry,
+      stateInfo,
     );
   });
 

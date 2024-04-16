@@ -71,6 +71,7 @@ const threeDRenderer = new RenderState(
   mcHits.filter((hit) => hit.position.dim === "3D"),
   markers.filter((marker) => marker.position.dim === "3D"),
   detectorGeometry,
+  stateInfo,
 );
 const twoDRenderer = new RenderState(
   "2D",
@@ -81,6 +82,7 @@ const twoDRenderer = new RenderState(
   mcHits.filter((hit) => hit.position.dim === "2D"),
   markers.filter((marker) => marker.position.dim === "2D"),
   detectorGeometry,
+  stateInfo,
 );
 threeDRenderer.otherRenderer = twoDRenderer;
 twoDRenderer.otherRenderer = threeDRenderer;
@@ -149,11 +151,4 @@ canvas.addEventListener("mousemove", (event) => {
     currentlyHighlighting,
     event,
   );
-});
-
-// Test out setting the MC Truth String from the stateInfo.
-// Render out using katex.
-const mcTruthElem = document.getElementById("mc_truth");
-katex.render(stateInfo.mcTruth, mcTruthElem, {
-  throwOnError: false,
 });

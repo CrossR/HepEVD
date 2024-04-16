@@ -89,7 +89,7 @@ export function populateTypeToggle(hitDim, hitTypesMap, onClick = (_) => {}) {
       "btn-outline",
       "btn-accent",
       "m-1",
-      "nohover",
+      "nohover"
     );
     newButton.style.textTransform = "capitalize";
     newButton.innerText = entry;
@@ -112,7 +112,7 @@ export function populateMarkerToggle(
   hitDim,
   markers,
   particles,
-  onClick = (_) => {},
+  onClick = (_) => {}
 ) {
   // Get the div to populate, and clear it to start.
   const classDiv = document.getElementById(`markers_${hitDim}`);
@@ -141,7 +141,7 @@ export function populateMarkerToggle(
       "btn-outline",
       "btn-accent",
       "m-1",
-      "nohover",
+      "nohover"
     );
     newButton.style.textTransform = "capitalize";
     newButton.innerText = entry;
@@ -210,7 +210,7 @@ export function enableInteractionTypeToggle(hitType, particles, onClick) {
       "btn-outline",
       "btn-accent",
       "m-1",
-      "nohover",
+      "nohover"
     );
     newButton.innerText = interactionType;
     newButton.id = `particles_${hitType}_${interactionType}`;
@@ -283,7 +283,7 @@ export function setupParticleMenu(renderState) {
   const onClickAction = (particle) => {
     const particleID = particle.id;
     const particleMenuEntry = document.getElementById(
-      `particle_${particleID}_${renderState.hitDim}`,
+      `particle_${particleID}_${renderState.hitDim}`
     );
     const label = particleMenuEntry.querySelector("span");
 
@@ -301,7 +301,7 @@ export function setupParticleMenu(renderState) {
   createParticleMenu(
     renderState.hitDim,
     renderState.particleData.particleMap,
-    onClickAction,
+    onClickAction
   );
 }
 
@@ -324,11 +324,31 @@ export function toggleVisibleParticleMenu(activeHitType) {
 }
 
 /**
+ * Toggles the visibility of the particle menu based on the active hit type.
+ *
+ * @param {string} mcTruthString - The current MC truth string.
+ */
+export function setMCTruth(mcTruthString) {
+  const mcTruthElem = document.getElementById("mc_truth");
+
+  if (mcTruthString === "") {
+    mcTruthElem.style.display = "none";
+    return;
+  }
+
+  katex.render(mcTruthString, mcTruthElem, {
+    throwOnError: false,
+  });
+  mcTruthElem.style.display = "block";
+}
+
+/**
  * Updates the UI by toggling the visibility of various menu options.
  *
  * @param {string} activeHitType - The name of the hit class for which to toggle the visibility of the toggle options.
+ * @param {string} mcTruthString - The current MC truth string.
  */
-export function updateUI(activeHitType) {
+export function updateUI(activeHitType, mcTruthString) {
   const toggleOptions = document.getElementById("all_toggle_options");
   Array.from(toggleOptions.childNodes)
     .filter((elem) => elem.nodeName != "#text")
@@ -341,6 +361,7 @@ export function updateUI(activeHitType) {
       }
     });
   toggleVisibleParticleMenu(activeHitType);
+  setMCTruth(mcTruthString);
 }
 
 /**
@@ -353,7 +374,7 @@ export function screenshotEvd(renderer) {
   const contentType = "image/jpeg";
 
   const byteCharacters = atob(
-    imageData.substr(`data:${contentType};base64,`.length),
+    imageData.substr(`data:${contentType};base64,`.length)
   );
   const bytes = [];
 
@@ -481,7 +502,7 @@ export function saveState(states) {
 
     if (name === undefined || name === "") return;
     const visibleState = Array.from(states.values()).find(
-      (state) => state.visible,
+      (state) => state.visible
     );
     const store = window.localStorage;
 
@@ -522,8 +543,8 @@ export function saveState(states) {
         closed = true;
         cleanUp();
       },
-      { once: true },
-    ),
+      { once: true }
+    )
   );
 
   inputSave.addEventListener(
@@ -534,7 +555,7 @@ export function saveState(states) {
       doSave();
       cleanUp();
     },
-    { once: true },
+    { once: true }
   );
 }
 
@@ -545,7 +566,7 @@ export function saveState(states) {
  */
 export function loadState(renderStates) {
   const visibleState = Array.from(renderStates.values()).find(
-    (state) => state.visible,
+    (state) => state.visible
   );
   const store = window.localStorage;
 
@@ -564,7 +585,7 @@ export function loadState(renderStates) {
   }
 
   const validSaveStates = saveStates.filter(
-    (state) => state.hitDim === visibleState.hitDim,
+    (state) => state.hitDim === visibleState.hitDim
   );
 
   if (validSaveStates === null) return;
@@ -605,8 +626,8 @@ export function loadState(renderStates) {
         closed = true;
         cleanUp();
       },
-      { once: true },
-    ),
+      { once: true }
+    )
   );
 
   selectButton.addEventListener(
@@ -617,7 +638,7 @@ export function loadState(renderStates) {
       cleanUp();
       visibleState.triggerEvent("change");
     },
-    { once: true },
+    { once: true }
   );
 }
 
@@ -626,7 +647,7 @@ export function loadState(renderStates) {
  */
 export function pickColourscheme(states) {
   const visibleState = Array.from(states.values()).find(
-    (state) => state.visible,
+    (state) => state.visible
   );
   const store = window.localStorage;
 
@@ -660,7 +681,7 @@ export function pickColourscheme(states) {
       option.text = csName;
       categoricalSelect.add(option);
       continuousSelect.add(option.cloneNode(true));
-    },
+    }
   );
 
   // Finally show the modal.
@@ -709,8 +730,8 @@ export function pickColourscheme(states) {
         closed = true;
         cleanUp();
       },
-      { once: true },
-    ),
+      { once: true }
+    )
   );
 
   selectButton.addEventListener(
@@ -722,7 +743,7 @@ export function pickColourscheme(states) {
 
       visibleState.triggerEvent("fullUpdate");
     },
-    { once: true },
+    { once: true }
   );
 }
 

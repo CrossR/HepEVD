@@ -44,6 +44,7 @@ export class RenderState {
     mcHits,
     markers,
     geometry,
+    stateInfo,
   ) {
     // Basic, crucial information...
     this.name = name;
@@ -64,7 +65,7 @@ export class RenderState {
     this.mcHitGroup.visible = false;
 
     // Setup the data...
-    this.updateData(particles, hits, mcHits, markers, geometry);
+    this.updateData(particles, hits, mcHits, markers, geometry, stateInfo);
 
     // Add all the groups...
     this.scene.add(this.detGeoGroup);
@@ -120,10 +121,12 @@ export class RenderState {
    * @param {Array} mcHits - The MC hits to render.
    * @param {Array} markers - The markers to render.
    * @param {Object} geometry - The detector geometry to render.
+   * @param {Object} stateInfo - High level state information.
    */
-  updateData(particles, hits, mcHits, markers, geometry) {
+  updateData(particles, hits, mcHits, markers, geometry, stateInfo) {
     // Data Setup, first the top level static arrays...
     this.detectorGeometry = geometry;
+    this.stateInfo = stateInfo;
 
     // Filter the particles to only those that have hits in the current
     // dimension.
@@ -485,7 +488,7 @@ export class RenderState {
       this.otherRenderer.hitDim === renderTarget;
 
     this.triggerEvent("change");
-    updateUI(renderTarget);
+    updateUI(renderTarget, this.stateInfo.mcTruth);
   }
 
   // If this is currently active, reset the event display.
