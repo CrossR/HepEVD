@@ -34,13 +34,12 @@ class EventState {
                mcTruth.size() == 0;
     }
 
-    void clear() {
+    void clear(const bool resetMCTruth = false) {
         name = "";
         particles.clear();
         hits.clear();
         mcHits.clear();
         markers.clear();
-        mcTruth = "";
     }
 
     // Only need a to JSON method, as we don't need to read in the state.

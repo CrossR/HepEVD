@@ -61,7 +61,7 @@ class HepEVDServer {
     // Less destructive clear function.
     // This will clear the hits, markers, particles, and MC hits,
     // but leave the geometry and event states alone.
-    void clearState() { this->eventStates[this->currentState].clear(); }
+    void clearState(const bool clearMCTruth = false) { this->eventStates[this->currentState].clear(clearMCTruth); }
 
     // Add a new event state.
     // This will be used to store multiple events, or multiple
@@ -133,20 +133,6 @@ class HepEVDServer {
     }
     Markers getMarkers() { return this->getState()->markers; }
 
-    bool addMCHits(const MCHits &inputMCHits) {
-        if (this->getState()->mcHits.size() == 0) {
-            this->getState()->mcHits = inputMCHits;
-            return true;
-        }
-
-        MCHits newHits = this->getState()->mcHits;
-        newHits.insert(newHits.end(), inputMCHits.begin(), inputMCHits.end());
-        this->getState()->mcHits = newHits;
-
-        return true;
-    }
-    MCHits getMCHits() { return this->getState()->mcHits; }
-
     bool addParticles(const Particles &inputParticles) {
         if (this->getState()->particles.size() == 0) {
             this->getState()->particles = inputParticles;
@@ -161,8 +147,41 @@ class HepEVDServer {
     }
     Particles getParticles() { return this->getState()->particles; }
 
+
+    bool addMCHits(const MCHits &inputMCHits) {
+        if (this->getState()->mcHits.size() == 0) {
+            this->getState()->mcHits = inputMCHits;
+            return true;
+        }
+
+        MCHits newHits = this->getState()->mcHits;
+        newHits.insert(newHits.end(), inputMCHits.begin(), inputMCHits.end());
+        this->getState()->mcHits = newHits;
+
+        return true;
+    }
+    MCHits getMCHits() { return this->getState()->mcHits; }
+
     void setMCTruth(const std::string mcTruth) { this->getState()->mcTruth = mcTruth; }
-    std::string getMCTruth() { return this->getState()->mcTruth; }
+    
+    // The MC truth is slightly unique, in that it should be the same across all states.
+    // If there is multiple MC truths that aren't the same, either return the current one,
+    // or return an empty string.
+    // However, if there is just one in a single event state, just assume that's the one.
+    std::string getMCTruth() {
+        std::vector<std::string> truths;
+
+        for (auto &state : this->eventStates) {
+            if (state.second.mcTruth.size() > 0)
+                truths.push_back(state.second.mcTruth);
+        }
+
+        if (truths.size() == 1)
+            return truths[0];
+
+        if (truths.size() > 1 && truths[0] == truths[1])
+            return this->getState()->mcTruth;
+    }
 
   private:
     httplib::Server server;

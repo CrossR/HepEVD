@@ -131,11 +131,14 @@ static void resetServer(const bool resetGeo = false) {
     hepEvdHitMapManager.clear();
 }
 
-static void clearState() {
+static void clearState(const bool fullReset = false) {
     if (!isServerInitialised())
         return;
 
-    hepEVDServer->clearState();
+    // If we are doign a full reset, we also clear the MC truth.
+    // Broadly, its assumed that clearState is for removing a
+    // single state in an event and the MC truth is still valid.
+    hepEVDServer->clearState(fullReset);
     hepEvdHitMapManager.clear();
 }
 
