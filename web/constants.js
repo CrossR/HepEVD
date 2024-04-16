@@ -24,18 +24,22 @@ export const materialHit = new THREE.MeshBasicMaterial({
   side: THREE.DoubleSide,
 });
 
-const selectedMaterial2D = new THREE.MeshBasicMaterial({
-  side: THREE.DoubleSide,
-  transparent: true,
-  opacity: 0.08,
-  color: "yellow",
-});
-
-const selectedMaterial3D = new THREE.MeshBasicMaterial({
+const selectedMaterial2D = (theme) => new THREE.MeshBasicMaterial({
   side: THREE.DoubleSide,
   transparent: true,
   opacity: 0.1,
-  color: "yellow",
+  color: theme === "dark" ? "yellow" : "darkred",
+  depthFunc: THREE.AlwaysDepth,
+  blending: threeDGeoMat.NoBlending,
+});
+
+const selectedMaterial3D = (theme) => new THREE.MeshBasicMaterial({
+  side: THREE.DoubleSide,
+  transparent: true,
+  opacity: 0.05,
+  color: theme === "dark" ? "yellow" : "darkred",
+  depthFunc: THREE.AlwaysDepth,
+  blending: threeDGeoMat.NoBlending,
 });
 
 //==============================================================================

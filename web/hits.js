@@ -188,7 +188,9 @@ export function drawParticleOverlay(
 
   const newConfig = { ...hitConfig };
   newConfig.hitSize = hitConfig.hitSize + 1;
-  newConfig.materialHit = hitConfig.selectedMaterial;
+
+  let themeName = localStorage.getItem("themeInfo");
+  newConfig.materialHit = hitConfig.selectedMaterial(themeName);
 
   drawHits(group, activeHits, [], newConfig);
 }
