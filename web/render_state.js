@@ -433,13 +433,21 @@ export class RenderState {
     populateTypeToggle(this.hitDim, this.hitTypeState.types, (hitType) =>
       this.onHitTypeChange(hitType),
     );
+
+    // And the marker toggles...
     populateMarkerToggle(
       this.hitDim,
       this.markerData.markers,
       this.particleData.particles,
       (markerType) => this.onMarkerChange(markerType),
     );
+
+    // And finally the MC and interaction type toggles.
     enableMCToggle(this.hitDim, this.mcData.mc, () => this.onMCToggle());
+
+    // We don't want anything to be visible by default...
+    this.mcHitGroup.visible = false;
+
     enableInteractionTypeToggle(
       this.hitDim,
       this.particleData.particles,
