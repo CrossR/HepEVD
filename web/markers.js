@@ -154,6 +154,7 @@ export function drawPoints(points, group) {
   const pointGeo = new THREE.SphereGeometry(pointSize, 32, 16);
   const materialPoint = new THREE.MeshBasicMaterial({
     side: THREE.DoubleSide,
+    depthFunc: THREE.AlwaysDepth,
   });
   const dummyObject = new THREE.Object3D();
   const pointMesh = new THREE.InstancedMesh(
