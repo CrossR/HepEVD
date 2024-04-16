@@ -48,16 +48,18 @@
     <script type="importmap">
       {
         "imports": {
-          "three": "./vendor/three.js-r154/build/three.module.min.js",
-          "three/addons/": "./vendor/three.js-r154/examples/jsm/"
+          "three": "./vendor/threejs/build/three.module.min.js",
+          "three/addons/": "./vendor/threejs/examples/jsm/"
         }
       }
     </script>
 
-    <link href="./vendor/full.css" rel="stylesheet" type="text/css" />
-    <script src="./vendor/3.4.1"></script>
+    <link href="./vendor/daisyui.css" rel="stylesheet" type="text/css" />
+    <script src="./vendor/tailwindcss.js"></script>
+    <script async src="./vendor/theme-change.js"></script>
+    <script async src="./vendor/katex.js"></script>
+    <link rel="stylesheet" href="./vendor/katex.css" />
     <link rel="stylesheet" type="text/css" href="hep_evd.css" />
-    <script async src="./vendor/index.js"></script>
 
     <script async crossorigin="anonymous">
       const selectedTheme = localStorage.getItem("themeInfo") ?? "dark";
@@ -286,6 +288,9 @@
         <button>close</button>
       </form>
     </dialog>
+
+    <!-- MC Info -->
+    <div id="mc_truth" class="mc_truth"></div>
 
     <!-- Floating canvas for scale drawings -->
     <div id="scale_bar_div">

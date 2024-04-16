@@ -17,12 +17,22 @@ JSON_URL="https://raw.githubusercontent.com/nlohmann/json/develop/single_include
 JSON_PATH="${EXTERN_PATH}/json.hpp"
 
 JS_LIBS=(
-    "https://cdn.tailwindcss.com/3.4.1"
-    "https://cdn.jsdelivr.net/npm/daisyui@4.6.0/dist/full.css"
+    "https://cdn.tailwindcss.com/3.4.3"
+    "https://cdn.jsdelivr.net/npm/daisyui@4.10.2/dist/full.css"
     "https://cdn.jsdelivr.net/npm/theme-change@2.5.0/index.js"
-    "https://ga.jspm.io/npm:es-module-shims@1.8.0/dist/es-module-shims.js"
-    "https://github.com/mrdoob/three.js/archive/refs/tags/r154.tar.gz"
-    
+    "https://ga.jspm.io/npm:es-module-shims@1.9.0/dist/es-module-shims.js"
+    "https://github.com/mrdoob/three.js/archive/refs/tags/r163.tar.gz"
+    "https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.css"
+    "https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.js"
+)
+JS_LIB_NAMES=(
+    "tailwindcss.js"
+    "daisyui.css"
+    "theme-change.js"
+    "es-module-shims.js"
+    "threejs"
+    "katex.css"
+    "katex.js"
 )
 JS_PATH="web/vendor"
 
@@ -50,9 +60,9 @@ RunAndCheck() {
     fi
 }
 
-show_help () {
+show_help() {
 
-    cat << EOF
+    cat <<EOF
 USAGE
     get_extern_deps.sh
 
@@ -60,51 +70,71 @@ USAGE
 EOF
 }
 
-while getopts "h?" opt;
-do
+while getopts "h?" opt; do
     case $opt in
-        h)
-            show_help
-            return ${SUCCESS} 2> /dev/null || exit ${SUCCESS}
-            ;;
-        \?)
-            show_help
-            return ${FAIL} 2> /dev/null || exit ${FAIL}
-            ;;
+    h)
+        show_help
+        return ${SUCCESS} 2>/dev/null || exit ${SUCCESS}
+        ;;
+    \?)
+        show_help
+        return ${FAIL} 2>/dev/null || exit ${FAIL}
+        ;;
     esac
 done
 
 LogMessage "Making include/extern folder..."
 RunAndCheck "mkdir -p include/extern" \
-            "Failed to make extern folder!" \
-            "ERR"
+    "Failed to make extern folder!" \
+    "ERR"
+LogMessage "Making ${JS_PATH} folder..."
+RunAndCheck "mkdir -p ${JS_PATH}" \
+    "Failed to make extern folder!" \
+    "ERR"
 
 LogMessage "Getting httplib.h..."
 RunAndCheck "wget ${HTTPLIB_URL} -O ${HTTPLIB_FILE_PATH} " \
-            "Failed to download httplib.h!" \
-            "ERR"
+    "Failed to download httplib.h!" \
+    "ERR"
 
 LogMessage "Getting json.hpp..."
 RunAndCheck "wget ${JSON_URL} -O ${JSON_PATH} " \
-            "Failed to download json.hpp!" \
-            "ERR"
+    "Failed to download json.hpp!" \
+    "ERR"
 
 LogMessage "Getting JS libs..."
-for JS_LIB in "${JS_LIBS[@]}"; do
-    RunAndCheck "wget ${JS_LIB} -P ${JS_PATH}" \
-                "Failed to download ${JS_LIB}!" \
-                "WARN"
-    
+for i in "${!JS_LIBS[@]}"; do
+
+    JS_LIB=${JS_LIBS[$i]}
+    JS_NAME=${JS_LIB_NAMES[$i]}
+
     if [[ ${JS_LIB} == *.tar.gz ]]; then
-        RunAndCheck "tar -xzf ${JS_PATH}/$(basename ${JS_LIB}) -C ${JS_PATH}" \
-                    "Failed to extract ${JS_LIB}!" \
-                    "ERR"
-        RunAndCheck "rm ${JS_PATH}/$(basename ${JS_LIB})" \
-                    "Failed to remove ${JS_LIB}!" \
-                    "ERR"
+        JS_NAME="${JS_NAME}.tar.gz"
+    fi
+
+    LogMessage "Getting ${JS_LIB}..."
+    RunAndCheck "wget ${JS_LIB} -O ${JS_PATH}/${JS_NAME}" \
+        "Failed to download ${JS_LIB}!" \
+        "WARN"
+
+    if [[ ${JS_LIB} == *.tar.gz ]]; then
+        JS_NAME=${JS_LIB_NAMES[$i]}
+    fi
+
+    if [[ ${JS_LIB} == *.tar.gz ]]; then
+        # Extract the tar file to the JS_PATH with the JS_NAME
+        RunAndCheck "mkdir -p ${JS_PATH}/${JS_NAME}" \
+            "Failed to make ${JS_PATH}/${JS_NAME} folder!" \
+            "ERR"
+        RunAndCheck "tar -xzf ${JS_PATH}/${JS_NAME}.tar.gz -C ${JS_PATH}/${JS_NAME} --strip-components=1" \
+            "Failed to extract ${JS_LIB}!" \
+            "ERR"
+        RunAndCheck "rm ${JS_PATH}/${JS_NAME}.tar.gz" \
+            "Failed to remove ${JS_LIB}!" \
+            "ERR"
     fi
 done
 
 LogMessage "Done!"
-return ${SUCCESS} 2> /dev/null || exit ${SUCCESS}
 
+exit ${SUCCESS}
