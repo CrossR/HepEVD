@@ -71,7 +71,7 @@ static bool isServerInitialised() {
     return isInit;
 }
 
-static void startServer(const int startState = -1) {
+static void startServer(const int startState = -1, const bool clearOnShow = true) {
     if (!isServerInitialised())
         return;
 
@@ -89,6 +89,9 @@ static void startServer(const int startState = -1) {
         hepEVDServer->previousEventState();
 
     hepEVDServer->startServer();
+
+    if (clearOnShow)
+        hepEVDServer->resetServer();
 }
 
 static void saveState(const std::string stateName, const int minSize = -1, const bool clearOnShow = true) {
