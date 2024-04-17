@@ -261,7 +261,7 @@ static void getAllCaloHits(const pandora::ParticleFlowObject *pPfo, pandora::Cal
     }
 }
 
-static Particle *addParticle(const pandora::Pandora &pPandora, const pandora::ParticleFlowObject *pPfo,
+static Particle* addParticle(const pandora::Pandora &pPandora, const pandora::ParticleFlowObject *pPfo,
                              std::string label = "") {
 
     Hits hits;
