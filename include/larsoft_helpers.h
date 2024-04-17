@@ -66,7 +66,7 @@ static SpacePointHitMap *getSpacepointMap() {
 // Set the HepEVD geometry by pulling the relevant information from the
 // Pandora GeometryManager.
 // Also register the map to the manager, so we don't leak memory.
-static void setHepEVDGeometry(const geo::Geometry* geometry) {
+static void setHepEVDGeometry() {
 
     if (isServerInitialised())
         return;
@@ -74,12 +74,13 @@ static void setHepEVDGeometry(const geo::Geometry* geometry) {
     // Store for later use.
     // For example, for most recob::Hit use cases, we need to convert
     // the wire position to a real position, using the geometry.
-    hepEvdLArSoftGeo = geometry;
+    art::ServiceHandle<geo::Geometry const> geometry;
+    hepEvdLArSoftGeo = &*geometry;
 
     Volumes volumes;
 
     for (const auto &cryostat : geometry->Iterate<geo::CryostatGeo>()) {
-        for (const auto &tpc1 : geometry->Iterate<geo::TPCGeo>>(cryostat.ID())) {
+        for (const auto &tpc1 : geometry->Iterate<geo::TPCGeo>(cryostat.ID())) {
 
             const auto tpc1Bounds = tpc1.ActiveBoundingBox();
             float driftMinX(tpc1Bounds.MinX()), driftMaxX(tpc1Bounds.MaxX());
@@ -116,7 +117,7 @@ static void setHepEVDGeometry(const geo::Geometry* geometry) {
             BoxVolume driftVolume(
                 {0.5f * (driftMinX + driftMaxX), 0.5f * (driftMinY + driftMaxY), 0.5f * (driftMinZ + driftMaxZ)},
                 (driftMaxX - driftMinX), (driftMaxY - driftMinY), (driftMaxZ - driftMinZ)
-            )
+            );
             volumes.push_back(driftVolume);
         }
     }
@@ -151,7 +152,7 @@ static HitDimension getHepEVDHitDimension(geo::View_t geoHitType) {
 
 // Helper function to convert a geo::View_t to a HepEVD Hit Type.
 static HitType getHepEVDHitType(geo::View_t geoHitType) {
-    switch (pandoraHitType) {
+    switch (geoHitType) {
     case geo::kU:
         return HitType::TWO_D_U;
     case geo::kV:
@@ -164,7 +165,7 @@ static HitType getHepEVDHitType(geo::View_t geoHitType) {
 }
 
 // Build and add recob::Hit to the HepEVD server, using the given module handle.
-static void addRecoHits(const art::Event const& evt, const std::string hitModuleLabel, const std::string label = "") {
+static void addRecoHits(const art::Event &evt, const std::string hitModuleLabel, const std::string label = "") {
 
     if (!isServerInitialised())
         return;
@@ -204,8 +205,8 @@ static void addRecoHits(const art::Event const& evt, const std::string hitModule
 
         // Now we can make a HepEVD hit.
         Hit *hepEVDHit = new Hit({x, 0.0, z}, e);
-        hepEVDHit->setDimension(getHepEVDHitDimension(view));
-        hepEVDHit->setType(getHepEVDHitType(view));
+        hepEVDHit->setDim(getHepEVDHitDimension(view));
+        hepEVDHit->setHitType(getHepEVDHitType(view));
         hits.push_back(hepEVDHit);
     }
 
