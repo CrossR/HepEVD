@@ -44,8 +44,8 @@
 namespace HepEVD {
 
 // LArSoft requires a lot more use of various objects for
-// converting things, so we need to keep a copy of some
-// of the objects we use.
+// converting things, so it is sometimes easier to keep
+// a pointer to them, to ease passing around functions.
 inline geo::Geometry const* hepEvdLArSoftGeo = nullptr;
 inline detinfo::DetectorPropertiesData const* hepEVDDetProps = nullptr;
 
@@ -262,6 +262,12 @@ static void addPFPs(const art::Event &evt, const std::string pfpModuleLabel, con
 
     if (!isServerInitialised())
         return;
+
+    // Get the hit and detector property info.
+    // TODO: Consider adding a setup command, maybe one the builds on top of isServerInitialised.
+    // It could setup some of these global variables and quit out if not available.
+    auto const detProps = art::ServiceHandle<detinfo::DetectorPropertiesService const>()->DataFor(evt);
+    hepEVDDetProps = &detProps;
 
     Particles particles;
     std::map<const art::Ptr<recob::PFParticle>, Particle *> pfpToParticleMap;
