@@ -247,7 +247,7 @@ static void showMC(const pandora::Algorithm &pAlgorithm, const std::string &list
     hepEVDServer->addMCHits(mcHits);
 
     // Now, build up a string to show the interaction as a string:
-    //   - \nu_e (3.18 GeV) -> e- (0.51 GeV) + n
+    //   - \nu_e (3.18 GeV) -> e- (0.51 GeV) + p ...
     std::string mcTruth;
 
     pandora::MCParticleVector primaryMCParticles;
