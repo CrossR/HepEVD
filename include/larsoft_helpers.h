@@ -222,6 +222,7 @@ static void addRecoHits(const art::Event &evt, const std::string hitModuleLabel,
 static Particle* addParticle(const art::Ptr<recob::PFParticle> &pfp, const art::Event &evt,
                              const std::vector<art::Ptr<recob::SpacePoint>> &spacePoints,
                              const std::vector<art::Ptr<recob::Cluster>> &clusters,
+                             const std::vector<art::Ptr<recob::Vertex>> &vertices,
                              const art::FindManyP<recob::Hit> &clusterHitAssoc,
                              const std::string label = "") {
 
@@ -230,7 +231,7 @@ static Particle* addParticle(const art::Ptr<recob::PFParticle> &pfp, const art::
     // Add the 2D Hits first, which we need to get to via the clusters...
     for (const auto &cluster : clusters) {
 
-        std::vector<art::Ptr<recob::Hit>> clusterHits = clusterHitAssoc.at(cluster.key());
+        std::vector<art::Ptr<recob::Hit>> clusterHits(clusterHitAssoc.at(cluster.key()));
 
         for (const auto &hit : clusterHits)
             hits.push_back(getHitFromRecobHit(hit));
@@ -250,10 +251,22 @@ static Particle* addParticle(const art::Ptr<recob::PFParticle> &pfp, const art::
         hits.push_back(hepEVDHit);
     }
 
-    std::string id = getUUID();
+    std::string id(getUUID());
     Particle *particle = new Particle(hits, id, pfp->PdgCode() == 13 ? "Track-like" : "Shower-like");
 
-    // TODO: Vertices, Interaction Type
+    Markers vertexMarkers;
+
+    for (const auto &vertex : vertices) {
+        const auto pos(vertex->position());
+        const float x(pos.X());
+        const float y(pos.Y());
+        const float z(pos.Z());
+
+        Point recoVertex({x, y, z});
+        vertexMarkers.push_back(recoVertex);
+    }
+
+    particle->setVertices(vertexMarkers);
 
     return particle;
 }
@@ -291,23 +304,30 @@ static void addPFPs(const art::Event &evt, const std::string pfpModuleLabel, con
         throw cet::exception("HepEVD") << "Failed to get recob::Cluster data product." << std::endl;
     }
 
-    const auto pfpClusterAssoc = art::FindManyP<recob::Cluster>(pfpHandle, evt, pfpModuleLabel);
-    const auto clusterHitAssoc = art::FindManyP<recob::Hit>(clusterHandle, evt, pfpModuleLabel);
-    const auto spacePointAssoc = art::FindManyP<recob::SpacePoint>(pfpHandle, evt, pfpModuleLabel);
+    const auto pfpClusterAssoc(art::FindManyP<recob::Cluster>(pfpHandle, evt, pfpModuleLabel));
+    const auto clusterHitAssoc(art::FindManyP<recob::Hit>(clusterHandle, evt, pfpModuleLabel));
+    const auto spacePointAssoc(art::FindManyP<recob::SpacePoint>(pfpHandle, evt, pfpModuleLabel));
+    const auto vertexAssoc(art::FindManyP<recob::Vertex>(pfpHandle, evt, pfpModuleLabel));
+    std::map<int, art::Ptr<recob::PFParticle>> pfpMap;
 
     // First, build a HepEVD::Particle per recob:Particle.
     for (const auto &pfp : particleVector) {
         // Grab all the required bits...
-        const std::vector<art::Ptr<recob::SpacePoint>> &pfpSpacePoints = spacePointAssoc.at(pfp.key());
-        const std::vector<art::Ptr<recob::Cluster>> &clusters = pfpClusterAssoc.at(pfp.key());
+        const std::vector<art::Ptr<recob::SpacePoint>> &pfpSpacePoints(spacePointAssoc.at(pfp.key()));
+        const std::vector<art::Ptr<recob::Cluster>> &clusters(pfpClusterAssoc.at(pfp.key()));
+        const std::vector<art::Ptr<recob::Vertex>> &vertices(vertexAssoc.at(pfp.key()));
 
-        const auto particle = addParticle(pfp, evt, pfpSpacePoints, clusters, clusterHitAssoc, label);
+        pfpMap[pfp->Self()] = pfp;
+
+        const auto particle = addParticle(pfp, evt, pfpSpacePoints, clusters, vertices, clusterHitAssoc, label);
         particles.push_back(particle);
         pfpToParticleMap.insert({pfp, particle});
     }
 
-    // TODO: Build up Parent-Child Relationships
-
+    // Now, we can add the parent/child relationships.
+    //
+    // This is done in two steps, first one were we build up a map of parent -> child,
+    // and then one where we go through and apply that to the HepEVD::Particle objects.
     hepEVDServer->addParticles(particles);
 }
 
