@@ -17,9 +17,11 @@
 #include "include/utils.h"
 
 #ifdef HEP_EVD_PANDORA_HELPERS
-#if HEP_EVD_PANDORA_HELPERS
 #include "include/pandora_helpers.h"
 #endif
+
+#ifdef HEP_EVD_LARSOFT_HELPERS
+#include "include/larsoft_helpers.h"
 #endif
 
 #endif // HEP_EVD_H

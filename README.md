@@ -21,12 +21,16 @@ There is then two further folders, containing the example code, and the Python b
 - `python_bindings` contains the Python bindings for the C++ code, allowing the C++
   library to be used from Python.
 
-- `example` contains example code, showing how to use the library. This includes a simple
-  example, showing randomly placed hits in a DUNE FD sized module, as well as an optional
-  client/server example, which demonstrates how to use the library in a client/server mode,
-  which can be useful to preserve state between events. Finally, there is an example of how the Python bindings can be used.
+- `example` contains example code, showing how to use the library. This includes
+  a simple example, showing randomly placed hits in a DUNE FD sized module, as
+  well as an optional client/server example, which demonstrates how to use the
+  library in a client/server mode, which can be useful to preserve state between
+  events. Finally, there is an example of how the Python bindings can be used.
 
 ## Installation + Usage
+
+More detailed instructions for using the Pandora or LArSoft helpers can be found in the
+Wiki, [here](https://github.com/CrossR/HepEVD/wiki).
 
 To run the basic example, you need to pull down the external dependencies, then simply
 build the example.
@@ -102,8 +106,7 @@ convert and parse objects to/from JSON, such that they can be served via the HTT
 
 ## Future Work
 
-- More helper functions. The helper function core code has been abstracted out now, so
-  just needs actual implementations adding (i.e. LArSoft helper for `recob::Hit` etc.).
+- Fill in the LArSoft helper more: MCHits, MCTruth String, Slices, Clusters.
 
 - Hit widths? Pain with instanced mesh though.
 

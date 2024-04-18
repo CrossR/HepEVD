@@ -46,9 +46,7 @@ inline PandoraHitMap caloHitToEvdHit;
 
 // Get the current hit map, such that properties and more can be added
 // to the HepEVD hits.
-static PandoraHitMap *getHitMap() {
-    return &caloHitToEvdHit;
-}
+static PandoraHitMap *getHitMap() { return &caloHitToEvdHit; }
 
 // Set the HepEVD geometry by pulling the relevant information from the
 // Pandora GeometryManager.
@@ -295,7 +293,7 @@ static Particle *addParticle(const pandora::Pandora &pPandora, const pandora::Pa
     try {
         vertex = lar_content::LArPfoHelper::GetVertex(pPfo);
     } catch (pandora::StatusCodeException &) {
-        if (verboseLogging)
+        if (hepEVDVerboseLogging)
             std::cout << "HepEVD: Failed to get vertex for PFO!" << std::endl;
         return particle;
     }

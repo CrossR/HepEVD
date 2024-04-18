@@ -26,11 +26,11 @@ namespace HepEVD {
 // This means we don't have to worry about setting it up,
 // or awkwardness around using across multiple functions.
 inline HepEVDServer *hepEVDServer;
-inline bool verboseLogging = false;
+inline bool hepEVDVerboseLogging = false;
 
 // Helper functions to get the server or update the logging level.
 static HepEVDServer *getServer() { return hepEVDServer; }
-static void setVerboseLogging(const bool logging) { verboseLogging = logging; }
+static void setVerboseLogging(const bool logging) { hepEVDVerboseLogging = logging; }
 
 // We need to keep track of the hits we've added to the server, so we can
 // map to them from whatever external data type we are using.
@@ -62,7 +62,7 @@ static void registerClearFunction(std::function<void()> clearFunction) {
 static bool isServerInitialised() {
     const bool isInit(hepEVDServer != nullptr && hepEVDServer->isInitialised());
 
-    if (!isInit && verboseLogging) {
+    if (!isInit && hepEVDVerboseLogging) {
         std::cout << "HepEVD Server is not initialised!" << std::endl;
         std::cout << "Please set the HepEVD geometry first!" << std::endl;
         std::cout << "This should be done before any other calls to the event display." << std::endl;
@@ -71,11 +71,11 @@ static bool isServerInitialised() {
     return isInit;
 }
 
-static void startServer(const int startState = -1) {
+static void startServer(const int startState = -1, const bool clearOnShow = true) {
     if (!isServerInitialised())
         return;
 
-    if (verboseLogging) {
+    if (hepEVDVerboseLogging) {
         std::cout << "HepEVD: There are " << hepEVDServer->getHits().size() << " hits registered!" << std::endl;
         std::cout << "HepEVD: There are " << hepEVDServer->getMCHits().size() << " MC hits registered!" << std::endl;
         std::cout << "HepEVD: There are " << hepEVDServer->getParticles().size() << " particles registered!"
@@ -89,6 +89,9 @@ static void startServer(const int startState = -1) {
         hepEVDServer->previousEventState();
 
     hepEVDServer->startServer();
+
+    if (clearOnShow)
+        hepEVDServer->resetServer();
 }
 
 static void saveState(const std::string stateName, const int minSize = -1, const bool clearOnShow = true) {
