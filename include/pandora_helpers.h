@@ -333,7 +333,7 @@ static Particle *addParticle(const pandora::Pandora &pPandora, const pandora::Pa
     try {
         vertex = lar_content::LArPfoHelper::GetVertex(pPfo);
     } catch (pandora::StatusCodeException &) {
-        if (verboseLogging)
+        if (hepEVDVerboseLogging)
             std::cout << "HepEVD: Failed to get vertex for PFO!" << std::endl;
         return particle;
     }
