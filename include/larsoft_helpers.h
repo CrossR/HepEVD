@@ -49,16 +49,16 @@ namespace HepEVD {
 inline geo::Geometry const *hepEvdLArSoftGeo = nullptr;
 inline detinfo::DetectorPropertiesData const *hepEVDDetProps = nullptr;
 
-using RecoHitMap = std::map<const recob::Hit *, Hit *>;
+using RecoHitMap = std::map<const art::Ptr<recob::Hit>, Hit *>;
 inline RecoHitMap recoHitToEvdHit;
 
-using SpacePointHitMap = std::map<const recob::SpacePoint *, Hit *>;
+using SpacePointHitMap = std::map<const art::Ptr<recob::SpacePoint>, Hit *>;
 inline SpacePointHitMap spacePointToEvdHit;
 
 // Get the current hit maps, such that properties and more can be added
 // to the HepEVD hits.
 static RecoHitMap *getHitMap() { return &recoHitToEvdHit; }
-static SpacePointHitMap *getSpacepointMap() { return &spacePointToEvdHit; }
+static SpacePointHitMap *getSpacePointMap() { return &spacePointToEvdHit; }
 
 // Set the HepEVD geometry by pulling the relevant information from the
 // Pandora GeometryManager.
@@ -173,11 +173,11 @@ static Hit *getHitFromRecobHit(const art::Ptr<recob::Hit> &hit) {
     const float z(wirePos.Z() * cos(theta) - wirePos.Y() * sin(theta));
 
     // Now we can make a HepEVD hit.
-    Hit *hepEVDHit = new Hit({x, 0.0, z}, e);
-    hepEVDHit->setDim(getHepEVDHitDimension(view));
-    hepEVDHit->setHitType(getHepEVDHitType(view));
+    Hit *hepEvdHit = new Hit({x, 0.0, z}, e);
+    hepEvdHit->setDim(getHepEVDHitDimension(view));
+    hepEvdHit->setHitType(getHepEVDHitType(view));
 
-    return hepEVDHit;
+    return hepEvdHit;
 }
 
 // Build and add recob::Hit to the HepEVD server, using the given module handle.
@@ -206,8 +206,11 @@ static void addRecoHits(const art::Event &evt, const std::string hitModuleLabel,
 
     Hits hits;
 
-    for (const auto &hit : hitVector)
-        hits.push_back(getHitFromRecobHit(hit));
+    for (const auto &hit : hitVector) {
+        const auto hepEvdHit(getHitFromRecobHit(hit));
+        hits.push_back(hepEvdHit);
+        recoHitToEvdHit.insert({hit, hepEvdHit});
+    }
 
     hepEVDServer->addHits(hits);
 }
@@ -225,8 +228,11 @@ static Particle *addParticle(const art::Ptr<recob::PFParticle> &pfp, const art::
 
         std::vector<art::Ptr<recob::Hit>> clusterHits(clusterHitAssoc.at(cluster.key()));
 
-        for (const auto &hit : clusterHits)
-            hits.push_back(getHitFromRecobHit(hit));
+        for (const auto &hit : clusterHits) {
+            const auto hepEvdHit(getHitFromRecobHit(hit));
+            hits.push_back(hepEvdHit);
+            recoHitToEvdHit.insert({hit, hepEvdHit});
+        }
     }
 
     // Next, add the 3D hits...
@@ -237,10 +243,11 @@ static Particle *addParticle(const art::Ptr<recob::PFParticle> &pfp, const art::
         const float y(pos[1]);
         const float z(pos[2]);
 
-        Hit *hepEVDHit = new Hit({x, y, z}, 0.f);
-        hepEVDHit->setDim(HitDimension::THREE_D);
+        Hit *hepEvdHit = new Hit({x, y, z}, 0.f);
+        hepEvdHit->setDim(HitDimension::THREE_D);
 
-        hits.push_back(hepEVDHit);
+        hits.push_back(hepEvdHit);
+        spacePointToEvdHit.insert({spacePoint, hepEvdHit});
     }
 
     std::string id(getUUID());
