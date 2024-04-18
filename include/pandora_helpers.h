@@ -46,9 +46,7 @@ inline PandoraHitMap caloHitToEvdHit;
 
 // Get the current hit map, such that properties and more can be added
 // to the HepEVD hits.
-static PandoraHitMap *getHitMap() {
-    return &caloHitToEvdHit;
-}
+static PandoraHitMap *getHitMap() { return &caloHitToEvdHit; }
 
 // Set the HepEVD geometry by pulling the relevant information from the
 // Pandora GeometryManager.
@@ -261,7 +259,7 @@ static void getAllCaloHits(const pandora::ParticleFlowObject *pPfo, pandora::Cal
     }
 }
 
-static Particle* addParticle(const pandora::Pandora &pPandora, const pandora::ParticleFlowObject *pPfo,
+static Particle *addParticle(const pandora::Pandora &pPandora, const pandora::ParticleFlowObject *pPfo,
                              std::string label = "") {
 
     Hits hits;
