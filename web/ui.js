@@ -203,6 +203,11 @@ export function enableInteractionTypeToggle(hitType, particles, onClick) {
     interactionTypes.add(particle.interactionType);
   });
 
+  if (interactionTypes.size < 2) {
+    classDiv.style.visibility = "hidden";
+    return;
+  }
+
   interactionTypes.forEach((interactionType) => {
     const newButton = document.createElement("button");
     newButton.classList.add(
