@@ -40,6 +40,9 @@ class EventState {
         hits.clear();
         mcHits.clear();
         markers.clear();
+
+        if (resetMCTruth)
+            mcTruth = "";
     }
 
     // Only need a to JSON method, as we don't need to read in the state.

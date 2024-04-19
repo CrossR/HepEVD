@@ -180,6 +180,8 @@ class HepEVDServer {
 
         if (truths.size() > 1)
             return this->getState()->mcTruth;
+
+        return "";
     }
 
   private:

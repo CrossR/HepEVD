@@ -147,7 +147,7 @@ static const std::unordered_map<int, std::tuple<bool, std::string>> hepEVD_pdgMa
 // This is a bit opinionated because:
 //  - Includes neutrinos by default.
 //  - Includes Pi0s, as its cleaner than including their decay products.
-static bool pdgIsVisible(const int pdgCode, const bool includeNeutrino = true) {
+static inline bool pdgIsVisible(const int pdgCode, const bool includeNeutrino = true) {
     auto it = hepEVD_pdgMap.find(pdgCode);
 
     if (it == hepEVD_pdgMap.end() && pdgCode < 1000000000) {
@@ -163,7 +163,7 @@ static bool pdgIsVisible(const int pdgCode, const bool includeNeutrino = true) {
     return std::get<0>(it->second);
 }
 
-static std::string pdgToString(const int pdgCode, const double energy = -1.0, const std::string units = "GeV") {
+static inline std::string pdgToString(const int pdgCode, const double energy = -1.0, const std::string units = "GeV") {
 
     std::string res;
     auto it = hepEVD_pdgMap.find(pdgCode);

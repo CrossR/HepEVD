@@ -102,6 +102,7 @@ int main(void) {
     ring.setDim(TWO_D);
     point.setDim(TWO_D);
     server.addMarkers({ring, point});
+    server.setMCTruth("\\nu_e \\rightarrow e^- + \\nu_e");
 
     server.addEventState("Second", {}, eventTwoHits, {}, {}, "");
     server.addEventState("Third", {}, eventThreeHits, {}, {}, "");
