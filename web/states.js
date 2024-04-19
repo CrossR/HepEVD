@@ -45,7 +45,7 @@ export async function updateStateUI(renderStates) {
     newButton.innerText = state.name;
     newButton.id = `state_${state.name}_${idStatePair.id}`;
     newButton.addEventListener("click", () =>
-      setState(idStatePair.id, renderStates),
+      setState(idStatePair.id, renderStates)
     );
     listElement.appendChild(newButton);
     stateList.appendChild(listElement);
@@ -66,7 +66,8 @@ export async function updateStateUI(renderStates) {
 
 export async function reloadDataForCurrentState(renderStates) {
   const data = await getData();
-  const { hits, mcHits, markers, particles, detectorGeometry } = data;
+  const { hits, mcHits, markers, particles, detectorGeometry, stateInfo } =
+    data;
 
   renderStates.forEach((state) => {
     state.updateData(
@@ -75,6 +76,7 @@ export async function reloadDataForCurrentState(renderStates) {
       mcHits.filter((hit) => hit.position.dim === state.hitDim),
       markers.filter((marker) => marker.position.dim === state.hitDim),
       detectorGeometry,
+      stateInfo
     );
   });
 
@@ -102,7 +104,7 @@ export async function reloadDataForCurrentState(renderStates) {
 export function getCurrentStateInfo() {
   if (hepEVD_GLOBAL_STATE !== undefined) {
     return Promise.resolve(
-      hepEVD_GLOBAL_STATE.states[hepEVD_GLOBAL_STATE.currentState],
+      hepEVD_GLOBAL_STATE.states[hepEVD_GLOBAL_STATE.currentState]
     );
   }
 

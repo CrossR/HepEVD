@@ -61,7 +61,7 @@ class HepEVDServer {
     // Less destructive clear function.
     // This will clear the hits, markers, particles, and MC hits,
     // but leave the geometry and event states alone.
-    void clearState() { this->eventStates[this->currentState].clear(); }
+    void clearState(const bool clearMCTruth = false) { this->eventStates[this->currentState].clear(clearMCTruth); }
 
     // Add a new event state.
     // This will be used to store multiple events, or multiple
@@ -133,6 +133,20 @@ class HepEVDServer {
     }
     Markers getMarkers() { return this->getState()->markers; }
 
+    bool addParticles(const Particles &inputParticles) {
+        if (this->getState()->particles.size() == 0) {
+            this->getState()->particles = inputParticles;
+            return true;
+        }
+
+        Particles newParticles = this->getState()->particles;
+        newParticles.insert(newParticles.end(), inputParticles.begin(), inputParticles.end());
+        this->getState()->particles = newParticles;
+
+        return true;
+    }
+    Particles getParticles() { return this->getState()->particles; }
+
     bool addMCHits(const MCHits &inputMCHits) {
         if (this->getState()->mcHits.size() == 0) {
             this->getState()->mcHits = inputMCHits;
@@ -147,19 +161,28 @@ class HepEVDServer {
     }
     MCHits getMCHits() { return this->getState()->mcHits; }
 
-    bool addParticles(const Particles &inputParticles) {
-        if (this->getState()->particles.size() == 0) {
-            this->getState()->particles = inputParticles;
-            return true;
+    void setMCTruth(const std::string mcTruth) { this->getState()->mcTruth = mcTruth; }
+
+    // The MC truth is slightly unique, in that it should be the same across all states.
+    // If there is multiple MC truths that aren't the same, either return the current one,
+    // or return an empty string.
+    // However, if there is just one in a single event state, just assume that's the one.
+    std::string getMCTruth() {
+        std::set<std::string> truths;
+
+        for (auto &state : this->eventStates) {
+            if (state.second.mcTruth.size() > 0)
+                truths.insert(state.second.mcTruth);
         }
 
-        Particles newParticles = this->getState()->particles;
-        newParticles.insert(newParticles.end(), inputParticles.begin(), inputParticles.end());
-        this->getState()->particles = newParticles;
+        if (truths.size() == 1)
+            return truths.begin()->c_str();
 
-        return true;
+        if (truths.size() > 1)
+            return this->getState()->mcTruth;
+
+        return "";
     }
-    Particles getParticles() { return this->getState()->particles; }
 
   private:
     httplib::Server server;
@@ -207,6 +230,10 @@ inline void HepEVDServer::startServer() {
             res.set_content("Error: " + std::string(e.what()), "text/plain");
         }
     });
+
+    // And the MC truth information.
+    this->server.Get("/mcTruth",
+                     [&](const Request &, Response &res) { res.set_content(this->getMCTruth(), "text/plain"); });
 
     // Then any actual particles.
     this->server.Get("/particles", [&](const Request &, Response &res) {
@@ -324,7 +351,15 @@ inline void HepEVDServer::startServer() {
         res.set_content(json(this->eventStates).dump(), "application/json");
     });
     this->server.Get("/stateInfo", [&](const Request &, Response &res) {
-        res.set_content(json(*this->getState()).dump(), "application/json");
+        auto state = this->getState();
+        const auto mcTruth = this->getMCTruth();
+
+        // If the MC truth string and the MC truth in the state are different,
+        // then we need to add the MC truth to the state.
+        if (mcTruth.size() > 0 && state->mcTruth.size() == 0)
+            state->mcTruth = mcTruth;
+
+        res.set_content(json(*state).dump(), "application/json");
     });
     this->server.Get("/swap/id/:id", [&](const Request &req, Response &res) {
         try {

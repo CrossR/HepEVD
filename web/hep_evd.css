@@ -89,6 +89,14 @@ div {
   text-align: center;
 }
 
+.mc_truth {
+  position: absolute;
+  top: 5%;
+  left: 0;
+  width: 100%;
+  text-align: center;
+}
+
 input:active,
 input:focus,
 input:hover,

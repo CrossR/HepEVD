@@ -111,12 +111,12 @@ export function drawRings(rings, group) {
 
   bufferGeometry.setAttribute(
     "position",
-    new THREE.Float32BufferAttribute(vertices, 3),
+    new THREE.Float32BufferAttribute(vertices, 3)
   );
   bufferGeometry.setIndex(indicies);
   bufferGeometry.setAttribute(
     "color",
-    new THREE.Float32BufferAttribute(colors, 4),
+    new THREE.Float32BufferAttribute(colors, 4)
   );
 
   const ringMaterial = new THREE.MeshBasicMaterial({
@@ -160,7 +160,7 @@ export function drawPoints(points, group) {
   const pointMesh = new THREE.InstancedMesh(
     pointGeo,
     materialPoint,
-    points.length,
+    points.length
   );
 
   const lut = new Lut("cooltowarm", 512);

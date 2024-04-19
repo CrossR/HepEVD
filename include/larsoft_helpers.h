@@ -180,7 +180,6 @@ static Hit *getHitFromRecobHit(const art::Ptr<recob::Hit> &hit) {
     return hepEvdHit;
 }
 
-// Build and add recob::Hit to the HepEVD server, using the given module handle.
 static void addRecoHits(const art::Event &evt, const std::string hitModuleLabel, const std::string label = "") {
 
     if (!isServerInitialised())
@@ -213,6 +212,49 @@ static void addRecoHits(const art::Event &evt, const std::string hitModuleLabel,
     }
 
     hepEVDServer->addHits(hits);
+}
+
+static void showMC(const art::Event &evt, const std::string mcTruthLabel) {
+
+    if (!isServerInitialised())
+        return;
+
+    art::Handle<std::vector<simb::MCTruth>> mcTruthHandle;
+    std::vector<art::Ptr<simb::MCTruth>> mcTruthVector;
+
+    if (!evt.getByLabel(mcTruthLabel, mcTruthHandle)) {
+        if (hepEVDVerboseLogging)
+            std::cout << "HepEVD: Failed to get simb::MCTruth data product." << std::endl;
+        throw cet::exception("HepEVD") << "Failed to get simb::MCTruth data product." << std::endl;
+    }
+    art::fill_ptr_vector(mcTruthVector, mcTruthHandle);
+
+    // Now, we can build up a string to show the interaction as a string:
+    //   - \nu_e (3.1 GeV) -> e- (0.51 GeV) + p ...
+    std::string mcTruthString;
+
+    if (mcTruthVector[0]->NeutrinoSet()) {
+        const auto neutrino(mcTruthVector[0]->GetNeutrino());
+        mcTruthString += pdgToString(neutrino.Nu().PdgCode(), neutrino.Nu().E());
+        mcTruthString += " \\rightarrow ";
+    } else {
+        if (hepEVDVerboseLogging)
+            std::cout << "HepEVD: No neutrino information found in simb::MCTruth." << std::endl;
+    }
+
+    for (const unsigned int i = 0; i < mcTruthVector[0]->NParticles(); ++i) {
+        const auto particle(mcTruthVector[0]->GetParticle(i));
+
+        if (pdgIsVisible(particle.PdgCode()))
+            mcTruthString += pdgToString(particle.PdgCode(), particle.E());
+        else
+            continue;
+
+        if (i != mcTruthVector[0]->NParticles() - 1)
+            mcTruthString += " + ";
+    }
+
+    hepEVDServerh->setMCTruth(mcTruthString);
 }
 
 static Particle *addParticle(const art::Ptr<recob::PFParticle> &pfp, const art::Ptr<recob::PFParticle> &parentPfp,
