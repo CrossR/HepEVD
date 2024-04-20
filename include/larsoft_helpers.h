@@ -239,21 +239,21 @@ static void showMCParticles(const art::Event &evt, const std::string hitLabel, c
     art::fill_ptr_vector(hitVector, hitHandle);
 
     // Get backtracker info
-    const auto assocMCPart(art::FindManyP<simb::MCParticle, anab::BackTrackerHitMatchingData>(hitHandle, evt, backTrackerLabel));
+    const auto assocMCPart(
+        art::FindManyP<simb::MCParticle, anab::BackTrackerHitMatchingData>(hitHandle, evt, backTrackerLabel));
 
     MCHits mcHits;
 
     // Truth match
-    for (unsigned int hitIndex = 0; hitIndex < hitVector.size(); hitIndex++)
-    {
+    for (unsigned int hitIndex = 0; hitIndex < hitVector.size(); hitIndex++) {
         const art::Ptr<recob::Hit> &hit(hitVector[hitIndex]);
         const std::vector<art::Ptr<simb::MCParticle>> &matchedMCParticles(assocMCPart.at(hit.key()));
         auto matchedDatas(assocMCPart.data(hit.key()));
 
-        for (unsigned int mcParticleIndex = 0; mcParticleIndex < matchedMCParticles.size(); ++mcParticleIndex)
-        {
+        for (unsigned int mcParticleIndex = 0; mcParticleIndex < matchedMCParticles.size(); ++mcParticleIndex) {
             auto matchedData(matchedDatas.at(mcParticleIndex));
-            if (!matchedData->isMaxIDE) continue;
+            if (!matchedData->isMaxIDE)
+                continue;
             const art::Ptr<simb::MCParticle> &mcParticle(matchedMCParticles.at(mcParticleIndex));
 
             const auto hepEvdHit(getHitFromRecobHit(hit));
