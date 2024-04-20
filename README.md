@@ -106,7 +106,7 @@ convert and parse objects to/from JSON, such that they can be served via the HTT
 
 ## Future Work
 
-- Fill in the LArSoft helper more: MCHits, MCTruth String, Slices, Clusters.
+- Fill in the LArSoft helper more: Slices, Clusters.
 
 - Hit widths? Pain with instanced mesh though.
 

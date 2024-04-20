@@ -25,13 +25,19 @@
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
 // Various LArSoft Objects...
+// Detector..
 #include "larcore/Geometry/Geometry.h"
 #include "lardata/DetectorInfoServices/DetectorPropertiesService.h"
+#include "lardataobj/AnalysisBase/BackTrackerMatchingData.h"
+// Reco...
 #include "lardataobj/RecoBase/Cluster.h"
 #include "lardataobj/RecoBase/Hit.h"
 #include "lardataobj/RecoBase/PFParticle.h"
 #include "lardataobj/RecoBase/SpacePoint.h"
 #include "lardataobj/RecoBase/Vertex.h"
+// MC...
+#include "nusimdata/SimulationBase/MCParticle.h"
+#include "nusimdata/SimulationBase/MCTruth.h"
 
 // Local Includes
 #include "base_helper.h"
@@ -180,7 +186,7 @@ static Hit *getHitFromRecobHit(const art::Ptr<recob::Hit> &hit) {
     return hepEvdHit;
 }
 
-static void addRecoHits(const art::Event &evt, const std::string hitModuleLabel, const std::string label = "") {
+static void addRecoHits(const art::Event &evt, const std::string hitLabel, const std::string label = "") {
 
     if (!isServerInitialised())
         return;
@@ -192,12 +198,11 @@ static void addRecoHits(const art::Event &evt, const std::string hitModuleLabel,
     art::Handle<std::vector<recob::Hit>> hitHandle;
     std::vector<art::Ptr<recob::Hit>> hitVector;
 
-    if (!evt.getByLabel(hitModuleLabel, hitHandle)) {
+    if (!evt.getByLabel(hitLabel, hitHandle)) {
         if (hepEVDVerboseLogging)
             std::cout << "HepEVD: Failed to get recob::Hit data product." << std::endl;
         throw cet::exception("HepEVD") << "Failed to get recob::Hit data product." << std::endl;
     }
-
     art::fill_ptr_vector(hitVector, hitHandle);
 
     if (hepEVDVerboseLogging)
@@ -214,7 +219,55 @@ static void addRecoHits(const art::Event &evt, const std::string hitModuleLabel,
     hepEVDServer->addHits(hits);
 }
 
-static void showMC(const art::Event &evt, const std::string mcTruthLabel) {
+static void showMCParticles(const art::Event &evt, const std::string hitLabel, const std::string backTrackerLabel) {
+
+    if (!isServerInitialised())
+        return;
+
+    // Get the hit and detector property info.
+    auto const detProps = art::ServiceHandle<detinfo::DetectorPropertiesService const>()->DataFor(evt);
+    hepEVDDetProps = &detProps;
+
+    art::Handle<std::vector<recob::Hit>> hitHandle;
+    std::vector<art::Ptr<recob::Hit>> hitVector;
+
+    if (!evt.getByLabel(hitLabel, hitHandle)) {
+        if (hepEVDVerboseLogging)
+            std::cout << "HepEVD: Failed to get recob::Hit data product." << std::endl;
+        throw cet::exception("HepEVD") << "Failed to get recob::Hit data product." << std::endl;
+    }
+    art::fill_ptr_vector(hitVector, hitHandle);
+
+    // Get backtracker info
+    const auto assocMCPart(art::FindManyP<simb::MCParticle, anab::BackTrackerHitMatchingData>(hitHandle, evt, backTrackerLabel));
+
+    MCHits mcHits;
+
+    // Truth match
+    for (unsigned int hitIndex = 0; hitIndex < hitVector.size(); hitIndex++)
+    {
+        const art::Ptr<recob::Hit> &hit(hitVector[hitIndex]);
+        const std::vector<art::Ptr<simb::MCParticle>> &matchedMCParticles(assocMCPart.at(hit.key()));
+        auto matchedDatas(assocMCPart.data(hit.key()));
+
+        for (unsigned int mcParticleIndex = 0; mcParticleIndex < matchedMCParticles.size(); ++mcParticleIndex)
+        {
+            auto matchedData(matchedDatas.at(mcParticleIndex));
+            if (!matchedData->isMaxIDE) continue;
+            const art::Ptr<simb::MCParticle> &mcParticle(matchedMCParticles.at(mcParticleIndex));
+
+            const auto hepEvdHit(getHitFromRecobHit(hit));
+            MCHit *mcHit = new MCHit(hepEvdHit->getPosition(), mcParticle->PdgCode(), hepEvdHit->getEnergy());
+            mcHit->setDim(hepEvdHit->getDim());
+            mcHit->setHitType(hepEvdHit->getHitType());
+            mcHits.push_back(mcHit);
+        }
+    }
+
+    hepEVDServer->addMCHits(mcHits);
+}
+
+static void showMCTruth(const art::Event &evt, const std::string mcTruthLabel) {
 
     if (!isServerInitialised())
         return;
@@ -242,7 +295,7 @@ static void showMC(const art::Event &evt, const std::string mcTruthLabel) {
             std::cout << "HepEVD: No neutrino information found in simb::MCTruth." << std::endl;
     }
 
-    for (const unsigned int i = 0; i < mcTruthVector[0]->NParticles(); ++i) {
+    for (unsigned int i = 0; i < mcTruthVector[0]->NParticles(); ++i) {
         const auto particle(mcTruthVector[0]->GetParticle(i));
 
         if (pdgIsVisible(particle.PdgCode()))
@@ -254,7 +307,7 @@ static void showMC(const art::Event &evt, const std::string mcTruthLabel) {
             mcTruthString += " + ";
     }
 
-    hepEVDServerh->setMCTruth(mcTruthString);
+    hepEVDServer->setMCTruth(mcTruthString);
 }
 
 static Particle *addParticle(const art::Ptr<recob::PFParticle> &pfp, const art::Ptr<recob::PFParticle> &parentPfp,
