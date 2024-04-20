@@ -179,6 +179,14 @@ static inline std::string pdgToString(const int pdgCode, const double energy = -
     return res;
 }
 
+// Check if a port is in use.
+// This is achieved by calling out to netcat, since the
+// alternatives can be a bit platform dependent / annoying.
+static inline bool portInUse(const int port) {
+    const std::string cmd("nc -z localhost " + std::to_string(port) + " 2> /dev/null");
+    return std::system(cmd.c_str()) == 0;
+}
+
 }; // namespace HepEVD
 
 #endif // HEP_EVD_POSITION_H

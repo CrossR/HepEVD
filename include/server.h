@@ -15,6 +15,7 @@
 #include "marker.h"
 #include "particle.h"
 #include "state.h"
+#include "utils.h"
 
 #include "extern/httplib.h"
 
@@ -392,8 +393,14 @@ inline void HepEVDServer::startServer() {
     // Finally, mount the www folder, which contains the actual HepEVD JS code.
     this->server.set_mount_point("/", WEB_FOLDER());
 
-    std::cout << "Starting a server on http://localhost:" << EVD_PORT() << "..." << std::endl;
-    this->server.listen("localhost", EVD_PORT());
+    // Start the server.
+    // Since the port may be in use, we need to keep trying until we find one that works.
+    int port = EVD_PORT();
+    while (portInUse(port)) {
+        port++;
+    }
+    std::cout << "Starting HepEVD server on http://localhost:" << port << "..." << std::endl;
+    this->server.listen("localhost", port);
     std::cout << "Server closed, continuing..." << std::endl;
 }
 
