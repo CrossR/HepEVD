@@ -284,28 +284,34 @@ static void showMCTruth(const art::Event &evt, const std::string mcTruthLabel) {
 
     // Now, we can build up a string to show the interaction as a string:
     //   - \nu_e (3.1 GeV) -> e- (0.51 GeV) + p ...
-    std::string mcTruthString;
+    std::string incomingParticles;
+    std::string outgoingParticles;
 
-    if (mcTruthVector[0]->NeutrinoSet()) {
-        const auto neutrino(mcTruthVector[0]->GetNeutrino());
-        mcTruthString += pdgToString(neutrino.Nu().PdgCode(), neutrino.Nu().E());
-        mcTruthString += " \\rightarrow ";
-    } else {
-        if (hepEVDVerboseLogging)
-            std::cout << "HepEVD: No neutrino information found in simb::MCTruth." << std::endl;
-    }
-
+    // TODO: Double check this...really we just want the direct result
+    //       of the Nu interaction, not everything.
     for (unsigned int i = 0; i < mcTruthVector[0]->NParticles(); ++i) {
         const auto particle(mcTruthVector[0]->GetParticle(i));
+        std::string pdgString;
 
-        if (pdgIsVisible(particle.PdgCode()))
-            mcTruthString += pdgToString(particle.PdgCode(), particle.E());
-        else
+        if (! pdgIsVisible(particle.PdgCode()))
             continue;
+        else if (particle.P() > 0.05)
+            pdgString = pdgToString(particle.PdgCode(), particle.P());
+        else
+            pdgString = pdgToString(particle.PdgCode());
 
-        if (i != mcTruthVector[0]->NParticles() - 1)
-            mcTruthString += " + ";
+        if (particle.StatusCode() == 0) {
+            if (!incomingParticles.empty()) incomingParticles += " + ";
+            incomingParticles += pdgString;
+        } else if (particle.StatusCode() == 1) {
+            if (!outgoingParticles.empty()) outgoingParticles += " + ";
+            outgoingParticles += pdgString;
+        }
     }
+
+    const std::string mcTruthString(
+        incomingParticles + " \\rightarrow " + outgoingParticles
+    );
 
     hepEVDServer->setMCTruth(mcTruthString);
 }

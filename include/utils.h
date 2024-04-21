@@ -141,6 +141,7 @@ static const std::unordered_map<int, std::tuple<bool, std::string>> hepEVD_pdgMa
     {15, {true, "\\tau^-"}}, {16, {false, "\\nu_\\tau"}}, {-15, {true, "\\tau^+"}}, {-16, {false, "\\bar{\\nu}_\\tau"}},
     {22, {true, "\\gamma"}}, {111, {true, "\\pi^0"}},     {211, {true, "\\pi^+"}},  {-211, {true, "\\pi^-"}},
     {2212, {true, "p"}},     {2112, {false, "n"}},
+    {1000180390, {true, "^{39}\\mathrm{Ar}"}}, {1000180400, {true, "^{40}\\mathrm{Ar}"}}
 };
 
 // Return true if the PDG should be included in any output text.
@@ -154,7 +155,7 @@ static inline bool pdgIsVisible(const int pdgCode, const bool includeNeutrino = 
         std::cout << "HepEVD: Unknown PDG code: " << pdgCode << std::endl;
         return true;
     } else if (pdgCode >= 1000000000) {
-        return false;
+        return true;
     }
 
     if (std::abs(pdgCode) == 12 || std::abs(pdgCode) == 14 || std::abs(pdgCode) == 16)
