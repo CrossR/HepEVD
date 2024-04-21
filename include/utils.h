@@ -136,13 +136,26 @@ static std::string getCWD() {
 // in the detector.  This is used to provide a human-readable name for
 // particles.
 static const std::unordered_map<int, std::tuple<bool, std::string>> hepEVD_pdgMap = {
-    {11, {true, "e^-"}},     {12, {false, "\\nu_e"}},     {-11, {true, "e^+"}},     {-12, {false, "\\bar{\\nu}_e"}},
-    {13, {true, "\\mu^-"}},  {14, {false, "\\nu_\\mu"}},  {-13, {true, "\\mu^+"}},  {-14, {false, "\\bar{\\nu}_\\mu"}},
-    {15, {true, "\\tau^-"}}, {16, {false, "\\nu_\\tau"}}, {-15, {true, "\\tau^+"}}, {-16, {false, "\\bar{\\nu}_\\tau"}},
-    {22, {true, "\\gamma"}}, {111, {true, "\\pi^0"}},     {211, {true, "\\pi^+"}},  {-211, {true, "\\pi^-"}},
-    {2212, {true, "p"}},     {2112, {false, "n"}},
-    {1000180390, {true, "^{39}\\mathrm{Ar}"}}, {1000180400, {true, "^{40}\\mathrm{Ar}"}}
-};
+    {11, {true, "e^-"}},
+    {12, {false, "\\nu_e"}},
+    {-11, {true, "e^+"}},
+    {-12, {false, "\\bar{\\nu}_e"}},
+    {13, {true, "\\mu^-"}},
+    {14, {false, "\\nu_\\mu"}},
+    {-13, {true, "\\mu^+"}},
+    {-14, {false, "\\bar{\\nu}_\\mu"}},
+    {15, {true, "\\tau^-"}},
+    {16, {false, "\\nu_\\tau"}},
+    {-15, {true, "\\tau^+"}},
+    {-16, {false, "\\bar{\\nu}_\\tau"}},
+    {22, {true, "\\gamma"}},
+    {111, {true, "\\pi^0"}},
+    {211, {true, "\\pi^+"}},
+    {-211, {true, "\\pi^-"}},
+    {2212, {true, "p"}},
+    {2112, {false, "n"}},
+    {1000180390, {true, "^{39}\\mathrm{Ar}"}},
+    {1000180400, {true, "^{40}\\mathrm{Ar}"}}};
 
 // Return true if the PDG should be included in any output text.
 // This is a bit opinionated because:

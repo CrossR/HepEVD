@@ -293,7 +293,7 @@ static void showMCTruth(const art::Event &evt, const std::string mcTruthLabel) {
         const auto particle(mcTruthVector[0]->GetParticle(i));
         std::string pdgString;
 
-        if (! pdgIsVisible(particle.PdgCode()))
+        if (!pdgIsVisible(particle.PdgCode()))
             continue;
         else if (particle.P() > 0.05)
             pdgString = pdgToString(particle.PdgCode(), particle.P());
@@ -301,17 +301,17 @@ static void showMCTruth(const art::Event &evt, const std::string mcTruthLabel) {
             pdgString = pdgToString(particle.PdgCode());
 
         if (particle.StatusCode() == 0) {
-            if (!incomingParticles.empty()) incomingParticles += " + ";
+            if (!incomingParticles.empty())
+                incomingParticles += " + ";
             incomingParticles += pdgString;
         } else if (particle.StatusCode() == 1) {
-            if (!outgoingParticles.empty()) outgoingParticles += " + ";
+            if (!outgoingParticles.empty())
+                outgoingParticles += " + ";
             outgoingParticles += pdgString;
         }
     }
 
-    const std::string mcTruthString(
-        incomingParticles + " \\rightarrow " + outgoingParticles
-    );
+    const std::string mcTruthString(incomingParticles + " \\rightarrow " + outgoingParticles);
 
     hepEVDServer->setMCTruth(mcTruthString);
 }
