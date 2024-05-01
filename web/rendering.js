@@ -5,6 +5,7 @@
 import * as THREE from "three";
 import { Line2 } from "three/addons/lines/Line2.js";
 import { LineGeometry } from "three/addons/lines/LineGeometry.js";
+import { ConvexGeometry } from "three/addons/geometries/ConvexGeometry.js";
 
 import { threeDGeoMat, twoDXMat, twoDYMat } from "./constants.js";
 import { getHitBoundaries } from "./helpers.js";
@@ -69,6 +70,49 @@ export function drawTwoDBoxVolume(group, hits) {
   const yAxes = createLine(yPoints, twoDYMat);
 
   group.add(xAxes, yAxes);
+}
+
+/**
+ * Draw trapezoid in 3D space, when given the 4 input points.
+ *
+ * @param {THREE.Group} group - The group to add the trapezoid to.
+ * @param {Object} trapezoid - The trapezoid to draw.
+ */
+export function drawTrapezoid(group, trapezoid) {
+  const topLeft = trapezoid.topLeft;
+  const topRight = trapezoid.topRight;
+  const bottomLeft = trapezoid.bottomLeft;
+  const bottomRight = trapezoid.bottomRight;
+  const position = trapezoid.position;
+
+  // // Calculate the width and height of the trapezoid.
+  // const baseWidth = bottomLeft.x - bottomRight.x;
+  // const topWidth = topLeft.x - topRight.x;
+  // const height = topLeft.y - bottomLeft.y;
+
+  // let trapezoidGeometry = new THREE.CylinderGeometry(
+  //   topWidth, baseWidth, height, 4, 1
+  // ).rotateY(Math.PI / 4);
+
+  // trapezoidGeometry = trapezoidGeometry.toNonIndexed();
+  // trapezoidGeometry.computeVertexNormals();
+
+  // const mesh = new THREE.Mesh(trapezoidGeometry, threeDGeoMat);
+  // mesh.scale.set(width, height, 1.0);
+  // mesh.position.set(position.x, position.y, position.z);
+
+  // group.add(mesh);
+
+  const geometry = new ConvexGeometry([
+    new THREE.Vector3(topLeft.x, topLeft.y, topLeft.z),
+    new THREE.Vector3(topRight.x, topRight.y, topRight.z),
+    new THREE.Vector3(bottomRight.x, bottomRight.y, bottomRight.z),
+    new THREE.Vector3(bottomLeft.x, bottomLeft.y, bottomLeft.z),
+  ]);
+  const mesh = new THREE.Mesh(geometry, threeDGeoMat);
+  mesh.position.set(position.x, position.y, position.z);
+
+  group.add(mesh);
 }
 
 /**

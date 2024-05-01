@@ -106,6 +106,8 @@ convert and parse objects to/from JSON, such that they can be served via the HTT
 
 ## Future Work
 
+- Disable the 2D or 3D view, depending on the event type.
+
 - Fill in the LArSoft helper more: Slices, Clusters.
 
 - Hit widths? Pain with instanced mesh though.
