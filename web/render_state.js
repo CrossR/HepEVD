@@ -15,7 +15,7 @@ import { drawHits, drawParticles } from "./hits.js";
 import { MarkerDataState } from "./marker_data_state.js";
 import { drawLines, drawPoints, drawRings } from "./markers.js";
 import { MCDataState } from "./mc_data_state.js";
-import { drawBox, drawTrapezoid } from "./rendering.js";
+import { drawBox, drawTrapezoids } from "./rendering.js";
 import {
   enableInteractionTypeToggle,
   enableMCToggle,
@@ -183,11 +183,12 @@ export class RenderState {
 
     // Next, any trapezoid volumes.
     if (this.hitDim === "3D") {
-      this.detectorGeometry.volumes
-        .filter((volume) => volume.volumeType === "trapezoid")
-        .forEach((trap) => {
-          drawTrapezoid(this.detGeoGroup, trap);
-        });
+      drawTrapezoids(
+        this.detGeoGroup,
+        this.detectorGeometry.volumes.filter(
+          (volume) => volume.volumeType === "trapezoid"
+        )
+      );
     }
 
     this.detGeoGroup.matrixAutoUpdate = false;

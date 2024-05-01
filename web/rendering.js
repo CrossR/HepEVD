@@ -73,46 +73,89 @@ export function drawTwoDBoxVolume(group, hits) {
 }
 
 /**
- * Draw trapezoid in 3D space, when given the 4 input points.
+ * Draw trapezoids in 3D space, when given the 4 input points.
  *
  * @param {THREE.Group} group - The group to add the trapezoid to.
- * @param {Object} trapezoid - The trapezoid to draw.
+ * @param {Array} trapezoids - The trapezoids to draw.
  */
-export function drawTrapezoid(group, trapezoid) {
-  const topLeft = trapezoid.topLeft;
-  const topRight = trapezoid.topRight;
-  const bottomLeft = trapezoid.bottomLeft;
-  const bottomRight = trapezoid.bottomRight;
-  const position = trapezoid.position;
+export function drawTrapezoids(group, trapezoids) {
+  // Two passes are needed:
+  //  - Find all trapezoids with the same or scaled measurements
+  //  - Draw them all out at once with an InstancedMesh, to reduce draw calls.
+  const meshes = new Map();
 
-  // // Calculate the width and height of the trapezoid.
-  // const baseWidth = bottomLeft.x - bottomRight.x;
-  // const topWidth = topLeft.x - topRight.x;
-  // const height = topLeft.y - bottomLeft.y;
+  trapezoids.forEach((trapezoid) => {
+    const topLeft = trapezoid.topLeft;
+    const topRight = trapezoid.topRight;
+    const bottomLeft = trapezoid.bottomLeft;
 
-  // let trapezoidGeometry = new THREE.CylinderGeometry(
-  //   topWidth, baseWidth, height, 4, 1
-  // ).rotateY(Math.PI / 4);
+    const width = Math.abs(topRight.x - topLeft.x);
+    const height = Math.abs(topLeft.y - bottomLeft.y);
 
-  // trapezoidGeometry = trapezoidGeometry.toNonIndexed();
-  // trapezoidGeometry.computeVertexNormals();
+    if (meshes.has(`${width}-${height}`))
+      meshes.get(`${width}-${height}`).push(trapezoid);
+    else meshes.set(`${width}-${height}`, [trapezoid]);
+  });
 
-  // const mesh = new THREE.Mesh(trapezoidGeometry, threeDGeoMat);
-  // mesh.scale.set(width, height, 1.0);
-  // mesh.position.set(position.x, position.y, position.z);
+  // Now, draw out all the trapezoids.
+  // Make a geometry based on the first object, then instanced mesh the rest.
+  let count = 0;
+  meshes.forEach((trapezoids) => {
 
-  // group.add(mesh);
+    const base = trapezoids[0];
+    const topLeft = base.topLeft;
+    const topRight = base.topRight;
+    const bottomLeft = base.bottomLeft;
+    const bottomRight = base.bottomRight;
 
-  const geometry = new ConvexGeometry([
-    new THREE.Vector3(topLeft.x, topLeft.y, topLeft.z),
-    new THREE.Vector3(topRight.x, topRight.y, topRight.z),
-    new THREE.Vector3(bottomRight.x, bottomRight.y, bottomRight.z),
-    new THREE.Vector3(bottomLeft.x, bottomLeft.y, bottomLeft.z),
-  ]);
-  const mesh = new THREE.Mesh(geometry, threeDGeoMat);
-  mesh.position.set(position.x, position.y, position.z);
+    const geometry = new ConvexGeometry([
+      new THREE.Vector3(topLeft.x, topLeft.y, topLeft.z),
+      new THREE.Vector3(topRight.x, topRight.y, topRight.z),
+      new THREE.Vector3(bottomRight.x, bottomRight.y, bottomRight.z),
+      new THREE.Vector3(bottomLeft.x, bottomLeft.y, bottomLeft.z),
+    ]);
 
-  group.add(mesh);
+    const mesh = new THREE.InstancedMesh(
+      geometry,
+      threeDGeoMat,
+      trapezoids.length
+    );
+    const dummyObject = new THREE.Object3D();
+
+    trapezoids.forEach((trapezoid, index) => {
+
+      // The trapezoids may all have the same geometry, but they are not
+      // in the same position. We need to update the matrix for each one...
+      const pos = trapezoid.position;
+      dummyObject.position.set(pos.x, pos.y, pos.z);
+
+      // As well as rotate it to the correct orientation.
+      // This is done by comparing the first trapezoid's orientation
+      // with the current one.
+      const baseTop = new THREE.Vector3(
+        topRight.x - topLeft.x,
+        topRight.y - topLeft.y,
+        topRight.z - topLeft.z
+      );
+      const newTop = new THREE.Vector3(
+        trapezoid.topRight.x - trapezoid.topLeft.x,
+        trapezoid.topRight.y - trapezoid.topLeft.y,
+        trapezoid.topRight.z - trapezoid.topLeft.z
+      );
+      const angle = newTop.angleTo(baseTop);
+      dummyObject.rotateZ(angle);
+
+      dummyObject.updateMatrix();
+
+      mesh.setMatrixAt(index, dummyObject.matrix);
+      count += 1;
+    });
+
+    mesh.instanceMatrix.needsUpdate = true;
+    group.add(mesh);
+  });
+
+  console.log(`Drawn ${count} trapezoids, out of ${trapezoids.length}`);
 }
 
 /**
