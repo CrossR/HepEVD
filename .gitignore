@@ -50,7 +50,6 @@ example/debugging
 
 # Python bindings
 *.egg-info/
-python_bindings/data/
 python_bindings/build/
 python_bindings/dist/
 python_bindings/hep_evd-*/

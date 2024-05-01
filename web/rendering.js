@@ -6,10 +6,12 @@ import * as THREE from "three";
 import { Line2 } from "three/addons/lines/Line2.js";
 import { LineGeometry } from "three/addons/lines/LineGeometry.js";
 import { ConvexGeometry } from "three/addons/geometries/ConvexGeometry.js";
+import { Lut } from "three/addons/math/Lut.js";
 
 import { threeDGeoMat, twoDXMat, twoDYMat } from "./constants.js";
 import { getHitBoundaries } from "./helpers.js";
 import { draw2DScaleBar } from "./markers.js";
+import { addColourMap } from "./colourmaps.js";
 
 /**
  * Draws a box based on the hit type.
@@ -86,76 +88,48 @@ export function drawTrapezoids(group, trapezoids) {
 
   trapezoids.forEach((trapezoid) => {
     const topLeft = trapezoid.topLeft;
-    const topRight = trapezoid.topRight;
-    const bottomLeft = trapezoid.bottomLeft;
+    const bottomRight = trapezoid.bottomRight;
+    const key = `${topLeft.x}-${topLeft.y}-${bottomRight.x}-${bottomRight.y}`;
 
-    const width = Math.abs(topRight.x - topLeft.x);
-    const height = Math.abs(topLeft.y - bottomLeft.y);
-
-    if (meshes.has(`${width}-${height}`))
-      meshes.get(`${width}-${height}`).push(trapezoid);
-    else meshes.set(`${width}-${height}`, [trapezoid]);
+    if (meshes.has(key)) meshes.get(key).push(trapezoid);
+    else meshes.set(key, [trapezoid]);
   });
 
   // Now, draw out all the trapezoids.
   // Make a geometry based on the first object, then instanced mesh the rest.
-  let count = 0;
-  meshes.forEach((trapezoids) => {
-
-    const base = trapezoids[0];
+  meshes.forEach((traps) => {
+    const base = traps[0];
     const topLeft = base.topLeft;
     const topRight = base.topRight;
     const bottomLeft = base.bottomLeft;
     const bottomRight = base.bottomRight;
 
     const geometry = new ConvexGeometry([
-      new THREE.Vector3(topLeft.x, topLeft.y, topLeft.z),
-      new THREE.Vector3(topRight.x, topRight.y, topRight.z),
-      new THREE.Vector3(bottomRight.x, bottomRight.y, bottomRight.z),
-      new THREE.Vector3(bottomLeft.x, bottomLeft.y, bottomLeft.z),
+      new THREE.Vector3(topLeft.x, topLeft.y, 0),
+      new THREE.Vector3(topRight.x, topRight.y, 0),
+      new THREE.Vector3(bottomRight.x, bottomRight.y, 0),
+      new THREE.Vector3(bottomLeft.x, bottomLeft.y, 0),
     ]);
 
-    const mesh = new THREE.InstancedMesh(
-      geometry,
-      threeDGeoMat,
-      trapezoids.length
-    );
+    const testMat = new THREE.LineBasicMaterial({
+      side: THREE.DoubleSide,
+    });
+    const mesh = new THREE.InstancedMesh(geometry, testMat, traps.length);
     const dummyObject = new THREE.Object3D();
 
-    trapezoids.forEach((trapezoid, index) => {
-
+    traps.forEach((trapezoid, index) => {
       // The trapezoids may all have the same geometry, but they are not
       // in the same position. We need to update the matrix for each one...
       const pos = trapezoid.position;
       dummyObject.position.set(pos.x, pos.y, pos.z);
-
-      // As well as rotate it to the correct orientation.
-      // This is done by comparing the first trapezoid's orientation
-      // with the current one.
-      const baseTop = new THREE.Vector3(
-        topRight.x - topLeft.x,
-        topRight.y - topLeft.y,
-        topRight.z - topLeft.z
-      );
-      const newTop = new THREE.Vector3(
-        trapezoid.topRight.x - trapezoid.topLeft.x,
-        trapezoid.topRight.y - trapezoid.topLeft.y,
-        trapezoid.topRight.z - trapezoid.topLeft.z
-      );
-      const angle = newTop.angleTo(baseTop);
-      dummyObject.rotateZ(angle);
-
       dummyObject.updateMatrix();
 
       mesh.setMatrixAt(index, dummyObject.matrix);
-      count += 1;
     });
 
     mesh.instanceMatrix.needsUpdate = true;
     group.add(mesh);
   });
-
-  console.log(`Drawn ${count} trapezoids, out of ${trapezoids.length}`);
 }
 
 /**
