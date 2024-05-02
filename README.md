@@ -108,6 +108,8 @@ convert and parse objects to/from JSON, such that they can be served via the HTT
 
 - Disable the 2D or 3D view, depending on the event type.
 
+- Toggle per-detector geometry elements: Think up better ways to group things.
+
 - Fill in the LArSoft helper more: Slices, Clusters.
 
 - Hit widths? Pain with instanced mesh though.
