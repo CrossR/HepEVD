@@ -7,7 +7,6 @@
 
 import {
   getData,
-  isRunningOnGitHubPages,
   hepEVD_GLOBAL_STATE,
 } from "./data_loader.js";
 
@@ -23,7 +22,7 @@ export async function updateStateUI(renderStates) {
   const stateIdPairs = await getAllStateInfo();
 
   // Only show the state swapper if there are multiple states.
-  if (stateIdPairs.length === 1) {
+  if (stateIdPairs === null || stateIdPairs.length === 1) {
     stateDiv.style.display = "none";
     return;
   }

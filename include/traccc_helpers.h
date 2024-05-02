@@ -71,7 +71,8 @@ static void setHepEVDGeometry(const detector_t& detector) {
 
             // TODO: Deal with the relevant shapes...o
             // : trapezoid2D, cylinder2D, ring2D
-            std::cout << surface.shape_name();
+            const auto shape_name(surface.shape_name());
+            std::cout << shape_name;
 
             if (surface.is_portal()) {
                 std::cout << " : Portal" << std::endl;
@@ -83,8 +84,9 @@ static void setHepEVDGeometry(const detector_t& detector) {
             const auto centroid(surface.transform(gctx).point_to_global(surface.centroid()));
             const Position position({(double) centroid[0], (double) centroid[1], (double) centroid[2]});
 
-            if (surface.shape_name() == "trapezoid2D") {
-                const auto vertices(surface.template visit_mask<surface_converter>(surface.transform(gctx)));
+            if (shape_name == "trapezoid2D") {
+                auto vertices(surface.template visit_mask<surface_converter>(surface.transform(gctx)));
+                vertices[0].z = volume_id;
                 TrapezoidVolume trapezoid(position, vertices);
                 volumes.push_back(trapezoid);
             }

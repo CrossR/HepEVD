@@ -99,6 +99,19 @@ export class RenderState {
   }
 
   /**
+   * Return the scene size, collated from all the individual groups.
+   * @returns {number} The size of the scene.
+   */
+  get sceneSize() {
+    return (
+      this.detGeoGroup.children.length +
+      this.hitGroup.children.length +
+      this.mcHitGroup.children.length +
+      this.markerGroup.children.length
+    );
+  }
+
+  /**
    * Setup event listeners. This is mainly used for hooking up rendering on change.
    */
   addEventListener(name, callback) {

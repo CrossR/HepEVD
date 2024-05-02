@@ -93,7 +93,7 @@ const renderStates = new Map([
 ]);
 
 // Prefer drawing 3D hits, but draw 2D if only option.
-const defaultDraw = threeDRenderer.hitSize != 0 ? "3D" : "2D";
+const defaultDraw = threeDRenderer.hitSize < twoDRenderer.hitSize ? "2D" : "3D";
 
 // For each of the 2D + 3D renderers, setup and render the geometry and hits,
 // but only show the default one, as picked above.

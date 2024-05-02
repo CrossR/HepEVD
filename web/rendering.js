@@ -3,15 +3,18 @@
 //
 
 import * as THREE from "three";
+import { ConvexGeometry } from "three/addons/geometries/ConvexGeometry.js";
 import { Line2 } from "three/addons/lines/Line2.js";
 import { LineGeometry } from "three/addons/lines/LineGeometry.js";
-import { ConvexGeometry } from "three/addons/geometries/ConvexGeometry.js";
-import { Lut } from "three/addons/math/Lut.js";
 
-import { threeDGeoMat, twoDXMat, twoDYMat } from "./constants.js";
+import {
+  threeDGeoMat,
+  threeDTrapezoidMat,
+  twoDXMat,
+  twoDYMat,
+} from "./constants.js";
 import { getHitBoundaries } from "./helpers.js";
 import { draw2DScaleBar } from "./markers.js";
-import { addColourMap } from "./colourmaps.js";
 
 /**
  * Draws a box based on the hit type.
@@ -111,10 +114,11 @@ export function drawTrapezoids(group, trapezoids) {
       new THREE.Vector3(bottomLeft.x, bottomLeft.y, 0),
     ]);
 
-    const testMat = new THREE.LineBasicMaterial({
-      side: THREE.DoubleSide,
-    });
-    const mesh = new THREE.InstancedMesh(geometry, testMat, traps.length);
+    const mesh = new THREE.InstancedMesh(
+      geometry,
+      threeDTrapezoidMat,
+      traps.length
+    );
     const dummyObject = new THREE.Object3D();
 
     traps.forEach((trapezoid, index) => {

@@ -12,6 +12,9 @@ import { LineMaterial } from "three/addons/lines/LineMaterial.js";
 export const threeDGeoMat = new THREE.LineBasicMaterial({
   color: "darkred",
 });
+export const threeDTrapezoidMat = new THREE.LineBasicMaterial({
+  side: THREE.DoubleSide,
+});
 export const twoDXMat = new LineMaterial({
   color: "darkred",
   linewidth: 0.002,
