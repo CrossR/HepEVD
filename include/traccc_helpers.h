@@ -31,29 +31,26 @@ namespace {
 /// to the mask.
 struct surface_converter {
     template <typename mask_group_t, typename index_t, typename transform_t>
-    inline auto operator()(const mask_group_t& mask_group,
-                           const index_t& index,
-                           const transform_t& transform) const {
+    inline auto operator()(const mask_group_t &mask_group, const index_t &index, const transform_t &transform) const {
 
         const auto vertices(mask_group[index].vertices(10u));
         Positions positions;
         for (std::size_t i = 0; i < vertices.size(); ++i) {
             const auto vertex(transform.point_to_global(vertices[i]));
-            Position pos({(double) vertex[0], (double) vertex[1], (double) vertex[2]});
+            Position pos({(double)vertex[0], (double)vertex[1], (double)vertex[2]});
             positions.push_back(pos);
         }
 
         return positions;
     }
 };
-}  // namespace
+} // namespace
 
 // Set the HepEVD geometry by pulling the relevant information from the
 // detray detector_t object.
 // We need this to be templated on the detector_t object, as the detray
 // detector_t object can be different for each detector.
-template<typename detector_t>
-static void setHepEVDGeometry(const detector_t& detector) {
+template <typename detector_t> static void setHepEVDGeometry(const detector_t &detector) {
 
     if (isServerInitialised())
         return;
@@ -62,27 +59,17 @@ static void setHepEVDGeometry(const detector_t& detector) {
 
     int volume_id(0);
     for (const auto &vol_desc : detector.volumes()) {
-        std::cout << "Volume ID: " << volume_id << std::endl;
         ++volume_id;
         int surface_id(0);
         const auto volume = detray::detector_volume{detector, vol_desc};
         for (const auto &surf_desc : volume.surfaces()) {
             const auto surface = detray::surface{detector, surf_desc};
 
-            // TODO: Deal with the relevant shapes...o
-            // : trapezoid2D, cylinder2D, ring2D
             const auto shape_name(surface.shape_name());
-            std::cout << shape_name;
-
-            if (surface.is_portal()) {
-                std::cout << " : Portal" << std::endl;
-            } else {
-                std::cout << " : Not a portal" << std::endl;
-            }
 
             auto gctx(typename detector_t::geometry_context{});
             const auto centroid(surface.transform(gctx).point_to_global(surface.centroid()));
-            const Position position({(double) centroid[0], (double) centroid[1], (double) centroid[2]});
+            const Position position({(double)centroid[0], (double)centroid[1], (double)centroid[2]});
 
             if (shape_name == "trapezoid2D") {
                 auto vertices(surface.template visit_mask<surface_converter>(surface.transform(gctx)));
@@ -91,12 +78,36 @@ static void setHepEVDGeometry(const detector_t& detector) {
                 volumes.push_back(trapezoid);
             }
 
+            // TODO: Deal with other relevant shapes...
+            // : rectangle2D, cylinder2D, ring2D etc
+
             surface_id++;
         }
     }
 
     hepEVDServer = new HepEVDServer(DetectorGeometry(volumes));
-    hepEVDServer->startServer();
+}
+
+// Add traccc::Spacepoints to the HepEVD server.
+static void addSpacepoints(const vecmem::data::vector_view<traccc::spacepoint> &spacePoints, std::string label = "") {
+
+    if (!isServerInitialised())
+        return;
+
+    Hits hits;
+
+    for (unsigned int i = 0; i < spacePoints.size(); i++) {
+        const auto spacePoint = spacePoints.ptr()[i];
+        Hit *hit = new Hit({spacePoint.x(), spacePoint.y(), spacePoint.z()}, 0.0);
+
+        if (label != "")
+            hit->setLabel(label);
+
+        hit->setDim(THREE_D);
+        hits.push_back(hit);
+    }
+
+    hepEVDServer->addHits(hits);
 }
 
 }; // namespace HepEVD
