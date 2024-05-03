@@ -76,6 +76,43 @@ inline void to_json(json &j, const EventStates &states) {
     }
 }
 
+// Configuration for the GUI, such as what to show and what not to show.
+// This is only really useful when you want to overwrite some default settings in the GUI.
+// For example, you may know you do not need a 2D view, so you can turn it off.
+// Or edit default materials and colors.
+class GUIConfig {
+  public:
+    GUIConfig() {}
+
+    struct Material {
+        std::string colour;
+        std::string opacity;
+        float size;
+
+        NLOHMANN_DEFINE_TYPE_INTRUSIVE(Material, colour, opacity, size);
+    };
+
+    bool showParticles = true;
+    bool showHits = true;
+    bool showMCHits = true;
+    bool showMarkers = true;
+    bool showMCParticles = true;
+
+    bool show2D = true;
+    bool show3D = true;
+
+    bool renderGeometry = true;
+
+    Material detector;
+    Material hits;
+
+    // Only need a to JSON method, as we don't need to read in the state.
+    // We also only want to pass the metadata, not the actual data.
+    NLOHMANN_DEFINE_TYPE_INTRUSIVE(GUIConfig, showParticles, showHits, showMCHits, showMarkers, showMCParticles, show2D,
+                                   show3D, renderGeometry, detector, hits);
+
+};
+
 } // namespace HepEVD
 
 #endif

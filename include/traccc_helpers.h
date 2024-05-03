@@ -93,6 +93,13 @@ template <typename detector_t> static void setHepEVDGeometry(const detector_t &d
     }
 
     hepEVDServer = new HepEVDServer(DetectorGeometry(volumes));
+
+    // Since this function needs to be called for HepEVD to work with traccc, lets also do some quick setup.
+    // Lets set a few GUI options, just to make our events look a bit nicer, as compared to the more LArTPC
+    // focused defaults.
+    hepEVDServer->getConfig()->hits.size = 5.0;
+    hepEVDServer->getConfig()->hits.colour = "red";
+    hepEVDServer->getConfig()->show2D = false;
 }
 
 // Add traccc::Spacepoints to the HepEVD server.
