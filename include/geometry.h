@@ -19,9 +19,10 @@ using json = nlohmann::json;
 
 namespace HepEVD {
 
-enum VolumeType { BOX, SPHERE, CYLINDER, TRAPEZOID };
-NLOHMANN_JSON_SERIALIZE_ENUM(VolumeType,
-                             {{BOX, "box"}, {SPHERE, "sphere"}, {CYLINDER, "cylinder"}, {TRAPEZOID, "trapezoid"}});
+enum VolumeType { BOX, SPHERE, CYLINDER, TRAPEZOID, RECTANGLE2D };
+NLOHMANN_JSON_SERIALIZE_ENUM(
+    VolumeType,
+    {{BOX, "box"}, {SPHERE, "sphere"}, {CYLINDER, "cylinder"}, {TRAPEZOID, "trapezoid"}, {RECTANGLE2D, "rectangle2D"}})
 
 // Detector geometry volume to represent any 3D box...
 class BoxVolume {
@@ -135,13 +136,42 @@ class TrapezoidVolume {
         j.at("bottomRight").get_to(trapezoid.bottomRight);
     }
 
-  private:
+  protected:
     Position position;
     Position topLeft, topRight, bottomLeft, bottomRight;
 };
 
+// Rectangle2D volume...
+// These are split out from the Trapezoid + Box volumes as they are
+// treated differently (mostly because they are 2D, but rendered in 3D).
+// Based on the TrapezoidVolume class, inheriting from it.
+class Rectangle2DVolume : public TrapezoidVolume {
+    using TrapezoidVolume::TrapezoidVolume;
+
+  public:
+    static const VolumeType volumeType = RECTANGLE2D;
+
+    // Use custom to/from_json to allow including the volume type.
+    friend void to_json(json &j, const Rectangle2DVolume &rect) {
+        j["volumeType"] = RECTANGLE2D;
+        j["position"] = rect.getCenter();
+        j["topLeft"] = rect.getTopLeft();
+        j["topRight"] = rect.getTopRight();
+        j["bottomLeft"] = rect.getBottomLeft();
+        j["bottomRight"] = rect.getBottomRight();
+    }
+
+    friend void from_json(const json &j, Rectangle2DVolume &rect) {
+        j.at("position").get_to(rect.position);
+        j.at("topLeft").get_to(rect.topLeft);
+        j.at("topRight").get_to(rect.topRight);
+        j.at("bottomLeft").get_to(rect.bottomLeft);
+        j.at("bottomRight").get_to(rect.bottomRight);
+    }
+};
+
 // Volumes vector to hold all possible detector geometry volumes.
-using AllVolumes = std::variant<BoxVolume, CylinderVolume, TrapezoidVolume>;
+using AllVolumes = std::variant<BoxVolume, CylinderVolume, TrapezoidVolume, Rectangle2DVolume>;
 using Volumes = std::vector<AllVolumes>;
 using VolumeMap = std::vector<std::pair<VolumeType, std::vector<double>>>;
 

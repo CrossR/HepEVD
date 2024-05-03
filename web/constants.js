@@ -13,7 +13,7 @@ export const threeDGeoMat = new THREE.LineBasicMaterial({
   color: "darkred",
 });
 export const threeDTrapezoidMat = new THREE.LineBasicMaterial({
-  side: THREE.DoubleSide,
+  side: THREE.FrontSide,
 });
 export const twoDXMat = new LineMaterial({
   color: "darkred",

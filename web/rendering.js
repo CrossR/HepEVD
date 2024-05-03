@@ -98,6 +98,10 @@ export function drawTrapezoids(group, trapezoids) {
     else meshes.set(key, [trapezoid]);
   });
 
+  const getVector = (point) => {
+    return new THREE.Vector3(point.x, point.y, 0.0);
+  };
+
   // Now, draw out all the trapezoids.
   // Make a geometry based on the first object, then instanced mesh the rest.
   meshes.forEach((traps) => {
@@ -108,10 +112,10 @@ export function drawTrapezoids(group, trapezoids) {
     const bottomRight = base.bottomRight;
 
     const geometry = new ConvexGeometry([
-      new THREE.Vector3(topLeft.x, topLeft.y, 0),
-      new THREE.Vector3(topRight.x, topRight.y, 0),
-      new THREE.Vector3(bottomRight.x, bottomRight.y, 0),
-      new THREE.Vector3(bottomLeft.x, bottomLeft.y, 0),
+      getVector(topLeft),
+      getVector(topRight),
+      getVector(bottomRight),
+      getVector(bottomLeft),
     ]);
 
     const mesh = new THREE.InstancedMesh(
@@ -129,9 +133,37 @@ export function drawTrapezoids(group, trapezoids) {
       dummyObject.updateMatrix();
 
       mesh.setMatrixAt(index, dummyObject.matrix);
+
+      if (trapezoid === base) mesh.setColorAt(index, new THREE.Color(0xff0000));
+      else mesh.setColorAt(index, new THREE.Color(0x00ff00));
     });
 
     mesh.instanceMatrix.needsUpdate = true;
+    group.add(mesh);
+  });
+}
+
+/**
+ * Draw rectangles in 3D space, when given the 4 input points.
+ *
+ * @param {THREE.Group} group - The group to add the rectangles to.
+ * @param {Array} rectangles - The rectangles to draw.
+ */
+export function drawRectangles(group, rectangles) {
+  rectangles.forEach((rect) => {
+    const topLeft = rect.topLeft;
+    const topRight = rect.topRight;
+    const bottomLeft = rect.bottomLeft;
+    const bottomRight = rect.bottomRight;
+
+    const geometry = new ConvexGeometry([
+      new THREE.Vector3(topLeft.x, topLeft.y, topLeft.z),
+      new THREE.Vector3(topRight.x, topRight.y, topRight.z),
+      new THREE.Vector3(bottomRight.x, bottomRight.y, bottomRight.z),
+      new THREE.Vector3(bottomLeft.x, bottomLeft.y, bottomLeft.z),
+    ]);
+
+    const mesh = new THREE.Mesh(geometry, threeDTrapezoidMat);
     group.add(mesh);
   });
 }

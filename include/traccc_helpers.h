@@ -27,8 +27,6 @@ namespace HepEVD {
 // and the HepEVD objects.
 
 namespace {
-/// @brief A functor to set the proto surfaces type and bounds to be equivalent
-/// to the mask.
 struct surface_converter {
     template <typename mask_group_t, typename index_t, typename transform_t>
     inline auto operator()(const mask_group_t &mask_group, const index_t &index, const transform_t &transform) const {
@@ -56,6 +54,7 @@ template <typename detector_t> static void setHepEVDGeometry(const detector_t &d
         return;
 
     Volumes volumes;
+    std::map<std::string, int> missedSurfacesTypes;
 
     int volume_id(0);
     for (const auto &vol_desc : detector.volumes()) {
@@ -68,21 +67,29 @@ template <typename detector_t> static void setHepEVDGeometry(const detector_t &d
             const auto shape_name(surface.shape_name());
 
             auto gctx(typename detector_t::geometry_context{});
-            const auto centroid(surface.transform(gctx).point_to_global(surface.centroid()));
+            // const auto centroid(surface.transform(gctx).point_to_global(surface.centroid()));
+            const auto centroid(surface.center(gctx));
             const Position position({(double)centroid[0], (double)centroid[1], (double)centroid[2]});
 
             if (shape_name == "trapezoid2D") {
-                auto vertices(surface.template visit_mask<surface_converter>(surface.transform(gctx)));
-                vertices[0].z = volume_id;
+                const auto vertices(surface.template visit_mask<surface_converter>(surface.transform(gctx)));
                 TrapezoidVolume trapezoid(position, vertices);
                 volumes.push_back(trapezoid);
+            } else if (shape_name == "rectangle2D") {
+                const auto vertices(surface.template visit_mask<surface_converter>(surface.transform(gctx)));
+                Rectangle2DVolume rect(position, vertices);
+                volumes.push_back(rect);
+            } else {
+                missedSurfacesTypes[shape_name]++;
             }
-
-            // TODO: Deal with other relevant shapes...
-            // : rectangle2D, cylinder2D, ring2D etc
 
             surface_id++;
         }
+    }
+
+    for (const auto &missedSurface : missedSurfacesTypes) {
+        std::cout << "Missed surface type: " << missedSurface.first << " (" << missedSurface.second << " surfaces)"
+                  << std::endl;
     }
 
     hepEVDServer = new HepEVDServer(DetectorGeometry(volumes));
