@@ -5,10 +5,7 @@
 // TODO: Won't work on GitHub pages, since it's not a server.
 //       Need to figure out best way to supply multiple states there.
 
-import {
-  getData,
-  hepEVD_GLOBAL_STATE,
-} from "./data_loader.js";
+import { getData, hepEVD_GLOBAL_STATE } from "./data_loader.js";
 
 /**
  * Updates the UI for the state swapper based on the current state.

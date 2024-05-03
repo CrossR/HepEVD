@@ -62,7 +62,7 @@ export class RenderState {
       group.matrixWorldAutoUpdate = false;
 
       return group;
-    }
+    };
 
     this.detGeoGroup = getGroup();
     this.hitGroup = getGroup();
@@ -214,7 +214,7 @@ export class RenderState {
         this.detGeoGroup,
         this.detectorGeometry.volumes.filter(
           (volume) => volume.volumeType === "rectangle2D"
-        ),
+        )
       );
     }
 

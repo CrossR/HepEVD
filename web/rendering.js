@@ -138,7 +138,11 @@ export function drawTrapezoids(group, trapezoids) {
       const xOffset = pos.x - basePos.x;
       const yOffset = pos.y - basePos.y;
       const zOffset = pos.z - basePos.z;
-      const offset = new THREE.Matrix4().makeTranslation(xOffset, yOffset, zOffset);
+      const offset = new THREE.Matrix4().makeTranslation(
+        xOffset,
+        yOffset,
+        zOffset
+      );
 
       mesh.setMatrixAt(index, offset);
 
@@ -161,7 +165,6 @@ export function drawTrapezoids(group, trapezoids) {
   const line = new THREE.LineSegments(edges, threeDTrapezoidMat);
   group.add(line);
 }
-
 
 /**
  * Animates the renderer with the given states and updates the stats.

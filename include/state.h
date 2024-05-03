@@ -86,31 +86,21 @@ class GUIConfig {
 
     struct Material {
         std::string colour;
-        std::string opacity;
-        float size;
+        float opacity = 0.0;
+        float size = 0.0;
 
         NLOHMANN_DEFINE_TYPE_INTRUSIVE(Material, colour, opacity, size);
     };
 
-    bool showParticles = true;
-    bool showHits = true;
-    bool showMCHits = true;
-    bool showMarkers = true;
-    bool showMCParticles = true;
-
     bool show2D = true;
     bool show3D = true;
 
-    bool renderGeometry = true;
-
-    Material detector;
     Material hits;
 
     // Only need a to JSON method, as we don't need to read in the state.
     // We also only want to pass the metadata, not the actual data.
     NLOHMANN_DEFINE_TYPE_INTRUSIVE(GUIConfig, showParticles, showHits, showMCHits, showMarkers, showMCParticles, show2D,
                                    show3D, renderGeometry, detector, hits);
-
 };
 
 } // namespace HepEVD

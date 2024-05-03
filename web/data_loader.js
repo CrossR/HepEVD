@@ -86,9 +86,10 @@ async function loadServerData() {
   let markers = getDataWithProgress("markers");
   let particles = getDataWithProgress("particles");
   let stateInfo = getDataWithProgress("stateInfo");
+  let config = getDataWithProgress("config");
 
   // Wait for all the data to be loaded.
-  [hits, mcHits, markers, particles, detectorGeometry, stateInfo] =
+  [hits, mcHits, markers, particles, detectorGeometry, stateInfo, config] =
     await Promise.all([
       hits,
       mcHits,
@@ -96,6 +97,7 @@ async function loadServerData() {
       particles,
       detectorGeometry,
       stateInfo,
+      config,
     ]);
 
   return {
@@ -105,6 +107,7 @@ async function loadServerData() {
     particles: particles,
     detectorGeometry: detectorGeometry,
     stateInfo: stateInfo,
+    config: config,
   };
 }
 
@@ -125,6 +128,7 @@ async function updateExternalData() {
     particles: newStateData.particles,
     detectorGeometry: hepEVD_GLOBAL_STATE.detectorGeometry,
     stateInfo: newStateData.stateInfo || { mcTruth: "" },
+    config: newStateData.guiConfig || {},
   };
 }
 
@@ -188,6 +192,7 @@ async function loadExternalData(url) {
     particles: lastStateData.particles,
     detectorGeometry: result.detectorGeometry,
     stateInfo: lastStateData.stateInfo || { mcTruth: "" },
+    guiConfig: lastStateData.guiConfig || {},
   };
 }
 
