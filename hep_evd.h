@@ -24,4 +24,8 @@
 #include "include/larsoft_helpers.h"
 #endif
 
+#ifdef HEP_EVD_TRACCC_HELPERS
+#include "include/traccc_helpers.h"
+#endif
+
 #endif // HEP_EVD_H

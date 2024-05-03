@@ -19,10 +19,12 @@ using json = nlohmann::json;
 
 namespace HepEVD {
 
-enum VolumeType { BOX, SPHERE, CYLINDER };
-NLOHMANN_JSON_SERIALIZE_ENUM(VolumeType, {{BOX, "box"}, {SPHERE, "sphere"}, {CYLINDER, "cylinder"}});
+enum VolumeType { BOX, SPHERE, CYLINDER, TRAPEZOID, RECTANGLE2D };
+NLOHMANN_JSON_SERIALIZE_ENUM(
+    VolumeType,
+    {{BOX, "box"}, {SPHERE, "sphere"}, {CYLINDER, "cylinder"}, {TRAPEZOID, "trapezoid"}, {RECTANGLE2D, "rectangle2D"}})
 
-// Detector geometry volume to represent any 3D box.
+// Detector geometry volume to represent any 3D box...
 class BoxVolume {
   public:
     static const VolumeType volumeType = BOX;
@@ -60,8 +62,116 @@ class BoxVolume {
     double xWidth, yWidth, zWidth;
 };
 
+// And a 3D cylinder...
+class CylinderVolume {
+  public:
+    static const VolumeType volumeType = CYLINDER;
+    static const int ARG_COUNT = 3;
+
+    CylinderVolume() {}
+    CylinderVolume(const Position &pos, double radius, double height) : position(pos), radius(radius), height(height) {}
+    CylinderVolume(const PosArray &pos, double radius, double height) : position(pos), radius(radius), height(height) {}
+
+    Position getCenter() const { return this->position; }
+    double getRadius() const { return this->radius; }
+    double getHeight() const { return this->height; }
+
+    // Use custom to/from_json to allow including the volume type.
+    friend void to_json(json &j, const CylinderVolume &cylinder) {
+        j["volumeType"] = CYLINDER;
+        j["position"] = cylinder.position;
+        j["radius"] = cylinder.radius;
+        j["height"] = cylinder.height;
+    }
+
+    friend void from_json(const json &j, CylinderVolume &cylinder) {
+        j.at("position").get_to(cylinder.position);
+        j.at("radius").get_to(cylinder.radius);
+        j.at("height").get_to(cylinder.height);
+    }
+
+  private:
+    Position position;
+    double radius, height;
+};
+
+// Trapezoid volume...
+class TrapezoidVolume {
+  public:
+    static const VolumeType volumeType = TRAPEZOID;
+    static const int ARG_COUNT = 5;
+
+    TrapezoidVolume() {}
+    TrapezoidVolume(const Position &pos, const Position &topLeft, const Position &topRight, const Position &bottomLeft,
+                    const Position &bottomRight)
+        : position(pos), topLeft(topLeft), topRight(topRight), bottomLeft(bottomLeft), bottomRight(bottomRight) {}
+    TrapezoidVolume(const PosArray &pos, const PosArray &topLeft, const PosArray &topRight, const PosArray &bottomLeft,
+                    const PosArray &bottomRight)
+        : position(pos), topLeft(topLeft), topRight(topRight), bottomLeft(bottomLeft), bottomRight(bottomRight) {}
+    TrapezoidVolume(const Position &pos, const std::vector<Position> &vertices)
+        : position(pos), topLeft(vertices[0]), topRight(vertices[1]), bottomLeft(vertices[2]),
+          bottomRight(vertices[3]) {}
+
+    Position getCenter() const { return this->position; }
+    Position getTopLeft() const { return this->topLeft; }
+    Position getTopRight() const { return this->topRight; }
+    Position getBottomLeft() const { return this->bottomLeft; }
+    Position getBottomRight() const { return this->bottomRight; }
+
+    // Use custom to/from_json to allow including the volume type.
+    friend void to_json(json &j, const TrapezoidVolume &trapezoid) {
+        j["volumeType"] = TRAPEZOID;
+        j["position"] = trapezoid.position;
+        j["topLeft"] = trapezoid.topLeft;
+        j["topRight"] = trapezoid.topRight;
+        j["bottomLeft"] = trapezoid.bottomLeft;
+        j["bottomRight"] = trapezoid.bottomRight;
+    }
+
+    friend void from_json(const json &j, TrapezoidVolume &trapezoid) {
+        j.at("position").get_to(trapezoid.position);
+        j.at("topLeft").get_to(trapezoid.topLeft);
+        j.at("topRight").get_to(trapezoid.topRight);
+        j.at("bottomLeft").get_to(trapezoid.bottomLeft);
+        j.at("bottomRight").get_to(trapezoid.bottomRight);
+    }
+
+  protected:
+    Position position;
+    Position topLeft, topRight, bottomLeft, bottomRight;
+};
+
+// Rectangle2D volume...
+// These are split out from the Trapezoid + Box volumes as they are
+// treated differently (mostly because they are 2D, but rendered in 3D).
+// Based on the TrapezoidVolume class, inheriting from it.
+class Rectangle2DVolume : public TrapezoidVolume {
+    using TrapezoidVolume::TrapezoidVolume;
+
+  public:
+    static const VolumeType volumeType = RECTANGLE2D;
+
+    // Use custom to/from_json to allow including the volume type.
+    friend void to_json(json &j, const Rectangle2DVolume &rect) {
+        j["volumeType"] = RECTANGLE2D;
+        j["position"] = rect.getCenter();
+        j["topLeft"] = rect.getTopLeft();
+        j["topRight"] = rect.getTopRight();
+        j["bottomLeft"] = rect.getBottomLeft();
+        j["bottomRight"] = rect.getBottomRight();
+    }
+
+    friend void from_json(const json &j, Rectangle2DVolume &rect) {
+        j.at("position").get_to(rect.position);
+        j.at("topLeft").get_to(rect.topLeft);
+        j.at("topRight").get_to(rect.topRight);
+        j.at("bottomLeft").get_to(rect.bottomLeft);
+        j.at("bottomRight").get_to(rect.bottomRight);
+    }
+};
+
 // Volumes vector to hold all possible detector geometry volumes.
-using AllVolumes = std::variant<BoxVolume>;
+using AllVolumes = std::variant<BoxVolume, CylinderVolume, TrapezoidVolume, Rectangle2DVolume>;
 using Volumes = std::vector<AllVolumes>;
 using VolumeMap = std::vector<std::pair<VolumeType, std::vector<double>>>;
 

@@ -102,6 +102,9 @@ class HepEVDServer {
     void startServer();
     void stopServer();
 
+    // GUI configuration.
+    GUIConfig *getConfig() { return &this->config; }
+
     // Pass over the required event information.
     // TODO: Verify the information passed over.
     bool addHits(const Hits &inputHits) {
@@ -191,6 +194,7 @@ class HepEVDServer {
     DetectorGeometry geometry;
     unsigned int currentState;
     EventStates eventStates;
+    GUIConfig config;
 };
 
 // Run the actual server, spinning up the API endpoints and serving the
@@ -389,6 +393,9 @@ inline void HepEVDServer::startServer() {
 
     // Management controls...
     this->server.Get("/quit", [&](const Request &, Response &) { this->server.stop(); });
+    this->server.Get("/config", [&](const Request &, Response &res) {
+        res.set_content(json(*this->getConfig()).dump(), "application/json");
+    });
 
     // Finally, mount the www folder, which contains the actual HepEVD JS code.
     this->server.set_mount_point("/", WEB_FOLDER());

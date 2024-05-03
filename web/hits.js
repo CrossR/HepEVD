@@ -82,6 +82,7 @@ export function drawHits(
 
   hitMesh.instanceMatrix.needsUpdate = true;
   hitMesh.instanceColor.needsUpdate = true;
+  hitMesh.matrixAutoUpdate = false;
 
   group.add(hitMesh);
 }

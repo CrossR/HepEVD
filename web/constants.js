@@ -12,6 +12,15 @@ import { LineMaterial } from "three/addons/lines/LineMaterial.js";
 export const threeDGeoMat = new THREE.LineBasicMaterial({
   color: "darkred",
 });
+export const threeDTrapezoidMat = new THREE.LineBasicMaterial({
+  side: THREE.FrontSide,
+  color: "gray",
+  transparent: true,
+  opacity: 0.1,
+  depthWrite: false,
+  depthTest: false,
+  alphaTest: 0.5,
+});
 export const twoDXMat = new LineMaterial({
   color: "darkred",
   linewidth: 0.002,
@@ -126,3 +135,39 @@ export const INTERACTION_TYPE_SCORE = {
   Cosmic: 2,
   Other: 3,
 };
+
+//==============================================================================
+// Apply GUI Config
+//==============================================================================
+
+export function applyConfig(config, renderStates) {
+
+  // Check isn't an empty object.
+  if (Object.keys(config).length === 0) {
+    return;
+  }
+
+  if (! config.show2D) {
+    renderStates.get("2D").scene.visible = false;
+  }
+  if (! config.show3D) {
+    renderStates.get("3D").scene.visible = false;
+  }
+
+  if (config.hits.colour !== "") {
+    HIT_CONFIG["2D"].materialHit.color.set(config.hits.colour);
+    HIT_CONFIG["3D"].materialHit.color.set(config.hits.colour);
+  }
+
+  if (config.hits.size !== 0.0) {
+    HIT_CONFIG["2D"].hitSize = config.hits.size;
+    HIT_CONFIG["3D"].hitSize = config.hits.size;
+  }
+
+  if (config.hits.opacity !== 0.0) {
+    HIT_CONFIG["2D"].materialHit.opacity = config.hits.opacity;
+    HIT_CONFIG["3D"].materialHit.opacity = config.hits.opacity;
+  }
+
+  // TODO: Fix UI buttons if the 2D or 3D scene is hidden.
+}

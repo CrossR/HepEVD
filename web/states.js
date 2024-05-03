@@ -5,11 +5,7 @@
 // TODO: Won't work on GitHub pages, since it's not a server.
 //       Need to figure out best way to supply multiple states there.
 
-import {
-  getData,
-  isRunningOnGitHubPages,
-  hepEVD_GLOBAL_STATE,
-} from "./data_loader.js";
+import { getData, hepEVD_GLOBAL_STATE } from "./data_loader.js";
 
 /**
  * Updates the UI for the state swapper based on the current state.
@@ -23,7 +19,7 @@ export async function updateStateUI(renderStates) {
   const stateIdPairs = await getAllStateInfo();
 
   // Only show the state swapper if there are multiple states.
-  if (stateIdPairs.length === 1) {
+  if (stateIdPairs === null || stateIdPairs.length === 1) {
     stateDiv.style.display = "none";
     return;
   }

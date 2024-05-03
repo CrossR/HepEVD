@@ -87,6 +87,12 @@ class Position {
         return;
     }
 
+    // Allow for easy printing of positions.
+    friend std::ostream &operator<<(std::ostream &os, const Position &pos) {
+        os << "(" << pos.x << ", " << pos.y << ", " << pos.z << ")";
+        return os;
+    }
+
     double x, y, z;
     HitDimension dim = THREE_D;
     HitType hitType = GENERAL;

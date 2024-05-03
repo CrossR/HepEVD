@@ -5,7 +5,7 @@
 import * as THREE from "three";
 import Stats from "three/addons/libs/stats.module.js";
 
-import { THEME } from "./constants.js";
+import { THEME, applyConfig } from "./constants.js";
 import { getData } from "./data_loader.js";
 import { RenderState } from "./render_state.js";
 import { animate, onWindowResize } from "./rendering.js";
@@ -59,7 +59,7 @@ document.body.appendChild(renderer.domElement);
 document.body.appendChild(stats.dom);
 
 // Now we need to wait for the data to load...
-const { hits, mcHits, markers, particles, detectorGeometry, stateInfo } =
+const { hits, mcHits, markers, particles, detectorGeometry, stateInfo, config } =
   await data;
 
 // And use that data to setup the initial rendering states.
@@ -93,7 +93,10 @@ const renderStates = new Map([
 ]);
 
 // Prefer drawing 3D hits, but draw 2D if only option.
-const defaultDraw = threeDRenderer.hitSize != 0 ? "3D" : "2D";
+const defaultDraw = threeDRenderer.hitSize < twoDRenderer.hitSize ? "2D" : "3D";
+
+// Process any GUI config overrides...
+applyConfig(config, renderStates);
 
 // For each of the 2D + 3D renderers, setup and render the geometry and hits,
 // but only show the default one, as picked above.

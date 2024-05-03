@@ -3,10 +3,17 @@
 //
 
 import * as THREE from "three";
+import { ConvexGeometry } from "three/addons/geometries/ConvexGeometry.js";
 import { Line2 } from "three/addons/lines/Line2.js";
 import { LineGeometry } from "three/addons/lines/LineGeometry.js";
+import * as BufferGeometryUtils from "three/addons/utils/BufferGeometryUtils.js";
 
-import { threeDGeoMat, twoDXMat, twoDYMat } from "./constants.js";
+import {
+  threeDGeoMat,
+  threeDTrapezoidMat,
+  twoDXMat,
+  twoDYMat,
+} from "./constants.js";
 import { getHitBoundaries } from "./helpers.js";
 import { draw2DScaleBar } from "./markers.js";
 
@@ -72,6 +79,94 @@ export function drawTwoDBoxVolume(group, hits) {
 }
 
 /**
+ * Draw trapezoids in 3D space, when given the 4 input points.
+ *
+ * @param {THREE.Group} group - The group to add the trapezoid to.
+ * @param {Array} trapezoids - The trapezoids to draw.
+ */
+export function drawTrapezoids(group, trapezoids) {
+  const meshes = new Map();
+
+  // First, find all the trapezoids that share the same geometry.
+  // Can do that by checking all the points, and calculating a key
+  // based on the height and width of the trapezoid.
+  trapezoids.forEach((trapezoid) => {
+    const topLeft = trapezoid.topLeft;
+    const bottomRight = trapezoid.bottomRight;
+    const key = `${topLeft.x}-${topLeft.y}-${bottomRight.x}-${bottomRight.y}`;
+
+    if (!meshes.has(key)) meshes.set(key, []);
+    meshes.get(key).push(trapezoid);
+  });
+
+  const getVector = (point) => {
+    return new THREE.Vector3(point.x, point.y, point.z);
+  };
+
+  // The final rendered result is a single, merged, BufferGeometry.
+  const geometries = [];
+
+  // Now, draw out all the trapezoids.
+  // Make a geometry based on the first object, then instanced mesh the rest.
+  meshes.forEach((traps) => {
+    const base = traps[0];
+    const basePos = base.position;
+    const topLeft = base.topLeft;
+    const topRight = base.topRight;
+    const bottomLeft = base.bottomLeft;
+    const bottomRight = base.bottomRight;
+
+    const geometry = new ConvexGeometry([
+      getVector(topLeft),
+      getVector(topRight),
+      getVector(bottomRight),
+      getVector(bottomLeft),
+    ]);
+
+    const mesh = new THREE.InstancedMesh(
+      geometry,
+      threeDTrapezoidMat,
+      traps.length
+    );
+
+    traps.forEach((trapezoid, index) => {
+      // The trapezoids may all have the same geometry, but they are not
+      // in the same position. We need to update the matrix for each one...
+      // We can do this by setting the position of the trapezoid to the
+      // position of the base trapezoid, then adding the offset.
+      const pos = trapezoid.position;
+      const xOffset = pos.x - basePos.x;
+      const yOffset = pos.y - basePos.y;
+      const zOffset = pos.z - basePos.z;
+      const offset = new THREE.Matrix4().makeTranslation(
+        xOffset,
+        yOffset,
+        zOffset
+      );
+
+      mesh.setMatrixAt(index, offset);
+
+      const currentMatrix = new THREE.Matrix4();
+      mesh.getMatrixAt(index, currentMatrix);
+
+      const geoClone = geometry.clone();
+      geoClone.applyMatrix4(currentMatrix);
+      geometries.push(geoClone);
+    });
+
+    mesh.instanceMatrix.needsUpdate = true;
+
+    // group.add(mesh);
+  });
+
+  // Finally, merge and add to group.
+  const mergedGeo = BufferGeometryUtils.mergeGeometries(geometries);
+  const edges = new THREE.EdgesGeometry(mergedGeo);
+  const line = new THREE.LineSegments(edges, threeDTrapezoidMat);
+  group.add(line);
+}
+
+/**
  * Animates the renderer with the given states and updates the stats.
  *
  * @param {THREE.WebGLRenderer} renderer - The renderer to animate.
@@ -85,6 +180,7 @@ export function animate(renderer, states, stats) {
     state.scene.matrixAutoUpdate = false;
     state.scene.autoUpdate = false;
     draw2DScaleBar(state);
+    console.log(`There was ${renderer.info.render.calls} render calls...`);
   });
   stats.update();
 }
