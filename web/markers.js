@@ -17,7 +17,7 @@ import { dragElement } from "./ui.js";
  * @param {Array} rings - An array of ring data objects.
  * @param {THREE.Group} group - The group to which the rings will be added.
  */
-export function drawRings(rings, group) {
+export function drawRingMarker(rings, group) {
   if (rings.length === 0) return;
 
   const bufferGeometry = new THREE.BufferGeometry();

@@ -14,6 +14,12 @@ export const threeDGeoMat = new THREE.LineBasicMaterial({
 });
 export const threeDTrapezoidMat = new THREE.LineBasicMaterial({
   side: THREE.FrontSide,
+  color: "gray",
+  transparent: true,
+  opacity: 0.1,
+  depthWrite: false,
+  depthTest: false,
+  alphaTest: 0.5,
 });
 export const twoDXMat = new LineMaterial({
   color: "darkred",

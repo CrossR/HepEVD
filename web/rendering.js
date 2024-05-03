@@ -6,6 +6,7 @@ import * as THREE from "three";
 import { ConvexGeometry } from "three/addons/geometries/ConvexGeometry.js";
 import { Line2 } from "three/addons/lines/Line2.js";
 import { LineGeometry } from "three/addons/lines/LineGeometry.js";
+import * as BufferGeometryUtils from "three/addons/utils/BufferGeometryUtils.js";
 
 import {
   threeDGeoMat,
@@ -90,16 +91,6 @@ export function drawTrapezoids(group, trapezoids) {
   // Can do that by checking all the points, and calculating a key
   // based on the height and width of the trapezoid.
   trapezoids.forEach((trapezoid) => {
-    // const topLeft = trapezoid.topLeft;
-    // const bottomLeft = trapezoid.bottomLeft;
-    // const topRight = trapezoid.topRight;
-    // const bottomRight = trapezoid.bottomRight;
-
-    // const height = Math.abs(topLeft.y - bottomLeft.y);
-    // const topWidth = Math.abs(topLeft.x - topRight.x);
-    // const bottomWidth = Math.abs(bottomLeft.x - bottomRight.x);
-
-    // const key = `${height}-${topWidth}-${bottomWidth}`;
     const topLeft = trapezoid.topLeft;
     const bottomRight = trapezoid.bottomRight;
     const key = `${topLeft.x}-${topLeft.y}-${bottomRight.x}-${bottomRight.y}`;
@@ -108,20 +99,12 @@ export function drawTrapezoids(group, trapezoids) {
     meshes.get(key).push(trapezoid);
   });
 
-  // Debug print the sorted keys and the number of trapezoids that share the same geometry.
-  console.log("Keys and number of trapezoids:");
-  const keys = Array.from(meshes.keys());
-  keys.sort((a, b) => {
-    const [aHeight, aTopWidth, aBottomWidth] = a.split("-").map(parseFloat);
-    const [bHeight, bTopWidth, bBottomWidth] = b.split("-").map(parseFloat);
-    return aHeight - bHeight || aTopWidth - bTopWidth || aBottomWidth - bBottomWidth;
-  }).forEach((key) => {
-    console.log(`${key}: ${meshes.get(key).length}`);
-  });
-
   const getVector = (point) => {
     return new THREE.Vector3(point.x, point.y, point.z);
   };
+
+  // The final rendered result is a single, merged, BufferGeometry.
+  const geometries = [];
 
   // Now, draw out all the trapezoids.
   // Make a geometry based on the first object, then instanced mesh the rest.
@@ -159,14 +142,24 @@ export function drawTrapezoids(group, trapezoids) {
 
       mesh.setMatrixAt(index, offset);
 
-      if (trapezoid === base) mesh.setColorAt(index, new THREE.Color(0xff0000));
-      else mesh.setColorAt(index, new THREE.Color("gray"));
+      const currentMatrix = new THREE.Matrix4();
+      mesh.getMatrixAt(index, currentMatrix);
+
+      const geoClone = geometry.clone();
+      geoClone.applyMatrix4(currentMatrix);
+      geometries.push(geoClone);
     });
 
     mesh.instanceMatrix.needsUpdate = true;
 
-    group.add(mesh);
+    // group.add(mesh);
   });
+
+  // Finally, merge and add to group.
+  const mergedGeo = BufferGeometryUtils.mergeGeometries(geometries);
+  const edges = new THREE.EdgesGeometry(mergedGeo);
+  const line = new THREE.LineSegments(edges, threeDTrapezoidMat);
+  group.add(line);
 }
 
 

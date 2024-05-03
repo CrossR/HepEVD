@@ -13,7 +13,7 @@ import { HitTypeState } from "./hit_type_state.js";
 import { ParticleDataState } from "./particle_data_state.js";
 import { drawHits, drawParticles } from "./hits.js";
 import { MarkerDataState } from "./marker_data_state.js";
-import { drawLines, drawPoints, drawRings } from "./markers.js";
+import { drawLines, drawPoints, drawRingMarker } from "./markers.js";
 import { MCDataState } from "./mc_data_state.js";
 import { drawBox, drawTrapezoids } from "./rendering.js";
 import {
@@ -330,7 +330,7 @@ export class RenderState {
   renderMarkers() {
     this.markerGroup.clear();
 
-    drawRings(this.markerData.getMarkersOfType("Ring"), this.markerGroup);
+    drawRingMarker(this.markerData.getMarkersOfType("Ring"), this.markerGroup);
     drawPoints(this.markerData.getMarkersOfType("Point"), this.markerGroup);
     drawLines(this.markerData.getMarkersOfType("Line"), this.markerGroup);
 
