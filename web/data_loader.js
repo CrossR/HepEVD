@@ -128,7 +128,7 @@ async function updateExternalData() {
     particles: newStateData.particles,
     detectorGeometry: hepEVD_GLOBAL_STATE.detectorGeometry,
     stateInfo: newStateData.stateInfo || { mcTruth: "" },
-    config: newStateData.guiConfig || {},
+    config: newStateData.config || {},
   };
 }
 
@@ -192,13 +192,21 @@ async function loadExternalData(url) {
     particles: lastStateData.particles,
     detectorGeometry: result.detectorGeometry,
     stateInfo: lastStateData.stateInfo || { mcTruth: "" },
-    guiConfig: lastStateData.guiConfig || {},
+    config: lastStateData.config || {},
   };
 }
 
 // Top-level function to load data from the server or from a GitHub Gist URL.
 export async function getData() {
   if (isRunningOnGitHubPages()) {
+    // If there is a query string, then load the data from the URL in the query string.
+    const urlParams = new URLSearchParams(window.location.search);
+    const gistUrl = urlParams.get("data");
+
+    if (gistUrl !== null) {
+      return loadExternalData(gistUrl);
+    }
+
     return loadExternalData(
       "https://gist.githubusercontent.com/CrossR/2edd3622d13987d37ef3a4c02286207c/raw/6c5668d3e81280cdad52bccc27d50c0dd576bcc7/eventDisplayInfo.json"
     );

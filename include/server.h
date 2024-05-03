@@ -288,6 +288,8 @@ inline void HepEVDServer::startServer() {
         output["mcHits"] = this->getMCHits();
         output["particles"] = this->getParticles();
         output["markers"] = this->getMarkers();
+        output["stateInfo"] = *this->getState();
+        output["config"] = *this->getConfig();
         res.set_content(output.dump(4), "application/json");
     });
     this->server.Get("/writeOutAllStates", [&](const Request &, Response &res) {
@@ -312,6 +314,8 @@ inline void HepEVDServer::startServer() {
         json infoFile;
         infoFile["detectorGeometry"] = this->geometry;
         infoFile["numberOfStates"] = this->eventStates.size();
+        infoFile["config"] = *this->getConfig();
+        infoFile["stateInfo"] = *this->getState();
         for (auto &state : this->eventStates) {
             json nameUrlPair({{"name", state.second.name}, {"url", ""}});
             infoFile["states"].push_back(nameUrlPair);
