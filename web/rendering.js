@@ -84,28 +84,36 @@ export function drawTwoDBoxVolume(group, hits) {
  * @param {Array} trapezoids - The trapezoids to draw.
  */
 export function drawTrapezoids(group, trapezoids) {
-  // Two passes are needed:
-  //  - Find all trapezoids with the same or scaled measurements
-  //  - Draw them all out at once with an InstancedMesh, to reduce draw calls.
   const meshes = new Map();
 
+  // First, find all the trapezoids that share the same geometry.
+  // Can do that by checking all the points, and calculating a key
+  // based on the height and width of the trapezoid.
   trapezoids.forEach((trapezoid) => {
     const topLeft = trapezoid.topLeft;
+    const bottomLeft = trapezoid.bottomLeft;
+    const topRight = trapezoid.topRight;
     const bottomRight = trapezoid.bottomRight;
-    const key = `${topLeft.x}-${topLeft.y}-${bottomRight.x}-${bottomRight.y}`;
 
-    if (meshes.has(key)) meshes.get(key).push(trapezoid);
-    else meshes.set(key, [trapezoid]);
+    const height = Math.abs(topLeft.y - bottomLeft.y);
+    const topWidth = Math.abs(topLeft.x - topRight.x);
+    const bottomWidth = Math.abs(bottomLeft.x - bottomRight.x);
+
+    const key = `${height}-${topWidth}-${bottomWidth}`;
+
+    if (!meshes.has(key)) meshes.set(key, []);
+    meshes.get(key).push(trapezoid);
   });
 
   const getVector = (point) => {
-    return new THREE.Vector3(point.x, point.y, 0.0);
+    return new THREE.Vector3(point.x, point.y, point.z);
   };
 
   // Now, draw out all the trapezoids.
   // Make a geometry based on the first object, then instanced mesh the rest.
   meshes.forEach((traps) => {
     const base = traps[0];
+    const basePos = base.position;
     const topLeft = base.topLeft;
     const topRight = base.topRight;
     const bottomLeft = base.bottomLeft;
@@ -123,19 +131,22 @@ export function drawTrapezoids(group, trapezoids) {
       threeDTrapezoidMat,
       traps.length
     );
-    const dummyObject = new THREE.Object3D();
 
     traps.forEach((trapezoid, index) => {
       // The trapezoids may all have the same geometry, but they are not
       // in the same position. We need to update the matrix for each one...
+      // We can do this by setting the position of the trapezoid to the
+      // position of the base trapezoid, then adding the offset.
       const pos = trapezoid.position;
-      dummyObject.position.set(pos.x, pos.y, pos.z);
-      dummyObject.updateMatrix();
+      const xOffset = pos.x - basePos.x;
+      const yOffset = pos.y - basePos.y;
+      const zOffset = pos.z - basePos.z;
+      const offset = new THREE.Matrix4().makeTranslation(xOffset, yOffset, zOffset);
 
-      mesh.setMatrixAt(index, dummyObject.matrix);
+      mesh.setMatrixAt(index, offset);
 
       if (trapezoid === base) mesh.setColorAt(index, new THREE.Color(0xff0000));
-      else mesh.setColorAt(index, new THREE.Color(0x00ff00));
+      else mesh.setColorAt(index, new THREE.Color("gray"));
     });
 
     mesh.instanceMatrix.needsUpdate = true;

@@ -196,18 +196,17 @@ export class RenderState {
 
     // Next, any trapezoid volumes.
     if (this.hitDim === "3D") {
-      drawRectangles(
+      drawTrapezoids(
         this.detGeoGroup,
         this.detectorGeometry.volumes.filter(
           (volume) => volume.volumeType === "trapezoid"
         )
       );
-      drawRectangles(
+      drawTrapezoids(
         this.detGeoGroup,
         this.detectorGeometry.volumes.filter(
           (volume) => volume.volumeType === "rectangle2D"
         ),
-        true,
       );
     }
 
