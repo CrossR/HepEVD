@@ -99,8 +99,7 @@ class GUIConfig {
 
     // Only need a to JSON method, as we don't need to read in the state.
     // We also only want to pass the metadata, not the actual data.
-    NLOHMANN_DEFINE_TYPE_INTRUSIVE(GUIConfig, showParticles, showHits, showMCHits, showMarkers, showMCParticles, show2D,
-                                   show3D, renderGeometry, detector, hits);
+    NLOHMANN_DEFINE_TYPE_INTRUSIVE(GUIConfig, show2D, show3D, hits);
 };
 
 } // namespace HepEVD
