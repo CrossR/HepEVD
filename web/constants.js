@@ -142,7 +142,11 @@ export const INTERACTION_TYPE_SCORE = {
 
 export function applyConfig(config, renderStates) {
 
-  // Check isn't an empty object.
+  // Check isn't undefined or empty.
+  if (config === undefined) {
+    return;
+  }
+
   if (Object.keys(config).length === 0) {
     return;
   }

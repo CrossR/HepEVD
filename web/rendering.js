@@ -85,6 +85,9 @@ export function drawTwoDBoxVolume(group, hits) {
  * @param {Array} trapezoids - The trapezoids to draw.
  */
 export function drawTrapezoids(group, trapezoids) {
+
+  if (trapezoids.length === 0) return;
+
   const meshes = new Map();
 
   // First, find all the trapezoids that share the same geometry.
