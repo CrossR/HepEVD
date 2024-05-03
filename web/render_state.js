@@ -15,7 +15,7 @@ import { drawHits, drawParticles } from "./hits.js";
 import { MarkerDataState } from "./marker_data_state.js";
 import { drawLines, drawPoints, drawRings } from "./markers.js";
 import { MCDataState } from "./mc_data_state.js";
-import { drawBox, drawTrapezoids, drawRectangles } from "./rendering.js";
+import { drawBox, drawTrapezoids } from "./rendering.js";
 import {
   enableInteractionTypeToggle,
   enableMCToggle,
@@ -56,10 +56,18 @@ export class RenderState {
     this.controls = new OrbitControls(this.camera, renderer.domElement);
 
     // Setup various groups for rendering into...
-    this.detGeoGroup = new THREE.Group();
-    this.hitGroup = new THREE.Group();
-    this.mcHitGroup = new THREE.Group();
-    this.markerGroup = new THREE.Group();
+    const getGroup = () => {
+      const group = new THREE.Group();
+      group.matrixAutoUpdate = false;
+      group.matrixWorldAutoUpdate = false;
+
+      return group;
+    }
+
+    this.detGeoGroup = getGroup();
+    this.hitGroup = getGroup();
+    this.mcHitGroup = getGroup();
+    this.markerGroup = getGroup();
 
     // Initial setup of the groups...
     this.mcHitGroup.visible = false;

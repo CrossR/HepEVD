@@ -90,19 +90,33 @@ export function drawTrapezoids(group, trapezoids) {
   // Can do that by checking all the points, and calculating a key
   // based on the height and width of the trapezoid.
   trapezoids.forEach((trapezoid) => {
+    // const topLeft = trapezoid.topLeft;
+    // const bottomLeft = trapezoid.bottomLeft;
+    // const topRight = trapezoid.topRight;
+    // const bottomRight = trapezoid.bottomRight;
+
+    // const height = Math.abs(topLeft.y - bottomLeft.y);
+    // const topWidth = Math.abs(topLeft.x - topRight.x);
+    // const bottomWidth = Math.abs(bottomLeft.x - bottomRight.x);
+
+    // const key = `${height}-${topWidth}-${bottomWidth}`;
     const topLeft = trapezoid.topLeft;
-    const bottomLeft = trapezoid.bottomLeft;
-    const topRight = trapezoid.topRight;
     const bottomRight = trapezoid.bottomRight;
-
-    const height = Math.abs(topLeft.y - bottomLeft.y);
-    const topWidth = Math.abs(topLeft.x - topRight.x);
-    const bottomWidth = Math.abs(bottomLeft.x - bottomRight.x);
-
-    const key = `${height}-${topWidth}-${bottomWidth}`;
+    const key = `${topLeft.x}-${topLeft.y}-${bottomRight.x}-${bottomRight.y}`;
 
     if (!meshes.has(key)) meshes.set(key, []);
     meshes.get(key).push(trapezoid);
+  });
+
+  // Debug print the sorted keys and the number of trapezoids that share the same geometry.
+  console.log("Keys and number of trapezoids:");
+  const keys = Array.from(meshes.keys());
+  keys.sort((a, b) => {
+    const [aHeight, aTopWidth, aBottomWidth] = a.split("-").map(parseFloat);
+    const [bHeight, bTopWidth, bBottomWidth] = b.split("-").map(parseFloat);
+    return aHeight - bHeight || aTopWidth - bTopWidth || aBottomWidth - bBottomWidth;
+  }).forEach((key) => {
+    console.log(`${key}: ${meshes.get(key).length}`);
   });
 
   const getVector = (point) => {
@@ -150,34 +164,11 @@ export function drawTrapezoids(group, trapezoids) {
     });
 
     mesh.instanceMatrix.needsUpdate = true;
+
     group.add(mesh);
   });
 }
 
-/**
- * Draw rectangles in 3D space, when given the 4 input points.
- *
- * @param {THREE.Group} group - The group to add the rectangles to.
- * @param {Array} rectangles - The rectangles to draw.
- */
-export function drawRectangles(group, rectangles) {
-  rectangles.forEach((rect) => {
-    const topLeft = rect.topLeft;
-    const topRight = rect.topRight;
-    const bottomLeft = rect.bottomLeft;
-    const bottomRight = rect.bottomRight;
-
-    const geometry = new ConvexGeometry([
-      new THREE.Vector3(topLeft.x, topLeft.y, topLeft.z),
-      new THREE.Vector3(topRight.x, topRight.y, topRight.z),
-      new THREE.Vector3(bottomRight.x, bottomRight.y, bottomRight.z),
-      new THREE.Vector3(bottomLeft.x, bottomLeft.y, bottomLeft.z),
-    ]);
-
-    const mesh = new THREE.Mesh(geometry, threeDTrapezoidMat);
-    group.add(mesh);
-  });
-}
 
 /**
  * Animates the renderer with the given states and updates the stats.
@@ -193,6 +184,7 @@ export function animate(renderer, states, stats) {
     state.scene.matrixAutoUpdate = false;
     state.scene.autoUpdate = false;
     draw2DScaleBar(state);
+    console.log(`There was ${renderer.info.render.calls} render calls...`);
   });
   stats.update();
 }
