@@ -12,6 +12,7 @@ export class ParticleDataState {
     this.activeParticles = [];
     this.activeInteractionTypes = new Set();
     this.ignoredParticles = new Set();
+    this.highlightsTarget = undefined;
 
     // Map from particle id to particle, as well as hit id to particle id.
     this.particleMap = new Map();
@@ -101,6 +102,23 @@ export class ParticleDataState {
    */
   toggleActive(active = !this.active) {
     this.active = active;
+  }
+
+  /**
+   * Set the highlight target.
+   *
+   * @param {string} id - The target particle id.
+   */
+  setHighlightTarget(id) {
+    this.highlightsTarget = id;
+  }
+
+  /**
+   * Disable highlighting.
+   *
+   */
+  disableHighlights() {
+    this.highlightsTarget = undefined;
   }
 
   /**

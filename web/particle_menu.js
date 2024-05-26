@@ -21,7 +21,7 @@ function createMenuItem(
   particle,
   onClick,
   particlesMap,
-  parentElement
+  parentElement,
 ) {
   // Make the top level menu item for the particle.
   const menuItem = document.createElement("li");

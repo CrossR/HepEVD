@@ -233,7 +233,7 @@ export function getCategoricalLutConf() {
   if (storage.getItem("categoricalColourMap") === null) {
     storage.setItem(
       "categoricalColourMap",
-      JSON.stringify(DEFAULT_CATEGORICAL_LUT_CONFIG)
+      JSON.stringify(DEFAULT_CATEGORICAL_LUT_CONFIG),
     );
   }
 

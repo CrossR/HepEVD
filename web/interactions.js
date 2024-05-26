@@ -10,13 +10,13 @@ import { drawParticleOverlay } from "./hits.js";
 export function highlightParticleOnMouseMove(
   renderStates,
   currentlyHighlighting,
-  event
+  event,
 ) {
   // This only works if we have a particle data state,
   // since we can't relate unassociated hits.
   if (
     !Array.from(renderStates.values()).some(
-      (state) => state.particleData.length !== 0
+      (state) => state.particleData.length !== 0,
     )
   )
     return [];
@@ -43,7 +43,7 @@ export function highlightParticleOnMouseMove(
     raycaster.setFromCamera(mouse, state.camera);
     const intersects = raycaster.intersectObjects(state.scene.children, true);
     const visibleIntersects = intersects.filter((intersect) => {
-      return intersect.object.material.opacity > 0.75;
+      return intersect.object.material.opacity >= 0.75;
     });
     if (visibleIntersects.length > 0) {
       const intersectObject = visibleIntersects[0];
@@ -58,7 +58,7 @@ export function highlightParticleOnMouseMove(
 
       try {
         const activeParticleId = state.particleData.hitToParticleMap.get(
-          activeHit.id
+          activeHit.id,
         );
         activeParticle = state.particleData.particleMap.get(activeParticleId);
       } catch {
@@ -77,10 +77,9 @@ export function highlightParticleOnMouseMove(
         return;
       }
 
-      // If we are highlighting a new particle, we need to clear the old one.
-      if (currentlyHighlighting.find((id) => id !== targetParticle.id)) {
-        state.triggerEvent("fullUpdate");
-      }
+      // Enable highlighting mode...
+      state.particleData.setHighlightTarget(targetParticle.id);
+      state.triggerEvent("fullUpdate");
 
       // Finally, lets render out all the hits of this particle, but with a unique glow.
       // By default, its just the selected particle.
@@ -94,7 +93,7 @@ export function highlightParticleOnMouseMove(
         state.hitTypeState,
         HIT_CONFIG[state.hitDim],
         targetParticle,
-        ctrlPressed || shiftPressed
+        ctrlPressed || shiftPressed,
       );
 
       state.triggerEvent("change");
@@ -106,6 +105,7 @@ export function highlightParticleOnMouseMove(
       if (!state.visible) {
         return;
       }
+      state.particleData.disableHighlights();
       state.triggerEvent("fullUpdate");
     });
   }

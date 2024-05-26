@@ -12,7 +12,7 @@ import {
 } from "./colourmaps.js";
 import { ParticleDataState } from "./particle_data_state.js";
 import { HitDataState } from "./hit_data_state.js";
-import { BUTTON_ID, materialHit } from "./constants.js";
+import { BUTTON_ID, materialHit, materialParticle } from "./constants.js";
 
 /**
  * Draws a set of hits as a 3D mesh using Three.js.
@@ -27,7 +27,7 @@ export function drawHits(
   hits,
   hitColours,
   hitConfig = {},
-  lutConfig = getContinuousLutConf()
+  lutConfig = getContinuousLutConf(),
 ) {
   if (hits.length === 0) return;
 
@@ -61,7 +61,7 @@ export function drawHits(
   const hitMesh = new THREE.InstancedMesh(
     hitGeometry,
     hitMaterial,
-    hits.length
+    hits.length,
   );
 
   hits.forEach(function (hit, index) {
@@ -99,7 +99,7 @@ export function drawParticles(
   group,
   particleDataState,
   hitDataState,
-  hitConfig
+  hitConfig,
 ) {
   const particles = particleDataState.allParticles;
   const activeParticles = particleDataState.particles;
@@ -121,13 +121,24 @@ export function drawParticles(
 
   let lutToUse = getCategoricalLutConf();
   const filteredActiveHitProps = Array.from(activeHitProps).filter(
-    (p) => p != BUTTON_ID.All
+    (p) => p != BUTTON_ID.All,
   );
+
+  // Swap to a continuous LUT if we have active hit properties.
+  if (filteredActiveHitProps.length > 0) {
+    lutToUse = getContinuousLutConf();
+  }
 
   // Particle colour is based on the absolute index of the particle, modulo the LUT size.
   // If there are multiple active hit properties, use that instead.
   const particleColours = activeParticles.flatMap((particle, _) => {
     return particle.hits.map((hit) => {
+      if (
+        particleDataState.highlightsTarget !== undefined &&
+        particle.id !== particleDataState.highlightsTarget
+      ) {
+        return "Grey";
+      }
       if (filteredActiveHitProps.length > 0) {
         return Array.from(filteredActiveHitProps)
           .reverse()
@@ -140,8 +151,22 @@ export function drawParticles(
     });
   });
 
-  if (filteredActiveHitProps.length > 0) {
-    lutToUse = getContinuousLutConf();
+  // Set the hit config material to the particle material.
+  hitConfig.materialHit = hitConfig.materialParticle ?? materialParticle;
+
+  // Also update the hit opacity if we are highlighting particles.
+  if (particleDataState.highlightsTarget !== undefined) {
+    hitConfig.materialHit.opacity = 0.75;
+
+    // Update the particle colours to apply the LUT to the highlighted particle.
+    // Everything else is greyed out, but we need to apply the LUT here as the
+    // LUT won't be used later, due to every other object being grey.
+    const colourLut = new Lut("cooltowarm", 10);
+    addColourMap(colourLut, lutToUse.name, lutToUse.size);
+    particleColours.forEach((colour, index) => {
+      if (colour !== "Grey") particleColours[index] = colourLut.getColor(colour);
+    });
+    console.log([...new Set(particleColours)]);
   }
 
   drawHits(group, hits.flat(), particleColours, hitConfig, lutToUse);
@@ -163,7 +188,7 @@ export function drawParticleOverlay(
   hitTypeState,
   hitConfig,
   targetParticle,
-  renderChildren
+  renderChildren,
 ) {
   const activeHitProps = hitDataState.activeProps;
   const hitPropMap = hitDataState.props;
@@ -187,11 +212,5 @@ export function drawParticleOverlay(
     );
   });
 
-  const newConfig = { ...hitConfig };
-  newConfig.hitSize = hitConfig.hitSize + 1;
-
-  let themeName = localStorage.getItem("themeInfo");
-  newConfig.materialHit = hitConfig.selectedMaterial(themeName);
-
-  drawHits(group, activeHits, [], newConfig);
+  drawHits(group, activeHits, [], hitConfig);
 }

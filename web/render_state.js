@@ -44,7 +44,7 @@ export class RenderState {
     mcHits,
     markers,
     geometry,
-    stateInfo
+    stateInfo,
   ) {
     // Basic, crucial information...
     this.name = name;
@@ -154,10 +154,10 @@ export class RenderState {
     const filteredParticles = particles.flatMap((particle) => {
       const newParticle = { ...particle };
       newParticle.hits = particle.hits.filter(
-        (hit) => hit.position.dim === this.hitDim
+        (hit) => hit.position.dim === this.hitDim,
       );
       newParticle.vertices = particle.vertices.filter(
-        (vertex) => vertex.position.dim === this.hitDim
+        (vertex) => vertex.position.dim === this.hitDim,
       );
 
       // Ignore particles with no hits, but also
@@ -207,14 +207,14 @@ export class RenderState {
       drawTrapezoids(
         this.detGeoGroup,
         this.detectorGeometry.volumes.filter(
-          (volume) => volume.volumeType === "trapezoid"
-        )
+          (volume) => volume.volumeType === "trapezoid",
+        ),
       );
       drawTrapezoids(
         this.detGeoGroup,
         this.detectorGeometry.volumes.filter(
-          (volume) => volume.volumeType === "rectangle2D"
-        )
+          (volume) => volume.volumeType === "rectangle2D",
+        ),
       );
     }
 
@@ -234,7 +234,7 @@ export class RenderState {
       this.hitGroup,
       this.particleData,
       this.hitData,
-      HIT_CONFIG[this.hitDim]
+      HIT_CONFIG[this.hitDim],
     );
 
     this.hitGroup.matrixAutoUpdate = false;
@@ -249,7 +249,7 @@ export class RenderState {
   renderHits(
     hits = this.hitData.hits,
     colours = this.hitData.colours,
-    clear = true
+    clear = true,
   ) {
     if (clear) this.hitGroup.clear();
 
@@ -357,7 +357,7 @@ export class RenderState {
   #updateMarkers() {
     this.markerData.updateActive(
       this.particleData.particles,
-      this.hitTypeState
+      this.hitTypeState,
     );
   }
 
@@ -466,10 +466,10 @@ export class RenderState {
 
     // Fill in any dropdown entries, or hit class toggles.
     populateDropdown(this.hitDim, this.hitData.props, (prop) =>
-      this.onHitPropertyChange(prop)
+      this.onHitPropertyChange(prop),
     );
     populateTypeToggle(this.hitDim, this.hitTypeState.types, (hitType) =>
-      this.onHitTypeChange(hitType)
+      this.onHitTypeChange(hitType),
     );
 
     // And the marker toggles...
@@ -477,7 +477,7 @@ export class RenderState {
       this.hitDim,
       this.markerData.markers,
       this.particleData.particles,
-      (markerType) => this.onMarkerChange(markerType)
+      (markerType) => this.onMarkerChange(markerType),
     );
 
     // And finally the MC and interaction type toggles.
@@ -489,7 +489,7 @@ export class RenderState {
     enableInteractionTypeToggle(
       this.hitDim,
       this.particleData.particles,
-      (interactionType) => this.onInteractionTypeChange(interactionType)
+      (interactionType) => this.onInteractionTypeChange(interactionType),
     );
 
     // Move the scene/camera around to best fit it in.
@@ -498,7 +498,7 @@ export class RenderState {
         this.camera,
         this.controls,
         this.detGeoGroup,
-        this.hitDim
+        this.hitDim,
       );
       setupControls(this.hitDim, this.controls);
       this.scene.add(this.camera);
