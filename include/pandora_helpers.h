@@ -286,8 +286,8 @@ static void showMC(const pandora::Algorithm &pAlgorithm, const std::string &list
 
     // Check if there is a hanging " + " at the end, and remove it.
     // This can happen if we have a final particle that is invisible.
-    if (mcTruthString.substr(mcTruthString.size() - 3) == " + ")
-        mcTruthString = mcTruthString.substr(0, mcTruthString.size() - 3);
+    if (mcTruth.substr(mcTruth.size() - 3) == " + ")
+        mcTruth = mcTruth.substr(0, mcTruth.size() - 3);
 
     hepEVDServer->setMCTruth(mcTruth);
 }
