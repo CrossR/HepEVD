@@ -4,9 +4,6 @@
 
 import * as THREE from "three";
 
-import { HIT_CONFIG } from "./constants.js";
-import { drawParticleOverlay } from "./hits.js";
-
 export function highlightParticleOnMouseMove(
   renderStates,
   currentlyHighlighting,
@@ -77,26 +74,15 @@ export function highlightParticleOnMouseMove(
         return;
       }
 
-      // Enable highlighting mode...
-      state.particleData.setHighlightTarget(targetParticle.id);
+      // Include the child particles if shift or ctrl is pressed.
+      if (ctrlPressed || shiftPressed) {
+        targetParticle.childIDs.map((childId) => {
+          state.particleData.addHighlightTarget(childId);
+        });
+      }
+
+      state.particleData.addHighlightTarget(targetParticle.id);
       state.triggerEvent("fullUpdate");
-
-      // Finally, lets render out all the hits of this particle, but with a unique glow.
-      // By default, its just the selected particle.
-      // Holding ctrl instead shows the children of the selected particle.
-      // Holding Shift swaps to the full particle (i.e. parent down).
-      //    Holding shift also implies rendering of children.
-      drawParticleOverlay(
-        state.hitGroup,
-        state.particleData,
-        state.hitData,
-        state.hitTypeState,
-        HIT_CONFIG[state.hitDim],
-        targetParticle,
-        ctrlPressed || shiftPressed,
-      );
-
-      state.triggerEvent("change");
     }
   });
 

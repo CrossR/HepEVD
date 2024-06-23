@@ -134,8 +134,8 @@ export function drawParticles(
   const particleColours = activeParticles.flatMap((particle, _) => {
     return particle.hits.map((hit) => {
       if (
-        particleDataState.highlightsTarget !== undefined &&
-        particle.id !== particleDataState.highlightsTarget
+        particleDataState.highlightTargets.size > 0 &&
+        !particleDataState.highlightTargets.has(particle.id)
       ) {
         return "Grey";
       }
@@ -155,7 +155,7 @@ export function drawParticles(
   hitConfig.materialHit = hitConfig.materialParticle ?? materialParticle;
 
   // Also update the hit opacity if we are highlighting particles.
-  if (particleDataState.highlightsTarget !== undefined) {
+  if (particleDataState.highlightTargets.size > 0) {
     hitConfig.materialHit.opacity = 0.75;
 
     // Update the particle colours to apply the LUT to the highlighted particle.
@@ -164,53 +164,11 @@ export function drawParticles(
     const colourLut = new Lut("cooltowarm", 10);
     addColourMap(colourLut, lutToUse.name, lutToUse.size);
     particleColours.forEach((colour, index) => {
-      if (colour !== "Grey") particleColours[index] = colourLut.getColor(colour);
+      if (colour !== "Grey")
+        particleColours[index] = colourLut.getColor(colour);
     });
     console.log([...new Set(particleColours)]);
   }
 
   drawHits(group, hits.flat(), particleColours, hitConfig, lutToUse);
-}
-
-/**
- * Draws an overlay over the hits of a given particle.
- *
- * @param {THREE.Group} group - The group to which the particles should be added.
- * @param {ParticleDataState} particleDataState - All the particle objects, to find absolute positions for colouring.
- * @param {HitDataState} hitDataState - An array of active hit properties, used for colouring.
- * @param {Object} hitConfig - An object containing configuration options for the hit mesh.
- * @param {Object} particle - The particle to draw the overlay for.
- */
-export function drawParticleOverlay(
-  group,
-  particleDataState,
-  hitDataState,
-  hitTypeState,
-  hitConfig,
-  targetParticle,
-  renderChildren,
-) {
-  const activeHitProps = hitDataState.activeProps;
-  const hitPropMap = hitDataState.props;
-
-  const hits = targetParticle.hits.slice();
-
-  if (renderChildren) {
-    targetParticle.childIDs.map((childId) => {
-      const childParticle = particleDataState.particleMap.get(childId);
-      hits.push(...childParticle.hits);
-    });
-  }
-
-  const activeHits = hits.filter((hit) => {
-    return (
-      hitTypeState.checkHitType(hit) &&
-      activeHitProps.size > 0 &&
-      Array.from(activeHitProps).every((prop) => {
-        return hitPropMap.get(hit.id).has(prop);
-      })
-    );
-  });
-
-  drawHits(group, activeHits, [], hitConfig);
 }
