@@ -124,11 +124,8 @@ static void addSpacepoints(const vecmem::data::vector_view<traccc::spacepoint> &
 }
 
 // Add traccc::seeds to the HepEVD server.
-static void addSeeds(
-    const vecmem::data::vector_view<traccc::seed> &seeds,
-    const vecmem::data::vector_view<traccc::spacepoint> &spacePoints,
-    std::string label = ""
-) {
+static void addSeeds(const vecmem::data::vector_view<traccc::seed> &seeds,
+                     const vecmem::data::vector_view<traccc::spacepoint> &spacePoints, std::string label = "") {
 
     if (!isServerInitialised())
         return;
