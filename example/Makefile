@@ -1,4 +1,4 @@
-CXXFLAGS = -O2 -std=c++17 -I.. -Wall -Wextra -pthread
+CXXFLAGS = -O3 -std=c++17 -I.. -Wall -Wextra -pthread
 
 all: basic server client debugging
 

@@ -1,0 +1,50 @@
+name: Formatting
+
+on:
+  # Trigger the workflow on push or PR to main.
+  # workflow_dispatch allows manual running through the GitHub UI.
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  clangd:
+
+    strategy:
+      matrix:
+        path:
+          - 'include'
+          - 'python_bindings'
+          - 'python_bindings/include'
+          - 'hep_evd.h'
+
+    name: clang-format
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check clang-format include
+        uses: jidicula/clang-format-action@v4.13.0
+        with:
+          clang-format-version: '18'
+          check-path: ${{ matrix.path }}
+
+  prettier:
+
+    name: HepEVD - prettier
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Check prettier
+        uses: creyD/prettier_action@v4.3
+        with:
+          dry: True
+          prettier_options: --check web/*.{js,css,html}
+
+
+
