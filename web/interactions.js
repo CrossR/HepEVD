@@ -22,11 +22,11 @@ export function highlightParticleOnMouseMove(
   mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
   mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
 
-  // If shift is pressed, we want to highlight the parent particle.
+  // Three possible highlight states:
+  //  - Highlighting a single particle.
+  //  - Highlighting a particle and any children. (Ctrl)
+  //  - Highlighting a particles parent and all of the parent's children. (Shift)
   const shiftPressed = event.shiftKey;
-
-  // On the other hand, if its ctrl, highlight the current particle only.
-  // i.e. no child particles, as is default.
   const ctrlPressed = event.ctrlKey;
 
   let selectedParticles = [];
@@ -72,6 +72,8 @@ export function highlightParticleOnMouseMove(
       // If we're already highlighting this particle, don't do anything.
       if (currentlyHighlighting.includes(targetParticle.id)) {
         return;
+      } else {
+        state.particleData.disableHighlights();
       }
 
       // Include the child particles if shift or ctrl is pressed.
