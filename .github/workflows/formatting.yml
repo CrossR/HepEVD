@@ -3,22 +3,40 @@ name: Formatting
 on: [push, pull_request, workflow_dispatch]
 
 jobs:
-  formatting-check:
+  clangd:
 
     name: HepEVD - clang-format
     runs-on: ubuntu-latest
 
+    strategy:
+      matrix:
+        path:
+          - 'include'
+          - 'python_bindings'
+          - 'python_bindings/include'
+          - 'hep_evd.h'
+
     steps:
       - uses: actions/checkout@v3
-      - name: Check clang-format
+      - name: Check clang-format include
         uses: jidicula/clang-format-action@v4.13.0
         with:
           clang-format-version: '18'
+          check-path: ${{ matrix.path }}
+
+  prettier:
+
+    name: HepEVD - prettier
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
       - name: Check prettier
         uses: creyD/prettier_action@v4.3
         with:
           dry: True
           prettier_options: --check
+          working_directory: web
 
 
 
