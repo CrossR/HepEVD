@@ -4,9 +4,6 @@
 
 import * as THREE from "three";
 
-import { HIT_CONFIG } from "./constants.js";
-import { drawParticleOverlay } from "./hits.js";
-
 export function highlightParticleOnMouseMove(
   renderStates,
   currentlyHighlighting,
@@ -25,11 +22,11 @@ export function highlightParticleOnMouseMove(
   mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
   mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
 
-  // If shift is pressed, we want to highlight the parent particle.
+  // Three possible highlight states:
+  //  - Highlighting a single particle.
+  //  - Highlighting a particle and any children. (Ctrl)
+  //  - Highlighting a particles parent and all of the parent's children. (Shift)
   const shiftPressed = event.shiftKey;
-
-  // On the other hand, if its ctrl, highlight the current particle only.
-  // i.e. no child particles, as is default.
   const ctrlPressed = event.ctrlKey;
 
   let selectedParticles = [];
@@ -43,7 +40,7 @@ export function highlightParticleOnMouseMove(
     raycaster.setFromCamera(mouse, state.camera);
     const intersects = raycaster.intersectObjects(state.scene.children, true);
     const visibleIntersects = intersects.filter((intersect) => {
-      return intersect.object.material.opacity > 0.75;
+      return intersect.object.material.opacity >= 0.75;
     });
     if (visibleIntersects.length > 0) {
       const intersectObject = visibleIntersects[0];
@@ -75,29 +72,19 @@ export function highlightParticleOnMouseMove(
       // If we're already highlighting this particle, don't do anything.
       if (currentlyHighlighting.includes(targetParticle.id)) {
         return;
+      } else {
+        state.particleData.disableHighlights();
       }
 
-      // If we are highlighting a new particle, we need to clear the old one.
-      if (currentlyHighlighting.find((id) => id !== targetParticle.id)) {
-        state.triggerEvent("fullUpdate");
+      // Include the child particles if shift or ctrl is pressed.
+      if (ctrlPressed || shiftPressed) {
+        targetParticle.childIDs.map((childId) => {
+          state.particleData.addHighlightTarget(childId);
+        });
       }
 
-      // Finally, lets render out all the hits of this particle, but with a unique glow.
-      // By default, its just the selected particle.
-      // Holding ctrl instead shows the children of the selected particle.
-      // Holding Shift swaps to the full particle (i.e. parent down).
-      //    Holding shift also implies rendering of children.
-      drawParticleOverlay(
-        state.hitGroup,
-        state.particleData,
-        state.hitData,
-        state.hitTypeState,
-        HIT_CONFIG[state.hitDim],
-        targetParticle,
-        ctrlPressed || shiftPressed,
-      );
-
-      state.triggerEvent("change");
+      state.particleData.addHighlightTarget(targetParticle.id);
+      state.triggerEvent("fullUpdate");
     }
   });
 
@@ -106,6 +93,7 @@ export function highlightParticleOnMouseMove(
       if (!state.visible) {
         return;
       }
+      state.particleData.disableHighlights();
       state.triggerEvent("fullUpdate");
     });
   }

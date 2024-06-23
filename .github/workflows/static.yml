@@ -31,14 +31,7 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Restore vendor directory
-        id: cache
-        uses: actions/cache@v2
-        with:
-          path: ./web/vendor
-          key: ${{ runner.os }}-vendor-${{ hashFiles('get_extern_deps.sh') }}
       - name: Get external dependencies
-        if: steps.cache.outputs.cache-hit != 'true'
         run: ./get_extern_deps.sh -T
       - name: Setup Pages
         uses: actions/configure-pages@v4

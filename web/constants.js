@@ -50,6 +50,9 @@ const selectedMaterial3D = (theme) =>
     color: theme === "dark" ? "yellow" : "darkred",
     depthFunc: THREE.AlwaysDepth,
   });
+export const materialParticle = new THREE.MeshBasicMaterial({
+  side: THREE.DoubleSide,
+});
 
 //==============================================================================
 // UI Constants
@@ -92,11 +95,13 @@ export const HIT_CONFIG = {
     hitSize: 2,
     materialHit: materialHit,
     selectedMaterial: selectedMaterial2D,
+    materialParticle: materialParticle,
   },
   "3D": {
     hitSize: 2,
     materialHit: materialHit,
     selectedMaterial: selectedMaterial3D,
+    materialParticle: materialParticle,
   },
 };
 
@@ -157,19 +162,25 @@ export function applyConfig(config, renderStates) {
     renderStates.get("3D").scene.visible = false;
   }
 
+  // Only apply the colour updates to raw hits, not particles which should
+  // already have an assigned colour...
   if (config.hits.colour !== "") {
     HIT_CONFIG["2D"].materialHit.color.set(config.hits.colour);
     HIT_CONFIG["3D"].materialHit.color.set(config.hits.colour);
   }
 
+  // Whereas the size should apply to both particles and hits...
   if (config.hits.size !== 0.0) {
     HIT_CONFIG["2D"].hitSize = config.hits.size;
     HIT_CONFIG["3D"].hitSize = config.hits.size;
   }
 
+  // As should the opacity...
   if (config.hits.opacity !== 0.0) {
     HIT_CONFIG["2D"].materialHit.opacity = config.hits.opacity;
+    HIT_CONFIG["2D"].materialParticle.opacity = config.hits.opacity;
     HIT_CONFIG["3D"].materialHit.opacity = config.hits.opacity;
+    HIT_CONFIG["3D"].materialParticle.opacity = config.hits.opacity;
   }
 
   // TODO: Fix UI buttons if the 2D or 3D scene is hidden.

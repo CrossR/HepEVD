@@ -62,12 +62,11 @@ template <typename detector_t> static void setHepEVDGeometry(const detector_t &d
         int surface_id(0);
         const auto volume = detray::detector_volume{detector, vol_desc};
         for (const auto &surf_desc : volume.surfaces()) {
+
             const auto surface = detray::surface{detector, surf_desc};
-
             const auto shape_name(surface.shape_name());
-
             auto gctx(typename detector_t::geometry_context{});
-            // const auto centroid(surface.transform(gctx).point_to_global(surface.centroid()));
+
             const auto centroid(surface.center(gctx));
             const Position position({(double)centroid[0], (double)centroid[1], (double)centroid[2]});
 
@@ -122,6 +121,33 @@ static void addSpacepoints(const vecmem::data::vector_view<traccc::spacepoint> &
     }
 
     hepEVDServer->addHits(hits);
+}
+
+// Add traccc::seeds to the HepEVD server.
+static void addSeeds(const vecmem::data::vector_view<traccc::seed> &seeds,
+                     const vecmem::data::vector_view<traccc::spacepoint> &spacePoints, std::string label = "") {
+
+    if (!isServerInitialised())
+        return;
+
+    Particles hepSeeds;
+
+    for (unsigned int i = 0; i < seeds.size(); i++) {
+        const auto seed = seeds.ptr()[i];
+        Hits hits;
+
+        for (const auto &spacePoint : seed.get_spacepoints(spacePoints)) {
+            Hit *hit = new Hit({spacePoint.x(), spacePoint.y(), spacePoint.z()}, 0.0);
+            hits.push_back(hit);
+        }
+
+        std::string id = getUUID();
+        Particle *particle = new Particle(hits, id, label);
+
+        hepSeeds.push_back(particle);
+    }
+
+    hepEVDServer->addParticles(hepSeeds);
 }
 
 }; // namespace HepEVD
