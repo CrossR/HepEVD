@@ -26,7 +26,7 @@ jobs:
           - 'hep_evd.h'
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Check clang-format include
         uses: jidicula/clang-format-action@v4.13.0
         with:
