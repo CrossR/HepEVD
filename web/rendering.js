@@ -85,7 +85,6 @@ export function drawTwoDBoxVolume(group, hits) {
  * @param {Array} trapezoids - The trapezoids to draw.
  */
 export function drawTrapezoids(group, trapezoids) {
-
   if (trapezoids.length === 0) return;
 
   const meshes = new Map();
@@ -129,7 +128,7 @@ export function drawTrapezoids(group, trapezoids) {
     const mesh = new THREE.InstancedMesh(
       geometry,
       threeDTrapezoidMat,
-      traps.length
+      traps.length,
     );
 
     traps.forEach((trapezoid, index) => {
@@ -144,7 +143,7 @@ export function drawTrapezoids(group, trapezoids) {
       const offset = new THREE.Matrix4().makeTranslation(
         xOffset,
         yOffset,
-        zOffset
+        zOffset,
       );
 
       mesh.setMatrixAt(index, offset);
