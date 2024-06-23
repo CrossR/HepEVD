@@ -141,7 +141,6 @@ export const INTERACTION_TYPE_SCORE = {
 //==============================================================================
 
 export function applyConfig(config, renderStates) {
-
   // Check isn't undefined or empty.
   if (config === undefined) {
     return;
@@ -151,10 +150,10 @@ export function applyConfig(config, renderStates) {
     return;
   }
 
-  if (! config.show2D) {
+  if (!config.show2D) {
     renderStates.get("2D").scene.visible = false;
   }
-  if (! config.show3D) {
+  if (!config.show3D) {
     renderStates.get("3D").scene.visible = false;
   }
 
