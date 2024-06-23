@@ -1,6 +1,15 @@
 name: Formatting
 
-on: [push, pull_request, workflow_dispatch]
+on:
+  # Trigger the workflow on push or PR to main.
+  # workflow_dispatch allows manual running through the GitHub UI.
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
 
 jobs:
   clangd:
@@ -35,8 +44,7 @@ jobs:
         uses: creyD/prettier_action@v4.3
         with:
           dry: True
-          prettier_options: --check
-          working_directory: web
+          prettier_options: --check web/*.{js,css,html}
 
 
 
