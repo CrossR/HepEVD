@@ -14,9 +14,6 @@ on:
 jobs:
   clangd:
 
-    name: HepEVD - clang-format
-    runs-on: ubuntu-latest
-
     strategy:
       matrix:
         path:
@@ -24,6 +21,9 @@ jobs:
           - 'python_bindings'
           - 'python_bindings/include'
           - 'hep_evd.h'
+
+    name: clang-format
+    runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v4

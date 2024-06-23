@@ -1,8 +1,6 @@
-name: Build Examples
+# Check the examples build on push to main branch or a PR.
 
 on:
-  # Trigger the workflow on push or PR to main.
-  # workflow_dispatch allows manual running through the GitHub UI.
   push:
     branches:
       - main
@@ -29,8 +27,8 @@ jobs:
       - name: Get external dependencies
         if: steps.cache.outputs.cache-hit != 'true'
         run: ./get_extern_deps.sh -T
-      - name: Swap to examples directory
-        run: cd examples
+      - name: Swap to example directory
+        run: cd example
       - name: Build Examples
         run: make all
 
