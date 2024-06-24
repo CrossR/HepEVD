@@ -22,6 +22,10 @@ enum InteractionType { BEAM, COSMIC, NEUTRINO, OTHER };
 NLOHMANN_JSON_SERIALIZE_ENUM(InteractionType,
                              {{BEAM, "Beam"}, {COSMIC, "Cosmic"}, {NEUTRINO, "Neutrino"}, {OTHER, "Other"}});
 
+enum RenderType { PARTICLE, TRACK, SHOWER, OTHER };
+NLOHMANN_JSON_SERIALIZE_ENUM(RenderType,
+                             {{PARTICLE, "Particle"}, {TRACK, "Track"}, {SHOWER, "Shower"}, {OTHER, "Other"}});
+
 // Represent a single particle in the event.
 class Particle {
   public:
@@ -63,7 +67,11 @@ class Particle {
     void setInteractionType(InteractionType interactionType) { this->interactionType = interactionType; }
     InteractionType getInteractionType() const { return this->interactionType; }
 
-    NLOHMANN_DEFINE_TYPE_INTRUSIVE(Particle, hits, vertices, label, id, parentID, childIDs, primary, interactionType);
+    void setRenderType(RenderType renderType) { this->renderType = renderType; }
+    RenderType getRenderType() const { return this->renderType; }
+
+    NLOHMANN_DEFINE_TYPE_INTRUSIVE(Particle, hits, vertices, label, id, primary, interactionType, renderType, parentID,
+                                   childIDs);
 
   private:
     Hits hits;
@@ -73,6 +81,10 @@ class Particle {
 
     bool primary;
     InteractionType interactionType;
+
+    // How to render the particle.
+    // Default is PARTICLE, but can also be TRACK, SHOWER or OTHER.
+    RenderType renderType = RenderType::PARTICLE;
 
     // Lets just assume that the IDs are enough, and the list of particles
     // is available by the consumer (i.e. the Web UI). Less contained (could

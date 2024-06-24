@@ -175,11 +175,10 @@ static void addTrackCandidates(const traccc::track_candidate_container_types::co
         Hits hits;
 
         // Loop over the measurements in the track candidate.
-        for (const traccc::measurement& m : track.items) {
+        for (const traccc::measurement &m : track.items) {
 
             // Find the detector surface that this measurement sits on.
-            const detray::surface<detray::detector<> > surface{detector,
-                                                               m.surface_link};
+            const detray::surface<detray::detector<>> surface{detector, m.surface_link};
 
             // Calculate a position for this measurement in global 3D space.
             const auto global = surface.bound_to_global({}, m.local, {});
@@ -192,8 +191,7 @@ static void addTrackCandidates(const traccc::track_candidate_container_types::co
         // Create a particle object for this track candidate.
         std::string id = getUUID();
         Particle *particle = new Particle(hits, id, label);
-
-        // TODO: Decorate the particle, to include drawing the lines for the track candidate.
+        particle->setRenderType(RenderType::TRACK);
 
         // Add the particle to the list of particles to be added to the server.
         hepTracks.push_back(particle);
