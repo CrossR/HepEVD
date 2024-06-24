@@ -170,5 +170,53 @@ export function drawParticles(
     console.log([...new Set(particleColours)]);
   }
 
+  // We can now finally draw the hits.
   drawHits(group, hits.flat(), particleColours, hitConfig, lutToUse);
+
+  // Do any final drawing of additional, particle-level properties.
+  const trackParticles = activeParticles.filter(
+    (particle) => particle.renderType === "Track",
+  );
+  if (trackParticles.length > 0) {
+    drawTracks(group, trackParticles, hitConfig);
+  }
+}
+
+/**
+ * Draws tracks on a given group element.
+ *
+ * @param {THREE.Group} group - The group to which the particles should be added.
+ * @param {Array} particles - An array of particle objects, each with an array of hits.
+ * @param {Object} hitConfig - An object containing configuration options for the hit mesh.
+ */
+export function drawTracks(group, particles, hitConfig) {
+  if (particles.length === 0) return;
+
+  // Setup a BufferGeometry to store all the lines.
+  const geometry = new THREE.BufferGeometry();
+  const positions = [];
+  const indices = [];
+
+  // Start building the lines between the hits.
+  particles.forEach((particle) => {
+    const positionsIndex = positions.length / 3;
+    const points = particle.hits.map((hit) => hit.position);
+
+    points.forEach((point) => {
+      positions.push(point.x, point.y, point.z);
+    });
+
+    // Add the indices for the line segments, taking into account the previous points.
+    for (let i = 0; i < points.length - 1; i++) {
+      indices.push(positionsIndex + i, positionsIndex + i + 1);
+    }
+  });
+
+  const positionAttribute = new THREE.Float32BufferAttribute(positions, 3);
+  geometry.setAttribute("position", positionAttribute);
+  geometry.setIndex(indices);
+  const material = new THREE.LineBasicMaterial({ color: 0xff0000 });
+  const lines = new THREE.LineSegments(geometry, material);
+
+  group.add(lines);
 }
