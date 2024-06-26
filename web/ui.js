@@ -884,11 +884,13 @@ export function setupMobileUI(renderer) {
   buttons = [
     document.getElementById("previous_state"),
     document.getElementById("next_state"),
-    document.getElementById("options_button"),
   ];
   buttons.forEach((button) => {
     button.style.display = "none";
   });
+  const options = document.getElementById("options_button");
+  options.style.display = "none";
+  options.nextElementSibling.style.display = "none";
 
   // Next, lets update the names for the buttons...
   const names = {
