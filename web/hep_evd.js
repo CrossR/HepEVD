@@ -17,6 +17,7 @@ import {
   quitEvd,
   saveState,
   screenshotEvd,
+  setupMobileUI,
   toggleTheme,
 } from "./ui.js";
 import { highlightParticleOnMouseMove } from "./interactions.js";
@@ -130,6 +131,7 @@ renderStates.forEach((state) => {
 
 // Final tidy ups.
 // Hook up various global events and tidy functions.
+setupMobileUI(renderer);
 document.screenshotEvd = () => screenshotEvd(renderer);
 document.quitEvd = () => quitEvd();
 document.toggleTheme = () => toggleTheme(renderStates);

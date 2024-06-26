@@ -49,8 +49,10 @@ export function populateDropdown(hitDim, hitPropMap, onClick = (_) => {}) {
 
   // Add dropdown on click to send empty string.
   // Clone the button to remove any other event listeners.
-  const dropDownButton = document.getElementById(`${hitDim}_dropdown_button`);
-  dropDownButton.addEventListener("click", () => onClick(""));
+  if (!isTouchDevice) {
+    const dropDownButton = document.getElementById(`${hitDim}_dropdown_button`);
+    dropDownButton.addEventListener("click", () => onClick(""));
+  }
 
   return;
 }
@@ -89,7 +91,7 @@ export function populateTypeToggle(hitDim, hitTypesMap, onClick = (_) => {}) {
       "btn-outline",
       "btn-accent",
       "m-1",
-      "nohover",
+      "nohover"
     );
     newButton.style.textTransform = "capitalize";
     newButton.innerText = entry;
@@ -112,7 +114,7 @@ export function populateMarkerToggle(
   hitDim,
   markers,
   particles,
-  onClick = (_) => {},
+  onClick = (_) => {}
 ) {
   // Get the div to populate, and clear it to start.
   const classDiv = document.getElementById(`markers_${hitDim}`);
@@ -141,7 +143,7 @@ export function populateMarkerToggle(
       "btn-outline",
       "btn-accent",
       "m-1",
-      "nohover",
+      "nohover"
     );
     newButton.style.textTransform = "capitalize";
     newButton.innerText = entry;
@@ -215,7 +217,7 @@ export function enableInteractionTypeToggle(hitType, particles, onClick) {
       "btn-outline",
       "btn-accent",
       "m-1",
-      "nohover",
+      "nohover"
     );
     newButton.innerText = interactionType;
     newButton.id = `particles_${hitType}_${interactionType}`;
@@ -288,7 +290,7 @@ export function setupParticleMenu(renderState) {
   const onClickAction = (particle) => {
     const particleID = particle.id;
     const particleMenuEntry = document.getElementById(
-      `particle_${particleID}_${renderState.hitDim}`,
+      `particle_${particleID}_${renderState.hitDim}`
     );
     const label = particleMenuEntry.querySelector("span");
 
@@ -306,7 +308,7 @@ export function setupParticleMenu(renderState) {
   createParticleMenu(
     renderState.hitDim,
     renderState.particleData.particleMap,
-    onClickAction,
+    onClickAction
   );
 }
 
@@ -379,7 +381,7 @@ export function screenshotEvd(renderer) {
   const contentType = "image/jpeg";
 
   const byteCharacters = atob(
-    imageData.substr(`data:${contentType};base64,`.length),
+    imageData.substr(`data:${contentType};base64,`.length)
   );
   const bytes = [];
 
@@ -507,7 +509,7 @@ export function saveState(states) {
 
     if (name === undefined || name === "") return;
     const visibleState = Array.from(states.values()).find(
-      (state) => state.visible,
+      (state) => state.visible
     );
     const store = window.localStorage;
 
@@ -548,8 +550,8 @@ export function saveState(states) {
         closed = true;
         cleanUp();
       },
-      { once: true },
-    ),
+      { once: true }
+    )
   );
 
   inputSave.addEventListener(
@@ -560,7 +562,7 @@ export function saveState(states) {
       doSave();
       cleanUp();
     },
-    { once: true },
+    { once: true }
   );
 }
 
@@ -571,7 +573,7 @@ export function saveState(states) {
  */
 export function loadState(renderStates) {
   const visibleState = Array.from(renderStates.values()).find(
-    (state) => state.visible,
+    (state) => state.visible
   );
   const store = window.localStorage;
 
@@ -590,7 +592,7 @@ export function loadState(renderStates) {
   }
 
   const validSaveStates = saveStates.filter(
-    (state) => state.hitDim === visibleState.hitDim,
+    (state) => state.hitDim === visibleState.hitDim
   );
 
   if (validSaveStates === null) return;
@@ -631,8 +633,8 @@ export function loadState(renderStates) {
         closed = true;
         cleanUp();
       },
-      { once: true },
-    ),
+      { once: true }
+    )
   );
 
   selectButton.addEventListener(
@@ -643,7 +645,7 @@ export function loadState(renderStates) {
       cleanUp();
       visibleState.triggerEvent("change");
     },
-    { once: true },
+    { once: true }
   );
 }
 
@@ -652,7 +654,7 @@ export function loadState(renderStates) {
  */
 export function pickColourscheme(states) {
   const visibleState = Array.from(states.values()).find(
-    (state) => state.visible,
+    (state) => state.visible
   );
   const store = window.localStorage;
 
@@ -686,7 +688,7 @@ export function pickColourscheme(states) {
       option.text = csName;
       categoricalSelect.add(option);
       continuousSelect.add(option.cloneNode(true));
-    },
+    }
   );
 
   // Finally show the modal.
@@ -735,8 +737,8 @@ export function pickColourscheme(states) {
         closed = true;
         cleanUp();
       },
-      { once: true },
-    ),
+      { once: true }
+    )
   );
 
   selectButton.addEventListener(
@@ -748,7 +750,7 @@ export function pickColourscheme(states) {
 
       visibleState.triggerEvent("fullUpdate");
     },
-    { once: true },
+    { once: true }
   );
 }
 
@@ -812,4 +814,92 @@ export function addCitation(citationStr, citationURL) {
   citationDiv.appendChild(personalCitation);
 
   return;
+}
+
+/**
+ * Is this a touchscreen device?
+ *
+ * @returns {boolean}
+ */
+export function isTouchDevice() {
+  return window.matchMedia("(pointer: coarse)").matches;
+}
+
+/**
+ * Setup mobile / touchscreen UI, by updating some of the buttons.
+ *
+ * @param {THREE.WebGLRenderer} Renderer
+ */
+export function setupMobileUI(renderer) {
+  // Is the device low horizontal resolution? i.e. less then 640?
+  const shouldResize = window.innerWidth < 640;
+
+  // Does the device primarily use a touchscreen?
+  const isTouch = isTouchDevice();
+
+  if (!shouldResize && !isTouch) return;
+
+  // First, sort out the touch devices, as that should cover mobiles too.
+  // We want to swap every button to instead be dropdown on tap, not hover.
+  let buttons = [
+    document.getElementById("state_dropdown_button"),
+    document.getElementById("2D_dropdown_button"),
+    document.getElementById("3D_dropdown_button"),
+  ];
+  const dropDowns = buttons.map((button) => button.nextElementSibling);
+
+  // When tapped, toggle the hover state.
+  buttons.forEach((button) => {
+    // Remove any existing onclick handlers.
+    button.removeEventListener("click", () => {});
+    button.onclick = null;
+
+    // Find the dropdown element via the parent.
+    const dropdownElem = button.nextElementSibling;
+    console.log(dropdownElem);
+    button.addEventListener("click", () => {
+      const visibility = dropdownElem.style.visibility;
+      if (visibility === "hidden" || visibility === "") {
+        dropdownElem.style.visibility = "visible";
+        dropdownElem.style.opacity = "1";
+      } else {
+        dropdownElem.style.visibility = "hidden";
+        dropdownElem.style.opacity = "0";
+      }
+    });
+  });
+
+  // Next, setup the actual rendering canvas to hide the above dropdowns on
+  // interaction.
+  renderer.domElement.addEventListener("touchstart", (event) => {
+    dropDowns.forEach((dropDown) => {
+      dropDown.style.visibility = "hidden";
+      dropDown.style.opacity = "0";
+    });
+  });
+
+  if (!shouldResize) return;
+
+  // Now, let's hide unnecessary buttons.
+  buttons = [
+    document.getElementById("previous_state"),
+    document.getElementById("next_state"),
+    document.getElementById("options_button"),
+  ];
+  buttons.forEach((button) => {
+    button.style.display = "none";
+  });
+
+  // Next, lets update the names for the buttons...
+  const names = {
+    quit_button: "🛑",
+    options_button: "⚙️",
+    "2D_dropdown_button": "2D",
+    "3D_dropdown_button": "3D",
+  };
+
+  Object.keys(names).forEach((key) => {
+    const elem = document.getElementById(key);
+    elem.innerHTML = names[key];
+  });
 }
