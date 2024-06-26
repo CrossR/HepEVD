@@ -128,7 +128,7 @@ async function updateExternalData() {
     particles: newStateData.particles,
     detectorGeometry: hepEVD_GLOBAL_STATE.detectorGeometry,
     stateInfo: newStateData.stateInfo || { mcTruth: "" },
-    config: newStateData.config || {},
+    config: hepEVD_GLOBAL_STATE.config || {},
   };
 }
 
@@ -177,6 +177,7 @@ async function loadExternalData(url) {
     currentState: numberOfStates - 1,
     states: states,
     detectorGeometry: result.detectorGeometry,
+    config: result.config,
   };
 
   // Set any citations, if they exist.
@@ -192,7 +193,7 @@ async function loadExternalData(url) {
     particles: lastStateData.particles,
     detectorGeometry: result.detectorGeometry,
     stateInfo: lastStateData.stateInfo || { mcTruth: "" },
-    config: lastStateData.config || {},
+    config: result.config || {},
   };
 }
 
