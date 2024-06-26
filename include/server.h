@@ -318,7 +318,7 @@ inline void HepEVDServer::startServer() {
         infoFile["stateInfo"] = *this->getState();
         for (auto &state : this->eventStates) {
 
-            if (state.isEmpty())
+            if (state.second.isEmpty())
                 continue;
 
             json nameUrlPair({{"name", state.second.name}, {"url", ""}});
