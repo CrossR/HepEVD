@@ -5,14 +5,20 @@
 import * as THREE from "three";
 import { Lut } from "three/addons/math/Lut.js";
 
+import * as BufferGeometryUtils from "three/addons/utils/BufferGeometryUtils.js";
 import {
   addColourMap,
   getCategoricalLutConf,
   getContinuousLutConf,
 } from "./colourmaps.js";
-import { ParticleDataState } from "./particle_data_state.js";
+import {
+  BUTTON_ID,
+  materialHit,
+  materialParticle,
+  trackLineMaterial,
+} from "./constants.js";
 import { HitDataState } from "./hit_data_state.js";
-import { BUTTON_ID, materialHit, materialParticle } from "./constants.js";
+import { ParticleDataState } from "./particle_data_state.js";
 
 /**
  * Draws a set of hits as a 3D mesh using Three.js.
@@ -167,8 +173,51 @@ export function drawParticles(
       if (colour !== "Grey")
         particleColours[index] = colourLut.getColor(colour);
     });
-    console.log([...new Set(particleColours)]);
   }
 
+  // We can now finally draw the hits.
   drawHits(group, hits.flat(), particleColours, hitConfig, lutToUse);
+
+  // Do any final drawing of additional, particle-level properties.
+  const trackParticles = activeParticles.filter(
+    (particle) => particle.renderType === "Track",
+  );
+  if (trackParticles.length > 0) {
+    drawTracks(group, trackParticles, hitConfig);
+  }
+}
+
+/**
+ * Draws tracks on a given group element.
+ *
+ * @param {THREE.Group} group - The group to which the particles should be added.
+ * @param {Array} particles - An array of particle objects, each with an array of hits.
+ * @param {Object} hitConfig - An object containing configuration options for the hit mesh.
+ */
+export function drawTracks(group, particles, hitConfig) {
+  if (particles.length === 0) return;
+
+  // Store all the tube geometries for a later merge.
+  const geometries = [];
+
+  // Start building the lines between the hits.
+  particles.forEach((particle) => {
+    // INFO: Plot the tracks as a Tube, not a line.  This is because we can't
+    // use the Line class, as we can't change the thickness due to a platform
+    // limitation.
+    const path = new THREE.CatmullRomCurve3(
+      particle.hits.map(
+        (hit) =>
+          new THREE.Vector3(hit.position.x, hit.position.y, hit.position.z),
+      ),
+    );
+    const geo = new THREE.TubeGeometry(path, 5, 1.5, 8, false);
+    geometries.push(geo);
+  });
+
+  // Finally, merge and add to group.
+  const mergedGeo = BufferGeometryUtils.mergeGeometries(geometries);
+  const mesh = new THREE.Mesh(mergedGeo, trackLineMaterial);
+
+  group.add(mesh);
 }
