@@ -313,9 +313,11 @@ inline void HepEVDServer::startServer() {
         // Populate the top level file.
         json infoFile;
         infoFile["detectorGeometry"] = this->geometry;
-        infoFile["numberOfStates"] = this->eventStates.size();
         infoFile["config"] = *this->getConfig();
         infoFile["stateInfo"] = *this->getState();
+
+        int numberOfStates(0);
+
         for (auto &state : this->eventStates) {
 
             if (state.second.isEmpty())
@@ -323,9 +325,11 @@ inline void HepEVDServer::startServer() {
 
             json nameUrlPair({{"name", state.second.name}, {"url", ""}});
             infoFile["states"].push_back(nameUrlPair);
+            ++numberOfStates;
         }
 
         // Now write out the top level file.
+        infoFile["numberOfStates"] = numberOfStates;
         std::ofstream infoFileOut("eventDisplayInfo.json");
         infoFileOut << infoFile.dump(4);
 
