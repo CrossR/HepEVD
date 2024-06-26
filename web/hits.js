@@ -5,14 +5,20 @@
 import * as THREE from "three";
 import { Lut } from "three/addons/math/Lut.js";
 
+import * as BufferGeometryUtils from "three/addons/utils/BufferGeometryUtils.js";
 import {
   addColourMap,
   getCategoricalLutConf,
   getContinuousLutConf,
 } from "./colourmaps.js";
-import { ParticleDataState } from "./particle_data_state.js";
+import {
+  BUTTON_ID,
+  materialHit,
+  materialParticle,
+  trackLineMaterial,
+} from "./constants.js";
 import { HitDataState } from "./hit_data_state.js";
-import { BUTTON_ID, materialHit, materialParticle } from "./constants.js";
+import { ParticleDataState } from "./particle_data_state.js";
 
 /**
  * Draws a set of hits as a 3D mesh using Three.js.
@@ -167,7 +173,6 @@ export function drawParticles(
       if (colour !== "Grey")
         particleColours[index] = colourLut.getColor(colour);
     });
-    console.log([...new Set(particleColours)]);
   }
 
   // We can now finally draw the hits.
@@ -192,31 +197,27 @@ export function drawParticles(
 export function drawTracks(group, particles, hitConfig) {
   if (particles.length === 0) return;
 
-  // Setup a BufferGeometry to store all the lines.
-  const geometry = new THREE.BufferGeometry();
-  const positions = [];
-  const indices = [];
+  // Store all the tube geometries for a later merge.
+  const geometries = [];
 
   // Start building the lines between the hits.
   particles.forEach((particle) => {
-    const positionsIndex = positions.length / 3;
-    const points = particle.hits.map((hit) => hit.position);
-
-    points.forEach((point) => {
-      positions.push(point.x, point.y, point.z);
-    });
-
-    // Add the indices for the line segments, taking into account the previous points.
-    for (let i = 0; i < points.length - 1; i++) {
-      indices.push(positionsIndex + i, positionsIndex + i + 1);
-    }
+    // INFO: Plot the tracks as a Tube, not a line.  This is because we can't
+    // use the Line class, as we can't change the thickness due to a platform
+    // limitation.
+    const path = new THREE.CatmullRomCurve3(
+      particle.hits.map(
+        (hit) =>
+          new THREE.Vector3(hit.position.x, hit.position.y, hit.position.z),
+      ),
+    );
+    const geo = new THREE.TubeGeometry(path, 5, 1.5, 8, false);
+    geometries.push(geo);
   });
 
-  const positionAttribute = new THREE.Float32BufferAttribute(positions, 3);
-  geometry.setAttribute("position", positionAttribute);
-  geometry.setIndex(indices);
-  const material = new THREE.LineBasicMaterial({ color: 0xff0000 });
-  const lines = new THREE.LineSegments(geometry, material);
+  // Finally, merge and add to group.
+  const mergedGeo = BufferGeometryUtils.mergeGeometries(geometries);
+  const mesh = new THREE.Mesh(mergedGeo, trackLineMaterial);
 
-  group.add(lines);
+  group.add(mesh);
 }

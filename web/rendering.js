@@ -157,7 +157,6 @@ export function drawTrapezoids(group, trapezoids) {
     });
 
     mesh.instanceMatrix.needsUpdate = true;
-
   });
 
   // Finally, merge and add to group.

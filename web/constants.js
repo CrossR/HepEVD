@@ -16,10 +16,10 @@ export const threeDTrapezoidMat = new THREE.LineBasicMaterial({
   side: THREE.FrontSide,
   color: "gray",
   transparent: true,
-  opacity: 0.1,
+  opacity: 0.05,
   depthWrite: false,
   depthTest: false,
-  alphaTest: 0.5,
+  alphaTest: 0.25,
 });
 export const twoDXMat = new LineMaterial({
   color: "darkred",
@@ -32,24 +32,11 @@ export const twoDYMat = new LineMaterial({
 export const materialHit = new THREE.MeshBasicMaterial({
   side: THREE.DoubleSide,
 });
+export const trackLineMaterial = new THREE.MeshBasicMaterial({
+  color: "darkred",
+  side: THREE.DoubleSide,
+});
 
-const selectedMaterial2D = (theme) =>
-  new THREE.MeshBasicMaterial({
-    side: THREE.DoubleSide,
-    transparent: true,
-    opacity: 0.1,
-    color: theme === "dark" ? "yellow" : "darkred",
-    depthFunc: THREE.AlwaysDepth,
-  });
-
-const selectedMaterial3D = (theme) =>
-  new THREE.MeshBasicMaterial({
-    side: THREE.DoubleSide,
-    transparent: true,
-    opacity: 0.05,
-    color: theme === "dark" ? "yellow" : "darkred",
-    depthFunc: THREE.AlwaysDepth,
-  });
 export const materialParticle = new THREE.MeshBasicMaterial({
   side: THREE.DoubleSide,
 });
@@ -94,13 +81,11 @@ export const HIT_CONFIG = {
   "2D": {
     hitSize: 2,
     materialHit: materialHit,
-    selectedMaterial: selectedMaterial2D,
     materialParticle: materialParticle,
   },
   "3D": {
     hitSize: 2,
     materialHit: materialHit,
-    selectedMaterial: selectedMaterial3D,
     materialParticle: materialParticle,
   },
 };
