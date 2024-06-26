@@ -23,8 +23,7 @@ NLOHMANN_JSON_SERIALIZE_ENUM(InteractionType,
                              {{BEAM, "Beam"}, {COSMIC, "Cosmic"}, {NEUTRINO, "Neutrino"}, {OTHER, "Other"}});
 
 enum RenderType { PARTICLE, TRACK, SHOWER };
-NLOHMANN_JSON_SERIALIZE_ENUM(RenderType,
-                             {{PARTICLE, "Particle"}, {TRACK, "Track"}, {SHOWER, "Shower"}});
+NLOHMANN_JSON_SERIALIZE_ENUM(RenderType, {{PARTICLE, "Particle"}, {TRACK, "Track"}, {SHOWER, "Shower"}});
 
 // Represent a single particle in the event.
 class Particle {

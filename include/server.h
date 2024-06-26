@@ -329,6 +329,10 @@ inline void HepEVDServer::startServer() {
         for (unsigned int i = 0; i < this->eventStates.size(); i++) {
             json stateFile;
             EventState state = this->eventStates[i];
+
+            if (state.isEmpty())
+                continue;
+
             stateFile["name"] = state.name;
             stateFile["hits"] = state.hits;
             stateFile["mcHits"] = state.mcHits;
