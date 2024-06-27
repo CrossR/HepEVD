@@ -277,7 +277,13 @@ export function draw2DScaleBar(state) {
   }
 
   // First, get the X width of the detector.
-  const xBoundary = getHitBoundaries(state.hitData.all, "x");
+  let hitsToUse = state.hitData.all;
+
+  if (hitsToUse.length === 0 && state.particleData.all.length > 0) {
+    hitsToUse = state.particleData.all.flatMap((particle) => particle.hits);
+  }
+
+  const xBoundary = getHitBoundaries(hitsToUse, "x");
   const xWidth = xBoundary.max - xBoundary.min;
   const xStart = 0 - xWidth / 2;
   const xEnd = xWidth / 2;

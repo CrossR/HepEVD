@@ -82,7 +82,7 @@
       <div class="flex justify-start flex-1 px-2">
         <div class="dropdown dropdown-hover">
           <label id="2D_dropdown_button" class="btn btn-primary m-1">
-            2D Hits...
+            2D Hits
           </label>
           <ul
             id="2D_dropdown"
@@ -92,7 +92,7 @@
 
         <div class="dropdown dropdown-hover">
           <label id="3D_dropdown_button" class="btn btn-primary m-1">
-            3D Hits...
+            3D Hits
           </label>
           <ul
             id="3D_dropdown"
@@ -130,7 +130,11 @@
 
       <div class="flex justify-end flex-1 px-2">
         <div class="dropdown dropdown-hover">
-          <label class="btn btn-primary m-1" onclick="resetView()">
+          <label
+            id="options_button"
+            class="btn btn-primary m-1"
+            onclick="resetView()"
+          >
             ⚙️ Options
           </label>
           <div
@@ -179,7 +183,11 @@
             </button>
           </div>
         </div>
-        <button class="btn btn-primary btn-outline m-1" onclick="quitEvd()">
+        <button
+          id="quit_button"
+          class="btn btn-primary btn-outline m-1"
+          onclick="quitEvd()"
+        >
           🛑 Quit
         </button>
       </div>

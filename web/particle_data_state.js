@@ -50,6 +50,15 @@ export class ParticleDataState {
   }
 
   /**
+   * Get all the particles.
+   *
+   * @returns {Array} The particles.
+   */
+  get all() {
+    return this.allParticles;
+  }
+
+  /**
    * Get the number of particles in the state.
    *
    * @returns {number} The number of particles.

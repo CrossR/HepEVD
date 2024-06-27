@@ -49,8 +49,10 @@ export function populateDropdown(hitDim, hitPropMap, onClick = (_) => {}) {
 
   // Add dropdown on click to send empty string.
   // Clone the button to remove any other event listeners.
-  const dropDownButton = document.getElementById(`${hitDim}_dropdown_button`);
-  dropDownButton.addEventListener("click", () => onClick(""));
+  if (!isTouchDevice()) {
+    const dropDownButton = document.getElementById(`${hitDim}_dropdown_button`);
+    dropDownButton.addEventListener("click", () => onClick(""));
+  }
 
   return;
 }
@@ -812,4 +814,94 @@ export function addCitation(citationStr, citationURL) {
   citationDiv.appendChild(personalCitation);
 
   return;
+}
+
+/**
+ * Is this a touchscreen device?
+ *
+ * @returns {boolean}
+ */
+export function isTouchDevice() {
+  return window.matchMedia("(pointer: coarse)").matches;
+}
+
+/**
+ * Setup mobile / touchscreen UI, by updating some of the buttons.
+ *
+ * @param {THREE.WebGLRenderer} Renderer
+ */
+export function setupMobileUI(renderer) {
+  // Is the device low horizontal resolution? i.e. less then 640?
+  const shouldResize = window.innerWidth < 640;
+
+  // Does the device primarily use a touchscreen?
+  const isTouch = isTouchDevice();
+
+  if (!shouldResize && !isTouch) return;
+
+  // First, sort out the touch devices, as that should cover mobiles too.
+  // We want to swap every button to instead be dropdown on tap, not hover.
+  let buttons = [
+    document.getElementById("state_dropdown_button"),
+    document.getElementById("2D_dropdown_button"),
+    document.getElementById("3D_dropdown_button"),
+  ];
+  const dropDowns = buttons.map((button) => button.nextElementSibling);
+
+  // When tapped, toggle the hover state.
+  buttons.forEach((button) => {
+    // Remove any existing onclick handlers.
+    button.removeEventListener("click", () => {});
+    button.onclick = null;
+
+    // Find the dropdown element via the parent.
+    const dropdownElem = button.nextElementSibling;
+    console.log(dropdownElem);
+    button.addEventListener("click", () => {
+      const visibility = dropdownElem.style.visibility;
+      if (visibility === "hidden" || visibility === "") {
+        dropdownElem.style.visibility = "visible";
+        dropdownElem.style.opacity = "1";
+      } else {
+        dropdownElem.style.visibility = "hidden";
+        dropdownElem.style.opacity = "0";
+      }
+    });
+  });
+
+  // Next, setup the actual rendering canvas to hide the above dropdowns on
+  // interaction.
+  renderer.domElement.addEventListener("touchstart", (event) => {
+    dropDowns.forEach((dropDown) => {
+      dropDown.style.visibility = "hidden";
+      dropDown.style.opacity = "0";
+    });
+  });
+
+  if (!shouldResize) return;
+
+  // Now, let's hide unnecessary buttons.
+  buttons = [
+    document.getElementById("previous_state"),
+    document.getElementById("next_state"),
+  ];
+  buttons.forEach((button) => {
+    button.style.display = "none";
+  });
+  const options = document.getElementById("options_button");
+  options.style.display = "none";
+  options.nextElementSibling.style.display = "none";
+
+  // Next, lets update the names for the buttons...
+  const names = {
+    quit_button: "🛑",
+    options_button: "⚙️",
+    "2D_dropdown_button": "2D",
+    "3D_dropdown_button": "3D",
+  };
+
+  Object.keys(names).forEach((key) => {
+    const elem = document.getElementById(key);
+    elem.innerHTML = names[key];
+  });
 }
