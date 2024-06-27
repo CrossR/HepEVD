@@ -489,7 +489,7 @@ static void addDLTensorImage(const at::Tensor inputImageTensor, const std::strin
         imageVector.push_back(row);
     }
 
-    Image *image = new Image(imageVector, name);
+    MonochromeImage *image = new MonochromeImage(imageVector, name);
     hepEVDServer->addImages({image});
 }
 #endif

@@ -1,5 +1,5 @@
 //
-// Image
+// MonochromeImage
 //
 // Represent a raw image, given as a 2D array of pixel values.
 
@@ -11,15 +11,19 @@ using json = nlohmann::json;
 
 namespace HepEVD {
 
+enum ImageType { MONOCHROME, RGB };
+NLOHMANN_JSON_SERIALIZE_ENUM(ImageType, {{MONOCHROME, "Monochrome"}, {RGB, "RGB"}});
+
 // High level Class representing an image.
 // This is a 2D array of pixel values.
-class Image {
+class MonochromeImage {
   public:
-    Image() {}
-    Image(std::vector<std::vector<float>> &image, const std::string label = "") {
+    
+    MonochromeImage() {}
+    MonochromeImage(std::vector<std::vector<float>> &image, const std::string label = "") {
 
         if (image.size() == 0)
-            throw std::invalid_argument("Image must have at least one row!");
+            throw std::invalid_argument("MonochromeImage must have at least one row!");
 
         this->data = image;
 
@@ -28,16 +32,18 @@ class Image {
         this->label = label;
     }
 
-    NLOHMANN_DEFINE_TYPE_INTRUSIVE(Image, width, height, data, label);
+    NLOHMANN_DEFINE_TYPE_INTRUSIVE(MonochromeImage, width, height, data, label, imageType);
 
   protected:
+    ImageType imageType = MONOCHROME;
     std::vector<std::vector<float>> data;
     int width;
     int height;
     std::string label;
 };
 
-using Images = std::vector<Image*>;
+// TODO: Extend later to include other image types
+using Images = std::vector<MonochromeImage *>;
 
 inline static void to_json(json &j, const Images &images) {
 
@@ -56,7 +62,7 @@ inline static void from_json(const json &j, Images &images) {
         throw std::invalid_argument("Images must be an array!");
 
     for (const auto &jsonImage : j) {
-        images.push_back(new Image(jsonImage));
+        images.push_back(new MonochromeImage(jsonImage));
     }
 }
 
