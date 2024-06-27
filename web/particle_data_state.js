@@ -51,7 +51,7 @@ export class ParticleDataState {
 
   /**
    * Get all the particles.
-   * 
+   *
    * @returns {Array} The particles.
    */
   get all() {
