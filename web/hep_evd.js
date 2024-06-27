@@ -186,10 +186,10 @@ fetch("/images")
         const row = Math.floor(i / (image.height * 4));
         const col = Math.floor(i / 4) % image.width;
 
-        // If the value isn't 0, scale the red channel to between 0 and 255, using the max and min values
-        imageData.data[i + 0] = image.data[row][col] !== 0 ? 255 * ((image.data[row][col] - minValue) / (maxValue - minValue)) : 0;
-        imageData.data[i + 1] = 0;
-        imageData.data[i + 2] = 0;
+        // If the value isn't 0, scale every channel between 0 - 255, inverted.
+        imageData.data[i + 0] = image.data[row][col] !== 0 ? 255 - 255 * (image.data[row][col] - minValue) / (maxValue - minValue) : 0;
+        imageData.data[i + 1] = image.data[row][col] !== 0 ? 255 - 255 * (image.data[row][col] - minValue) / (maxValue - minValue) : 0;
+        imageData.data[i + 2] = image.data[row][col] !== 0 ? 255 - 255 * (image.data[row][col] - minValue) / (maxValue - minValue) : 0;
         imageData.data[i + 3] = image.data[row][col] !== 0 ? 255 : 0;
       }
 
