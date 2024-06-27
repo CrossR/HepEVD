@@ -139,7 +139,16 @@ class HepEVDServer {
     Markers getMarkers() { return this->getState()->markers; }
 
     bool addImages(const Images &images) {
-        this->getState()->images.insert(this->getState()->images.end(), images.begin(), images.end());
+
+        if (this->getState()->images.size() == 0) {
+            this->getState()->images = images;
+            return true;
+        }
+
+        Images newImages = this->getState()->images;
+        newImages.insert(newImages.end(), images.begin(), images.end());
+        this->getState()->images = newImages;
+
         return true;
     }
     Images getImages() { return this->getState()->images; }
