@@ -22,16 +22,20 @@
 #include "larpandoracontent/LArHelpers/LArPfoHelper.h"
 
 // Backwards compatibility with older versions of Pandora.
-// Somethings have been moved around, so we need to check for them.
-#ifdef LAR_SLICE_H
+// Somethings have been moved around or don't exist.
+#if __has_include("larpandoracontent/LArObjects/LArGraph.h")
+#include "larpandoracontent/LArObjects/LArGraph.h"
+#endif
+
+#if __has_include("larpandoracontent/LArObjects/LArSlice.h")
 #include "larpandoracontent/LArObjects/LArSlice.h"
-typedef lar_content::LArSlice::SliceList SliceList;
+typedef lar_content::SliceList SliceList;
 #else
 #include "larpandoracontent/LArControlFlow/SlicingAlgorithm.h"
 typedef lar_content::SlicingAlgorithm::SliceList SliceList;
 #endif
 
-#ifdef LAR_DL_HELPER_H
+#if __has_include("larpandoradlcontent/LArHelpers/LArDLHelper.h")
 #include <torch/script.h>
 #include <ATen/ATen.h>
 #endif
@@ -456,7 +460,7 @@ static void addPFOs(const pandora::Pandora &pPandora, const pandora::PfoList *pP
     hepEVDServer->addParticles(particles);
 }
 
-#ifdef LAR_DL_HELPER_H
+#if __has_include("larpandoradlcontent/LArHelpers/LArDLHelper.h")
 static void addDLTensorImage(const at::Tensor inputImageTensor, const std::string name) {
 
     if (!isServerInitialised())
@@ -490,7 +494,7 @@ static void addDLTensorImage(const at::Tensor inputImageTensor, const std::strin
 }
 #endif
 
-#ifdef LAR_GRAPH_H
+#if __has_include("larpandoracontent/LArObjects/LArGraph.h")
 static void addGraph(const lar_content::LArGraph &graph, std::string label = "", std::string nodeColour = "grey",
                      std::string lineColour = "blue") {
 
