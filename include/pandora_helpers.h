@@ -36,8 +36,8 @@ typedef lar_content::SlicingAlgorithm::SliceList SliceList;
 #endif
 
 #if __has_include("larpandoradlcontent/LArHelpers/LArDLHelper.h")
-#include <torch/script.h>
 #include <ATen/ATen.h>
+#include <torch/script.h>
 #endif
 
 // Helpful typedefs
@@ -461,6 +461,7 @@ static void addPFOs(const pandora::Pandora &pPandora, const pandora::PfoList *pP
 }
 
 #if __has_include("larpandoradlcontent/LArHelpers/LArDLHelper.h")
+template <typename T>
 static void addDLTensorImage(const at::Tensor inputImageTensor, const std::string name) {
 
     if (!isServerInitialised())
@@ -469,14 +470,13 @@ static void addDLTensorImage(const at::Tensor inputImageTensor, const std::strin
     const auto imageTensor = inputImageTensor.clone().squeeze();
 
     if (imageTensor.dim() != 2) {
-        if (hepEVDVerboseLogging) {
-            std::cout << "HepEVD: DL input image not 2D!" << std::endl;
-            std::cout << imageTensor.dim() << std::endl;
-        }
+        std::cout << "HepEVD: Input image should be 2D!" << std::endl;
+        std::cout << "HepEVD: Was instead " << imageTensor.dim() << "D" << std::endl;
+        std::cout << "HepEVD: Maybe pre-process the image first? (Apply softmax etc)" << std::endl;
         return;
     }
 
-    auto imageAccessor = imageTensor.accessor<float, 2>();
+    auto imageAccessor = imageTensor.accessor<T, 2>();
     const unsigned int height = imageAccessor.size(0);
     const unsigned int width = imageAccessor.size(1);
 

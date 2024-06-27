@@ -28,7 +28,7 @@ class Image {
         this->label = label;
     }
 
-    NLOHMANN_DEFINE_TYPE_INTRUSIVE(Image, width, height, data);
+    NLOHMANN_DEFINE_TYPE_INTRUSIVE(Image, width, height, data, label);
 
   protected:
     std::vector<std::vector<float>> data;
