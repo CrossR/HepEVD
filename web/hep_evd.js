@@ -171,7 +171,10 @@ fetch("/images")
   .then((response) => response.json())
   .then((images) => {
     images.forEach((image) => {
-      console.log(image)
+
+      const dataValues = [...new Set(image.data.flat())];
+      const maxValue = Math.max(...dataValues);
+      const minValue = Math.min(...dataValues);
 
       const canvas = document.createElement("canvas");
       const ctx = canvas.getContext("2d");
@@ -181,8 +184,10 @@ fetch("/images")
 
       for (let i = 0; i < imageData.data.length; i += 4) {
         const row = Math.floor(i / (image.width * 4));
-        const col = i % (image.width * 4);
-        imageData.data[i + 0] = (image.data[row][col] * 255) | 0;
+        const col = Math.floor(i / 4) % image.width;
+
+        // If the value isn't 0, scale the red channel to between 0 and 255, using the max and min values
+        imageData.data[i + 0] = image.data[row][col] !== 0 ? 255 * ((image.data[row][col] - minValue) / (maxValue - minValue)) : 0;
         imageData.data[i + 1] = 0;
         imageData.data[i + 2] = 0;
         imageData.data[i + 3] = image.data[row][col] !== 0 ? 255 : 0;
