@@ -31,6 +31,9 @@ typedef lar_content::LArSlice::SliceList SliceList;
 typedef lar_content::SlicingAlgorithm::SliceList SliceList;
 #endif
 
+// Helpful typedefs
+typedef std::unordered_map<const pandora::Cluster *, unsigned int> ClusterToSliceIndexMap;
+
 // Local Includes
 #include "base_helper.h"
 #include "geometry.h"
@@ -174,7 +177,8 @@ static void addClusterProperties(const pandora::Cluster *cluster, std::map<std::
     }
 }
 
-static void addSlices(const SliceList *slices, std::string label = "") {
+static void addSlices(const SliceList *slices, const ClusterToSliceIndexMap *clusterToSliceIndexMap = nullptr,
+                      const std::string label = "") {
 
     if (!isServerInitialised())
         return;
@@ -192,6 +196,22 @@ static void addSlices(const SliceList *slices, std::string label = "") {
             caloHitToEvdHit[pCaloHit]->addProperties({{{"SliceNumber", HepEVD::PropertyType::CATEGORIC}, sliceNumber}});
         for (const auto &pCaloHit : slice.m_caloHitListW)
             caloHitToEvdHit[pCaloHit]->addProperties({{{"SliceNumber", HepEVD::PropertyType::CATEGORIC}, sliceNumber}});
+    }
+
+    if (clusterToSliceIndexMap == nullptr)
+        return;
+
+    for (const auto &clusterToSliceIndex : *clusterToSliceIndexMap) {
+        const auto cluster = clusterToSliceIndex.first;
+        const auto sliceIndex = clusterToSliceIndex.second;
+
+        pandora::CaloHitList clusterCaloHits;
+        HepEVD::getAllCaloHits(cluster, clusterCaloHits);
+        HepEVD::addHits(&clusterCaloHits, label);
+
+        for (const auto &pCaloHit : clusterCaloHits) {
+            caloHitToEvdHit[pCaloHit]->addProperties({{{"SliceNumber", HepEVD::PropertyType::CATEGORIC}, sliceIndex}});
+        }
     }
 }
 
