@@ -29,8 +29,8 @@ There is then two further folders, containing the example code, and the Python b
 
 ## Installation + Usage
 
-More detailed instructions for using the Pandora or LArSoft helpers can be found in the
-Wiki, [here](https://github.com/CrossR/HepEVD/wiki).
+More detailed instructions for using the Pandora, LArSoft or traccc helpers can be
+found in the Wiki, [here](https://github.com/CrossR/HepEVD/wiki).
 
 To run the basic example, you need to pull down the external dependencies, then simply
 build the example.
