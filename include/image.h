@@ -21,17 +21,17 @@ class Image {
         if (image.size() == 0)
             throw std::invalid_argument("Image must have at least one row!");
 
-        this->image = image;
+        this->data = image;
 
         this->width = image[0].size();
         this->height = image.size();
         this->label = label;
     }
 
-    NLOHMANN_DEFINE_TYPE_INTRUSIVE(Image, width, height, image);
+    NLOHMANN_DEFINE_TYPE_INTRUSIVE(Image, width, height, data);
 
   protected:
-    std::vector<std::vector<float>> image;
+    std::vector<std::vector<float>> data;
     int width;
     int height;
     std::string label;

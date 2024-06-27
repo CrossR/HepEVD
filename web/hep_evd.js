@@ -165,3 +165,36 @@ canvas.addEventListener("mousemove", (event) => {
     event,
   );
 });
+
+
+fetch("/images")
+  .then((response) => response.json())
+  .then((images) => {
+    images.forEach((image) => {
+      console.log(image)
+
+      const canvas = document.createElement("canvas");
+      const ctx = canvas.getContext("2d");
+      canvas.width = image.width;
+      canvas.height = image.height;
+      const imageData = ctx.createImageData(image.width, image.height);
+
+      for (let i = 0; i < imageData.data.length; i += 4) {
+        const row = Math.floor(i / (image.width * 4));
+        const col = i % (image.width * 4);
+        imageData.data[i + 0] = (image.data[row][col] * 255) | 0;
+        imageData.data[i + 1] = 0;
+        imageData.data[i + 2] = 0;
+        imageData.data[i + 3] = image.data[row][col] !== 0 ? 255 : 0;
+      }
+
+      ctx.rotate(180 * Math.PI / 180);
+
+      ctx.putImageData(imageData, 0, 0);
+
+      const im = new Image();
+      im.rot
+      im.src = canvas.toDataURL("image/png");
+      document.body.appendChild(im);
+    });
+  });
