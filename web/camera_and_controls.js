@@ -4,6 +4,7 @@
 
 import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+import { isTouchDevice } from "./ui.js";
 
 /**
  * Sets up the controls for the given view type.
@@ -28,6 +29,10 @@ export function setupTwoDControls(controls) {
     LEFT: THREE.MOUSE.PAN,
     MIDDLE: THREE.MOUSE.DOLLY,
     RIGHT: null,
+  };
+  controls.touches = {
+    ONE: THREE.TOUCH.PAN,
+    TWO: THREE.TOUCH.ROTATE,
   };
 
   controls.update();
