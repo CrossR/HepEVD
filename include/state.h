@@ -11,6 +11,7 @@
 #include "config.h"
 #include "geometry.h"
 #include "hits.h"
+#include "image.h"
 #include "marker.h"
 #include "particle.h"
 
@@ -24,14 +25,15 @@ namespace HepEVD {
 // parts of the same event.
 class EventState {
   public:
-    EventState() : name(""), particles(), hits(), mcHits(), markers(), mcTruth("") {}
+    EventState() : name(""), particles(), hits(), mcHits(), markers(), images(), mcTruth("") {}
     EventState(std::string name, Particles particles = {}, Hits hits = {}, MCHits mcHits = {}, Markers markers = {},
-               std::string mcTruth = "")
-        : name(name), particles(particles), hits(hits), mcHits(mcHits), markers(markers), mcTruth(mcTruth) {}
+               Images images = {}, std::string mcTruth = "")
+        : name(name), particles(particles), hits(hits), mcHits(mcHits), markers(markers), images(images),
+          mcTruth(mcTruth) {}
 
     bool isEmpty() {
         return name.size() == 0 && particles.empty() && hits.empty() && mcHits.empty() && markers.empty() &&
-               mcTruth.size() == 0;
+               images.empty() && mcTruth.size() == 0;
     }
 
     void clear(const bool resetMCTruth = false) {
@@ -40,6 +42,7 @@ class EventState {
         hits.clear();
         mcHits.clear();
         markers.clear();
+        images.clear();
 
         if (resetMCTruth)
             mcTruth = "";
@@ -53,6 +56,7 @@ class EventState {
              {"hits", state.hits.size()},
              {"mcHits", state.mcHits.size()},
              {"markers", state.markers.size()},
+             {"images", state.images.size()},
              {"mcTruth", state.mcTruth}};
     }
 
@@ -61,6 +65,7 @@ class EventState {
     Hits hits;
     MCHits mcHits;
     Markers markers;
+    Images images;
     std::string mcTruth;
 };
 

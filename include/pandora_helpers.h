@@ -31,6 +31,10 @@ typedef lar_content::LArSlice::SliceList SliceList;
 typedef lar_content::SlicingAlgorithm::SliceList SliceList;
 #endif
 
+#ifdef LAR_DL_HELPER_H
+#include <torch/script.h>
+#endif
+
 // Helpful typedefs
 typedef std::unordered_map<const pandora::Cluster *, unsigned int> ClusterToSliceIndexMap;
 
@@ -450,6 +454,35 @@ static void addPFOs(const pandora::Pandora &pPandora, const pandora::PfoList *pP
 
     hepEVDServer->addParticles(particles);
 }
+
+#ifdef LAR_DL_HELPER_H
+static void addDLInput(const torch::Tensor inputImageTensor, const std::string name) {
+
+    if (!isServerInitialised())
+        return;
+
+    const auto imageVals = inputImageTensor.to(torch::kCPU).to(torch::kFloat).detach().clone();
+    const auto imageAccessor = imageVals.accessor<float, 3>();
+
+    const unsigned int height = imageAccessor.size(1);
+    const unsigned int width = imageAccessor.size(2);
+
+    std::vector<std::vector<float>> imageVector;
+    for (unsigned int y = 0; y < height; ++y) {
+        std::vector<float> row;
+        for (unsigned int x = 0; x < width; ++x) {
+            row.push_back(imageAccessor[0][y][x]);
+        }
+        imageVector.push_back(row);
+    }
+
+    std::cout << "Adding DL input image: " << name << std::endl;
+    std::cout << "Image size: " << height << " x " << width << std::endl;
+
+    Image *image = new Image(imageVector, name);
+    hepEVDServer->addImages({image});
+}
+#endif
 
 #ifdef LAR_GRAPH_H
 static void addGraph(const lar_content::LArGraph &graph, std::string label = "", std::string nodeColour = "grey",
