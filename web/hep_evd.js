@@ -183,7 +183,7 @@ fetch("/images")
       const imageData = ctx.createImageData(image.width, image.height);
 
       for (let i = 0; i < imageData.data.length; i += 4) {
-        const row = Math.floor(i / (image.width * 4));
+        const row = Math.floor(i / (image.height * 4));
         const col = Math.floor(i / 4) % image.width;
 
         // If the value isn't 0, scale the red channel to between 0 and 255, using the max and min values
@@ -193,12 +193,9 @@ fetch("/images")
         imageData.data[i + 3] = image.data[row][col] !== 0 ? 255 : 0;
       }
 
-      ctx.rotate(180 * Math.PI / 180);
-
       ctx.putImageData(imageData, 0, 0);
 
       const im = new Image();
-      im.rot
       im.src = canvas.toDataURL("image/png");
       document.body.appendChild(im);
     });
