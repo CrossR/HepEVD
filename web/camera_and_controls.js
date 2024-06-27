@@ -32,7 +32,7 @@ export function setupTwoDControls(controls) {
   };
   controls.touches = {
     ONE: THREE.TOUCH.PAN,
-    TWO: THREE.TOUCH.ROTATE,
+    TWO: THREE.TOUCH.DOLLY_ROTATE,
   };
 
   controls.update();

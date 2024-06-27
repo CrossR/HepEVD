@@ -111,12 +111,12 @@ export function drawRingMarker(rings, group) {
 
   bufferGeometry.setAttribute(
     "position",
-    new THREE.Float32BufferAttribute(vertices, 3),
+    new THREE.Float32BufferAttribute(vertices, 3)
   );
   bufferGeometry.setIndex(indicies);
   bufferGeometry.setAttribute(
     "color",
-    new THREE.Float32BufferAttribute(colors, 4),
+    new THREE.Float32BufferAttribute(colors, 4)
   );
 
   const ringMaterial = new THREE.MeshBasicMaterial({
@@ -160,7 +160,7 @@ export function drawPoints(points, group) {
   const pointMesh = new THREE.InstancedMesh(
     pointGeo,
     materialPoint,
-    points.length,
+    points.length
   );
 
   const lut = new Lut("cooltowarm", 512);
@@ -277,7 +277,13 @@ export function draw2DScaleBar(state) {
   }
 
   // First, get the X width of the detector.
-  const xBoundary = getHitBoundaries(state.hitData.all, "x");
+  let hitsToUse = state.hitData.all;
+
+  if (hitsToUse.length === 0 && state.particleData.all.length > 0) {
+    hitsToUse = state.particleData.all.flatMap((particle) => particle.hits);
+  }
+
+  const xBoundary = getHitBoundaries(hitsToUse, "x");
   const xWidth = xBoundary.max - xBoundary.min;
   const xStart = 0 - xWidth / 2;
   const xEnd = xWidth / 2;
