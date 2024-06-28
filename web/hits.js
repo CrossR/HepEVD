@@ -211,7 +211,7 @@ export function drawTracks(group, particles, hitConfig) {
           new THREE.Vector3(hit.position.x, hit.position.y, hit.position.z),
       ),
     );
-    const geo = new THREE.TubeGeometry(path, 5, 1.5, 8, false);
+    const geo = new THREE.TubeGeometry(path, 5, 2, 8, false);
     geometries.push(geo);
   });
 

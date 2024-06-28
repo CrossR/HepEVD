@@ -104,8 +104,8 @@ int main(void) {
     server.addMarkers({ring, point});
     server.setMCTruth("\\nu_e \\rightarrow e^- + \\nu_e");
 
-    server.addEventState("Second", {}, eventTwoHits, {}, {}, "");
-    server.addEventState("Third", {}, eventThreeHits, {}, {}, "");
+    server.addEventState("Second", {}, eventTwoHits, {}, {}, {}, "");
+    server.addEventState("Third", {}, eventThreeHits, {}, {}, {}, "");
 
     server.startServer();
     return 0;
