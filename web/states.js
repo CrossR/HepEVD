@@ -63,8 +63,15 @@ export async function updateStateUI(renderStates) {
 
 export async function reloadDataForCurrentState(renderStates) {
   const data = await getData();
-  const { hits, mcHits, markers, particles, images, detectorGeometry, stateInfo } =
-    data;
+  const {
+    hits,
+    mcHits,
+    markers,
+    particles,
+    images,
+    detectorGeometry,
+    stateInfo,
+  } = data;
 
   renderStates.forEach((state) => {
     state.updateData(
