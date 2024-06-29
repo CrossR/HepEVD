@@ -166,12 +166,10 @@ canvas.addEventListener("mousemove", (event) => {
   );
 });
 
-
 fetch("/images")
   .then((response) => response.json())
   .then((images) => {
     images.forEach((image) => {
-
       const dataValues = [...new Set(image.data.flat())];
       const maxValue = Math.max(...dataValues);
       const minValue = Math.min(...dataValues);
@@ -187,9 +185,21 @@ fetch("/images")
         const col = Math.floor(i / 4) % image.width;
 
         // If the value isn't 0, scale every channel between 0 - 255, inverted.
-        imageData.data[i + 0] = image.data[row][col] !== 0 ? 255 - 255 * (image.data[row][col] - minValue) / (maxValue - minValue) : 0;
-        imageData.data[i + 1] = image.data[row][col] !== 0 ? 255 - 255 * (image.data[row][col] - minValue) / (maxValue - minValue) : 0;
-        imageData.data[i + 2] = image.data[row][col] !== 0 ? 255 - 255 * (image.data[row][col] - minValue) / (maxValue - minValue) : 0;
+        imageData.data[i + 0] =
+          image.data[row][col] !== 0
+            ? 255 -
+              (255 * (image.data[row][col] - minValue)) / (maxValue - minValue)
+            : 0;
+        imageData.data[i + 1] =
+          image.data[row][col] !== 0
+            ? 255 -
+              (255 * (image.data[row][col] - minValue)) / (maxValue - minValue)
+            : 0;
+        imageData.data[i + 2] =
+          image.data[row][col] !== 0
+            ? 255 -
+              (255 * (image.data[row][col] - minValue)) / (maxValue - minValue)
+            : 0;
         imageData.data[i + 3] = image.data[row][col] !== 0 ? 255 : 0;
       }
 
