@@ -905,3 +905,38 @@ export function setupMobileUI(renderer) {
     elem.innerHTML = names[key];
   });
 }
+
+/**
+ * Populates the impage drop down, to toggle showing of an image.
+ *
+ * @param {Array} images - The images to populate the dropdown with.
+ */
+export function populateImages(images) {
+
+  const dropDown = document.getElementById(`image_dropdown`);
+  dropDown.innerHTML = "";
+
+  if (images.length == 0) {
+    dropDown.style.display = "none";
+    return;
+  } else {
+    dropDown.style.display = "block";
+  }
+
+  const showImage = (image) => {
+    console.log(`Showing image: ${image.name}`);
+  }
+
+  images.forEach((image) => {
+    const listElement = document.createElement("li");
+    const newButton = document.createElement("li");
+    newButton.style.textTransform = "capitalize";
+    newButton.innerText = image.name;
+    newButton.id = `${image.name}`;
+    newButton.addEventListener("click", () => showImage(image));
+    listElement.appendChild(newButton);
+    dropDown.appendChild(listElement);
+  });
+
+  return;
+}
