@@ -18,7 +18,6 @@ NLOHMANN_JSON_SERIALIZE_ENUM(ImageType, {{MONOCHROME, "Monochrome"}, {RGB, "RGB"
 // This is a 2D array of pixel values.
 class MonochromeImage {
   public:
-    
     MonochromeImage() {}
     MonochromeImage(std::vector<std::vector<float>> &image, const std::string label = "") {
 

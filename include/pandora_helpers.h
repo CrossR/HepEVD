@@ -461,8 +461,7 @@ static void addPFOs(const pandora::Pandora &pPandora, const pandora::PfoList *pP
 }
 
 #if __has_include("larpandoradlcontent/LArHelpers/LArDLHelper.h")
-template <typename T>
-static void addDLTensorImage(const at::Tensor inputImageTensor, const std::string name) {
+template <typename T> static void addDLTensorImage(const at::Tensor inputImageTensor, const std::string name) {
 
     if (!isServerInitialised())
         return;
