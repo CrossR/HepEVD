@@ -69,6 +69,10 @@ div {
   visibility: hidden;
 }
 
+.evd_image {
+  position: absolute;
+}
+
 .quit_message {
   position: absolute;
   top: 50%;

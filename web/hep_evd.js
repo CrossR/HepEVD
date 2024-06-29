@@ -12,9 +12,11 @@ import { RenderState } from "./render_state.js";
 import { animate, onWindowResize } from "./rendering.js";
 import { nextState, previousState, updateStateUI } from "./states.js";
 import {
+  dragElement,
   fixThemeButton,
   loadState,
   pickColourscheme,
+  populateImages,
   quitEvd,
   saveState,
   screenshotEvd,
@@ -67,6 +69,7 @@ const {
   mcHits,
   markers,
   particles,
+  images,
   detectorGeometry,
   stateInfo,
   config,
@@ -134,6 +137,7 @@ renderStates.forEach((state) => {
 // Final tidy ups.
 // Hook up various global events and tidy functions.
 setupMobileUI(renderer);
+populateImages(images);
 document.screenshotEvd = () => screenshotEvd(renderer);
 document.quitEvd = () => quitEvd();
 document.toggleTheme = () => toggleTheme(renderStates);
@@ -228,6 +232,11 @@ fetch("/images")
 
       const im = new Image();
       im.src = canvas.toDataURL("image/png");
-      document.body.appendChild(im);
+
+      const imDiv = document.createElement("div");
+      imDiv.classList.add("evd_image");
+      imDiv.appendChild(im);
+      dragElement(imDiv);
+      document.body.appendChild(imDiv);
     });
   });
