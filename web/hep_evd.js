@@ -3,6 +3,7 @@
 //
 
 import * as THREE from "three";
+import { Lut } from "three/addons/math/Lut.js";
 import Stats from "three/addons/libs/stats.module.js";
 
 import { THEME, applyConfig } from "./constants.js";
@@ -21,6 +22,7 @@ import {
   toggleTheme,
 } from "./ui.js";
 import { highlightParticleOnMouseMove } from "./interactions.js";
+import { addColourMap, getContinuousLutConf } from "./colourmaps.js";
 
 // Set off the data loading straight away.
 // For big events, this can take a while, so we want to do it in parallel with
@@ -32,7 +34,7 @@ const threeDCamera = new THREE.PerspectiveCamera(
   50,
   window.innerWidth / window.innerHeight,
   0.1,
-  1e6,
+  1e6
 );
 const twoDCamera = new THREE.OrthographicCamera(
   window.innerWidth / -2,
@@ -40,7 +42,7 @@ const twoDCamera = new THREE.OrthographicCamera(
   window.innerHeight / 2,
   window.innerHeight / -2,
   -1,
-  1e6,
+  1e6
 );
 const renderer = new THREE.WebGLRenderer({
   alpha: true,
@@ -80,7 +82,7 @@ const threeDRenderer = new RenderState(
   mcHits.filter((hit) => hit.position.dim === "3D"),
   markers.filter((marker) => marker.position.dim === "3D"),
   detectorGeometry,
-  stateInfo,
+  stateInfo
 );
 const twoDRenderer = new RenderState(
   "2D",
@@ -91,7 +93,7 @@ const twoDRenderer = new RenderState(
   mcHits.filter((hit) => hit.position.dim === "2D"),
   markers.filter((marker) => marker.position.dim === "2D"),
   detectorGeometry,
-  stateInfo,
+  stateInfo
 );
 threeDRenderer.otherRenderer = twoDRenderer;
 twoDRenderer.otherRenderer = threeDRenderer;
@@ -146,7 +148,7 @@ window.addEventListener(
     onWindowResize(threeDRenderer, renderer);
     onWindowResize(twoDRenderer, renderer);
   },
-  false,
+  false
 );
 document.resetView = () => {
   threeDRenderer.resetView();
@@ -162,7 +164,7 @@ canvas.addEventListener("mousemove", (event) => {
   currentlyHighlighting = highlightParticleOnMouseMove(
     renderStates,
     currentlyHighlighting,
-    event,
+    event
   );
 });
 
@@ -180,27 +182,46 @@ fetch("/images")
       canvas.height = image.height;
       const imageData = ctx.createImageData(image.width, image.height);
 
+      const hitColours = image.data;
+
+      if (image.imageType === "Monochrome") {
+        const colourLut = new Lut("cooltowarm", 10);
+        const lutConfig = getContinuousLutConf();
+        addColourMap(colourLut, lutConfig.name, lutConfig.size);
+
+        colourLut.setMax(maxValue);
+        colourLut.setMin(minValue);
+
+        for (let row = 0; row < image.height; row++) {
+          for (let col = 0; col < image.width; col++) {
+            if (hitColours[row][col] !== 0)
+              hitColours[row][col] = colourLut.getColor(hitColours[row][col]);
+          }
+        }
+      }
+
+      // Check if its a THREE.Color and scale between 0 - 255.
+      // Finally if its just a raw RGB value, just use it.
+      const getColour = (colour) => {
+        if (colour instanceof THREE.Color) {
+            return [255 * colour.r, 255 * colour.g, 255 * colour.b, 255];
+        } else if (Array.isArray(colour) && colour.length === 3) {
+            return [...colour, 255];
+        } else {
+            return [0.0, 0.0, 0.0, 0.0];
+        }
+      };
+
       for (let i = 0; i < imageData.data.length; i += 4) {
         const row = Math.floor(i / (image.height * 4));
         const col = Math.floor(i / 4) % image.width;
+        const colour = getColour(hitColours[row][col]);
 
         // If the value isn't 0, scale every channel between 0 - 255, inverted.
-        imageData.data[i + 0] =
-          image.data[row][col] !== 0
-            ? 255 -
-              (255 * (image.data[row][col] - minValue)) / (maxValue - minValue)
-            : 0;
-        imageData.data[i + 1] =
-          image.data[row][col] !== 0
-            ? 255 -
-              (255 * (image.data[row][col] - minValue)) / (maxValue - minValue)
-            : 0;
-        imageData.data[i + 2] =
-          image.data[row][col] !== 0
-            ? 255 -
-              (255 * (image.data[row][col] - minValue)) / (maxValue - minValue)
-            : 0;
-        imageData.data[i + 3] = image.data[row][col] !== 0 ? 255 : 0;
+        imageData.data[i + 0] = colour[0];
+        imageData.data[i + 1] = colour[1];
+        imageData.data[i + 2] = colour[2];
+        imageData.data[i + 3] = colour[3];
       }
 
       ctx.putImageData(imageData, 0, 0);
