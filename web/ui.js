@@ -942,9 +942,9 @@ export function populateImages(images) {
 
     // And the image name
     const label = document.createElement("label");
-    label.classList.add("m-1", "fixed");
-    closeBtn.style.right = "45%";
-    closeBtn.style.bottom = "100%";
+    label.style.position = "fixed";
+    label.style.left = "-4%";
+    label.style.bottom = "98%";
     label.innerHTML = name;
     label.style.margin = "0.5em";
 
