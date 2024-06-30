@@ -271,6 +271,10 @@ export function renderImage(image) {
 
   const im = new Image();
   im.src = canvas.toDataURL("image/png");
+  im.style.width = `${image.width}px`;
+  im.style.minWidth = `${image.width}px`;
+  im.style.height = `${image.height}px`;
+  im.style.minHeight = `${image.height}px`;
 
   return im;
 }

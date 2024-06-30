@@ -924,7 +924,7 @@ export function populateImages(images) {
     dropDownButton.style.display = "grid";
   }
 
-  const showImage = (name, imageElem) => {
+  const showImage = (rawImage, imageElem) => {
     // Create a div to hold the image...
     const imDiv = document.createElement("div");
     imDiv.classList.add("evd_image");
@@ -945,7 +945,7 @@ export function populateImages(images) {
     label.style.position = "fixed";
     label.style.left = "-4%";
     label.style.bottom = "98%";
-    label.innerHTML = name;
+    label.innerHTML = rawImage.label;
     label.style.margin = "0.5em";
 
     // Add the div to the page.
@@ -962,7 +962,7 @@ export function populateImages(images) {
     newButton.innerText = image.label;
     newButton.id = `${image.label}`;
     const im = renderImage(image);
-    newButton.addEventListener("click", () => showImage(image.label, im));
+    newButton.addEventListener("click", () => showImage(image, im));
     listElement.appendChild(newButton);
     dropDown.appendChild(listElement);
   });
