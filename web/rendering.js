@@ -269,6 +269,8 @@ export function renderImage(image) {
 
   ctx.putImageData(imageData, 0, 0);
 
+  console.log(canvas);
+
   const im = new Image();
   im.src = canvas.toDataURL("image/png");
 

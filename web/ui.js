@@ -924,14 +924,34 @@ export function populateImages(images) {
     dropDownButton.style.display = "grid";
   }
 
-  const showImage = (image) => {
-    const im = renderImage(image);
-
-    // TODO: Need to style/wrap div, add a close button.
+  const showImage = (name, imageElem) => {
+    // Create a div to hold the image...
     const imDiv = document.createElement("div");
     imDiv.classList.add("evd_image");
-    imDiv.appendChild(im);
     dragElement(imDiv);
+
+    // Attach a close button...
+    const closeBtn = document.createElement("label");
+    closeBtn.classList.add("btn", "btn-error", "m-1", "fixed");
+    closeBtn.style.left = "82%";
+    closeBtn.style.bottom = "101%";
+    closeBtn.innerHTML = "X";
+    closeBtn.addEventListener("click", () => {
+      imDiv.remove();
+    });
+
+    // And the image name
+    const label = document.createElement("label");
+    label.classList.add("m-1", "fixed");
+    closeBtn.style.right = "45%";
+    closeBtn.style.bottom = "100%";
+    label.innerHTML = name;
+    label.style.margin = "0.5em";
+
+    // Add the div to the page.
+    imDiv.appendChild(label);
+    imDiv.appendChild(closeBtn);
+    imDiv.appendChild(imageElem.cloneNode());
     document.body.appendChild(imDiv);
   };
 
@@ -941,7 +961,8 @@ export function populateImages(images) {
     newButton.style.textTransform = "capitalize";
     newButton.innerText = image.label;
     newButton.id = `${image.label}`;
-    newButton.addEventListener("click", () => showImage(image));
+    const im = renderImage(image);
+    newButton.addEventListener("click", () => showImage(image.label, im));
     listElement.appendChild(newButton);
     dropDown.appendChild(listElement);
   });
