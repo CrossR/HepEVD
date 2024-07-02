@@ -927,13 +927,13 @@ export function populateImages(images) {
   const showImage = (rawImage, imageElem) => {
     // Create a div to hold the image...
     const imDiv = document.createElement("div");
-    imDiv.classList.add("evd_image");
+    imDiv.classList.add("evd_image", "text-right");
     dragElement(imDiv);
 
     // Attach a close button...
     const closeBtn = document.createElement("label");
     closeBtn.classList.add("btn", "btn-error", "m-1", "fixed");
-    closeBtn.style.left = "82%";
+    closeBtn.style.marginLeft = "-40px";
     closeBtn.style.bottom = "101%";
     closeBtn.innerHTML = "X";
     closeBtn.addEventListener("click", () => {
@@ -943,8 +943,8 @@ export function populateImages(images) {
     // And the image name
     const label = document.createElement("label");
     label.style.position = "fixed";
-    label.style.left = "-4%";
-    label.style.bottom = "98%";
+    label.style.left = "-10px";
+    label.style.top = "98%";
     label.innerHTML = rawImage.label;
     label.style.margin = "0.5em";
 
