@@ -1,5 +1,6 @@
 body {
   margin: 0;
+  overflow: hidden;
 }
 canvas {
   margin: 0;
@@ -67,6 +68,15 @@ div {
 
 #scale_bar_text {
   visibility: hidden;
+}
+
+.evd_image {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  -webkit-transform: translate(-50%, -50%);
+  transform: translate(-50%, -50%);
+  border: 3px solid rgba(255, 255, 255, 0.5);
 }
 
 .quit_message {

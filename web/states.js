@@ -6,6 +6,7 @@
 //       Need to figure out best way to supply multiple states there.
 
 import { getData, hepEVD_GLOBAL_STATE } from "./data_loader.js";
+import { populateImages } from "./ui.js";
 
 /**
  * Updates the UI for the state swapper based on the current state.
@@ -62,8 +63,15 @@ export async function updateStateUI(renderStates) {
 
 export async function reloadDataForCurrentState(renderStates) {
   const data = await getData();
-  const { hits, mcHits, markers, particles, detectorGeometry, stateInfo } =
-    data;
+  const {
+    hits,
+    mcHits,
+    markers,
+    particles,
+    images,
+    detectorGeometry,
+    stateInfo,
+  } = data;
 
   renderStates.forEach((state) => {
     state.updateData(
@@ -90,6 +98,9 @@ export async function reloadDataForCurrentState(renderStates) {
     state.setupUI(drawTarget, true);
     state.triggerEvent("fullUpdate");
   });
+
+  // Update the images UI, hiding it if needed.
+  populateImages(images);
 }
 
 /**

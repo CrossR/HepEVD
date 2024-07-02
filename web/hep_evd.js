@@ -8,12 +8,14 @@ import Stats from "three/addons/libs/stats.module.js";
 import { THEME, applyConfig } from "./constants.js";
 import { getData } from "./data_loader.js";
 import { RenderState } from "./render_state.js";
-import { animate, onWindowResize } from "./rendering.js";
+import { animate, onWindowResize, renderImage } from "./rendering.js";
 import { nextState, previousState, updateStateUI } from "./states.js";
 import {
+  dragElement,
   fixThemeButton,
   loadState,
   pickColourscheme,
+  populateImages,
   quitEvd,
   saveState,
   screenshotEvd,
@@ -65,6 +67,7 @@ const {
   mcHits,
   markers,
   particles,
+  images,
   detectorGeometry,
   stateInfo,
   config,
@@ -132,6 +135,7 @@ renderStates.forEach((state) => {
 // Final tidy ups.
 // Hook up various global events and tidy functions.
 setupMobileUI(renderer);
+populateImages(images);
 document.screenshotEvd = () => screenshotEvd(renderer);
 document.quitEvd = () => quitEvd();
 document.toggleTheme = () => toggleTheme(renderStates);

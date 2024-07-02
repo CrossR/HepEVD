@@ -17,9 +17,9 @@ int main(void) {
     std::random_device rd;
     std::mt19937 gen(rd());
 
-    std::uniform_real_distribution<float> disX(-5, 5);
-    std::uniform_real_distribution<float> disY(-5, 5);
-    std::uniform_real_distribution<float> disZ(-5, 5);
+    std::uniform_real_distribution<float> disX(-50, 50);
+    std::uniform_real_distribution<float> disY(-50, 50);
+    std::uniform_real_distribution<float> disZ(-50, 50);
 
     // Find the 8 locations of the corners of the box.
     Positions corners;
@@ -29,14 +29,13 @@ int main(void) {
         const double yWidth = vol.getYWidth();
         const double zWidth = vol.getZWidth();
 
-        corners.push_back(Position({pos.x - xWidth / 2.0, pos.y - yWidth / 2.0, pos.z - zWidth / 2.0}));
-        corners.push_back(Position({pos.x - xWidth / 2.0, pos.y - yWidth / 2.0, pos.z + zWidth / 2.0}));
-        corners.push_back(Position({pos.x - xWidth / 2.0, pos.y + yWidth / 2.0, pos.z - zWidth / 2.0}));
-        corners.push_back(Position({pos.x - xWidth / 2.0, pos.y + yWidth / 2.0, pos.z + zWidth / 2.0}));
-        corners.push_back(Position({pos.x + xWidth / 2.0, pos.y - yWidth / 2.0, pos.z - zWidth / 2.0}));
-        corners.push_back(Position({pos.x + xWidth / 2.0, pos.y - yWidth / 2.0, pos.z + zWidth / 2.0}));
-        corners.push_back(Position({pos.x + xWidth / 2.0, pos.y + yWidth / 2.0, pos.z - zWidth / 2.0}));
-        corners.push_back(Position({pos.x + xWidth / 2.0, pos.y + yWidth / 2.0, pos.z + zWidth / 2.0}));
+        for (double x : {pos.x - xWidth / 2.0, pos.x + xWidth / 2.0}) {
+            for (double y : {pos.y - yWidth / 2.0, pos.y + yWidth / 2.0}) {
+                for (double z : {pos.z - zWidth / 2.0, pos.z + zWidth / 2.0}) {
+                    corners.push_back(Position({x, y, z}));
+                }
+            }
+        }
     }
 
     // Remove duplicates.
@@ -48,7 +47,7 @@ int main(void) {
 
         Hits particleHits;
 
-        for (unsigned int i = 0; i < 1000; ++i) {
+        for (unsigned int i = 0; i < 10000; ++i) {
             const double x = corner.x + disX(gen);
             const double y = corner.y + disY(gen);
             const double z = corner.z + disZ(gen);

@@ -7,6 +7,7 @@ import * as THREE from "three";
 import { COLOUR_MAPS, DEFAULT_MAPS } from "./colourmaps.js";
 import { BUTTON_ID, GITHUB_URL, TO_THEME } from "./constants.js";
 import { createParticleMenu } from "./particle_menu.js";
+import { renderImage } from "./rendering.js";
 
 /**
  * Populates a dropdown menu with buttons based on the given hit property map.
@@ -904,4 +905,67 @@ export function setupMobileUI(renderer) {
     const elem = document.getElementById(key);
     elem.innerHTML = names[key];
   });
+}
+
+/**
+ * Populates the impage drop down, to toggle showing of an image.
+ *
+ * @param {Array} images - The images to populate the dropdown with.
+ */
+export function populateImages(images) {
+  const dropDownButton = document.getElementById(`image_dropdown_button`);
+  const dropDown = document.getElementById(`image_dropdown`);
+  dropDown.innerHTML = "";
+
+  if (images.length === 0) {
+    dropDownButton.style.display = "none";
+    return;
+  } else {
+    dropDownButton.style.display = "grid";
+  }
+
+  const showImage = (rawImage, imageElem) => {
+    // Create a div to hold the image...
+    const imDiv = document.createElement("div");
+    imDiv.classList.add("evd_image");
+    dragElement(imDiv);
+
+    // Attach a close button...
+    const closeBtn = document.createElement("label");
+    closeBtn.classList.add("btn", "btn-error", "m-1", "fixed");
+    closeBtn.style.left = "82%";
+    closeBtn.style.bottom = "101%";
+    closeBtn.innerHTML = "X";
+    closeBtn.addEventListener("click", () => {
+      imDiv.remove();
+    });
+
+    // And the image name
+    const label = document.createElement("label");
+    label.style.position = "fixed";
+    label.style.left = "-4%";
+    label.style.bottom = "98%";
+    label.innerHTML = rawImage.label;
+    label.style.margin = "0.5em";
+
+    // Add the div to the page.
+    imDiv.appendChild(label);
+    imDiv.appendChild(closeBtn);
+    imDiv.appendChild(imageElem.cloneNode());
+    document.body.appendChild(imDiv);
+  };
+
+  images.forEach((image) => {
+    const listElement = document.createElement("li");
+    const newButton = document.createElement("li");
+    newButton.style.textTransform = "capitalize";
+    newButton.innerText = image.label;
+    newButton.id = `${image.label}`;
+    const im = renderImage(image);
+    newButton.addEventListener("click", () => showImage(image, im));
+    listElement.appendChild(newButton);
+    dropDown.appendChild(listElement);
+  });
+
+  return;
 }

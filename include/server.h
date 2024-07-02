@@ -30,12 +30,12 @@ class HepEVDServer {
     HepEVDServer(const DetectorGeometry &geo, const Hits &hits = {}, const MCHits &mc = {})
         : geometry(geo), eventStates() {
         currentState = 0;
-        eventStates[currentState] = EventState("Initial", {}, hits, mc, {}, "");
+        eventStates[currentState] = EventState("Initial", {}, hits, mc, {}, {}, "");
     }
     HepEVDServer(std::string name, const DetectorGeometry &geo = {}, const Hits &hits = {}, const MCHits &mc = {})
         : geometry(geo), eventStates() {
         currentState = 0;
-        eventStates[currentState] = EventState(name, {}, hits, mc, {}, "");
+        eventStates[currentState] = EventState(name, {}, hits, mc, {}, {}, "");
     }
 
     ~HepEVDServer() { this->eventStates.clear(); }
@@ -51,7 +51,7 @@ class HepEVDServer {
 
         this->eventStates.clear();
         this->currentState = 0;
-        this->eventStates[this->currentState] = EventState("Initial", {}, {}, {}, {}, "");
+        this->eventStates[this->currentState] = EventState("Initial", {}, {}, {}, {}, {}, "");
 
         if (resetGeo)
             this->geometry.clear();
@@ -69,8 +69,9 @@ class HepEVDServer {
     // parts of the same event.
     EventState *getState() { return &this->eventStates[this->currentState]; }
     void addEventState(std::string name = "", Particles particles = {}, Hits hits = {}, MCHits mcHits = {},
-                       Markers markers = {}, std::string mcTruth = "") {
-        this->eventStates[this->eventStates.size()] = EventState(name, particles, hits, mcHits, markers, mcTruth);
+                       Markers markers = {}, Images images = {}, std::string mcTruth = "") {
+        this->eventStates[this->eventStates.size()] =
+            EventState(name, particles, hits, mcHits, markers, images, mcTruth);
     }
 
     // Swap to a different event state.
@@ -136,6 +137,21 @@ class HepEVDServer {
         return true;
     }
     Markers getMarkers() { return this->getState()->markers; }
+
+    bool addImages(const Images &images) {
+
+        if (this->getState()->images.size() == 0) {
+            this->getState()->images = images;
+            return true;
+        }
+
+        Images newImages = this->getState()->images;
+        newImages.insert(newImages.end(), images.begin(), images.end());
+        this->getState()->images = newImages;
+
+        return true;
+    }
+    Images getImages() { return this->getState()->images; }
 
     bool addParticles(const Particles &inputParticles) {
         if (this->getState()->particles.size() == 0) {
@@ -260,6 +276,19 @@ inline void HepEVDServer::startServer() {
     this->server.Post("/markers", [&](const Request &req, Response &res) {
         try {
             this->addMarkers(json::parse(req.body));
+            res.set_content("OK", "text/plain");
+        } catch (const std::exception &e) {
+            res.set_content("Error: " + std::string(e.what()), "text/plain");
+        }
+    });
+
+    // Any supplied raw images
+    this->server.Get("/images", [&](const Request &, Response &res) {
+        res.set_content(json(this->getImages()).dump(), "application/json");
+    });
+    this->server.Post("/images", [&](const Request &req, Response &res) {
+        try {
+            this->addImages(json::parse(req.body));
             res.set_content("OK", "text/plain");
         } catch (const std::exception &e) {
             res.set_content("Error: " + std::string(e.what()), "text/plain");

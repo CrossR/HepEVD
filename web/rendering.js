@@ -6,8 +6,10 @@ import * as THREE from "three";
 import { ConvexGeometry } from "three/addons/geometries/ConvexGeometry.js";
 import { Line2 } from "three/addons/lines/Line2.js";
 import { LineGeometry } from "three/addons/lines/LineGeometry.js";
+import { Lut } from "three/addons/math/Lut.js";
 import * as BufferGeometryUtils from "three/addons/utils/BufferGeometryUtils.js";
 
+import { addColourMap, getContinuousLutConf } from "./colourmaps.js";
 import {
   threeDGeoMat,
   threeDTrapezoidMat,
@@ -204,4 +206,75 @@ export function onWindowResize(state, renderer) {
   state.camera.updateProjectionMatrix();
   renderer.setSize(window.innerWidth, window.innerHeight);
   state.triggerEvent("change");
+}
+
+/**
+ * Renders an image on the screen.
+ *
+ * @param {Object} image - The image to render
+ * @return {HTMLImageElement} description of return value
+ */
+export function renderImage(image) {
+  const dataValues = [...new Set(image.data.flat())];
+  const maxValue = Math.max(...dataValues);
+  const minValue = Math.min(...dataValues);
+
+  const canvas = document.createElement("canvas");
+  const ctx = canvas.getContext("2d");
+  canvas.width = image.width;
+  canvas.height = image.height;
+  const imageData = ctx.createImageData(image.width, image.height);
+
+  const hitColours = image.data;
+
+  if (image.imageType === "Monochrome") {
+    const colourLut = new Lut("cooltowarm", 10);
+    const lutConfig = getContinuousLutConf();
+    addColourMap(colourLut, lutConfig.name, lutConfig.size);
+
+    colourLut.setMax(maxValue);
+    colourLut.setMin(minValue);
+
+    for (let row = 0; row < image.height; row++) {
+      for (let col = 0; col < image.width; col++) {
+        if (hitColours[row][col] !== 0)
+          hitColours[row][col] = colourLut.getColor(hitColours[row][col]);
+      }
+    }
+  }
+
+  // Check if its a THREE.Color and scale between 0 - 255.
+  // Finally if its just a raw RGB value, just use it.
+  const getColour = (colour) => {
+    if (colour instanceof THREE.Color) {
+      return [255 * colour.r, 255 * colour.g, 255 * colour.b, 255];
+    } else if (Array.isArray(colour) && colour.length === 3) {
+      return [...colour, 255];
+    } else {
+      return [0.0, 0.0, 0.0, 0.0];
+    }
+  };
+
+  for (let i = 0; i < imageData.data.length; i += 4) {
+    const row = Math.floor(i / (image.height * 4));
+    const col = Math.floor(i / 4) % image.width;
+    const colour = getColour(hitColours[row][col]);
+
+    // If the value isn't 0, scale every channel between 0 - 255, inverted.
+    imageData.data[i + 0] = colour[0];
+    imageData.data[i + 1] = colour[1];
+    imageData.data[i + 2] = colour[2];
+    imageData.data[i + 3] = colour[3];
+  }
+
+  ctx.putImageData(imageData, 0, 0);
+
+  const im = new Image();
+  im.src = canvas.toDataURL("image/png");
+  im.style.width = `${image.width}px`;
+  im.style.minWidth = `${image.width}px`;
+  im.style.height = `${image.height}px`;
+  im.style.minHeight = `${image.height}px`;
+
+  return im;
 }

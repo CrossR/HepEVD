@@ -22,13 +22,22 @@
 #include "larpandoracontent/LArHelpers/LArPfoHelper.h"
 
 // Backwards compatibility with older versions of Pandora.
-// Somethings have been moved around, so we need to check for them.
-#ifdef LAR_SLICE_H
+// Somethings have been moved around or don't exist.
+#if __has_include("larpandoracontent/LArObjects/LArGraph.h")
+#include "larpandoracontent/LArObjects/LArGraph.h"
+#endif
+
+#if __has_include("larpandoracontent/LArObjects/LArSlice.h")
 #include "larpandoracontent/LArObjects/LArSlice.h"
-typedef lar_content::LArSlice::SliceList SliceList;
+typedef lar_content::SliceList SliceList;
 #else
 #include "larpandoracontent/LArControlFlow/SlicingAlgorithm.h"
 typedef lar_content::SlicingAlgorithm::SliceList SliceList;
+#endif
+
+#if __has_include("larpandoradlcontent/LArHelpers/LArDLHelper.h")
+#include <ATen/ATen.h>
+#include <torch/script.h>
 #endif
 
 // Helpful typedefs
@@ -451,7 +460,40 @@ static void addPFOs(const pandora::Pandora &pPandora, const pandora::PfoList *pP
     hepEVDServer->addParticles(particles);
 }
 
-#ifdef LAR_GRAPH_H
+#if __has_include("larpandoradlcontent/LArHelpers/LArDLHelper.h")
+template <typename T> static void addDLTensorImage(const at::Tensor inputImageTensor, const std::string name) {
+
+    if (!isServerInitialised())
+        return;
+
+    const auto imageTensor = inputImageTensor.clone().squeeze();
+
+    if (imageTensor.dim() != 2) {
+        std::cout << "HepEVD: Input image should be 2D!" << std::endl;
+        std::cout << "HepEVD: Was instead " << imageTensor.dim() << "D" << std::endl;
+        std::cout << "HepEVD: Maybe pre-process the image first? (Apply softmax etc)" << std::endl;
+        return;
+    }
+
+    auto imageAccessor = imageTensor.accessor<T, 2>();
+    const unsigned int height = imageAccessor.size(0);
+    const unsigned int width = imageAccessor.size(1);
+
+    std::vector<std::vector<float>> imageVector;
+    for (unsigned int y = 0; y < height; ++y) {
+        std::vector<float> row;
+        for (unsigned int x = 0; x < width; ++x) {
+            row.push_back(imageAccessor[y][x]);
+        }
+        imageVector.push_back(row);
+    }
+
+    MonochromeImage *image = new MonochromeImage(imageVector, name);
+    hepEVDServer->addImages({image});
+}
+#endif
+
+#if __has_include("larpandoracontent/LArObjects/LArGraph.h")
 static void addGraph(const lar_content::LArGraph &graph, std::string label = "", std::string nodeColour = "grey",
                      std::string lineColour = "blue") {
 

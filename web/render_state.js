@@ -461,6 +461,18 @@ export class RenderState {
   setupUI(renderTarget, resetUI = false) {
     if (this.uiSetup) return;
 
+    // If nothing to render, just return after hiding the dropdown button.
+    const dropDownButton = document.getElementById(
+      `${this.hitDim}_dropdown_button`,
+    );
+    if (this.hitData.all.length === 0 && this.particleData.all.length === 0) {
+      dropDownButton.style.display = "none";
+
+      return;
+    } else {
+      dropDownButton.style.display = "grid";
+    }
+
     this.renderGeometry();
     this.renderEvent();
 

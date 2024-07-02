@@ -140,11 +140,19 @@ export function applyConfig(config, renderStates) {
     return;
   }
 
+  // If we aren't showing the scene, hide the scenes + button.
   if (!config.show2D) {
     renderStates.get("2D").scene.visible = false;
+
+    const dropDownButton = document.getElementById("2d_dropdown_button");
+    dropDownButton.style.display = "none";
   }
+
   if (!config.show3D) {
     renderStates.get("3D").scene.visible = false;
+
+    const dropDownButton = document.getElementById("2d_dropdown_button");
+    dropDownButton.style.display = "none";
   }
 
   // Only apply the colour updates to raw hits, not particles which should

@@ -85,26 +85,37 @@ async function loadServerData() {
   let mcHits = getDataWithProgress("mcHits");
   let markers = getDataWithProgress("markers");
   let particles = getDataWithProgress("particles");
+  let images = getDataWithProgress("images");
   let stateInfo = getDataWithProgress("stateInfo");
   let config = getDataWithProgress("config");
 
   // Wait for all the data to be loaded.
-  [hits, mcHits, markers, particles, detectorGeometry, stateInfo, config] =
-    await Promise.all([
-      hits,
-      mcHits,
-      markers,
-      particles,
-      detectorGeometry,
-      stateInfo,
-      config,
-    ]);
+  [
+    hits,
+    mcHits,
+    markers,
+    particles,
+    images,
+    detectorGeometry,
+    stateInfo,
+    config,
+  ] = await Promise.all([
+    hits,
+    mcHits,
+    markers,
+    particles,
+    images,
+    detectorGeometry,
+    stateInfo,
+    config,
+  ]);
 
   return {
     hits: hits,
     mcHits: mcHits,
     markers: markers,
     particles: particles,
+    images: images,
     detectorGeometry: detectorGeometry,
     stateInfo: stateInfo,
     config: config,
@@ -126,6 +137,7 @@ async function updateExternalData() {
     mcHits: newStateData.mcHits,
     markers: newStateData.markers,
     particles: newStateData.particles,
+    images: newStateData.images || [],
     detectorGeometry: hepEVD_GLOBAL_STATE.detectorGeometry,
     stateInfo: newStateData.stateInfo || { mcTruth: "" },
     config: hepEVD_GLOBAL_STATE.config || {},
@@ -191,6 +203,7 @@ async function loadExternalData(url) {
     mcHits: lastStateData.mcHits,
     markers: lastStateData.markers,
     particles: lastStateData.particles,
+    images: lastStateData.images || [],
     detectorGeometry: result.detectorGeometry,
     stateInfo: lastStateData.stateInfo || { mcTruth: "" },
     config: result.config || {},
