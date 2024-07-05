@@ -15,7 +15,10 @@
 #include "detray/geometry/surface.hpp"
 
 // traccc Includes
+#include "traccc/edm/seed.hpp"
+#include "traccc/edm/spacepoint.hpp"
 #include "traccc/edm/track_candidate.hpp"
+#include "traccc/edm/track_state.hpp"
 
 // Local Includes
 #include "base_helper.h"
@@ -178,6 +181,53 @@ static void addTrackCandidates(const traccc::track_candidate_container_types::co
         for (const traccc::measurement &m : track.items) {
 
             // Find the detector surface that this measurement sits on.
+            const detray::surface<detray::detector<>> surface{detector, m.surface_link};
+
+            // Calculate a position for this measurement in global 3D space.
+            const auto global = surface.bound_to_global({}, m.local, {});
+
+            // Create a hit object for this measurement.
+            Hit *hit = new Hit({global[0], global[1], global[2]}, 0.0);
+            hits.push_back(hit);
+        }
+
+        // Create a particle object for this track candidate.
+        std::string id = getUUID();
+        Particle *particle = new Particle(hits, id, label);
+        particle->setRenderType(RenderType::TRACK);
+
+        // Add the particle to the list of particles to be added to the server.
+        hepTracks.push_back(particle);
+    }
+
+    // Add the particles to the server.
+    hepEVDServer->addParticles(hepTracks);
+}
+
+static void addTracks(const traccc::track_state_container_types::const_view &tracks_view,
+                      const detray::detector<> &detector, std::string label = "") {
+
+    if (!isServerInitialised())
+        return;
+
+    Particles hepTracks;
+
+    // Create a device collection around the track container view.
+    const traccc::track_state_container_types::const_device tracks{tracks_view};
+
+    for (unsigned int i = 0; i < tracks.size(); i++) {
+
+        // The track state in question.
+        const traccc::track_state_container_types::const_device::const_element_view track = tracks.at(i);
+
+        // Start to build the hits for this track candidate.
+        Hits hits;
+
+        // Loop over the measurements in the track candidate.
+        for (const traccc::track_state ts : track.items) {
+
+            // Find the detector surface that this measurement sits on.
+            const auto m = ts.get_measurement();
             const detray::surface<detray::detector<>> surface{detector, m.surface_link};
 
             // Calculate a position for this measurement in global 3D space.
