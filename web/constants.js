@@ -145,14 +145,16 @@ export function applyConfig(config, renderStates) {
     renderStates.get("2D").scene.visible = false;
 
     const dropDownButton = document.getElementById("2d_dropdown_button");
-    dropDownButton.style.display = "none";
+
+    if (dropDownButton) dropDownButton.style.display = "none";
   }
 
   if (!config.show3D) {
     renderStates.get("3D").scene.visible = false;
 
-    const dropDownButton = document.getElementById("2d_dropdown_button");
-    dropDownButton.style.display = "none";
+    const dropDownButton = document.getElementById("3d_dropdown_button");
+
+    if (dropDownButton) dropDownButton.style.display = "none";
   }
 
   // Only apply the colour updates to raw hits, not particles which should
