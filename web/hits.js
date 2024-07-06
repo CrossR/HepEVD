@@ -33,7 +33,7 @@ export function drawHits(
   hits,
   hitColours,
   hitConfig = {},
-  lutConfig = getContinuousLutConf(),
+  lutConfig = getContinuousLutConf()
 ) {
   if (hits.length === 0) return;
 
@@ -67,7 +67,7 @@ export function drawHits(
   const hitMesh = new THREE.InstancedMesh(
     hitGeometry,
     hitMaterial,
-    hits.length,
+    hits.length
   );
 
   hits.forEach(function (hit, index) {
@@ -105,7 +105,7 @@ export function drawParticles(
   group,
   particleDataState,
   hitDataState,
-  hitConfig,
+  hitConfig
 ) {
   const particles = particleDataState.allParticles;
   const activeParticles = particleDataState.particles;
@@ -127,7 +127,7 @@ export function drawParticles(
 
   let lutToUse = getCategoricalLutConf();
   const filteredActiveHitProps = Array.from(activeHitProps).filter(
-    (p) => p != BUTTON_ID.All,
+    (p) => p != BUTTON_ID.All
   );
 
   // Swap to a continuous LUT if we have active hit properties.
@@ -180,7 +180,7 @@ export function drawParticles(
 
   // Do any final drawing of additional, particle-level properties.
   const trackParticles = activeParticles.filter(
-    (particle) => particle.renderType === "Track",
+    (particle) => particle.renderType === "Track"
   );
   if (trackParticles.length > 0) {
     drawTracks(group, trackParticles, hitConfig);
@@ -192,9 +192,8 @@ export function drawParticles(
  *
  * @param {THREE.Group} group - The group to which the particles should be added.
  * @param {Array} particles - An array of particle objects, each with an array of hits.
- * @param {Object} hitConfig - An object containing configuration options for the hit mesh.
  */
-export function drawTracks(group, particles, hitConfig) {
+export function drawTracks(group, particles) {
   if (particles.length === 0) return;
 
   // Store all the tube geometries for a later merge.
@@ -211,7 +210,7 @@ export function drawTracks(group, particles, hitConfig) {
           new THREE.Vector3(hit.position.x, hit.position.y, hit.position.z),
       ),
     );
-    const geo = new THREE.TubeGeometry(path, 5, 2, 8, false);
+    const geo = new THREE.TubeGeometry(path, particle.hits.length, 2, 4, false);
     geometries.push(geo);
   });
 
