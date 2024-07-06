@@ -33,7 +33,7 @@ export function drawHits(
   hits,
   hitColours,
   hitConfig = {},
-  lutConfig = getContinuousLutConf()
+  lutConfig = getContinuousLutConf(),
 ) {
   if (hits.length === 0) return;
 
@@ -67,7 +67,7 @@ export function drawHits(
   const hitMesh = new THREE.InstancedMesh(
     hitGeometry,
     hitMaterial,
-    hits.length
+    hits.length,
   );
 
   hits.forEach(function (hit, index) {
@@ -105,7 +105,7 @@ export function drawParticles(
   group,
   particleDataState,
   hitDataState,
-  hitConfig
+  hitConfig,
 ) {
   const particles = particleDataState.allParticles;
   const activeParticles = particleDataState.particles;
@@ -127,7 +127,7 @@ export function drawParticles(
 
   let lutToUse = getCategoricalLutConf();
   const filteredActiveHitProps = Array.from(activeHitProps).filter(
-    (p) => p != BUTTON_ID.All
+    (p) => p != BUTTON_ID.All,
   );
 
   // Swap to a continuous LUT if we have active hit properties.
@@ -180,7 +180,7 @@ export function drawParticles(
 
   // Do any final drawing of additional, particle-level properties.
   const trackParticles = activeParticles.filter(
-    (particle) => particle.renderType === "Track"
+    (particle) => particle.renderType === "Track",
   );
   if (trackParticles.length > 0) {
     drawTracks(group, trackParticles, hitConfig);

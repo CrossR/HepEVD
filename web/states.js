@@ -69,7 +69,7 @@ export async function reloadDataForCurrentState(renderStates) {
     images,
     detectorGeometry,
     stateInfo,
-    config
+    config,
   } = data;
 
   renderStates.forEach((state) => {
