@@ -2,9 +2,7 @@
 // Event / state management for the web interface.
 //
 
-// TODO: Won't work on GitHub pages, since it's not a server.
-//       Need to figure out best way to supply multiple states there.
-
+import { applyConfig } from "./constants.js";
 import { getData, hepEVD_GLOBAL_STATE } from "./data_loader.js";
 import { populateImages } from "./ui.js";
 
@@ -71,6 +69,7 @@ export async function reloadDataForCurrentState(renderStates) {
     images,
     detectorGeometry,
     stateInfo,
+    config
   } = data;
 
   renderStates.forEach((state) => {
@@ -101,6 +100,7 @@ export async function reloadDataForCurrentState(renderStates) {
 
   // Update the images UI, hiding it if needed.
   populateImages(images);
+  applyConfig(config, renderStates);
 }
 
 /**
