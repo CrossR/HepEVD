@@ -37,7 +37,7 @@ function createMenuItem(
   // number of hits.
   const summary = document.createElement("summary");
   const label = document.createElement("span");
-  label.classList.add("label-text", "pr-4");
+  label.classList.add("label-text", "pr-4", "text-zinc-500");
 
   label.addEventListener("click", (ev) => {
     ev.preventDefault();
