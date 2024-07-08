@@ -179,7 +179,7 @@ export function addColourMap(lut, name, num) {
   } else {
     lut.addColorMap(name, COLOUR_MAPS[name]);
     lut.setColorMap(name, num);
-    lut.setMax(MAP_MAX_SIZE[name]);
+    lut.setMax(MAP_MAX_SIZE[name] - 1);
   }
 
   lut.setMin(0);
