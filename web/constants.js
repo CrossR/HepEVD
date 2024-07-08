@@ -174,6 +174,4 @@ export function applyConfig(config, renderStates) {
     HIT_CONFIG["3D"].materialHit.opacity = config.hits.opacity;
     HIT_CONFIG["3D"].materialParticle.opacity = config.hits.opacity;
   }
-
-  // TODO: Fix UI buttons if the 2D or 3D scene is hidden.
 }

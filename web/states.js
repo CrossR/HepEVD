@@ -93,14 +93,14 @@ export async function reloadDataForCurrentState(renderStates) {
     drawTarget = "3D";
   }
 
+  // Update the images UI, hiding it if needed.
+  populateImages(images);
+  applyConfig(config, renderStates);
+
   renderStates.forEach((state) => {
     state.setupUI(drawTarget, true);
     state.triggerEvent("fullUpdate");
   });
-
-  // Update the images UI, hiding it if needed.
-  populateImages(images);
-  applyConfig(config, renderStates);
 }
 
 /**
