@@ -220,7 +220,7 @@ const MAP_MAX_SIZE = {
   tableau20: 20,
   tableau20b: 20,
   tableau20c: 20,
-  tolCM: 9,
+  paulTol: 9,
   okabeIto: 8,
   viridis: 256,
   magma: 256,
