@@ -35,6 +35,7 @@ export async function updateStateUI(renderStates) {
   stateIdPairs.forEach((idStatePair, index) => {
     const state = idStatePair.state;
     const listElement = document.createElement("li");
+    listElement.classList.add("w-full");
     const newButton = document.createElement("li");
     newButton.style.textTransform = "capitalize";
     newButton.innerText = state.name;
