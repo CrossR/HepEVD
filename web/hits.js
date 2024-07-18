@@ -135,6 +135,10 @@ export function drawParticles(
     lutToUse = getContinuousLutConf();
   }
 
+  // Setup the colour map, incase we need it.
+  const colourLut = new Lut("cooltowarm", 10);
+  addColourMap(colourLut, lutToUse.name, lutToUse.size);
+
   // Particle colour is based on the absolute index of the particle, modulo the LUT size.
   // If there are multiple active hit properties, use that instead.
   const particleColours = activeParticles.flatMap((particle, _) => {
@@ -153,7 +157,9 @@ export function drawParticles(
           })[0];
       }
 
-      return absoluteIndices.get(particle.id) % lutToUse.size;
+      return colourLut.getColor(
+        absoluteIndices.get(particle.id) % lutToUse.size,
+      );
     });
   });
 
@@ -163,16 +169,6 @@ export function drawParticles(
   // Also update the hit opacity if we are highlighting particles.
   if (particleDataState.highlightTargets.size > 0) {
     hitConfig.materialHit.opacity = 0.75;
-
-    // Update the particle colours to apply the LUT to the highlighted particle.
-    // Everything else is greyed out, but we need to apply the LUT here as the
-    // LUT won't be used later, due to every other object being grey.
-    const colourLut = new Lut("cooltowarm", 10);
-    addColourMap(colourLut, lutToUse.name, lutToUse.size);
-    particleColours.forEach((colour, index) => {
-      if (colour !== "Grey")
-        particleColours[index] = colourLut.getColor(colour);
-    });
   }
 
   // We can now finally draw the hits.
