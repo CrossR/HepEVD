@@ -354,10 +354,15 @@ static Particle *addParticle(const pandora::Pandora &pPandora, const pandora::Pa
         caloHitToEvdHit.insert({pCaloHit, hit});
     }
 
-    std::string id = getUUID();
+    std::string id(getUUID());
     Particle *particle = new Particle(hits, id, pPfo->GetParticleId() == 13 ? "Track-like" : "Shower-like");
 
-    if (lar_content::LArPfoHelper::IsNeutrino(pPfo) || lar_content::LArPfoHelper::IsNeutrinoFinalState(pPfo))
+    const auto parentPfo(lar_content::LArPfoHelper::GetParentPfo(pPfo));
+    const bool isNeutrinoOrFinalState(lar_content::LArPfoHelper::IsNeutrino(pPfo) ||
+                                      lar_content::LArPfoHelper::IsNeutrinoFinalState(pPfo));
+    const bool isNeutrinoChild(lar_content::LArPfoHelper::IsNeutrino(parentPfo));
+
+    if (isNeutrinoOrFinalState || isNeutrinoChild)
         particle->setInteractionType(InteractionType::NEUTRINO);
     else
         particle->setInteractionType(InteractionType::COSMIC);
