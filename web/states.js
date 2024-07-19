@@ -134,7 +134,11 @@ export function getAllStateInfo() {
     return Promise.resolve(stateIdPairs);
   }
 
-  return fetch("/allStateInfo").then((response) => response.json());
+  try {
+    return fetch("/allStateInfo").then((response) => response.json());
+  } catch (_) {
+    return Promise.resolve([]);
+  }
 }
 
 /**
