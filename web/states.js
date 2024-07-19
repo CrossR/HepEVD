@@ -3,7 +3,11 @@
 //
 
 import { applyConfig } from "./constants.js";
-import { getData, hepEVD_GLOBAL_STATE } from "./data_loader.js";
+import {
+  getData,
+  hepEVD_GLOBAL_STATE,
+  isRunningOnGitHubPages,
+} from "./data_loader.js";
 import { populateImages } from "./ui.js";
 
 /**
@@ -134,11 +138,11 @@ export function getAllStateInfo() {
     return Promise.resolve(stateIdPairs);
   }
 
-  try {
-    return fetch("/allStateInfo").then((response) => response.json());
-  } catch (_) {
+  if (isRunningOnGitHubPages()) {
     return Promise.resolve([]);
   }
+
+  return fetch("/allStateInfo").then((response) => response.json());
 }
 
 /**
