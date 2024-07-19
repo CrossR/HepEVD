@@ -138,7 +138,7 @@ renderStates.forEach((state) => {
 setupMobileUI(renderer);
 populateImages(images);
 document.screenshotEvd = () => screenshotEvd(renderer);
-document.quitEvd = () => quitEvd();
+document.quitEvd = () => quitEvd(renderStates);
 document.toggleTheme = () => toggleTheme(renderStates);
 document.saveState = () => saveState(renderStates);
 document.loadState = () => loadState(renderStates);

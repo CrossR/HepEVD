@@ -8,6 +8,7 @@ import { COLOUR_MAPS, DEFAULT_MAPS } from "./colourmaps.js";
 import { BUTTON_ID, GITHUB_URL, TO_THEME } from "./constants.js";
 import { createParticleMenu } from "./particle_menu.js";
 import { renderImage } from "./rendering.js";
+import { updateStateUI, reloadDataForCurrentState } from "./states.js";
 
 /**
  * Populates a dropdown menu with buttons based on the given hit property map.
@@ -405,8 +406,10 @@ export function screenshotEvd(renderer) {
 
 /**
  * Sends a request to the server to quit the event display.
+ *
+ * @param {Map} renderStates - The states to save.
  */
-export function quitEvd() {
+export async function quitEvd(renderStates) {
   const fadeOut = (element, duration) => {
     (function decrement() {
       (element.style.opacity -= 0.1) < 0
@@ -428,16 +431,57 @@ export function quitEvd() {
           increment(value + 0.1);
         }, inDuration / 10);
       } else {
-        setTimeout(() => fadeOut(element, outDuration), 1500);
+        setTimeout(() => fadeOut(element, outDuration), 500);
       }
     })();
   };
 
   const quittingElem = document.getElementById("quit_message");
-  fadeInThenOut(quittingElem, 250, 550);
+  fadeInThenOut(quittingElem, 150, 150);
+
+  // Get a copy of the current event state...
+  const currentState = await fetch("stateInfo").then((response) =>
+    response.json(),
+  );
 
   // Actually perform the quit, now that the timers are running.
   fetch("quit");
+
+  // Now, on an interval timer, keep checking the current state to see if it has
+  // changed. If it has, then reload the data from the server.
+  // First, declare a comparison function for the two states.
+  const compareStates = (a, b) => {
+    return JSON.stringify(a) === JSON.stringify(b);
+  };
+
+  // Keep track of the number of times we've tried to reload the data.
+  let reloadCount = 0;
+  let reloadInterval = 250;
+
+  const reloadFunction = setInterval(async () => {
+    // If we've tried for 30s, then give up.
+    if (reloadCount * reloadInterval > 30000) {
+      clearInterval(reloadFunction);
+      return;
+    }
+
+    try {
+      const newState = await fetch("stateInfo").then((response) => {
+        if (response.ok) return response.json();
+      });
+
+      reloadCount += 1;
+
+      if (compareStates(newState, currentState)) return;
+
+      console.log("Reloading data...");
+
+      updateStateUI(renderStates);
+      reloadDataForCurrentState(renderStates);
+
+      clearInterval(reloadFunction);
+    } catch (_) {}
+  }, reloadInterval);
 }
 
 /**
@@ -570,7 +614,7 @@ export function saveState(states) {
 /**
  * Load the given state from local storage.
  *
- * @param {Map} states - The states to save.
+ * @param {Map} renderStates - The states to save.
  */
 export function loadState(renderStates) {
   const visibleState = Array.from(renderStates.values()).find(
@@ -857,7 +901,6 @@ export function setupMobileUI(renderer) {
 
     // Find the dropdown element via the parent.
     const dropdownElem = button.nextElementSibling;
-    console.log(dropdownElem);
     button.addEventListener("click", () => {
       const visibility = dropdownElem.style.visibility;
       if (visibility === "hidden" || visibility === "") {
