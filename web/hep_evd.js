@@ -8,10 +8,9 @@ import Stats from "three/addons/libs/stats.module.js";
 import { THEME, applyConfig } from "./constants.js";
 import { getData } from "./data_loader.js";
 import { RenderState } from "./render_state.js";
-import { animate, onWindowResize, renderImage } from "./rendering.js";
+import { animate, onWindowResize } from "./rendering.js";
 import { nextState, previousState, updateStateUI } from "./states.js";
 import {
-  dragElement,
   fixThemeButton,
   loadState,
   pickColourscheme,

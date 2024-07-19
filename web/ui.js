@@ -960,7 +960,7 @@ export function populateImages(images) {
   const dropDown = document.getElementById(`image_dropdown`);
   dropDown.innerHTML = "";
 
-  if (images.length === 0) {
+  if (!images || images.length === 0) {
     dropDownButton.style.display = "none";
     return;
   } else {
