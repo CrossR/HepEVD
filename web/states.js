@@ -120,6 +120,10 @@ export function getCurrentStateInfo() {
     );
   }
 
+  if (isRunningOnGitHubPages()) {
+    return Promise.resolve(null);
+  }
+
   return fetch("/stateInfo").then((response) => response.json());
 }
 
@@ -139,7 +143,7 @@ export function getAllStateInfo() {
   }
 
   if (isRunningOnGitHubPages()) {
-    return Promise.resolve([]);
+    return Promise.resolve(null);
   }
 
   return fetch("/allStateInfo").then((response) => response.json());
