@@ -13,6 +13,51 @@
 
 namespace py = pybind11;
 
+// Map from Python types to HepEVD types.
+using RawHit = std::tuple<double, double, double, double>;
+using PythonHitMap = std::map<RawHit, HepEVD::Hit *>;
+inline PythonHitMap pythonHitMap;
+
+// Set the current HepEVD geometry.
+// Input will either be a string or a list/array of numbers.
+void set_geometry(py::object geometry) {
+
+    if (HepEVD::isServerInitialised())
+        return;
+
+    HepEVD::Volumes volumes;
+
+    if (py::isinstance<py::str>(geometry)) {
+        if (detectors.find(geometry.cast<std::string>()) == detectors.end())
+            throw std::runtime_error("Unknown detector: " + geometry.cast<std::string>());
+
+        volumes = detectors[geometry.cast<std::string>()];
+    } else if (py::isinstance<py::buffer>(geometry)) {
+
+        py::buffer_info info = geometry.cast<py::buffer>().request();
+
+        if (info.shape[1] != 6)
+            throw std::runtime_error("Geometry array must have 6 columns");
+
+        double *data = static_cast<double *>(info.ptr);
+
+        for (int i = 0; i < info.shape[0]; i++) {
+            volumes.push_back(BoxVolume(Position({data[i * 6 + 0], data[i * 6 + 1], data[i * 6 + 2]}), data[i * 6 + 3],
+                                        data[i * 6 + 4], data[i * 6 + 5]));
+        }
+    } else {
+        throw std::runtime_error("Unknown geometry type, must be string or array");
+    }
+
+    hepEVDServer = new HepEVDServer(DetectorGeometry(volumes));
+
+    // Register the clear function for the hit map,
+    // so we can clear it when we need to.
+    HepEVD::registerClearFunction([&]() { pythonHitMap.clear(); });
+}
+
+// Add the given list/array of hits to the server.
+// Works for either HepEVD::Hit or HepEVD::MCHit.
 template <typename T> void add_hits(py::buffer hits, std::string label = "") {
 
     if (!HepEVD::isServerInitialised())
@@ -34,18 +79,22 @@ template <typename T> void add_hits(py::buffer hits, std::string label = "") {
     int cols = hits_info.shape[1];
 
     // Process all the hits in the array.
-    std::vector<T*> hepEVDHits;
+    std::vector<T *> hepEVDHits;
 
     for (int i = 0; i < rows; i++) {
+
         double x = data[i * cols + 0];
         double y = data[i * cols + 1];
         double z = data[i * cols + 2];
         double energy = data[i * cols + 3];
 
-       T *hit = new T(HepEVD::Position({x, y, z}), energy);
-       
-        if constexpr (std::is_same<T, HepEVD::MCHit>::value)
+        T *hit = new T(HepEVD::Position({x, y, z}), energy);
+
+        if constexpr (std::is_same<T, HepEVD::MCHit>::value) {
             hit->setPDG(data[i * cols + 4]);
+        } else {
+            pythonHitMap[std::make_tuple(x, y, z, energy)] = hit;
+        }
 
         if (label != "")
             hit->setLabel(label);
@@ -80,5 +129,5 @@ PYBIND11_MODULE(hepevd, m) {
     m.def("add_mc", &add_hits<HepEVD::MCHit>,
           "Adds hits to the current event state. Hits must be passed an (N, 5) list or array, with the 5 columns being "
           "(x, y, z, energy, PDG)",
-          py::arg("hits"), py::arg("label") = "");
+          py::arg("mcHits"), py::arg("label") = "");
 }
