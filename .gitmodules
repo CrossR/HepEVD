@@ -1,0 +1,3 @@
+[submodule "python_bindings/third_party/nanobind"]
+	path = python_bindings/third_party/nanobind
+	url = https://github.com/wjakob/nanobind
