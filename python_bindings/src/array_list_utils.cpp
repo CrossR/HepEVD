@@ -26,9 +26,9 @@ template <typename T> std::vector<T> getItems(nb::handle obj, int index, int siz
         nb::list list = nb::cast<nb::list>(obj);
         nb::handle child = list[index];
 
-        if (nb::isinstance<nb::list>(child)) {
+        try {
             return getItems<T>(child, index, size);
-        } else {
+        } catch (...) {
             std::vector<T> items;
 
             for (int i = 0; i < size; i++) {
@@ -50,13 +50,15 @@ BasicSizeInfo getBasicSizeInfo(nb::handle obj) {
         return BasicSizeInfo(array.shape_ptr(), array.shape_ptr() + array.ndim());
     } else if (nb::isinstance<nb::list>(obj)) {
         nb::list list = nb::cast<nb::list>(obj);
-        BasicSizeInfo size(list.size());
+        BasicSizeInfo size({static_cast<int>(list.size())});
+        nb::handle child = list[0];
 
-        if (nb::isinstance<nb::list>(list[0])) {
-            nb::handle child = list[0];
-            BasicSizeInfo childSize = getBasicSizeInfo(child);
-
-            size.insert(size.end(), childSize.begin(), childSize.end());
+        if (nb::isinstance<nb::list>(child)) {
+            try {
+                BasicSizeInfo childSize = getBasicSizeInfo(child);
+                size.insert(size.end(), childSize.begin(), childSize.end());
+            } catch (...) {
+            }
         }
 
         return size;

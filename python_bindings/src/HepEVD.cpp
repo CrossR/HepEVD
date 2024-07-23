@@ -1,5 +1,5 @@
-#include "include/geometry.h"
 #include <nanobind/nanobind.h>
+#include <nanobind/stl/string.h>
 #include <nanobind/ndarray.h>
 
 #include <cstdlib>
@@ -16,10 +16,31 @@
 
 namespace nb = nanobind;
 
+// Define a signal handler to catch SIGINT, SIGTERM, SIGKILL.
+// This is so we can gracefully shutdown the server.
+void catch_signals() {
+    auto handler = [](int code) {
+        if (hepEVDServer != nullptr) {
+            std::cout << "HepEVD: Caught signal " << code << ", shutting down." << std::endl;
+            hepEVDServer->stopServer();
+        }
+        exit(0);
+    };
+
+    signal(SIGINT, handler);
+    signal(SIGTERM, handler);
+    signal(SIGKILL, handler);
+}
+
+
 // Map from Python types to HepEVD types.
 using RawHit = std::tuple<double, double, double, double>;
 using PythonHitMap = std::map<RawHit, HepEVD::Hit *>;
 inline PythonHitMap pythonHitMap;
+
+// Check if the server is currently running.
+bool is_server_running() { return hepEVDServer->isRunning(); }
+void stop_server() { hepEVDServer->stopServer(); }
 
 // Set the current HepEVD geometry.
 // Input will either be a string or a list/array of numbers.
@@ -43,7 +64,7 @@ void set_geometry(nb::object geometry) {
 
         // TODO: Extend this to other geometry types.
         if (arraySize[1] != 6)
-            throw std::runtime_error("HepEVD: Geometry array must have 6 columns");
+            throw std::runtime_error("HepEVD: Geometry array must have 6 columns, not " + std::to_string(arraySize[1]));
 
         for (int i = 0; i < arraySize[0]; i++) {
             auto data = getItems<double>(geometry, i, 6);
@@ -79,7 +100,8 @@ template <typename T> void add_hits(nb::handle hits, std::string label = "") {
     // We are expecting the shape to be (N, 4) where N is the number of hits.
     int expectedSize = std::is_same<T, HepEVD::Hit>::value ? 4 : 5;
     if (arraySize[1] != expectedSize)
-        throw std::runtime_error("HepEVD: Hits array must have " + std::to_string(expectedSize) + " columns");
+        throw std::runtime_error("HepEVD: Hits array must have " + std::to_string(expectedSize) + " columns, not " +
+                                 std::to_string(arraySize[1]));
 
     int rows = arraySize[0];
     int cols = arraySize[1];
@@ -90,15 +112,15 @@ template <typename T> void add_hits(nb::handle hits, std::string label = "") {
     for (int i = 0; i < rows; i++) {
 
         auto data = getItems<double>(hits, i, cols);
-        double x = data[i * cols + 0];
-        double y = data[i * cols + 1];
-        double z = data[i * cols + 2];
-        double energy = data[i * cols + 3];
+        double x = data[0];
+        double y = data[1];
+        double z = data[2];
+        double energy = data[3];
 
         T *hit = new T(HepEVD::Position({x, y, z}), energy);
 
         if constexpr (std::is_same<T, HepEVD::MCHit>::value) {
-            hit->setPDG(data[i * cols + 4]);
+            hit->setPDG(data[4]);
         } else {
             pythonHitMap[std::make_tuple(x, y, z, energy)] = hit;
         }
@@ -129,7 +151,7 @@ void set_hit_properties(nb::handle hit, nb::dict properties) {
     if (hitSize.size() != 1)
         throw std::runtime_error("HepEVD: Hit array must be 1D");
     else if (hitSize[0] != 4)
-        throw std::runtime_error("HepEVD: Hit array must have 4 columns");
+        throw std::runtime_error("HepEVD: Hit array must have 4 columns, not " + std::to_string(hitSize[0]));
 
     auto data = getItems<double>(hit, 0, 4);
     RawHit inputHit = std::make_tuple(data[0], data[1], data[2], data[3]);
@@ -147,14 +169,16 @@ void set_hit_properties(nb::handle hit, nb::dict properties) {
     }
 }
 
-NB_MODULE(hep_evd_two, m) {
+NB_MODULE(_hepevd_impl, m) {
 
     m.doc() = "HepEVD - High Energy Physics Event Display";
 
-    m.def("start_server", &HepEVD::startServer, "Starts the HepEVD server", nb::arg("start_state") = -1,
-          nb::arg("clear_on_show") = true);
     m.def("is_initialised", &HepEVD::isServerInitialised,
           "Checks if the server is initialised - i.e. does a server exists, with the geometry set?");
+    m.def("is_running", &is_server_running, "Checks if the server is running");
+    m.def("start_server", &HepEVD::startServer, "Starts the HepEVD server", nb::arg("start_state") = -1,
+          nb::arg("clear_on_show") = true);
+    m.def("stop_server", &stop_server, "Stops the HepEVD server");
     m.def("set_verbose", &HepEVD::setVerboseLogging, "Sets the verbosity of the HepEVD server", nb::arg("verbose"));
 
     m.def("save_state", &HepEVD::saveState, "Saves the current state", nb::arg("state_name"), nb::arg("min_size") = -1,
@@ -169,13 +193,16 @@ NB_MODULE(hep_evd_two, m) {
     m.def("add_hits", &add_hits<HepEVD::Hit>,
           "Adds hits to the current event state. Hits must be passed an (N, 4) list or array, with the 4 columns being "
           "(x, y, z, energy)",
-          nb::arg("hits"), nb::arg("label") = "");
+          nb::arg("hits"), nb::arg("label") = "",
+          nb::sig("def add_hits(Union[List[List[float]], Array[Array[float]], Optional[str]]) -> None"));
     m.def("add_mc", &add_hits<HepEVD::MCHit>,
           "Adds hits to the current event state. Hits must be passed an (N, 5) list or array, with the 5 columns being "
           "(x, y, z, energy, PDG)",
-          nb::arg("mcHits"), nb::arg("label") = "");
+          nb::arg("mcHits"), nb::arg("label") = "",
+          nb::sig("def add_mc(Union[List[List[float]], Array[Array[float]], Optional[str]]) -> None"));
     m.def("add_hit_properties", &set_hit_properties, "Add custom properties to a hit, via a string / double dictionary",
-          nb::arg("hit"), nb::arg("properties"));
+          nb::arg("hit"), nb::arg("properties"),
+          nb::sig("def add_hit_properties(Union[List[float], Array[float]], Dict[str, float]) -> None"));
 
     nb::enum_<HepEVD::HitType>(m, "HitType")
         .value("GENERAL", HepEVD::GENERAL)
@@ -184,4 +211,8 @@ NB_MODULE(hep_evd_two, m) {
         .value("TWO_D_W", HepEVD::TWO_D_W);
 
     nb::enum_<HepEVD::HitDimension>(m, "HitDimension").value("TWO_D", HepEVD::TWO_D).value("THREE_D", HepEVD::THREE_D);
+
+    // Add a submodule to store internal functions.
+    nb::module_ m2 = m.def_submodule("_internal", "Internal functions");
+    m2.def("catch_signals", &catch_signals, "Catches signals");
 }
