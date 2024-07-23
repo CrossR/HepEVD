@@ -1,4 +1,5 @@
 #include <nanobind/nanobind.h>
+#include <nanobind/ndarray.h>
 
 #include <cstdlib>
 #include <map>
@@ -18,47 +19,7 @@ using RawHit = std::tuple<double, double, double, double>;
 using PythonHitMap = std::map<RawHit, HepEVD::Hit *>;
 inline PythonHitMap pythonHitMap;
 
-bool isArrayOrList(nb::handle obj) { return nb::isinstance<nb::array>(obj) || nb::isinstance<nb::list>(obj); }
-
-std::vector<ssize_t> getShapeSize(nb::handle obj) {
-    if (nb::isinstance<nb::array>(obj)) {
-        auto info = obj.cast<nb::array>().request();
-        return info.shape;
-    } else if (nb::isinstance<nb::list>(obj)) {
-        auto list = obj.cast<nb::list>();
-
-        std::vector<ssize_t> listShape({static_cast<ssize_t>(list.size())});
-
-        try {
-            nb::handle firstListObject(list[0]);
-            std::cout << firstListObject << std::endl;
-            std::vector<ssize_t> firstShape = getShapeSize(firstListObject);
-
-        } catch (...) {
-        }
-
-        return listShape;
-    }
-
-    throw std::runtime_error("Not an array or list");
-}
-
-template <typename T>
-T getValueFromListOrArray(nb::handle obj, int index) {
-    
-    if (nb::isinstance<nb::array>(obj)) {
-        auto info = obj.cast<nb::array>().request();
-        return info.ptr[index];
-    } else if (nb::isinstance<nb::list>(obj)) {
-        auto info = getShapeSize(obj);
-
-        // We need to flatten the list, so that we can access the correct index.
-        std::vector<T> data;
-
-        for (int i = 0; i < info[0]; i++) {
-
-    }
-}
+bool isArrayOrList(nb::handle obj) { return nb::isinstance<nb::ndarray<>>(obj) || nb::isinstance<nb::list>(obj); }
 
 // Set the current HepEVD geometry.
 // Input will either be a string or a list/array of numbers.
@@ -72,21 +33,21 @@ void set_geometry(nb::object geometry) {
     // If the input is a string, check if it is a detector.
     // Otherwise if an array or list, assume it is a list of volumes.
     if (nb::isinstance<nb::str>(geometry)) {
-        if (detectors.find(geometry.cast<std::string>()) == detectors.end())
-            throw std::runtime_error("Unknown detector: " + geometry.cast<std::string>());
+        if (detectors.find(nb::cast<std::string>(geometry)) == detectors.end())
+            throw std::runtime_error("Unknown detector: " + nb::cast<std::string>(geometry));
 
-        volumes = detectors[geometry.cast<std::string>()];
+        volumes = detectors[nb::cast<std::string>(geometry)];
     } else if (isArrayOrList(geometry)) {
 
-        auto info = getShapeSize(geometry);
+        nb::ndarray<> array = nb::cast<nb::ndarray<>>(geometry);
 
         // TODO: Extend this to other geometry types.
-        if (info[1] != 6)
+        if (array.shape_ptr()[1] != 6)
             throw std::runtime_error("Geometry array must have 6 columns");
 
-        double *data = static_cast<double *>(info.ptr);
+        double *data = static_cast<double *>(array.data());
 
-        for (int i = 0; i < info[0]; i++) {
+        for (int i = 0; i < array.shape_ptr()[0]; i++) {
             volumes.push_back(BoxVolume(Position({data[i * 6 + 0], data[i * 6 + 1], data[i * 6 + 2]}), data[i * 6 + 3],
                                         data[i * 6 + 4], data[i * 6 + 5]));
         }
@@ -103,25 +64,23 @@ void set_geometry(nb::object geometry) {
 
 // Add the given list/array of hits to the server.
 // Works for either HepEVD::Hit or HepEVD::MCHit.
-template <typename T> void add_hits(nb::buffer hits, std::string label = "") {
+template <typename T> void add_hits(nb::ndarray<> hits, std::string label = "") {
 
     if (!HepEVD::isServerInitialised())
         return;
 
-    nb::buffer_info hits_info = hits.request();
-
-    if (hits_info.ndim != 2)
+    if (hits.ndim() != 2)
         throw std::runtime_error("Hits array must be 2D");
 
     // Check that the shape of the array is correct.
     // We are expecting the shape to be (N, 4) where N is the number of hits.
     int expectedSize = std::is_same<T, HepEVD::Hit>::value ? 4 : 5;
-    if (hits_info.shape[1] != expectedSize)
+    if (hits.shape_ptr()[1] != expectedSize)
         throw std::runtime_error("Hits array must have " + std::to_string(expectedSize) + " columns");
 
-    double *data = static_cast<double *>(hits_info.ptr);
-    int rows = hits_info.shape[0];
-    int cols = hits_info.shape[1];
+    double *data = static_cast<double *>(hits.data());
+    int rows = hits.shape_ptr()[0];
+    int cols = hits.shape_ptr()[1];
 
     // Process all the hits in the array.
     std::vector<T *> hepEVDHits;
@@ -154,19 +113,17 @@ template <typename T> void add_hits(nb::buffer hits, std::string label = "") {
 }
 
 // Apply properties to the given hit or hits.
-void set_hit_properties(nb::buffer hit, nb::dict properties) {
+void set_hit_properties(nb::ndarray<> hit, nb::dict properties) {
 
     if (!HepEVD::isServerInitialised())
         return;
 
-    nb::buffer_info hit_info = hit.request();
-
-    if (hit_info.ndim != 1)
+    if (hit.ndim() != 1)
         throw std::runtime_error("Hit array must be 1D");
-    else if (hit_info.shape[0] != 4)
+    else if (hit.shape_ptr()[0] != 4)
         throw std::runtime_error("Hit array must have 4 columns");
 
-    double *data = static_cast<double *>(hit_info.ptr);
+    double *data = static_cast<double *>(hit.data());
     RawHit inputHit = std::make_tuple(data[0], data[1], data[2], data[3]);
 
     if (!pythonHitMap.count(inputHit))
@@ -175,14 +132,14 @@ void set_hit_properties(nb::buffer hit, nb::dict properties) {
     HepEVD::Hit *hepEVDHit = pythonHitMap[inputHit];
 
     for (auto item : properties) {
-        std::string key = item.first.cast<std::string>();
-        double value = item.second.cast<double>();
+        std::string key = nb::cast<std::string>(item.first);
+        double value = nb::cast<double>(item.second);
 
         hepEVDHit->addProperties({{key, value}});
     }
 }
 
-NB_MODULE(hep_evd, m) {
+NB_MODULE(hep_evd_two, m) {
 
     m.doc() = "HepEVD - High Energy Physics Event Display";
 

@@ -22,4 +22,4 @@ add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/third_party/nanobind)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/..)
 
 # Finally, build the extension
-nanobind_add_module(hepevd bindings/basics.cpp)
+nanobind_add_module(hep_evd_two bindings/basics.cpp)
