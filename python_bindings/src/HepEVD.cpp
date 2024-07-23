@@ -198,13 +198,16 @@ NB_MODULE(_hepevd_impl, m) {
           nb::arg("hit"), nb::arg("properties"),
           nb::sig("def add_hit_properties(Union[List[float], Array[float]], Dict[str, float]) -> None"));
 
-    nb::enum_<HepEVD::HitType>(m, "HitType")
-        .value("GENERAL", HepEVD::GENERAL)
-        .value("TWO_D_U", HepEVD::TWO_D_U)
-        .value("TWO_D_V", HepEVD::TWO_D_V)
-        .value("TWO_D_W", HepEVD::TWO_D_W);
+    // Add enums
+    nb::enum_<HepEVD::HitType>(m, "HitType", nb::is_arithmetic())
+        .value("GENERAL", HepEVD::HitType::GENERAL, "General hit type")
+        .value("TWO_D_U", HepEVD::HitType::TWO_D_U, "A 2D U View hit, from a LArTPC")
+        .value("TWO_D_V", HepEVD::HitType::TWO_D_V, "A 2D V View hit, from a LArTPC")
+        .value("TWO_D_W", HepEVD::HitType::TWO_D_W, "A 2D W View hit, from a LArTPC");
 
-    nb::enum_<HepEVD::HitDimension>(m, "HitDimension").value("TWO_D", HepEVD::TWO_D).value("THREE_D", HepEVD::THREE_D);
+    nb::enum_<HepEVD::HitDimension>(m, "HitDimension", nb::is_arithmetic())
+        .value("TWO_D", HepEVD::HitDimension::TWO_D, "A 2D hit")
+        .value("THREE_D", HepEVD::HitDimension::THREE_D, "A 3D hit");
 
     // Add a submodule to store internal functions.
     nb::module_ m2 = m.def_submodule("_internal", "Internal functions");
