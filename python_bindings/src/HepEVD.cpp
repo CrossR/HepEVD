@@ -38,10 +38,6 @@ using RawHit = std::tuple<double, double, double, double>;
 using PythonHitMap = std::map<RawHit, HepEVD::Hit *>;
 inline PythonHitMap pythonHitMap;
 
-// Check if the server is currently running.
-bool is_server_running() { return hepEVDServer->isRunning(); }
-void stop_server() { hepEVDServer->stopServer(); }
-
 // Set the current HepEVD geometry.
 // Input will either be a string or a list/array of numbers.
 void set_geometry(nb::object geometry) {
@@ -175,10 +171,8 @@ NB_MODULE(_hepevd_impl, m) {
 
     m.def("is_initialised", &HepEVD::isServerInitialised,
           "Checks if the server is initialised - i.e. does a server exists, with the geometry set?");
-    m.def("is_running", &is_server_running, "Checks if the server is running");
     m.def("start_server", &HepEVD::startServer, "Starts the HepEVD server", nb::arg("start_state") = -1,
           nb::arg("clear_on_show") = true);
-    m.def("stop_server", &stop_server, "Stops the HepEVD server");
     m.def("set_verbose", &HepEVD::setVerboseLogging, "Sets the verbosity of the HepEVD server", nb::arg("verbose"));
 
     m.def("save_state", &HepEVD::saveState, "Saves the current state", nb::arg("state_name"), nb::arg("min_size") = -1,

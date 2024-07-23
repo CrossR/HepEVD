@@ -17,7 +17,7 @@ template <typename T> std::vector<T> getItems(nb::handle obj, int index, int siz
         std::vector<T> items;
 
         for (int i = 0; i < size; i++)
-            items.push_back(data[index + i]);
+            items.push_back(data[index * size + i]);
 
         return items;
 
