@@ -441,13 +441,13 @@ static PyObject *py_save_state(PyObject *self, PyObject *args) {
 
 // Define the methods we want to expose to Python.
 static PyMethodDef methods[] = {
-    {"is_init", py_is_initialised, METH_VARARGS, "Check if the HepEVD server is initialised."},
+    {"is_initialised", py_is_initialised, METH_VARARGS, "Check if the HepEVD server is initialised."},
     {"start_server", py_start_server, METH_VARARGS, "Start the HepEVD server."},
     {"reset_server", py_reset_server, METH_VARARGS, "Reset the HepEVD server."},
-    {"set_geo", (PyCFunction)py_set_geo, METH_VARARGS | METH_KEYWORDS, "Set the detector geometry."},
+    {"set_geometry", (PyCFunction)py_set_geo, METH_VARARGS | METH_KEYWORDS, "Set the detector geometry."},
     {"add_hits", py_add_hits<HepEVD::Hit>, METH_VARARGS, "Add hits to the current event state."},
     {"add_mc_hits", py_add_hits<HepEVD::MCHit>, METH_VARARGS, "Add MC hits to the current event state."},
-    {"add_hit_props", py_add_hit_props, METH_VARARGS, "Add properties to a hit."},
+    {"add_hit_properties", py_add_hit_props, METH_VARARGS, "Add properties to a hit."},
     {"save_state", py_save_state, METH_VARARGS, "Save the current event state."},
     {"set_verbose", py_verbose_logging, METH_VARARGS, "Toggle verbose logging."},
     {NULL, NULL, 0, NULL}};
@@ -456,8 +456,8 @@ static PyMethodDef methods[] = {
 static struct PyModuleDef module_def = {PyModuleDef_HEAD_INIT, "hep_evd", "HepEVD server bindings.", -1, methods};
 
 // Define submodules for the two enums.
-static struct PyModuleDef hit_dimension_def = {PyModuleDef_HEAD_INIT, "HIT_DIM", "HepEVD hit dimensions.", -1, NULL};
-static struct PyModuleDef hit_type_def = {PyModuleDef_HEAD_INIT, "HIT_TYPE", "HepEVD hit types.", -1, NULL};
+static struct PyModuleDef hit_dimension_def = {PyModuleDef_HEAD_INIT, "HitDimension", "HepEVD hit dimensions.", -1, NULL};
+static struct PyModuleDef hit_type_def = {PyModuleDef_HEAD_INIT, "HitType", "HepEVD hit types.", -1, NULL};
 
 // And finally, initialise the module.
 PyMODINIT_FUNC PyInit_hep_evd(void) {
@@ -480,8 +480,8 @@ PyMODINIT_FUNC PyInit_hep_evd(void) {
     PyModule_AddIntConstant(hit_type_module, "TWO_D_W", HepEVD::TWO_D_W);
 
     // Add the submodules to the main module.
-    PyModule_AddObject(module, "HIT_DIM", hit_dimension_module);
-    PyModule_AddObject(module, "HIT_TYPE", hit_type_module);
+    PyModule_AddObject(module, "HitDimension", hit_dimension_module);
+    PyModule_AddObject(module, "HitType", hit_type_module);
 
     return module;
 }
