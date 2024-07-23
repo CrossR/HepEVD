@@ -1,3 +1,4 @@
+#include "include/geometry.h"
 #include <nanobind/nanobind.h>
 #include <nanobind/ndarray.h>
 
@@ -11,6 +12,7 @@
 
 // And any local includes...
 #include "../include/detectors.hpp"
+#include "array_list_utils.cpp"
 
 namespace nb = nanobind;
 
@@ -18,8 +20,6 @@ namespace nb = nanobind;
 using RawHit = std::tuple<double, double, double, double>;
 using PythonHitMap = std::map<RawHit, HepEVD::Hit *>;
 inline PythonHitMap pythonHitMap;
-
-bool isArrayOrList(nb::handle obj) { return nb::isinstance<nb::ndarray<>>(obj) || nb::isinstance<nb::list>(obj); }
 
 // Set the current HepEVD geometry.
 // Input will either be a string or a list/array of numbers.
@@ -34,25 +34,23 @@ void set_geometry(nb::object geometry) {
     // Otherwise if an array or list, assume it is a list of volumes.
     if (nb::isinstance<nb::str>(geometry)) {
         if (detectors.find(nb::cast<std::string>(geometry)) == detectors.end())
-            throw std::runtime_error("Unknown detector: " + nb::cast<std::string>(geometry));
+            throw std::runtime_error("HepEVD: Unknown detector: " + nb::cast<std::string>(geometry));
 
         volumes = detectors[nb::cast<std::string>(geometry)];
     } else if (isArrayOrList(geometry)) {
 
-        nb::ndarray<> array = nb::cast<nb::ndarray<>>(geometry);
+        BasicSizeInfo arraySize = getBasicSizeInfo(geometry);
 
         // TODO: Extend this to other geometry types.
-        if (array.shape_ptr()[1] != 6)
-            throw std::runtime_error("Geometry array must have 6 columns");
+        if (arraySize[1] != 6)
+            throw std::runtime_error("HepEVD: Geometry array must have 6 columns");
 
-        double *data = static_cast<double *>(array.data());
-
-        for (int i = 0; i < array.shape_ptr()[0]; i++) {
-            volumes.push_back(BoxVolume(Position({data[i * 6 + 0], data[i * 6 + 1], data[i * 6 + 2]}), data[i * 6 + 3],
-                                        data[i * 6 + 4], data[i * 6 + 5]));
+        for (int i = 0; i < arraySize[0]; i++) {
+            auto data = getItems<double>(geometry, i, 6);
+            volumes.push_back(BoxVolume(Position({data[0], data[1], data[2]}), data[3], data[4], data[5]));
         }
     } else {
-        throw std::runtime_error("Unknown geometry type, must be string or array");
+        throw std::runtime_error("HepEVD: Unknown geometry type, must be string or array");
     }
 
     hepEVDServer = new HepEVDServer(DetectorGeometry(volumes));
@@ -64,29 +62,34 @@ void set_geometry(nb::object geometry) {
 
 // Add the given list/array of hits to the server.
 // Works for either HepEVD::Hit or HepEVD::MCHit.
-template <typename T> void add_hits(nb::ndarray<> hits, std::string label = "") {
+template <typename T> void add_hits(nb::handle hits, std::string label = "") {
 
     if (!HepEVD::isServerInitialised())
         return;
 
-    if (hits.ndim() != 2)
+    if (!isArrayOrList(hits))
+        throw std::runtime_error("HepEVD: Hit must be an array or list");
+
+    BasicSizeInfo arraySize = getBasicSizeInfo(hits);
+
+    if (arraySize.size() != 2)
         throw std::runtime_error("Hits array must be 2D");
 
     // Check that the shape of the array is correct.
     // We are expecting the shape to be (N, 4) where N is the number of hits.
     int expectedSize = std::is_same<T, HepEVD::Hit>::value ? 4 : 5;
-    if (hits.shape_ptr()[1] != expectedSize)
-        throw std::runtime_error("Hits array must have " + std::to_string(expectedSize) + " columns");
+    if (arraySize[1] != expectedSize)
+        throw std::runtime_error("HepEVD: Hits array must have " + std::to_string(expectedSize) + " columns");
 
-    double *data = static_cast<double *>(hits.data());
-    int rows = hits.shape_ptr()[0];
-    int cols = hits.shape_ptr()[1];
+    int rows = arraySize[0];
+    int cols = arraySize[1];
 
     // Process all the hits in the array.
     std::vector<T *> hepEVDHits;
 
     for (int i = 0; i < rows; i++) {
 
+        auto data = getItems<double>(hits, i, cols);
         double x = data[i * cols + 0];
         double y = data[i * cols + 1];
         double z = data[i * cols + 2];
@@ -113,21 +116,26 @@ template <typename T> void add_hits(nb::ndarray<> hits, std::string label = "") 
 }
 
 // Apply properties to the given hit or hits.
-void set_hit_properties(nb::ndarray<> hit, nb::dict properties) {
+void set_hit_properties(nb::handle hit, nb::dict properties) {
 
     if (!HepEVD::isServerInitialised())
         return;
 
-    if (hit.ndim() != 1)
-        throw std::runtime_error("Hit array must be 1D");
-    else if (hit.shape_ptr()[0] != 4)
-        throw std::runtime_error("Hit array must have 4 columns");
+    if (!isArrayOrList(hit))
+        throw std::runtime_error("HepEVD: Hit must be an array or list");
 
-    double *data = static_cast<double *>(hit.data());
+    BasicSizeInfo hitSize = getBasicSizeInfo(hit);
+
+    if (hitSize.size() != 1)
+        throw std::runtime_error("HepEVD: Hit array must be 1D");
+    else if (hitSize[0] != 4)
+        throw std::runtime_error("HepEVD: Hit array must have 4 columns");
+
+    auto data = getItems<double>(hit, 0, 4);
     RawHit inputHit = std::make_tuple(data[0], data[1], data[2], data[3]);
 
     if (!pythonHitMap.count(inputHit))
-        throw std::runtime_error("No hit exists with the given position");
+        throw std::runtime_error("HepEVD: No hit exists with the given position");
 
     HepEVD::Hit *hepEVDHit = pythonHitMap[inputHit];
 
@@ -153,7 +161,10 @@ NB_MODULE(hep_evd_two, m) {
           nb::arg("clear_on_show") = true);
     m.def("reset_server", &HepEVD::resetServer, "Resets the server", nb::arg("reset_geo") = false);
 
-    m.def("set_geometry", &set_geometry, "Sets the geometry of the server", nb::arg("geometry"));
+    // Set the current HepEVD geometry.
+    // Input will either be a string or a list/array of numbers.
+    m.def("set_geometry", &set_geometry, "Sets the geometry of the server", nb::arg("geometry"),
+          nb::sig("def set_geometry(Union[str, List[float]]) -> None"));
 
     m.def("add_hits", &add_hits<HepEVD::Hit>,
           "Adds hits to the current event state. Hits must be passed an (N, 4) list or array, with the 4 columns being "
