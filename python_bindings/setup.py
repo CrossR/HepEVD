@@ -42,7 +42,12 @@ try:
     # Numpy 1.7 deprecated the NPY_NO_DEPRECATED_API macro
     define_macros.append(("NPY_NO_DEPRECATED_API", "NPY_1_7_API_VERSION"))
 except ImportError:
-    print("Numpy is missing, bindings will be built without numpy support.")
+    if not use_pybind11:
+        print("Numpy is missing, bindings will be built without numpy support.")
+    else:
+        print("Numpy is missing, but pybind11 is installed, please install numpy.")
+        print("Bindings for PyBind11 require Numpy.")
+        exit(1)
 
 # Get the absolute path to the ../web directory,
 # so it can be used regardless of where HepEVD is installed.
