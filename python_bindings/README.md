@@ -46,6 +46,9 @@ Alternatively, to build and then install the Python bindings, you can run:
 ```
 ./get_extern_deps.sh
 
+# We use a git submodule for nanobind, the Python / C++ bindings library.
+git submodule update --init --recursive
+
 # You may want to setup a Python Venv for this first...
 # https://docs.python.org/3/library/venv.html
 python -m venv .venv
