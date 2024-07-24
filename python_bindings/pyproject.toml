@@ -22,3 +22,9 @@ homepage = "https://github.com/CrossR/HepEVD"
 minimum-version = "0.4"
 build-dir = "build/{wheel_tag}"
 wheel.py-api = "cp312"
+
+[tool.cibuildwheel]
+build-verbosity = 1
+
+[tool.cibuildwheel.macos.environment]
+MACOSX_DEPLOYMENT_TARGET = "10.14"
