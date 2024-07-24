@@ -62,7 +62,7 @@ void set_geometry(nb::object geometry) {
             throw std::runtime_error("HepEVD: Geometry array must have 6 columns, not " + std::to_string(arraySize[1]));
 
         for (int i = 0; i < arraySize[0]; i++) {
-            auto data = getItems<double>(geometry, i, 6);
+            auto data = getItems(geometry, i, 6);
             volumes.push_back(BoxVolume(Position({data[0], data[1], data[2]}), data[3], data[4], data[5]));
         }
     } else {
@@ -126,7 +126,7 @@ template <typename T> void add_hits(nb::handle hits, std::string label = "") {
 
     for (int i = 0; i < rows; i++) {
 
-        auto data = getItems<double>(hits, i, cols);
+        auto data = getItems(hits, i, cols);
 
         auto idx(0);
         double x = data[idx++];
@@ -184,7 +184,7 @@ void set_hit_properties(nb::handle hit, nb::dict properties) {
     else if (hitSize[0] != 4)
         throw std::runtime_error("HepEVD: Hit array must have 4 columns, not " + std::to_string(hitSize[0]));
 
-    auto data = getItems<double>(hit, 0, 4);
+    auto data = getItems(hit, 0, 4);
     RawHit inputHit = std::make_tuple(data[0], data[1], data[2], data[3]);
 
     if (!pythonHitMap.count(inputHit))

@@ -89,7 +89,7 @@ HepEVD.add_hits(left_hits)
 HepEVD.save_state("Second")
 
 print("Adding even more hits...")
-right_hits = [hit for hit in threeD_hits if hit[0] > 0]
+right_hits = np.array([[*hit] for hit in threeD_hits if hit[0] > 0])
 HepEVD.add_hits(right_hits)
 HepEVD.save_state("Third")
 

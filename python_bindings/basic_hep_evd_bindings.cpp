@@ -456,7 +456,8 @@ static PyMethodDef methods[] = {
 static struct PyModuleDef module_def = {PyModuleDef_HEAD_INIT, "hep_evd", "HepEVD server bindings.", -1, methods};
 
 // Define submodules for the two enums.
-static struct PyModuleDef hit_dimension_def = {PyModuleDef_HEAD_INIT, "HitDimension", "HepEVD hit dimensions.", -1, NULL};
+static struct PyModuleDef hit_dimension_def = {PyModuleDef_HEAD_INIT, "HitDimension", "HepEVD hit dimensions.", -1,
+                                               NULL};
 static struct PyModuleDef hit_type_def = {PyModuleDef_HEAD_INIT, "HitType", "HepEVD hit types.", -1, NULL};
 
 // And finally, initialise the module.

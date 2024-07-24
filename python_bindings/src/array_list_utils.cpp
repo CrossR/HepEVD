@@ -25,7 +25,7 @@ bool isArrayOrList(nb::handle obj) { return nb::isinstance<nb::ndarray<>>(obj) |
  *
  * @throws std::runtime_error if the input type is unknown
  */
-template <typename T> std::vector<T> getItems(nb::handle obj, int index, int size) {
+std::vector<double> getItems(nb::handle obj, int index, int size) {
 
     if (!isArrayOrList(obj))
         throw std::runtime_error("HepEVD: Object must be an array or list");
@@ -33,8 +33,8 @@ template <typename T> std::vector<T> getItems(nb::handle obj, int index, int siz
     if (nb::isinstance<nb::ndarray<>>(obj)) {
         nb::ndarray<> array = nb::cast<nb::ndarray<>>(obj);
 
-        T *data = static_cast<T *>(array.data());
-        std::vector<T> items;
+        double *data = static_cast<double *>(array.data());
+        std::vector<double> items;
 
         for (int i = 0; i < size; i++)
             items.push_back(data[index * size + i]);
@@ -46,14 +46,14 @@ template <typename T> std::vector<T> getItems(nb::handle obj, int index, int siz
 
         try {
             if (index < list.size() && isArrayOrList(list[index]))
-                return getItems<T>(list[index], index, size);
+                return getItems(list[index], 0, size);
         } catch (...) {
         }
 
-        std::vector<T> items;
+        std::vector<double> items;
 
         for (int i = 0; i < size; i++)
-            items.push_back(nb::cast<T>(list[i]));
+            items.push_back(nb::cast<double>(list[i]));
 
         return items;
     }
