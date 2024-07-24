@@ -239,7 +239,7 @@ NB_MODULE(_hepevd_impl, m) {
     // Set the current HepEVD geometry.
     // Input will either be a string or a list/array of numbers.
     m.def("set_geometry", &set_geometry, "Sets the geometry of the server", nb::arg("geometry"),
-          nb::sig("def set_geometry(Union[str, List[float]]) -> None"));
+          nb::sig("def set_geometry(geometry: typing.Union[str, collections.abc.Collection[float]]) -> None"));
 
     m.def("add_hits", &add_hits<HepEVD::Hit>,
           "Adds hits to the current event state.\n"
@@ -247,28 +247,34 @@ NB_MODULE(_hepevd_impl, m) {
           "(x, y, z, energy) and two optional columns (view, dimension) for the hit type and dimension.\n"
           "The view and dimension values must be from the HepEVD.HitType and HepEVD.HitDimension enums respectively.",
           nb::arg("hits"), nb::arg("label") = "",
-          nb::sig("def add_hits(Union[List[List[float]], Array[Array[float]], Optional[str]]) -> None"));
+          nb::sig("def add_hits(hits: collections.abc.Collection[collections.abc.Collection[float]], label: "
+                  "typing.Optional[str]]) -> None"));
     m.def("add_mc", &add_hits<HepEVD::MCHit>,
           "Adds MC hits to the current event state.\n"
           "Hits must be passed as an (NHits, Y) list or array, with the columns being "
           "(x, y, z, energy, PDG) and two optional columns (view, dimension) for the hit type and dimension.\n"
           "The view and dimension values must be from the HepEVD.HitType and HepEVD.HitDimension enums respectively.",
           nb::arg("mcHits"), nb::arg("label") = "",
-          nb::sig("def add_mc(Union[List[List[float]], Array[Array[float]], Optional[str]]) -> None"));
+          nb::sig("def add_mc(hits: collections.abc.Collection[collections.abc.Collection[float]], label: "
+                  "typing.Optional[str]]) -> None"));
     m.def("add_hit_properties", &set_hit_properties,
           "Add custom properties to a hit, via a string / double dictionary.\n"
           "The hit must be passed as a (x, y, z, energy) list or array.",
           nb::arg("hit"), nb::arg("properties"),
-          nb::sig("def add_hit_properties(Union[List[float], Array[float]], Dict[str, float]) -> None"));
+          nb::sig("def add_hit_properties(hit: collections.abc.Collection[float], properties: typing.Dict[str, float]) "
+                  "-> None"));
 
     // Add enums
-    nb::enum_<HepEVD::HitType>(m, "HitType", nb::is_arithmetic())
+    nb::enum_<HepEVD::HitType>(m, "HitType",
+                               "Enum for various possible hit types. This is mostly useful for LArTPC view data.",
+                               nb::is_arithmetic())
         .value("GENERAL", HepEVD::HitType::GENERAL, "General hit type")
         .value("TWO_D_U", HepEVD::HitType::TWO_D_U, "A 2D U View hit, from a LArTPC")
         .value("TWO_D_V", HepEVD::HitType::TWO_D_V, "A 2D V View hit, from a LArTPC")
         .value("TWO_D_W", HepEVD::HitType::TWO_D_W, "A 2D W View hit, from a LArTPC");
 
-    nb::enum_<HepEVD::HitDimension>(m, "HitDimension", nb::is_arithmetic())
+    nb::enum_<HepEVD::HitDimension>(m, "HitDimension", "Enum to distinguish between 3D and 2D hits.",
+                                    nb::is_arithmetic())
         .value("TWO_D", HepEVD::HitDimension::TWO_D, "A 2D hit")
         .value("THREE_D", HepEVD::HitDimension::THREE_D, "A 3D hit");
 }
