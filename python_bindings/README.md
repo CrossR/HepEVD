@@ -57,16 +57,13 @@ source .venv/bin/activate
 # Swap to the Python bindings directory.
 cd python_bindings/
 
-# Build the bindings.
-# In Python 3.11 and below, this uses distutils which is built-in.
-# However, in Python 3.12, distutils is deprecated, and setuptools is used instead.
-# This is not built-in, so you may need to install it first, though it is usually
-# installed by default, alongside pip.
-python setup.py build_ext --inplace -j $(nproc) -f
+# Build and install the bindings...
+python install .
 
-# Install the bindings to your venv Python version...
+# Test them...
+python
 
-python setup.py install
+$ import HepEVD
 ```
 
 ## Motivation
