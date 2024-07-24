@@ -61,4 +61,21 @@ nanobind_add_module(
     src/HepEVD.cpp
 )
 
+# Install the library
 install(TARGETS _hepevd_impl LIBRARY DESTINATION HepEVD)
+
+# Add the python typing stub
+nanobind_add_stub(
+    _hepevd_impl_stub
+    MODULE _hepevd_impl
+    DEPENDS _hepevd_impl
+    OUTPUT __init__.pyi
+    PYTHON_PATH $<TARGET_FILE_DIR:_hepevd_impl>
+    MARKER_FILE py.typed
+    INCLUDE_PRIVATE true
+    VERBOSE true
+)
+
+# Install the python typing stub
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/__init__.pyi DESTINATION HepEVD)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/py.typed DESTINATION HepEVD)

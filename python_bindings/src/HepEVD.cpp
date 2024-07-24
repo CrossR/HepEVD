@@ -239,7 +239,8 @@ NB_MODULE(_hepevd_impl, m) {
     // Set the current HepEVD geometry.
     // Input will either be a string or a list/array of numbers.
     m.def("set_geometry", &set_geometry, "Sets the geometry of the server", nb::arg("geometry"),
-          nb::sig("def set_geometry(geometry: typing.Union[str, collections.abc.Collection[float]]) -> None"));
+          nb::sig("def set_geometry(geometry: typing.Union[str, "
+                  "collections.abc.Collection[collections.abc.Collection[float | int]]]) -> None"));
 
     m.def("add_hits", &add_hits<HepEVD::Hit>,
           "Adds hits to the current event state.\n"
@@ -247,21 +248,24 @@ NB_MODULE(_hepevd_impl, m) {
           "(x, y, z, energy) and two optional columns (view, dimension) for the hit type and dimension.\n"
           "The view and dimension values must be from the HepEVD.HitType and HepEVD.HitDimension enums respectively.",
           nb::arg("hits"), nb::arg("label") = "",
-          nb::sig("def add_hits(hits: collections.abc.Collection[collections.abc.Collection[float]], label: "
-                  "typing.Optional[str]]) -> None"));
+          nb::sig("def add_hits(hits: collections.abc.Collection[collections.abc.Collection[float | int | HitType | "
+                  "HitDimension]], "
+                  "label: str = '') -> None"));
     m.def("add_mc", &add_hits<HepEVD::MCHit>,
           "Adds MC hits to the current event state.\n"
           "Hits must be passed as an (NHits, Y) list or array, with the columns being "
           "(x, y, z, energy, PDG) and two optional columns (view, dimension) for the hit type and dimension.\n"
           "The view and dimension values must be from the HepEVD.HitType and HepEVD.HitDimension enums respectively.",
           nb::arg("mcHits"), nb::arg("label") = "",
-          nb::sig("def add_mc(hits: collections.abc.Collection[collections.abc.Collection[float]], label: "
-                  "typing.Optional[str]]) -> None"));
+          nb::sig("def add_mc(hits: collections.abc.Collection[collections.abc.Collection[float | int | HitType | "
+                  "HitDimension]], "
+                  "label: str = '') -> None"));
     m.def("add_hit_properties", &set_hit_properties,
           "Add custom properties to a hit, via a string / double dictionary.\n"
           "The hit must be passed as a (x, y, z, energy) list or array.",
           nb::arg("hit"), nb::arg("properties"),
-          nb::sig("def add_hit_properties(hit: collections.abc.Collection[float], properties: typing.Dict[str, float]) "
+          nb::sig("def add_hit_properties(hit: collections.abc.Collection[float | int], properties: "
+                  "typing.Dict[float | int]) "
                   "-> None"));
 
     // Add enums
