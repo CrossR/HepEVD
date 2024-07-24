@@ -16,9 +16,15 @@
 
 namespace nb = nanobind;
 
-// Define a signal handler to catch SIGINT, SIGTERM, SIGKILL.
-// This is so we can gracefully shutdown the server.
-void catch_signals() {
+// We want to catch SIGINT, SIGTERM and SIGKILL and shut down the server
+// when that happens.
+//
+// But we also don't want to interfere with other signals, when the server
+// is not running.
+//
+// So setup and teardown the signals here, around the server starting and finishing.
+typedef void (*sighandler_t)(int);
+std::vector<sighandler_t> catch_signals() {
     auto handler = [](int code) {
         if (hepEVDServer != nullptr) {
             std::cout << "HepEVD: Caught signal " << code << ", shutting down." << std::endl;
@@ -27,9 +33,25 @@ void catch_signals() {
         exit(0);
     };
 
-    signal(SIGINT, handler);
-    signal(SIGTERM, handler);
-    signal(SIGKILL, handler);
+    std::vector<sighandler_t> oldHandlers;
+
+    oldHandlers.push_back(signal(SIGINT, handler));
+    oldHandlers.push_back(signal(SIGTERM, handler));
+    oldHandlers.push_back(signal(SIGKILL, handler));
+
+    return oldHandlers;
+}
+
+void revert_signals(std::vector<sighandler_t> oldHandlers) {
+    signal(SIGINT, oldHandlers[0]);
+    signal(SIGINT, oldHandlers[1]);
+    signal(SIGINT, oldHandlers[2]);
+}
+
+void start_server_with_signal_handling(const int startState = -1, const bool clearOnShow = true) {
+    const auto oldHandlers = catch_signals();
+    HepEVD::startServer(startState, clearOnShow);
+    revert_signals(oldHandlers);
 }
 
 // Map from Python types to HepEVD types.
@@ -206,7 +228,7 @@ NB_MODULE(_hepevd_impl, m) {
 
     m.def("is_initialised", &HepEVD::isServerInitialised,
           "Checks if the server is initialised - i.e. does a server exists, with the geometry set?");
-    m.def("start_server", &HepEVD::startServer, "Starts the HepEVD server", nb::arg("start_state") = -1,
+    m.def("start_server", &start_server_with_signal_handling, "Starts the HepEVD server", nb::arg("start_state") = -1,
           nb::arg("clear_on_show") = true);
     m.def("set_verbose", &HepEVD::setVerboseLogging, "Sets the verbosity of the HepEVD server", nb::arg("verbose"));
 
@@ -220,16 +242,22 @@ NB_MODULE(_hepevd_impl, m) {
           nb::sig("def set_geometry(Union[str, List[float]]) -> None"));
 
     m.def("add_hits", &add_hits<HepEVD::Hit>,
-          "Adds hits to the current event state. Hits must be passed an (N, 4) list or array, with the 4 columns being "
-          "(x, y, z, energy)",
+          "Adds hits to the current event state.\n"
+          "Hits must be passed as an (NHits, Y) list or array, with the columns being "
+          "(x, y, z, energy) and two optional columns (view, dimension) for the hit type and dimension.\n"
+          "The view and dimension values must be from the HepEVD.HitType and HepEVD.HitDimension enums respectively.",
           nb::arg("hits"), nb::arg("label") = "",
           nb::sig("def add_hits(Union[List[List[float]], Array[Array[float]], Optional[str]]) -> None"));
     m.def("add_mc", &add_hits<HepEVD::MCHit>,
-          "Adds hits to the current event state. Hits must be passed an (N, 5) list or array, with the 5 columns being "
-          "(x, y, z, energy, PDG)",
+          "Adds MC hits to the current event state.\n"
+          "Hits must be passed as an (NHits, Y) list or array, with the columns being "
+          "(x, y, z, energy, PDG) and two optional columns (view, dimension) for the hit type and dimension.\n"
+          "The view and dimension values must be from the HepEVD.HitType and HepEVD.HitDimension enums respectively.",
           nb::arg("mcHits"), nb::arg("label") = "",
           nb::sig("def add_mc(Union[List[List[float]], Array[Array[float]], Optional[str]]) -> None"));
-    m.def("add_hit_properties", &set_hit_properties, "Add custom properties to a hit, via a string / double dictionary",
+    m.def("add_hit_properties", &set_hit_properties,
+          "Add custom properties to a hit, via a string / double dictionary.\n"
+          "The hit must be passed as a (x, y, z, energy) list or array.",
           nb::arg("hit"), nb::arg("properties"),
           nb::sig("def add_hit_properties(Union[List[float], Array[float]], Dict[str, float]) -> None"));
 
@@ -243,8 +271,4 @@ NB_MODULE(_hepevd_impl, m) {
     nb::enum_<HepEVD::HitDimension>(m, "HitDimension", nb::is_arithmetic())
         .value("TWO_D", HepEVD::HitDimension::TWO_D, "A 2D hit")
         .value("THREE_D", HepEVD::HitDimension::THREE_D, "A 3D hit");
-
-    // Add a submodule to store internal functions.
-    nb::module_ m2 = m.def_submodule("_internal", "Internal functions");
-    m2.def("catch_signals", &catch_signals, "Catches signals");
 }
