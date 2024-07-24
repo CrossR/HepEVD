@@ -93,7 +93,7 @@ def main() -> None:
     HepEVD.save_state("Third")
 
     HepEVD.start_server()
-    return 0
+    return
 
 
 if __name__ == "__main__":
