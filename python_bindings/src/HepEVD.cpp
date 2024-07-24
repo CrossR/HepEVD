@@ -1,6 +1,6 @@
 #include <nanobind/nanobind.h>
-#include <nanobind/stl/string.h>
 #include <nanobind/ndarray.h>
+#include <nanobind/stl/string.h>
 
 #include <cstdlib>
 #include <map>
@@ -31,7 +31,6 @@ void catch_signals() {
     signal(SIGTERM, handler);
     signal(SIGKILL, handler);
 }
-
 
 // Map from Python types to HepEVD types.
 using RawHit = std::tuple<double, double, double, double>;
@@ -93,11 +92,31 @@ template <typename T> void add_hits(nb::handle hits, std::string label = "") {
         throw std::runtime_error("Hits array must be 2D");
 
     // Check that the shape of the array is correct.
-    // We are expecting the shape to be (N, 4) where N is the number of hits.
+    // We are expecting the shape to be (N, 4 or 5) where N is the number of hits.
+    //
+    // Optionally, there can also be 2 extra columns, one for the dimension and one for the view.
     int expectedSize = std::is_same<T, HepEVD::Hit>::value ? 4 : 5;
-    if (arraySize[1] != expectedSize)
-        throw std::runtime_error("HepEVD: Hits array must have " + std::to_string(expectedSize) + " columns, not " +
-                                 std::to_string(arraySize[1]));
+    int actualSize = arraySize[1];
+
+    bool includesDimension = false;
+    bool includesView = false;
+
+    // Check that the number of columns is correct.  That is, either 4, 5, 6 or
+    // 7, corresponding to a regular hit or MC hit, and then 2 additional extra
+    // fields for the dimension and view.
+    switch (actualSize) {
+    case 4:
+    case 5:
+        break;
+    case 6:
+    case 7:
+        includesDimension = true;
+        includesView = true;
+        break;
+    default:
+        throw std::runtime_error("HepEVD: Hits array must have " + std::to_string(expectedSize) + " or " +
+                                 std::to_string(expectedSize + 2) + " columns, not " + std::to_string(actualSize));
+    }
 
     int rows = arraySize[0];
     int cols = arraySize[1];
@@ -108,19 +127,35 @@ template <typename T> void add_hits(nb::handle hits, std::string label = "") {
     for (int i = 0; i < rows; i++) {
 
         auto data = getItems<double>(hits, i, cols);
-        double x = data[0];
-        double y = data[1];
-        double z = data[2];
-        double energy = data[3];
 
-        T *hit = new T(HepEVD::Position({x, y, z}), energy);
+        auto idx(0);
+        double x = data[idx++];
+        double y = data[idx++];
+        double z = data[idx++];
+        double energy = data[idx++];
+
+        // Optional features
+        double pdgCode = std::is_same<T, HepEVD::MCHit>::value ? data[idx++] : -1.0;
+        double dimension = includesDimension ? data[idx++] : -1.0;
+        double view = includesView ? data[idx++] : -1.0;
+
+        T *hit(nullptr);
 
         if constexpr (std::is_same<T, HepEVD::MCHit>::value) {
-            hit->setPDG(data[4]);
+            hit = new T(HepEVD::Position({x, y, z}), energy, pdgCode);
         } else {
+            hit = new T(HepEVD::Position({x, y, z}), energy);
             pythonHitMap[std::make_tuple(x, y, z, energy)] = hit;
         }
 
+        // If we have either a dimension or view, add them to the hit.
+        if (includesDimension)
+            hit->setDim(static_cast<HepEVD::HitDimension>(dimension));
+
+        if (includesView)
+            hit->setHitType(static_cast<HepEVD::HitType>(view));
+
+        // Finally, apply the label if one was provided.
         if (label != "")
             hit->setLabel(label);
 
