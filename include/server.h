@@ -443,6 +443,7 @@ inline void HepEVDServer::startServer() {
     });
 
     // Finally, mount the www folder, which contains the actual HepEVD JS code.
+    std::cout << "Mounting " << WEB_FOLDER() << " on http://localhost:" << EVD_PORT() << "..." << std::endl;
     this->server.set_mount_point("/", WEB_FOLDER());
 
     // Start the server.

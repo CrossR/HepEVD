@@ -47,6 +47,9 @@ add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/third_party/nanobind)
 # Add HepEVD to the include path
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/..)
 
+# Define the path to the Web folder, so it can be found when installed.
+add_compile_definitions(HEP_EVD_WEB_DIR="web")
+
 # Finally, build the extension
 nanobind_add_module(
     # Module Name
@@ -63,6 +66,9 @@ nanobind_add_module(
 
 # Install the library
 install(TARGETS _hepevd_impl LIBRARY DESTINATION HepEVD)
+
+# And install the web data
+install(DIRECTORY ../web DESTINATION HepEVD)
 
 # Add the python typing stub
 nanobind_add_stub(
