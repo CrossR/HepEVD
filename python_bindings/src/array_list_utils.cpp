@@ -1,30 +1,23 @@
+//
+// Array / List Utility Functions
+//
+// Abstract away some of the common array/list operations,
+// such that it doesn't matter if the input is an ndarray or
+// Python list.
+
+// Local Includes
+#include "include/array_list_utils.hpp"
+
+// Include nanobind
 #include <nanobind/nanobind.h>
 #include <nanobind/ndarray.h>
 
 namespace nb = nanobind;
 
-/**
- * Check if the given object is an ndarray or a list.
- *
- * @param obj The object to check
- *
- * @return True if the object is an ndarray or a list, false otherwise
- *
- * @throws Any exception that occurs during the type check
- */
+namespace HepEVD_py {
+
 bool isArrayOrList(nb::handle obj) { return nb::isinstance<nb::ndarray<>>(obj) || nb::isinstance<nb::list>(obj); }
 
-/**
- * Retrieves items from the given object based on index and size.
- *
- * @param obj The object to extract items from
- * @param index The starting index for extraction
- * @param size The number of items to extract
- *
- * @return A vector containing the extracted items
- *
- * @throws std::runtime_error if the input type is unknown
- */
 std::vector<double> getItems(nb::handle obj, int index, int size) {
 
     if (!isArrayOrList(obj))
@@ -61,16 +54,6 @@ std::vector<double> getItems(nb::handle obj, int index, int size) {
     throw std::runtime_error("HepEVD: Unknown object type");
 }
 
-using BasicSizeInfo = std::vector<int>;
-/**
- * Retrieves the basic size information from the input handle object.
- *
- * @param obj The handle object to extract size information from
- *
- * @return A vector containing the basic size information
- *
- * @throws std::runtime_error if the input type is unknown
- */
 BasicSizeInfo getBasicSizeInfo(nb::handle obj) {
 
     if (nb::isinstance<nb::ndarray<>>(obj)) {
@@ -94,3 +77,5 @@ BasicSizeInfo getBasicSizeInfo(nb::handle obj) {
 
     throw std::runtime_error("HepEVD: Unknown input type!");
 }
+
+} // namespace HepEVD_py

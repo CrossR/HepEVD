@@ -61,6 +61,23 @@ nanobind_add_module(
     STABLE_ABI
 
     # Source Code...
+    src/include/array_list_utils.hpp
+    src/array_list_utils.cpp
+
+    # ... Global-state related code
+    src/include/global.hpp
+    src/global.cpp
+
+    # ... Geometry related code
+    src/include/geometry.hpp
+    src/include/detectors.hpp
+    src/geometry.cpp
+    
+    # ... Hit related code
+    src/include/hits.hpp
+    src/hits.cpp
+
+    # Finally, the actual HepEVD Python Bindings
     src/HepEVD.cpp
 )
 
@@ -79,7 +96,7 @@ nanobind_add_stub(
     PYTHON_PATH $<TARGET_FILE_DIR:_hepevd_impl>
     MARKER_FILE py.typed
     INCLUDE_PRIVATE true
-    VERBOSE true
+    VERBOSE false
 )
 
 # Install the python typing stub
