@@ -3,9 +3,7 @@
 //
 
 // Standard includes
-#include <cstdlib>
 #include <map>
-#include <signal.h>
 #include <vector>
 
 // Include the HepEVD header files.

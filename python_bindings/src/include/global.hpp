@@ -8,8 +8,8 @@
 #include "hep_evd.h"
 
 // STD includes
-#include <tuple>
 #include <map>
+#include <tuple>
 
 // Include nanobind
 #include <nanobind/nanobind.h>
@@ -22,6 +22,12 @@ using RawHit = std::tuple<double, double, double, double>;
 using PythonHitMap = std::map<RawHit, HepEVD::Hit *>;
 inline PythonHitMap pythonHitMap;
 
+/**
+ * Starts the server with the given start state and clear on show option.
+ *
+ * @param startState The start state of the server. (default: -1)
+ * @param clearOnShow Whether to clear the server on show. (default: true)
+ */
 void start_server(const int startState = -1, const bool clearOnShow = true);
 
 } // namespace HepEVD_py
