@@ -12,8 +12,8 @@
 // Local Includes
 #include "include/array_list_utils.hpp"
 #include "include/detectors.hpp"
-#include "include/global.hpp"
 #include "include/geometry.hpp"
+#include "include/global.hpp"
 
 // Include nanobind
 #include <nanobind/nanobind.h>

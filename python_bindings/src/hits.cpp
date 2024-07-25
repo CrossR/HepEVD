@@ -13,9 +13,9 @@
 #include "hep_evd.h"
 
 // Local Includes
-#include "include/hits.hpp"
 #include "include/array_list_utils.hpp"
 #include "include/global.hpp"
+#include "include/hits.hpp"
 
 // Include nanobind
 #include <nanobind/nanobind.h>
@@ -151,4 +151,4 @@ void set_hit_properties(nb::handle hit, nb::dict properties) {
 template void add_hits<HepEVD::Hit>(nb::handle hits, std::string label);
 template void add_hits<HepEVD::MCHit>(nb::handle hits, std::string label);
 
-}  // namespace HepEVD_py
+} // namespace HepEVD_py
