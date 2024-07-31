@@ -20,7 +20,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
       - name: Get external dependencies
-        run: ./get_extern_deps.sh -T
+        run: ./get_extern_deps.sh
       - name: Build Examples
         run: |
          cd example

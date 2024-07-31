@@ -12,6 +12,9 @@ jobs:
               with:
                 submodules: recursive
 
+            - name: Get external dependencies
+              run: ./get_extern_deps.sh
+
             - name: Build sdist
               run: |
                 cd python_bindings
@@ -40,6 +43,9 @@ jobs:
             - uses: actions/checkout@v4
               with:
                     submodules: recursive
+
+            - name: Get external dependencies
+              run: ./get_extern_deps.sh
 
             - name: CI Build Wheel
               uses: pypa/cibuildwheel@v2.19
