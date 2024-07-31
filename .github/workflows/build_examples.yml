@@ -21,6 +21,7 @@ jobs:
         uses: actions/checkout@v4
       - name: Get external dependencies
         run: ./get_extern_deps.sh
+        shell: bash
       - name: Build Examples
         run: |
          cd example
