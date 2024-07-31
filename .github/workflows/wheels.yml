@@ -15,6 +15,12 @@ jobs:
             - name: Get external dependencies
               run: ./get_extern_deps.sh
 
+            # Install typing-extensions to be able to use typing annotations
+            # in the setup.py
+            - name: Install typing-extensions
+              run: |
+                pipx install typing-extensions
+
             - name: Build sdist
               run: |
                 cd python_bindings
@@ -46,6 +52,12 @@ jobs:
 
             - name: Get external dependencies
               run: ./get_extern_deps.sh
+
+            # Install typing-extensions to be able to use typing annotations
+            # in the setup.py
+            - name: Install typing-extensions
+              run: |
+                pipx install typing-extensions
 
             - name: CI Build Wheel
               uses: pypa/cibuildwheel@v2.19
