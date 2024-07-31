@@ -20,7 +20,7 @@ jobs:
             # in the setup.py
             - name: Install typing-extensions
               run: |
-                pipx install typing-extensions
+                pip install typing-extensions
 
             - name: Build sdist
               run: |
@@ -59,7 +59,7 @@ jobs:
             # in the setup.py
             - name: Install typing-extensions
               run: |
-                pipx install typing-extensions
+                pip install typing-extensions
 
             - name: CI Build Wheel
               uses: pypa/cibuildwheel@v2.19
