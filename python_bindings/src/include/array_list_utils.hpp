@@ -37,8 +37,6 @@ bool isArrayOrList(nb::handle obj);
  */
 std::vector<double> getItems(nb::handle obj, int index, int size);
 
-
-
 /**
  * Retrieves the basic size information from the input handle object.
  *
