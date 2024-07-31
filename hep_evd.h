@@ -16,6 +16,10 @@
 #include "include/server.h"
 #include "include/utils.h"
 
+#ifdef HEP_EVD_BASE_HELPER
+#include "include/base_helper.h"
+#endif
+
 #ifdef HEP_EVD_PANDORA_HELPERS
 #include "include/pandora_helpers.h"
 #endif

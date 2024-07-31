@@ -114,9 +114,9 @@ export async function reloadDataForCurrentState(renderStates) {
  * @returns {Promise} A Promise that resolves with the JSON state information.
  */
 export function getCurrentStateInfo() {
-  if (hepEVD_GLOBAL_STATE !== undefined) {
+  if (hepEVD_GLOBAL_STATE.initialised) {
     return Promise.resolve(
-      hepEVD_GLOBAL_STATE.states[hepEVD_GLOBAL_STATE.currentState],
+      hepEVD_GLOBAL_STATE.state.states[hepEVD_GLOBAL_STATE.state.currentState],
     );
   }
 
@@ -133,9 +133,9 @@ export function getCurrentStateInfo() {
  * @returns {Promise} A Promise that resolves to a map of state IDs to state.
  */
 export function getAllStateInfo() {
-  if (hepEVD_GLOBAL_STATE !== undefined) {
+  if (hepEVD_GLOBAL_STATE.initialised) {
     const stateIdPairs = [];
-    hepEVD_GLOBAL_STATE.states.forEach((state, index) => {
+    hepEVD_GLOBAL_STATE.state.states.forEach((state, index) => {
       stateIdPairs.push({ id: index, state });
     });
 
@@ -156,8 +156,8 @@ export function getAllStateInfo() {
  * @param {Function} renderStates - Map of render states.
  */
 export async function setState(stateId, renderStates) {
-  if (hepEVD_GLOBAL_STATE !== undefined) {
-    hepEVD_GLOBAL_STATE.currentState = stateId;
+  if (hepEVD_GLOBAL_STATE.initialised) {
+    hepEVD_GLOBAL_STATE.state.currentState = stateId;
   } else {
     await fetch(`/swap/id/${stateId}`);
   }
@@ -174,10 +174,8 @@ export async function setState(stateId, renderStates) {
  * @returns {void}
  */
 export async function nextState(renderStates) {
-  if (hepEVD_GLOBAL_STATE !== undefined) {
-    hepEVD_GLOBAL_STATE.currentState =
-      (hepEVD_GLOBAL_STATE.currentState + 1) %
-      hepEVD_GLOBAL_STATE.states.length;
+  if (hepEVD_GLOBAL_STATE.initialised) {
+    hepEVD_GLOBAL_STATE.nextState();
   } else {
     await fetch("/nextState");
   }
@@ -194,12 +192,8 @@ export async function nextState(renderStates) {
  * @returns {void}
  */
 export async function previousState(renderStates) {
-  if (hepEVD_GLOBAL_STATE !== undefined) {
-    hepEVD_GLOBAL_STATE.currentState =
-      (hepEVD_GLOBAL_STATE.currentState -
-        1 +
-        hepEVD_GLOBAL_STATE.states.length) %
-      hepEVD_GLOBAL_STATE.states.length;
+  if (hepEVD_GLOBAL_STATE.initialised) {
+    hepEVD_GLOBAL_STATE.prevState();
   } else {
     await fetch("/previousState");
   }

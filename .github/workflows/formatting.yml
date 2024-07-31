@@ -18,8 +18,7 @@ jobs:
       matrix:
         path:
           - 'include'
-          - 'python_bindings'
-          - 'python_bindings/include'
+          - 'python_bindings/src'
           - 'hep_evd.h'
 
     name: clang-format

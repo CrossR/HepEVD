@@ -25,7 +25,36 @@ import { addCitation } from "./ui.js";
 //    - detectorGeometry: The detector geometry for the event display.
 // If the input github gist URL is a single JSON object, then this variable
 // will be undefined.
-export let hepEVD_GLOBAL_STATE;
+export var hepEVD_GLOBAL_STATE = {
+  _state: null,
+
+  get initialised() {
+    return this._state !== null;
+  },
+
+  get state() {
+    return this._state;
+  },
+
+  set state(state) {
+    this._state = state;
+  },
+
+  nextState() {
+    if (!this.initialised) return;
+
+    this.state.currentState =
+      (this.state.currentState + 1) % this.state.states.length;
+  },
+
+  prevState() {
+    if (!this.initialised) return;
+
+    this.state.currentState =
+      (this.state.currentState - 1 + this.state.states.length) %
+      this.state.states.length;
+  },
+};
 
 // Are we running on GitHub Pages?
 export function isRunningOnGitHubPages() {
@@ -129,7 +158,8 @@ async function loadServerData() {
  */
 async function updateExternalData() {
   const newDataUrl =
-    hepEVD_GLOBAL_STATE.states[hepEVD_GLOBAL_STATE.currentState].url;
+    hepEVD_GLOBAL_STATE.state.states[hepEVD_GLOBAL_STATE.state.currentState]
+      .url;
   const newStateData = await getDataWithProgress(newDataUrl);
 
   return {
@@ -138,9 +168,9 @@ async function updateExternalData() {
     markers: newStateData.markers,
     particles: newStateData.particles,
     images: newStateData.images || [],
-    detectorGeometry: hepEVD_GLOBAL_STATE.detectorGeometry,
+    detectorGeometry: hepEVD_GLOBAL_STATE.state.detectorGeometry,
     stateInfo: newStateData.stateInfo || { mcTruth: "" },
-    config: hepEVD_GLOBAL_STATE.config || {},
+    config: hepEVD_GLOBAL_STATE.state.config || {},
   };
 }
 
@@ -155,7 +185,7 @@ async function loadExternalData(url) {
   }
 
   // Check if we've already loaded the data for this state.
-  if (hepEVD_GLOBAL_STATE !== undefined) {
+  if (hepEVD_GLOBAL_STATE.initialised) {
     return updateExternalData();
   }
 
@@ -184,7 +214,7 @@ async function loadExternalData(url) {
   const lastState = states[numberOfStates - 1].url;
   const lastStateData = await getDataWithProgress(lastState);
 
-  hepEVD_GLOBAL_STATE = {
+  hepEVD_GLOBAL_STATE.state = {
     numberOfStates: numberOfStates,
     currentState: numberOfStates - 1,
     states: states,
@@ -194,7 +224,7 @@ async function loadExternalData(url) {
 
   // Set any citations, if they exist.
   if (result.hasOwnProperty("citation")) {
-    hepEVD_GLOBAL_STATE.citation = result.citation;
+    hepEVD_GLOBAL_STATE.state.citation = result.citation;
     addCitation(result.citation.text, result.citation.url);
   }
 
@@ -222,7 +252,7 @@ export async function getData() {
     }
 
     return loadExternalData(
-      "https://gist.githubusercontent.com/CrossR/2edd3622d13987d37ef3a4c02286207c/raw/80df485be9f2ca27aa2a8825dbdfdcd794363290/eventDisplayInfo.json",
+      "https://gist.githubusercontent.com/CrossR/02b2fb0f6847736c9cd69736f0a92fa7/raw/edfd2c5b240185e4eb367e80e981d1b99922459f/eventDisplayInfo.json",
     );
   } else {
     return loadServerData();
