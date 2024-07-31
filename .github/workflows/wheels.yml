@@ -16,12 +16,6 @@ jobs:
               run: ./get_extern_deps.sh
               shell: bash
 
-            # Install typing-extensions to be able to use typing annotations
-            # in the setup.py
-            - name: Install typing-extensions
-              run: |
-                pip install typing-extensions
-
             - name: Build sdist
               run: |
                 cd python_bindings
@@ -68,12 +62,6 @@ jobs:
               if: matrix.os == 'windows-latest'
               run: ./get_extern_deps.sh
               shell: msys2 {0}
-
-            # Install typing-extensions to be able to use typing annotations
-            # in the setup.py
-            - name: Install typing-extensions
-              run: |
-                pip install typing-extensions
 
             - name: CI Build Wheel
               uses: pypa/cibuildwheel@v2.19
