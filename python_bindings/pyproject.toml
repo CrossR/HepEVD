@@ -25,6 +25,7 @@ wheel.py-api = "cp312"
 
 [tool.cibuildwheel]
 build-verbosity = 1
+skip = "pp*"
 
 [tool.cibuildwheel.macos.environment]
 MACOSX_DEPLOYMENT_TARGET = "10.14"
