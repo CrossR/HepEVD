@@ -92,6 +92,9 @@ jobs:
         name: Upload if release
         needs: [merge_wheels]
         runs-on: ubuntu-latest
+        environment: pypi
+        permissions:
+          id-token: write
         if: github.event_name == 'release' && github.event.action == 'published'
 
         steps:
