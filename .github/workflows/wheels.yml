@@ -2,6 +2,9 @@ name: Wheels
 
 on:
     workflow_dispatch:
+    release:
+      types:
+        - published
 
 jobs:
     build_sdist:
