@@ -72,25 +72,10 @@ jobs:
                 name: cibw-wheels-${{ matrix.os }}-${{ strategy.job-index }}
                 path: ./wheelhouse/*.whl
     
-    merge_wheels:
-
-        name: Merge wheels
-        runs-on: ubuntu-latest
-        needs: [build_sdist, build_wheels]
-        steps:
-            - uses: actions/download-artifact@v4
-              name: Merge wheels
-              with:
-                # unpacks all CIBW artifacts into dist/
-                pattern: cibw-*
-                path: dist
-                merge-multiple: true
-
-    
     upload_all:
 
         name: Upload if release
-        needs: [merge_wheels]
+        needs: [build_sdist, build_wheels]
         runs-on: ubuntu-latest
         environment: pypi
         permissions:
@@ -99,11 +84,13 @@ jobs:
 
         steps:
 
-            - uses: actions/setup-python@v5
-
             - uses: actions/download-artifact@v4
+              name: Merge wheels
               with:
-                  path: dist
+                # unpacks all CIBW artifacts into dist/
+                pattern: cibw-*
+                path: dist
+                merge-multiple: true
 
             - uses: pypa/gh-action-pypi-publish@release/v1
 
