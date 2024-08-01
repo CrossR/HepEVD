@@ -8,6 +8,11 @@
 #ifndef HEP_EVD_H
 #define HEP_EVD_H
 
+#if __has_include(<windows.h>)
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+#endif
+
 // Include everything...
 #include "include/config.h"
 #include "include/geometry.h"
