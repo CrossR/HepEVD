@@ -252,7 +252,7 @@ export async function getData() {
     }
 
     return loadExternalData(
-      "https://gist.githubusercontent.com/CrossR/02b2fb0f6847736c9cd69736f0a92fa7/raw/edfd2c5b240185e4eb367e80e981d1b99922459f/eventDisplayInfo.json",
+      "https://gist.githubusercontent.com/CrossR/2edd3622d13987d37ef3a4c02286207c/raw/80df485be9f2ca27aa2a8825dbdfdcd794363290/eventDisplayInfo.json",
     );
   } else {
     return loadServerData();
