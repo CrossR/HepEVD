@@ -1,4 +1,4 @@
-# HEPEvd - <a href="https://crossr.github.io/HepEVD/" alt="Contributors"><img src="https://img.shields.io/badge/Live_Demo-blue" /></a>
+# HepEVD
 
 A header-only web-based event display for particle physics events.
 
@@ -29,26 +29,14 @@ There is then two further folders, containing the example code, and the Python b
 
 ## Installation + Usage
 
-More detailed instructions for using the Pandora, LArSoft or traccc helpers can be
-found in the Wiki, [here](https://github.com/CrossR/HepEVD/wiki).
-
-To run the basic example, you need to pull down the external dependencies, then simply
-build the example.
+You can either install the package as normal (`pip install HepEVD`), or build
+from source:
 
 ```
 ./get_extern_deps.sh
-cd example/
-make basic
-./basic
-```
 
-On remote machines, you should be able to use port forwarding to access the webserver
-that the example sets up from your local browser.
-
-Alternatively, to build and then install the Python bindings, you can run:
-
-```
-./get_extern_deps.sh
+# We use a git submodule for nanobind, the Python / C++ bindings library.
+git submodule update --init --recursive
 
 # You may want to setup a Python Venv for this first...
 # https://docs.python.org/3/library/venv.html
@@ -58,17 +46,19 @@ source .venv/bin/activate
 # Swap to the Python bindings directory.
 cd python_bindings/
 
-# Build the bindings.
-# In Python 3.11 and below, this uses distutils which is built-in.
-# However, in Python 3.12, distutils is deprecated, and setuptools is used instead.
-# This is not built-in, so you may need to install it first, though it is usually
-# installed by default, alongside pip.
-python setup.py build_ext --inplace -j $(nproc) -f
+# Build and install the bindings...
+pip install .
 
-# Install the bindings to your venv Python version...
+# Test them...
+python
 
-python setup.py install
+$ import HepEVD
 ```
+
+From there, you can then use the library as normal.
+
+An example of how the library works can be seen in
+`example/test_python_bindings.py`, as well as in the HepEVD wiki.
 
 ## Motivation
 
@@ -103,11 +93,3 @@ The HTTP server in this project utilises
 [cpp-httplib](https://github.com/yhirose/cpp-httplib), to make the server code as simple
 as possible. Similarly, [nlohmann/json](https://github.com/nlohmann/json) is used to both
 convert and parse objects to/from JSON, such that they can be served via the HTTP server.
-
-## Future Work
-
-- Toggle per-detector geometry elements: Think up better ways to group things.
-
-- Fill in the LArSoft helper more: Slices, Clusters.
-
-- Hit widths? Pain with instanced mesh though.

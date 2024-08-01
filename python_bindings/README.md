@@ -1,4 +1,4 @@
-# HEPEvd - <a href="https://crossr.github.io/HepEVD/" alt="Contributors"><img src="https://img.shields.io/badge/Live_Demo-blue" /></a>
+# HepEVD - <a href="https://crossr.github.io/HepEVD/" alt="Contributors"><img src="https://img.shields.io/badge/Live_Demo-blue" /></a>
 
 A header-only web-based event display for particle physics events.
 
@@ -58,7 +58,7 @@ source .venv/bin/activate
 cd python_bindings/
 
 # Build and install the bindings...
-python install .
+pip install .
 
 # Test them...
 python
