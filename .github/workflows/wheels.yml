@@ -68,7 +68,7 @@ jobs:
               uses: actions/upload-artifact@v3
               with:
                     name: dist-${{ matrix.os }}
-                    path: ./**/*.whl
+                    path: ./wheelhouse/*.whl
     
     merge_wheels:
 
@@ -80,7 +80,6 @@ jobs:
               uses: actions/upload-artifact/merge@v4
               with:
                   name: dist
-                  pattern: dist-*
 
     
     upload_all:
