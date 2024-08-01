@@ -1,4 +1,4 @@
-# HepEVD
+# HepEVD - <a href="https://crossr.github.io/HepEVD/" alt="Contributors"><img src="https://img.shields.io/badge/Live_Demo-blue" /></a>
 
 A header-only web-based event display for particle physics events.
 
@@ -29,8 +29,20 @@ There is then two further folders, containing the example code, and the Python b
 
 ## Installation + Usage
 
-You can either install the package as normal (`pip install HepEVD`), or build
-from source:
+To run the basic example, you need to pull down the external dependencies, then simply
+build the example.
+
+```
+./get_extern_deps.sh
+cd example/
+make basic
+./basic
+```
+
+On remote machines, you should be able to use port forwarding to access the webserver
+that the example sets up from your local browser.
+
+Alternatively, to build and then install the Python bindings, you can run:
 
 ```
 ./get_extern_deps.sh
