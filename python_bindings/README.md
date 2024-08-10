@@ -44,7 +44,3 @@ $ import HepEVD
  - Add ability to pass over clusters / particles:
     - I.e. groups of hits, and hierarchies of groups of hits
     - Need to work out the best interface for that...
-
- - Pass over config via a dictionary.
-
- - Add ability to pass over MC string
