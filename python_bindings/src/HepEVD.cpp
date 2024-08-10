@@ -20,6 +20,40 @@
 
 namespace nb = nanobind;
 
+/**
+ * Loads the HepEVD configuration from a provided Python dictionary.
+ *
+ * @param config A Python dictionary containing the configuration settings.
+ *
+ * @throws std::runtime_error If the provided config is not a dictionary.
+ */
+void load_config(nb::object config) {
+
+    if (!nb::isinstance<nb::dict>(config))
+        throw std::runtime_error("HepEVD: Config must be a dictionary");
+
+    nb::dict config_dict = nb::cast<nb::dict>(config);
+
+    for (auto keyValueHandle : config_dict.items()) {
+        std::string key = nb::cast<std::string>(keyValueHandle[0]);
+        std::string value = nb::cast<std::string>(keyValueHandle[1]);
+        HepEVD::hepEVDServer->getConfig()->set(key, value);
+    }
+}
+
+/**
+ * Set what the current interaction string is.
+ *
+ * @param mc_string A Python string containing the MC interaction string.
+ */
+void set_mc_string(nb::object mc_string) {
+
+    if (!nb::isinstance<nb::str>(mc_string))
+        throw std::runtime_error("HepEVD: MC string must be a string");
+
+    HepEVD::hepEVDServer->setMCTruth(nb::cast<std::string>(mc_string));
+}
+
 NB_MODULE(_hepevd_impl, m) {
 
     m.doc() = "HepEVD - High Energy Physics Event Display";
@@ -33,6 +67,18 @@ NB_MODULE(_hepevd_impl, m) {
     m.def("save_state", &HepEVD::saveState, "Saves the current state", nb::arg("state_name"), nb::arg("min_size") = -1,
           nb::arg("clear_on_show") = true);
     m.def("reset_server", &HepEVD::resetServer, "Resets the server", nb::arg("reset_geo") = false);
+
+    m.def("set_mc_string", &set_mc_string, "Sets the current MC interaction string", nb::arg("mc_string"));
+    m.def("set_config", &load_config,
+          "Sets any top level config options for the server.\n"
+          "This can include the following:\n"
+          "  - show2D (default: 1)\n"
+          "  - show3D (default: 1)\n"
+          "  - disableMouseOver (default: 0)\n"
+          "  - hitColour (default: 'grey')\n"
+          "  - hitSize (default: Varies for 2D vs 3D)\n"
+          "  - hitTransparency (default: 1.0)\n",
+          nb::arg("config"), nb::sig("def set_config(config: dict[str, str]) -> None"));
 
     // Set the current HepEVD geometry.
     // Input will either be a string or a list/array of numbers.

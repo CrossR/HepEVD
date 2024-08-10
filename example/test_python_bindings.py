@@ -92,6 +92,10 @@ def main() -> None:
     HepEVD.add_hits(right_hits)
     HepEVD.save_state("Third")
 
+    # Set some config
+    HepEVD.set_config({"hitColour": "white"})
+    HepEVD.set_mc_string("\\nu_e \\rightarrow e^- + \\nu_e")
+
     HepEVD.start_server()
     return
 
