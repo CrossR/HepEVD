@@ -79,6 +79,15 @@ def main() -> None:
 
         HepEVD.add_hit_properties(hit, properties)
 
+    # Add some markers
+    vtx3D = HepEVD.Point([0, 0, 0])
+
+    vtx2D = HepEVD.Point([0, 0, 0])
+    vtx2D.set_hit_type(HepEVD.HitType.TWO_D_U)
+    vtx2D.set_dim(HepEVD.HitDimension.TWO_D)
+
+    HepEVD.add_markers([vtx3D, vtx2D])
+
     # Test the state functionality
     HepEVD.save_state("First")
 
