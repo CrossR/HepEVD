@@ -17,6 +17,7 @@
 #include "include/geometry.hpp"
 #include "include/global.hpp"
 #include "include/hits.hpp"
+#include "include/markers.hpp"
 
 namespace nb = nanobind;
 
@@ -111,6 +112,12 @@ NB_MODULE(_hepevd_impl, m) {
           nb::sig("def add_hit_properties(hit: collections.abc.Collection[float | int], properties: "
                   "typing.Dict[float | int]) "
                   "-> None"));
+    m.def("add_markers", &HepEVD_py::add_markers,
+          "Adds markers to the current event state.\n"
+          "Markers must be passed as a list or array of marker objects."
+          "The various marker types are Point, Line and Ring."
+          "Any required parameters (labels, colours, hit dims etc), should be applied to the underlying object.",
+          nb::arg("markers"), nb::sig("def add_markers(markers: collections.abc.Collection[HepEVD.Marker]) -> None"));
 
     // Add enums
     nb::enum_<HepEVD::HitType>(m, "HitType",
@@ -125,6 +132,9 @@ NB_MODULE(_hepevd_impl, m) {
                                     nb::is_arithmetic())
         .value("TWO_D", HepEVD::HitDimension::TWO_D, "A 2D hit")
         .value("THREE_D", HepEVD::HitDimension::THREE_D, "A 3D hit");
+
+    // Add marker classes
+    HepEVD_py::init_marker_classes(m);
 }
 
 #endif // HEP_EVD_PYTHON_H

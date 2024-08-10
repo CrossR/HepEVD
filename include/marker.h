@@ -35,6 +35,8 @@ class Marker {
     virtual void setHitType(const HitType &hitType) { this->position.setHitType(hitType); }
     void setColour(const std::string colour) { this->colour = colour; }
     void setLabel(const std::string label) { this->label = label; }
+    std::string getColour() const { return this->colour; }
+    std::string getLabel() const { return this->label; }
 
   protected:
     Position position;
