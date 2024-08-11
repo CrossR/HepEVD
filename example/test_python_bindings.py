@@ -5,6 +5,10 @@ import HepEVD
 
 
 def main() -> None:
+    # Now, lets enable verbose output.
+    # This is useful for debugging, and seeing what HepEVD is doing.
+    HepEVD.set_verbose(True)
+
     # There is two ways to pass over a geometry:
     # 1. as a list/array or lists/arrays containing the geometry
     # 2. as a string, with the name of the predefined geometry
@@ -23,8 +27,11 @@ def main() -> None:
     ]
 
     # Once defined, we can now set the geometry by passing it over.
-    assert not HepEVD.is_initialised()
+    # For testing, I'm asserting that the server is not initialised yet, and then
+    # becomes initialised, once the geometry is set.
+    assert not HepEVD.is_initialised(quiet=True)
     HepEVD.set_geometry(detector_geometry)
+    assert HepEVD.is_initialised(quiet=True)
 
     # If at any point you want to reset the server, you can call `reset_server`.
     # In most cases, you only want to reset the server, not the geometry. For
@@ -32,14 +39,15 @@ def main() -> None:
     #
     # In the rarer cases where you also need to reset the server, you can also
     # pass `reset_geo=True`.
-    assert HepEVD.is_initialised()
+    assert HepEVD.is_initialised(quiet=True)
     HepEVD.reset_server(reset_geo=True)
-    assert not HepEVD.is_initialised()
+    assert not HepEVD.is_initialised(quiet=True)
 
     # If HepEVD knows the geometry you want, you can instead just pass it as a string.
     # The defined geometries can be found in `python_bindings/src/include/detectors.hpp`.
+    assert not HepEVD.is_initialised(quiet=True)
     HepEVD.set_geometry("dunefd_1x2x6")
-    assert HepEVD.is_initialised()
+    assert HepEVD.is_initialised(quiet=True)
 
     # Now, lets add some 3D and 2D hits.
     # First, just generate a random set of 3D hits.

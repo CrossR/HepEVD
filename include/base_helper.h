@@ -32,6 +32,12 @@ inline bool hepEVDVerboseLogging = false;
 static HepEVDServer *getServer() { return hepEVDServer; }
 static void setVerboseLogging(const bool logging) { hepEVDVerboseLogging = logging; }
 
+// Helper function to perform logging.
+static void hepEVDLog(const std::string message) {
+    if (hepEVDVerboseLogging)
+        std::cout << "HepEVD INFO: " << message << std::endl;
+}
+
 // We need to keep track of the hits we've added to the server, so we can
 // map to them from whatever external data type we are using.
 // Define a HitMapManager to keep track of the hits we've added, so
@@ -59,13 +65,14 @@ static void registerClearFunction(std::function<void()> clearFunction) {
 // Check if the server is initialised, and if not, print a message.
 // This means we can be certain that the server is set up before we
 // try to use it.
-static bool isServerInitialised() {
+static bool isServerInitialised(const bool quiet = false) {
     const bool isInit(hepEVDServer != nullptr && hepEVDServer->isInitialised());
 
-    if (!isInit && hepEVDVerboseLogging) {
-        std::cout << "HepEVD Server is not initialised!" << std::endl;
-        std::cout << "Please set the HepEVD geometry first!" << std::endl;
-        std::cout << "This should be done before any other calls to the event display." << std::endl;
+    if (!isInit && !quiet) {
+        hepEVDLog("Quiet: " + std::to_string(quiet));
+        hepEVDLog("HepEVD Server is not initialised!");
+        hepEVDLog("Please set the HepEVD geometry first!");
+        hepEVDLog("This should be done before any other calls to the event display.");
     }
 
     return isInit;
@@ -75,29 +82,30 @@ static void startServer(const int startState = -1, const bool clearOnShow = true
     if (!isServerInitialised())
         return;
 
-    if (hepEVDVerboseLogging) {
-        std::cout << "HepEVD: There are " << hepEVDServer->getHits().size() << " hits registered!" << std::endl;
-        std::cout << "HepEVD: There are " << hepEVDServer->getMCHits().size() << " MC hits registered!" << std::endl;
-        std::cout << "HepEVD: There are " << hepEVDServer->getParticles().size() << " particles registered!"
-                  << std::endl;
-        std::cout << "HepEVD: There are " << hepEVDServer->getMarkers().size() << " markers registered!" << std::endl;
-    }
-
     if (startState != -1)
         hepEVDServer->swapEventState(startState);
     else if (hepEVDServer->getState()->isEmpty())
         hepEVDServer->previousEventState();
 
+    hepEVDLog("There are " + std::to_string(hepEVDServer->getHits().size()) + " hits registered!");
+    hepEVDLog("There are " + std::to_string(hepEVDServer->getMCHits().size()) + " MC hits registered!");
+    hepEVDLog("There are " + std::to_string(hepEVDServer->getParticles().size()) + " particles registered!");
+    hepEVDLog("There are " + std::to_string(hepEVDServer->getMarkers().size()) + " markers registered!");
+
     hepEVDServer->startServer();
 
-    if (clearOnShow)
+    if (clearOnShow) {
+        hepEVDLog("Resetting the server...");
         hepEVDServer->resetServer();
+    }
 }
 
 static void saveState(const std::string stateName, const int minSize = -1, const bool clearOnShow = true) {
 
     if (!isServerInitialised())
         return;
+
+    hepEVDLog("Saving state: " + stateName);
 
     // Set the name of the current state...
     hepEVDServer->setName(stateName);
@@ -130,6 +138,8 @@ static void resetServer(const bool resetGeo = false) {
     if (!isServerInitialised())
         return;
 
+    hepEVDLog("Resetting the server...");
+
     hepEVDServer->resetServer(resetGeo);
     hepEvdHitMapManager.clear();
 }
@@ -138,7 +148,9 @@ static void clearState(const bool fullReset = false) {
     if (!isServerInitialised())
         return;
 
-    // If we are doign a full reset, we also clear the MC truth.
+    hepEVDLog("Clearing server state...");
+
+    // If we are doing a full reset, we also clear the MC truth.
     // Broadly, its assumed that clearState is for removing a
     // single state in an event and the MC truth is still valid.
     hepEVDServer->clearState(fullReset);
@@ -149,6 +161,7 @@ static void addMarkers(const Markers &markers) {
     if (!isServerInitialised())
         return;
 
+    hepEVDLog("Adding " + std::to_string(markers.size()) + " markers to the event display...");
     hepEVDServer->addMarkers(markers);
 }
 

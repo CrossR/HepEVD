@@ -65,7 +65,7 @@ static PandoraHitMap *getHitMap() { return &caloHitToEvdHit; }
 // Also register the map to the manager, so we don't leak memory.
 static void setHepEVDGeometry(const pandora::GeometryManager *manager) {
 
-    if (isServerInitialised())
+    if (isServerInitialised(true))
         return;
 
     Volumes volumes;
@@ -77,6 +77,7 @@ static void setHepEVDGeometry(const pandora::GeometryManager *manager) {
         volumes.push_back(larTPCVolume);
     }
 
+    hepEVDLog("Setting HepEVD geometry: " + std::to_string(volumes.size()) + " volumes.");
     hepEVDServer = new HepEVDServer(DetectorGeometry(volumes));
 
     // Register the clear function for the hit map,
@@ -137,6 +138,7 @@ static void addHits(const pandora::CaloHitList *caloHits, std::string label = ""
         caloHitToEvdHit.insert({pCaloHit, hit});
     }
 
+    hepEVDLog("Adding " + std::to_string(hits.size()) + " hits to the HepEVD server.");
     hepEVDServer->addHits(hits);
 }
 
@@ -169,6 +171,8 @@ static void addClusters(const pandora::ClusterList *clusters, std::string label 
 
         ++clusterNumber;
     }
+
+    hepEVDLog("Added " + std::to_string(clusterNumber) + " clusters to the HepEVD server.");
 }
 
 static void addClusterProperties(const pandora::Cluster *cluster, std::map<std::string, double> props) {
@@ -222,6 +226,8 @@ static void addSlices(const SliceList *slices, const ClusterToSliceIndexMap *clu
             caloHitToEvdHit[pCaloHit]->addProperties({{{"SliceNumber", HepEVD::PropertyType::CATEGORIC}, sliceIndex}});
         }
     }
+
+    hepEVDLog("Added " + std::to_string(slices->size()) + " slices to the HepEVD server.");
 }
 
 static void showMC(const pandora::Algorithm &pAlgorithm, const std::string &listName = "") {
@@ -273,6 +279,7 @@ static void showMC(const pandora::Algorithm &pAlgorithm, const std::string &list
         }
     }
 
+    hepEVDLog("Adding " + std::to_string(mcHits.size()) + " MC hits to the HepEVD server.");
     hepEVDServer->addMCHits(mcHits);
 
     // Now, build up a string to show the interaction as a string:
@@ -318,6 +325,7 @@ static void showMC(const pandora::Algorithm &pAlgorithm, const std::string &list
     if (mcTruth.substr(mcTruth.size() - 3) == " + ")
         mcTruth = mcTruth.substr(0, mcTruth.size() - 3);
 
+    hepEVDLog("Set MC truth to " + mcTruth);
     hepEVDServer->setMCTruth(mcTruth);
 }
 
@@ -462,6 +470,7 @@ static void addPFOs(const pandora::Pandora &pPandora, const pandora::PfoList *pP
         }
     }
 
+    hepEVDLog("Adding " + std::to_string(particles.size()) + " particles...");
     hepEVDServer->addParticles(particles);
 }
 
@@ -494,6 +503,8 @@ template <typename T> static void addDLTensorImage(const at::Tensor inputImageTe
     }
 
     MonochromeImage *image = new MonochromeImage(imageVector, name);
+
+    hepEVDLog("Adding " + name + " image to the HepEVD server.");
     hepEVDServer->addImages({image});
 }
 #endif
