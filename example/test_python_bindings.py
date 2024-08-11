@@ -5,7 +5,6 @@ import HepEVD
 
 
 def main() -> None:
-
     # There is two ways to pass over a geometry:
     # 1. as a list/array or lists/arrays containing the geometry
     # 2. as a string, with the name of the predefined geometry
@@ -22,7 +21,7 @@ def main() -> None:
         [-182.954544067, 0, 696.293762207, 359.415008545, 1207.84753418, 1394.33996582],
         [182.954544067, 0, 696.293762207, 359.415008545, 1207.84753418, 1394.33996582],
     ]
-    
+
     # Once defined, we can now set the geometry by passing it over.
     assert not HepEVD.is_initialised()
     HepEVD.set_geometry(detector_geometry)
@@ -71,7 +70,7 @@ def main() -> None:
     #
     # In this case as well, the format is
     # [x, y, z, energy, dimension, view/hitType]
-    # with dimension coming from the HepEVD::HitDimension enum, and 
+    # with dimension coming from the HepEVD::HitDimension enum, and
     # view/hitType coming from the HepEVD::HitType enum.
     # If using in a non LArTPC environment, the view should be set to
     # HepEVD::HitType::GENERAL.
@@ -160,7 +159,7 @@ def main() -> None:
     #
     # This is achieved through the `save_state` method, and passing over
     # a string name.
-    # 
+    #
     # Optionally, you can also pass over a `min_size` parameter
     # which will automatically start the server if there is at least `min_size`
     # number of states. This can be useful for showing iterations of things.
@@ -211,7 +210,7 @@ def main() -> None:
     HepEVD.start_server()
 
     # And done! The python code will wait on the above line until the server
-    # closes, unless you start messing with running the server in a different   
+    # closes, unless you start messing with running the server in a different
     # process / thread.
     return
 

@@ -63,6 +63,7 @@ jobs:
       - name: Run Examples
         run: |
           cd example
+          pip install numpy
           python test_python_bindings.py
         env:
           HEP_EVD_NO_DISPLAY: 1
