@@ -34,9 +34,13 @@ class Hit {
     void setDim(const HitDimension &dim) { this->position.setDim(dim); }
     void setHitType(const HitType &hitType) { this->position.setHitType(hitType); }
     void setLabel(const std::string &str) { this->label = str; }
+    void setEnergy(double e) { this->energy = e; }
+    void setPosition(const Position &pos) { this->position = pos; }
+    void setWidth(const std::string &axis, const float width) { this->width.setValue(axis, width); }
 
     std::string getId() const { return this->id; }
     Position getPosition() const { return this->position; }
+    Position getWidth() const { return this->width; }
     double getEnergy() const { return this->energy; }
     HitDimension getDim() const { return this->position.dim; }
     HitType getHitType() const { return this->position.hitType; }
@@ -57,11 +61,12 @@ class Hit {
         return;
     }
 
-    NLOHMANN_DEFINE_TYPE_INTRUSIVE(Hit, id, position, energy, label, properties);
+    NLOHMANN_DEFINE_TYPE_INTRUSIVE(Hit, id, position, energy, width, label, properties);
 
   protected:
     std::string id;
     Position position;
+    Position width = Position({1.0, 1.0, 1.0});
     double energy;
     std::string label;
     HitProperties properties;

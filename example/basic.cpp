@@ -86,6 +86,10 @@ int main(void) {
             Hit *hit = new Hit({x, 0.f, z}, e);
             hit->setDim(TWO_D);
             hit->setHitType(views[i]);
+
+            if (disProb(gen) < 0.1)
+                hit->setWidth("x", 10.f);
+
             hits.push_back(hit);
 
             MCHit *mcHit = new MCHit({disX(gen), 0.f, disZ(gen)}, pdgCodes[disPdg(gen)], e);

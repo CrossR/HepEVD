@@ -133,6 +133,9 @@ static void addHits(const pandora::CaloHitList *caloHits, std::string label = ""
         hit->setDim(getHepEVDHitDimension(pCaloHit->GetHitType()));
         hit->setHitType(getHepEVDHitType(pCaloHit->GetHitType()));
 
+        if (pCaloHit->GetCellSize1() > 1)
+            hit->setWidth("x", pCaloHit->GetCellSize1());
+
         hits.push_back(hit);
         caloHitToEvdHit.insert({pCaloHit, hit});
     }
