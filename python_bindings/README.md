@@ -38,9 +38,6 @@ $ import HepEVD
 
 ## TODO
 
- - Add ability to pass over markers (i.e. points, lines, rings)
-    - Probably via a Dictionary? Passing objects is more of a pain
-
  - Add ability to pass over clusters / particles:
     - I.e. groups of hits, and hierarchies of groups of hits
     - Need to work out the best interface for that...
