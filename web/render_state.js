@@ -457,7 +457,6 @@ export class RenderState {
   // Populate various drop downs and buttons based on the state,
   // and then reset the camera.
   setupUI(renderTarget, resetUI = false) {
-
     // If nothing to render, just return after hiding the dropdown button.
     const dropDownButton = document.getElementById(
       `${this.hitDim}_dropdown_button`,
@@ -512,7 +511,7 @@ export class RenderState {
       this.scene.add(this.camera);
     }
 
-    if (! this.controlsSetups) {
+    if (!this.controlsSetups) {
       setupControls(this.hitDim, this.controls);
       this.controlsSetups = true;
     }
