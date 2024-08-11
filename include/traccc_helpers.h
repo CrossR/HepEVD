@@ -57,7 +57,7 @@ struct surface_converter {
 // detector_t object can be different for each detector.
 template <typename detector_t> static void setHepEVDGeometry(const detector_t &detector) {
 
-    if (isServerInitialised())
+    if (isServerInitialised(true))
         return;
 
     Volumes volumes;
@@ -98,6 +98,7 @@ template <typename detector_t> static void setHepEVDGeometry(const detector_t &d
                   << std::endl;
     }
 
+    hepEVDLog("Adding " + std::to_string(volumes.size()) + " volumes to the HepEVD server.");
     hepEVDServer = new HepEVDServer(DetectorGeometry(volumes));
 
     // Since this function needs to be called for HepEVD to work with traccc, lets also do some quick setup.
@@ -130,6 +131,7 @@ static void addSpacepoints(const vecmem::data::vector_view<traccc::spacepoint> &
         hits.push_back(hit);
     }
 
+    hepEVDLog("Adding " + std::to_string(hits.size()) + " spacepoints to the HepEVD server.");
     hepEVDServer->addHits(hits);
 }
 
@@ -157,6 +159,7 @@ static void addSeeds(const vecmem::data::vector_view<traccc::seed> &seeds,
         hepSeeds.push_back(particle);
     }
 
+    hepEVDLog("Adding " + std::to_string(hepSeeds.size()) + " seeds to the HepEVD server.");
     hepEVDServer->addParticles(hepSeeds);
 }
 
@@ -204,6 +207,7 @@ static void addTrackCandidates(const traccc::track_candidate_container_types::co
     }
 
     // Add the particles to the server.
+    hepEVDLog("Adding " + std::to_string(hepTracks.size()) + " track candidates to the HepEVD server.");
     hepEVDServer->addParticles(hepTracks);
 }
 
@@ -251,6 +255,7 @@ static void addTracks(const traccc::track_state_container_types::const_view &tra
     }
 
     // Add the particles to the server.
+    hepEVDLog("Adding " + std::to_string(hepTracks.size()) + " tracks to the HepEVD server.");
     hepEVDServer->addParticles(hepTracks);
 }
 

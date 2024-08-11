@@ -28,7 +28,7 @@ namespace HepEVD_py {
 // Input will either be a string or a list/array of numbers.
 void set_geometry(nb::object geometry) {
 
-    if (HepEVD::isServerInitialised())
+    if (HepEVD::isServerInitialised(true))
         return;
 
     HepEVD::Volumes volumes;
@@ -56,6 +56,7 @@ void set_geometry(nb::object geometry) {
         throw std::runtime_error("HepEVD: Unknown geometry type, must be string or array");
     }
 
+    HepEVD::hepEVDLog("Setting HepEVD geometry with " + std::to_string(volumes.size()) + " volumes.");
     hepEVDServer = new HepEVDServer(DetectorGeometry(volumes));
 
     // Register the clear function for the hit map,
