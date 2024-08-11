@@ -170,10 +170,8 @@ export class RenderState {
       return newParticle;
     });
 
-    // Setup the dynamic bits, the state that will change.
-    // This includes the in use hits/markers etc, as well as
-    // their types and labels etc...
-    this.uiSetup = false;
+    // Setup the controls, since it varies depending on the view type.
+    this.controlsSetups = false;
 
     // These store the actual hits/markers etc that are in use.
     // This can differ from the static arrays above, as we may
@@ -459,8 +457,6 @@ export class RenderState {
   // Populate various drop downs and buttons based on the state,
   // and then reset the camera.
   setupUI(renderTarget, resetUI = false) {
-    if (this.uiSetup) return;
-
     // If nothing to render, just return after hiding the dropdown button.
     const dropDownButton = document.getElementById(
       `${this.hitDim}_dropdown_button`,
@@ -512,8 +508,12 @@ export class RenderState {
         this.detGeoGroup,
         this.hitDim,
       );
-      setupControls(this.hitDim, this.controls);
       this.scene.add(this.camera);
+    }
+
+    if (!this.controlsSetups) {
+      setupControls(this.hitDim, this.controls);
+      this.controlsSetups = true;
     }
 
     // Setup the default button.
@@ -521,7 +521,6 @@ export class RenderState {
     setupParticleMenu(this);
 
     this.toggleScene(renderTarget);
-    this.uiSetup = true;
   }
 
   // Attempt to activate or deactivate the scene, if needed.

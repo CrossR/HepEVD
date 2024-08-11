@@ -77,6 +77,10 @@ nanobind_add_module(
     src/include/hits.hpp
     src/hits.cpp
 
+    # ... Marker related code
+    src/include/markers.hpp
+    src/markers.cpp
+
     # Finally, the actual HepEVD Python Bindings
     src/HepEVD.cpp
 )

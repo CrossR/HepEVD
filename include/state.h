@@ -33,7 +33,7 @@ class EventState {
 
     bool isEmpty() {
         return name.size() == 0 && particles.empty() && hits.empty() && mcHits.empty() && markers.empty() &&
-               images.empty() && mcTruth.size() == 0;
+               images.empty();
     }
 
     void clear(const bool resetMCTruth = false) {
@@ -103,6 +103,28 @@ class GUIConfig {
     bool disableMouseOver = false;
 
     Material hits;
+
+    void set(const std::string &key, const std::string &value) {
+
+        std::string keyLower = key;
+        std::transform(keyLower.begin(), keyLower.end(), keyLower.begin(),
+                       [](unsigned char c) { return std::tolower(c); });
+
+        if (keyLower == "show2d")
+            show2D = value == "True" || value == "1";
+        else if (keyLower == "show3d")
+            show3D = value == "True" || value == "1";
+        else if (keyLower == "disablemouseover")
+            disableMouseOver = value == "True" || value == "1";
+        else if (keyLower == "hitcolour")
+            hits.colour = value;
+        else if (keyLower == "hitopacity")
+            hits.opacity = std::stof(value);
+        else if (keyLower == "hitsize")
+            hits.size = std::stof(value);
+        else
+            throw std::runtime_error("HepEVD: Unknown config key: " + key);
+    }
 
     // Only need a to JSON method, as we don't need to read in the state.
     // We also only want to pass the metadata, not the actual data.
