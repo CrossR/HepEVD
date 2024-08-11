@@ -88,7 +88,7 @@ int main(void) {
             hit->setHitType(views[i]);
 
             if (disProb(gen) < 0.1)
-                hit->setWidth("z", 10.f);
+                hit->setWidth("x", 10.f);
 
             hits.push_back(hit);
 
