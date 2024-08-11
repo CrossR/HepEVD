@@ -62,7 +62,10 @@ export function drawHits(
   // Group the hits based on their hit width, then we can draw them.
   const groupedHits = hits.reduce((acc, hit) => {
     const width = hit.width;
-    const key = `${width.x},${width.y},${width.z}`;
+
+    // Round to 1 decimal place.
+    const round = (num) => Math.round(num * 10) / 10;
+    const key = `${round(width.x)},${round(width.y)},${round(width.z)}`;
 
     if (!acc[key]) {
       acc[key] = [hit];
