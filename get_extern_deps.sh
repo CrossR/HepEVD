@@ -17,11 +17,11 @@ JSON_URL="https://raw.githubusercontent.com/nlohmann/json/develop/single_include
 JSON_PATH="${EXTERN_PATH}/json.hpp"
 
 JS_LIBS=(
-    "https://cdn.tailwindcss.com/3.4.3"
-    "https://cdn.jsdelivr.net/npm/daisyui@4.10.2/dist/full.css"
+    "https://cdn.tailwindcss.com/3.4.5"
+    "https://cdn.jsdelivr.net/npm/daisyui@4.12.10/dist/full.min.css"
     "https://cdn.jsdelivr.net/npm/theme-change@2.5.0/index.js"
-    "https://ga.jspm.io/npm:es-module-shims@1.9.0/dist/es-module-shims.js"
-    "https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.js"
+    "https://ga.jspm.io/npm:es-module-shims@1.10.0/dist/es-module-shims.js"
+    "https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.js"
 )
 JS_LIB_NAMES=(
     "tailwindcss.js"
@@ -35,7 +35,7 @@ JS_PATH="web/vendor"
 # Three.js is fairly large (about 350 MB).
 # So, two options: Dynamicall load it from a CDN, or download it.
 # Basically trading a slight delay for a large file size.
-THREEJS_VERSION="163"
+THREEJS_VERSION="167"
 THREEJS_URL="https://github.com/mrdoob/three.js/archive/refs/tags/r${THREEJS_VERSION}.tar.gz"
 DOWNLOAD_THREEJS=false
 PATCH_THREEJS=false
