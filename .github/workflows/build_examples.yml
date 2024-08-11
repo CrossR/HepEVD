@@ -55,15 +55,12 @@ jobs:
           ./get_extern_deps.sh
           git submodule update --init --recursive
 
-      - name: Build Examples
+      - name: Build & Run Examples
         run: |
           cd python_bindings
           pip install .
-
-      - name: Run Examples
-        run: |
-          cd example
           pip install numpy
+          cd ../example
           python test_python_bindings.py
         env:
           HEP_EVD_NO_DISPLAY: 1
