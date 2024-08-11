@@ -197,7 +197,7 @@ export class RenderState {
     this.detectorGeometry.volumes
       .filter((volume) => volume.volumeType === "box")
       .forEach((box) => {
-        drawBox(this.hitDim, this.detGeoGroup, this.hitData.hits, box);
+        drawBox(this.hitDim, this.detGeoGroup, box);
       });
 
     // Next, any trapezoid volumes.
