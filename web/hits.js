@@ -61,7 +61,7 @@ export function drawHits(
 
   // Group the hits based on their hit width, then we can draw them.
   const groupedHits = hits.reduce((acc, hit) => {
-    const width = hit.width;
+    const width = hit.width ?? { x: 0, y: 0, z: 0 };
 
     // Round to 1 decimal place.
     const round = (num) => Math.round(num * 10) / 10;
@@ -79,7 +79,7 @@ export function drawHits(
   // Start building the mesh.
   const renderHits = (hits) => {
     const hitSize = hitConfig.hitSize;
-    const hitWidth = hits[0].width;
+    const hitWidth = hits[0].width ?? { x: 0, y: 0, z: 0 };
     const hitGeometry = new THREE.BoxGeometry(
       Math.max(hitWidth.x, hitSize),
       Math.max(hitWidth.y, hitSize),
