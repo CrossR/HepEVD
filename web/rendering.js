@@ -4,19 +4,11 @@
 
 import * as THREE from "three";
 import { ConvexGeometry } from "three/addons/geometries/ConvexGeometry.js";
-import { Line2 } from "three/addons/lines/Line2.js";
-import { LineGeometry } from "three/addons/lines/LineGeometry.js";
 import { Lut } from "three/addons/math/Lut.js";
 import * as BufferGeometryUtils from "three/addons/utils/BufferGeometryUtils.js";
 
 import { addColourMap, getContinuousLutConf } from "./colourmaps.js";
-import {
-  threeDGeoMat,
-  threeDTrapezoidMat,
-  twoDXMat,
-  twoDYMat,
-} from "./constants.js";
-import { getHitBoundaries } from "./helpers.js";
+import { threeDGeoMat, threeDTrapezoidMat } from "./constants.js";
 import { draw2DScaleBar } from "./markers.js";
 
 /**
@@ -112,7 +104,7 @@ export function drawTrapezoids(group, trapezoids) {
     const mesh = new THREE.InstancedMesh(
       geometry,
       threeDTrapezoidMat,
-      traps.length,
+      traps.length
     );
 
     traps.forEach((trapezoid, index) => {
@@ -127,7 +119,7 @@ export function drawTrapezoids(group, trapezoids) {
       const offset = new THREE.Matrix4().makeTranslation(
         xOffset,
         yOffset,
-        zOffset,
+        zOffset
       );
 
       mesh.setMatrixAt(index, offset);

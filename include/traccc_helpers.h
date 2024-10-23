@@ -11,8 +11,8 @@
 
 // Detray Includes
 #include "detray/core/detector.hpp"
-#include "detray/geometry/tracking_volume.hpp"
 #include "detray/geometry/tracking_surface.hpp"
+#include "detray/geometry/tracking_volume.hpp"
 
 // traccc Includes
 #include "traccc/edm/seed.hpp"
