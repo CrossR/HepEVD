@@ -183,6 +183,11 @@ static void addTrackCandidates(const traccc::track_candidate_container_types::co
         // Loop over the measurements in the track candidate.
         for (const traccc::measurement &m : track.items) {
 
+            // Check the measurement isn't empty
+            if (m.local[0] == 0 && m.local[1] == 0 && m.local[2] == 0) {
+                continue;
+            }
+
             // Find the detector surface that this measurement sits on.
             const detray::tracking_surface<detray::detector<>> surface{detector, m.surface_link};
 
