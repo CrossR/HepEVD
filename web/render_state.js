@@ -228,12 +228,9 @@ export class RenderState {
   renderParticles() {
     this.hitGroup.clear();
 
-    drawParticles(
-      this.hitGroup,
-      this.particleData,
-      this.hitData,
-      HIT_CONFIG[this.hitDim]
-    );
+    // INFO: Duplicate the hitConfig, so we can modify it for particles.
+    const hitConfig = Object.assign({}, HIT_CONFIG[this.hitDim]);
+    drawParticles(this.hitGroup, this.particleData, this.hitData, hitConfig);
 
     this.hitGroup.matrixAutoUpdate = false;
     this.hitGroup.matrixWorldAutoUpdate = false;
@@ -263,7 +260,9 @@ export class RenderState {
       });
     }
 
-    drawHits(this.hitGroup, hits, colours, HIT_CONFIG[this.hitDim], lutConfig);
+    // INFO: Duplicate the hitConfig, so we can modify it for hits.
+    const hitConfig = Object.assign({}, HIT_CONFIG[this.hitDim]);
+    drawHits(this.hitGroup, hits, colours, hitConfig, lutConfig);
 
     this.hitGroup.matrixAutoUpdate = false;
     this.hitGroup.matrixWorldAutoUpdate = false;
