@@ -104,7 +104,7 @@ export function drawTrapezoids(group, trapezoids) {
     const mesh = new THREE.InstancedMesh(
       geometry,
       threeDTrapezoidMat,
-      traps.length
+      traps.length,
     );
 
     traps.forEach((trapezoid, index) => {
@@ -119,7 +119,7 @@ export function drawTrapezoids(group, trapezoids) {
       const offset = new THREE.Matrix4().makeTranslation(
         xOffset,
         yOffset,
-        zOffset
+        zOffset,
       );
 
       mesh.setMatrixAt(index, offset);
