@@ -38,6 +38,10 @@
 // MC...
 #include "nusimdata/SimulationBase/MCParticle.h"
 #include "nusimdata/SimulationBase/MCTruth.h"
+//Simulation...
+#if __has_include("larpandoracontent/LArObjects/LArGraph.h")
+#include "lardataobj/Simulation/SimEnergyDeposit.h"
+#endif
 
 // Local Includes
 #include "base_helper.h"
@@ -166,7 +170,7 @@ static HitType getHepEVDHitType(geo::View_t geoHitType) {
     }
 }
 
-static Hit *getHitFromRecobHit(const art::Ptr<recob::Hit> &hit) {
+static Hit *getHitFromRecobHit(const art::Ptr<recob::Hit> &hit, const std::string label = "") {
     const auto wireId(hit->WireID());
     const auto view(hit->View());
 
@@ -182,6 +186,9 @@ static Hit *getHitFromRecobHit(const art::Ptr<recob::Hit> &hit) {
     Hit *hepEvdHit = new Hit({x, 0.0, z}, e);
     hepEvdHit->setDim(getHepEVDHitDimension(view));
     hepEvdHit->setHitType(getHepEVDHitType(view));
+
+    if (label != "")
+        hepEvdHit->setLabel(label);
 
     return hepEvdHit;
 }
@@ -211,13 +218,53 @@ static void addRecoHits(const art::Event &evt, const std::string hitLabel, const
     Hits hits;
 
     for (const auto &hit : hitVector) {
-        const auto hepEvdHit(getHitFromRecobHit(hit));
+        const auto hepEvdHit(getHitFromRecobHit(hit, label));
         hits.push_back(hepEvdHit);
         recoHitToEvdHit.insert({hit, hepEvdHit});
     }
 
     hepEVDServer->addHits(hits);
 }
+
+#if __has_include("lardataobj/Simulation/SimEnergyDeposit.h")
+static void addSimEnergyDepos(const art::Event &evt, const std::string simEDLabel, const std::string label = "") {
+
+    if (!isServerInitialised())
+        return;
+
+    art::Handle<std::vector<sim::SimEnergyDeposit>> simEDHandle;
+    std::vector<art::Ptr<sim::SimEnergyDeposit>> simEDVector;
+
+    if (!evt.getByLabel(simEDLabel, simEDHandle)) {
+        if (hepEVDVerboseLogging)
+            std::cout << "HepEVD: Failed to get sim::SimEnergyDeposit data product." << std::endl;
+        throw cet::exception("HepEVD") << "Failed to get sim::SimEnergyDeposit data product." << std::endl;
+    }
+
+    art::fill_ptr_vector(simEDVector, simEDHandle);
+
+    if (hepEVDVerboseLogging)
+        std::cout << "HepEVD: Processing " << simEDVector.size() << " sim::SimEnergyDeposit objects." << std::endl;
+
+    Hits simEDMidpoints;
+
+    for (const auto &simED : simEDVector) {
+        const float x(simED->MidPointX());
+        const float y(simED->MidPointY());
+        const float z(simED->MidPointZ());
+        const float e(simED->NumElectrons());
+
+        Hit *hepEvdHit = new Hit({x, y, z}, e);
+
+        if (label != "")
+            hepEvdHit->setLabel(label);
+
+        simEDMidpoints.push_back(hepEvdHit);
+    }
+
+    hepEVDServer->addHits(simEDMidpoints);
+}
+#endif
 
 static void showMCParticles(const art::Event &evt, const std::string hitLabel, const std::string backTrackerLabel) {
 
@@ -330,7 +377,7 @@ static Particle *addParticle(const art::Ptr<recob::PFParticle> &pfp, const art::
         std::vector<art::Ptr<recob::Hit>> clusterHits(clusterHitAssoc.at(cluster.key()));
 
         for (const auto &hit : clusterHits) {
-            const auto hepEvdHit(getHitFromRecobHit(hit));
+            const auto hepEvdHit(getHitFromRecobHit(hit, label));
             hits.push_back(hepEvdHit);
             recoHitToEvdHit.insert({hit, hepEvdHit});
         }
