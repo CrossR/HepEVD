@@ -21,6 +21,7 @@ add_library(HepEVD INTERFACE)
 
 # However, we do need to make sure the required dependencies are available.
 # This is achieved using the get_extern_deps.sh script.
+message(STATUS "Fetching external dependencies for HepEVD")
 set(SETUP_SCRIPT ${CMAKE_CURRENT_SOURCE_DIR}/get_extern_deps.sh)
 execute_process(
     COMMAND ${SETUP_SCRIPT}
