@@ -192,6 +192,7 @@ export function drawPoints(points, group) {
 
   pointMesh.instanceMatrix.needsUpdate = true;
   pointMesh.instanceColor.needsUpdate = true;
+  pointMesh.renderOrder = 999;
 
   group.add(pointMesh);
 }

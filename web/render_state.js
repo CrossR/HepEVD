@@ -312,7 +312,7 @@ export class RenderState {
     if (this.hitDim === "3D") {
       hitConfig.hitSize += 0.5;
     } else {
-      hitConfig.renderOrder = 999;
+      hitConfig.renderOrder = 500;
     }
 
     drawHits(this.mcHitGroup, this.mcData.mc, mcColours, hitConfig);
