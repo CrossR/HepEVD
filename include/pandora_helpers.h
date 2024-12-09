@@ -438,7 +438,7 @@ static void addPFOs(const pandora::Pandora &pPandora, const pandora::PfoList *pP
         parentToChildMap.insert({parentPfo, allChildren});
     }
 
-    for (const auto parentChildPair : parentToChildMap) {
+    for (const auto &parentChildPair : parentToChildMap) {
 
         if (parentChildPair.second.empty() || pfoToParticleMap.count(parentChildPair.first) == 0)
             continue;
