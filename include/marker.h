@@ -29,19 +29,19 @@ NLOHMANN_JSON_SERIALIZE_ENUM(MarkerType, {{POINT, "Point"}, {LINE, "Line"}, {RIN
 class Marker {
   public:
     Marker() {}
-    Marker(const PosArray &pos) : position(pos) {}
-    Marker(const Position &pos) : position(pos) {}
-    virtual void setDim(const HitDimension &dim) { this->position.setDim(dim); }
-    virtual void setHitType(const HitType &hitType) { this->position.setHitType(hitType); }
-    void setColour(const std::string colour) { this->colour = colour; }
-    void setLabel(const std::string label) { this->label = label; }
-    std::string getColour() const { return this->colour; }
-    std::string getLabel() const { return this->label; }
+    Marker(const PosArray &pos) : m_position(pos) {}
+    Marker(const Position &pos) : m_position(pos) {}
+    virtual void setDim(const HitDimension &dim) { this->m_position.setDim(dim); }
+    virtual void setHitType(const HitType &hitType) { this->m_position.setHitType(hitType); }
+    void setColour(const std::string colour) { this->m_colour = colour; }
+    void setLabel(const std::string label) { this->m_label = label; }
+    std::string getColour() const { return this->m_colour; }
+    std::string getLabel() const { return this->m_label; }
 
   protected:
-    Position position;
-    std::string colour;
-    std::string label;
+    Position m_position;
+    std::string m_colour;
+    std::string m_label;
 };
 
 // A point is just a single 2D/3D location.
@@ -53,49 +53,94 @@ class Point : public Marker {
     Point() {}
     Point(const PosArray &pos) : Marker(pos) {}
     Point(const PosArray &pos, const HitDimension &hitDim, const HitType &hitType) : Marker(pos) {
-        this->position.setDim(hitDim);
-        this->position.setHitType(hitType);
+        this->m_position.setDim(hitDim);
+        this->m_position.setHitType(hitType);
     }
 
-    NLOHMANN_DEFINE_TYPE_INTRUSIVE(Point, markerType, position, colour, label);
+    // to_json and from_json for Point.
+    friend void to_json(json &j, const Point &point) {
+        j["markerType"] = POINT;
+        j["position"] = point.m_position;
+        j["colour"] = point.m_colour;
+        j["label"] = point.m_label;
+    }
+
+    friend void from_json(const json &j, Point &point) {
+        j.at("markerType").get_to(point.m_markerType);
+        j.at("position").get_to(point.m_position);
+        j.at("colour").get_to(point.m_colour);
+        j.at("label").get_to(point.m_label);
+    }
 
   private:
-    MarkerType markerType = POINT;
+    MarkerType m_markerType = POINT;
 };
 
 // A line is a 3D line between two 3D points.
 class Line : public Marker {
   public:
     Line() {}
-    Line(const PosArray &start, const PosArray &end) : Marker(start), end(end) {}
-    Line(const Point &start, const Point &end) : Marker(start.position), end(end.position) {}
+    Line(const PosArray &start, const PosArray &end) : Marker(start), m_end(end) {}
+    Line(const Point &start, const Point &end) : Marker(start.m_position), m_end(end.m_position) {}
 
     void setDim(const HitDimension &dim) override {
-        this->position.setDim(dim);
-        this->end.setDim(dim);
+        this->m_position.setDim(dim);
+        this->m_end.setDim(dim);
     }
 
-    NLOHMANN_DEFINE_TYPE_INTRUSIVE(Line, markerType, end, position, colour, label);
+    // to_json and from_json for Line.
+    friend void to_json(json &j, const Line &line) {
+        j["markerType"] = LINE;
+        j["position"] = line.m_position;
+        j["end"] = line.m_end;
+        j["colour"] = line.m_colour;
+        j["label"] = line.m_label;
+    }
+
+    friend void from_json(const json &j, Line &line) {
+        j.at("markerType").get_to(line.m_markerType);
+        j.at("position").get_to(line.m_position);
+        j.at("end").get_to(line.m_end);
+        j.at("colour").get_to(line.m_colour);
+        j.at("label").get_to(line.m_label);
+    }
 
   private:
-    MarkerType markerType = LINE;
+    MarkerType m_markerType = LINE;
 
-    Position end;
+    Position m_end;
 };
 
 // A ring is represented by centre point, and then an inner and outer radius.
 class Ring : public Marker {
   public:
     Ring() {}
-    Ring(const PosArray &center, const double inner, const double outer) : Marker(center), inner(inner), outer(outer) {}
+    Ring(const PosArray &center, const double inner, const double outer) : Marker(center), m_inner(inner), m_outer(outer) {}
 
-    NLOHMANN_DEFINE_TYPE_INTRUSIVE(Ring, markerType, inner, outer, position, colour, label);
+    // to_json and from_json for Ring.
+    friend void to_json(json &j, const Ring &ring) {
+        j["markerType"] = RING;
+        j["position"] = ring.m_position;
+        j["inner"] = ring.m_inner;
+        j["outer"] = ring.m_outer;
+        j["colour"] = ring.m_colour;
+        j["label"] = ring.m_label;
+    }
+
+    friend void from_json(const json &j, Ring &ring) {
+        j.at("markerType").get_to(ring.m_markerType);
+        j.at("position").get_to(ring.m_position);
+        j.at("inner").get_to(ring.m_inner);
+        j.at("outer").get_to(ring.m_outer);
+        j.at("colour").get_to(ring.m_colour);
+        j.at("label").get_to(ring.m_label);
+    }
 
   private:
-    MarkerType markerType = RING;
+    MarkerType m_markerType = RING;
 
-    double inner;
-    double outer;
+    double m_inner;
+    double m_outer;
 };
 
 using AllMarkers = std::variant<Point, Line, Ring>;

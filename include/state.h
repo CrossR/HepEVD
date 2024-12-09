@@ -25,48 +25,48 @@ namespace HepEVD {
 // parts of the same event.
 class EventState {
   public:
-    EventState() : name(""), particles(), hits(), mcHits(), markers(), images(), mcTruth("") {}
+    EventState() : m_name(""), m_particles(), m_hits(), m_mcHits(), m_markers(), m_images(), m_mcTruth("") {}
     EventState(std::string name, Particles particles = {}, Hits hits = {}, MCHits mcHits = {}, Markers markers = {},
                Images images = {}, std::string mcTruth = "")
-        : name(name), particles(particles), hits(hits), mcHits(mcHits), markers(markers), images(images),
-          mcTruth(mcTruth) {}
+        : m_name(name), m_particles(particles), m_hits(hits), m_mcHits(mcHits), m_markers(markers), m_images(images),
+          m_mcTruth(mcTruth) {}
 
     bool isEmpty() {
-        return name.size() == 0 && particles.empty() && hits.empty() && mcHits.empty() && markers.empty() &&
-               images.empty();
+        return m_name.size() == 0 && m_particles.empty() && m_hits.empty() && m_mcHits.empty() && m_markers.empty() &&
+               m_images.empty();
     }
 
     void clear(const bool resetMCTruth = false) {
-        name = "";
-        particles.clear();
-        hits.clear();
-        mcHits.clear();
-        markers.clear();
-        images.clear();
+        m_name = "";
+        m_particles.clear();
+        m_hits.clear();
+        m_mcHits.clear();
+        m_markers.clear();
+        m_images.clear();
 
         if (resetMCTruth)
-            mcTruth = "";
+            m_mcTruth = "";
     }
 
     // Only need a to JSON method, as we don't need to read in the state.
     // We also only want to pass the metadata, not the actual data.
     friend void to_json(json &j, const EventState &state) {
-        j = {{"name", state.name},
-             {"particles", state.particles.size()},
-             {"hits", state.hits.size()},
-             {"mcHits", state.mcHits.size()},
-             {"markers", state.markers.size()},
-             {"images", state.images.size()},
-             {"mcTruth", state.mcTruth}};
+        j = {{"name", state.m_name},
+             {"particles", state.m_particles.size()},
+             {"hits", state.m_hits.size()},
+             {"mcHits", state.m_mcHits.size()},
+             {"markers", state.m_markers.size()},
+             {"images", state.m_images.size()},
+             {"mcTruth", state.m_mcTruth}};
     }
 
-    std::string name;
-    Particles particles;
-    Hits hits;
-    MCHits mcHits;
-    Markers markers;
-    Images images;
-    std::string mcTruth;
+    std::string m_name;
+    Particles m_particles;
+    Hits m_hits;
+    MCHits m_mcHits;
+    Markers m_markers;
+    Images m_images;
+    std::string m_mcTruth;
 };
 
 using EventStates = std::map<int, EventState>;
@@ -74,8 +74,8 @@ using EventStates = std::map<int, EventState>;
 inline void to_json(json &j, const EventStates &states) {
     for (const auto &state : states) {
         // Don't include empty states.
-        if (state.second.hits.size() == 0 && state.second.mcHits.size() == 0 && state.second.markers.size() == 0 &&
-            state.second.particles.size() == 0)
+        if (state.second.m_hits.size() == 0 && state.second.m_mcHits.size() == 0 && state.second.m_markers.size() == 0 &&
+            state.second.m_particles.size() == 0)
             continue;
         j.push_back({{"id", state.first}, {"state", state.second}});
     }

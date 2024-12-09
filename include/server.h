@@ -26,35 +26,35 @@ namespace HepEVD {
 
 class HepEVDServer {
   public:
-    HepEVDServer() : geometry({}), eventStates() {}
+    HepEVDServer() : m_geometry({}), m_eventStates() {}
     HepEVDServer(const DetectorGeometry &geo, const Hits &hits = {}, const MCHits &mc = {})
-        : geometry(geo), eventStates() {
-        currentState = 0;
-        eventStates[currentState] = EventState("Initial", {}, hits, mc, {}, {}, "");
+        : m_geometry(geo), m_eventStates() {
+        m_currentState = 0;
+        m_eventStates[m_currentState] = EventState("Initial", {}, hits, mc, {}, {}, "");
     }
     HepEVDServer(std::string name, const DetectorGeometry &geo = {}, const Hits &hits = {}, const MCHits &mc = {})
-        : geometry(geo), eventStates() {
-        currentState = 0;
-        eventStates[currentState] = EventState(name, {}, hits, mc, {}, {}, "");
+        : m_geometry(geo), m_eventStates() {
+        m_currentState = 0;
+        m_eventStates[m_currentState] = EventState(name, {}, hits, mc, {}, {}, "");
     }
 
-    ~HepEVDServer() { this->eventStates.clear(); }
+    ~HepEVDServer() { this->m_eventStates.clear(); }
 
     // Check if the server is initialised.
     // Technically, all we need is a geometry.
-    bool isInitialised() { return this->geometry.size() > 0; }
+    bool isInitialised() { return this->m_geometry.size() > 0; }
 
     // Reset the sever.
     // Hits and markers etc. should be cleared, but its unlikely
     // the geometry needs it, so make that optional.
     void resetServer(const bool resetGeo = false) {
 
-        this->eventStates.clear();
-        this->currentState = 0;
-        this->eventStates[this->currentState] = EventState("Initial", {}, {}, {}, {}, {}, "");
+        this->m_eventStates.clear();
+        this->m_currentState = 0;
+        this->m_eventStates[this->m_currentState] = EventState("Initial", {}, {}, {}, {}, {}, "");
 
         if (resetGeo)
-            this->geometry.clear();
+            this->m_geometry.clear();
 
         return;
     }
@@ -62,41 +62,41 @@ class HepEVDServer {
     // Less destructive clear function.
     // This will clear the hits, markers, particles, and MC hits,
     // but leave the geometry and event states alone.
-    void clearState(const bool clearMCTruth = false) { this->eventStates[this->currentState].clear(clearMCTruth); }
+    void clearState(const bool clearMCTruth = false) { this->m_eventStates[this->m_currentState].clear(clearMCTruth); }
 
     // Add a new event state.
     // This will be used to store multiple events, or multiple
     // parts of the same event.
-    EventState *getState() { return &this->eventStates[this->currentState]; }
+    EventState *getState() { return &this->m_eventStates[this->m_currentState]; }
     void addEventState(std::string name = "", Particles particles = {}, Hits hits = {}, MCHits mcHits = {},
                        Markers markers = {}, Images images = {}, std::string mcTruth = "") {
-        this->eventStates[this->eventStates.size()] =
+        this->m_eventStates[this->m_eventStates.size()] =
             EventState(name, particles, hits, mcHits, markers, images, mcTruth);
     }
 
     // Swap to a different event state.
     void swapEventState(const int state) {
-        if (this->eventStates.find(state) != this->eventStates.end())
-            this->currentState = state;
+        if (this->m_eventStates.find(state) != this->m_eventStates.end())
+            this->m_currentState = state;
     }
     void swapEventState(const std::string name) {
-        for (auto &state : this->eventStates) {
-            if (state.second.name == name) {
-                this->currentState = state.first;
+        for (auto &state : this->m_eventStates) {
+            if (state.second.m_name == name) {
+                this->m_currentState = state.first;
                 return;
             }
         }
     }
     void nextEventState() {
-        if (this->currentState < this->eventStates.size() - 1)
-            this->currentState++;
+        if (this->m_currentState < this->m_eventStates.size() - 1)
+            this->m_currentState++;
     }
     void previousEventState() {
-        if (this->currentState > 0)
-            this->currentState--;
+        if (this->m_currentState > 0)
+            this->m_currentState--;
     }
-    int getNumberOfEventStates() { return this->eventStates.size(); }
-    void setName(const std::string name) { this->getState()->name = name; }
+    int getNumberOfEventStates() { return this->m_eventStates.size(); }
+    void setName(const std::string name) { this->getState()->m_name = name; }
 
     // Start/stop the event display server, blocking until exit is called by the
     // server.
@@ -104,84 +104,84 @@ class HepEVDServer {
     void stopServer();
 
     // GUI configuration.
-    GUIConfig *getConfig() { return &this->config; }
+    GUIConfig *getConfig() { return &this->m_config; }
 
     // Pass over the required event information.
     // TODO: Verify the information passed over.
     bool addHits(const Hits &inputHits) {
 
-        if (this->getState()->hits.size() == 0) {
-            this->getState()->hits = inputHits;
+        if (this->getState()->m_hits.size() == 0) {
+            this->getState()->m_hits = inputHits;
             return true;
         }
 
-        Hits newHits = this->getState()->hits;
+        Hits newHits = this->getState()->m_hits;
         newHits.insert(newHits.end(), inputHits.begin(), inputHits.end());
-        this->getState()->hits = newHits;
+        this->getState()->m_hits = newHits;
 
         return true;
     }
-    Hits getHits() { return this->getState()->hits; }
+    Hits getHits() { return this->getState()->m_hits; }
 
     bool addMarkers(const Markers &inputMarkers) {
 
-        if (this->getState()->markers.size() == 0) {
-            this->getState()->markers = inputMarkers;
+        if (this->getState()->m_markers.size() == 0) {
+            this->getState()->m_markers = inputMarkers;
             return true;
         }
 
-        Markers newMarkers = this->getState()->markers;
+        Markers newMarkers = this->getState()->m_markers;
         newMarkers.insert(newMarkers.end(), inputMarkers.begin(), inputMarkers.end());
-        this->getState()->markers = newMarkers;
+        this->getState()->m_markers = newMarkers;
 
         return true;
     }
-    Markers getMarkers() { return this->getState()->markers; }
+    Markers getMarkers() { return this->getState()->m_markers; }
 
     bool addImages(const Images &images) {
 
-        if (this->getState()->images.size() == 0) {
-            this->getState()->images = images;
+        if (this->getState()->m_images.size() == 0) {
+            this->getState()->m_images = images;
             return true;
         }
 
-        Images newImages = this->getState()->images;
+        Images newImages = this->getState()->m_images;
         newImages.insert(newImages.end(), images.begin(), images.end());
-        this->getState()->images = newImages;
+        this->getState()->m_images = newImages;
 
         return true;
     }
-    Images getImages() { return this->getState()->images; }
+    Images getImages() { return this->getState()->m_images; }
 
     bool addParticles(const Particles &inputParticles) {
-        if (this->getState()->particles.size() == 0) {
-            this->getState()->particles = inputParticles;
+        if (this->getState()->m_particles.size() == 0) {
+            this->getState()->m_particles = inputParticles;
             return true;
         }
 
-        Particles newParticles = this->getState()->particles;
+        Particles newParticles = this->getState()->m_particles;
         newParticles.insert(newParticles.end(), inputParticles.begin(), inputParticles.end());
-        this->getState()->particles = newParticles;
+        this->getState()->m_particles = newParticles;
 
         return true;
     }
-    Particles getParticles() { return this->getState()->particles; }
+    Particles getParticles() { return this->getState()->m_particles; }
 
     bool addMCHits(const MCHits &inputMCHits) {
-        if (this->getState()->mcHits.size() == 0) {
-            this->getState()->mcHits = inputMCHits;
+        if (this->getState()->m_mcHits.size() == 0) {
+            this->getState()->m_mcHits = inputMCHits;
             return true;
         }
 
-        MCHits newHits = this->getState()->mcHits;
+        MCHits newHits = this->getState()->m_mcHits;
         newHits.insert(newHits.end(), inputMCHits.begin(), inputMCHits.end());
-        this->getState()->mcHits = newHits;
+        this->getState()->m_mcHits = newHits;
 
         return true;
     }
-    MCHits getMCHits() { return this->getState()->mcHits; }
+    MCHits getMCHits() { return this->getState()->m_mcHits; }
 
-    void setMCTruth(const std::string mcTruth) { this->getState()->mcTruth = mcTruth; }
+    void setMCTruth(const std::string mcTruth) { this->getState()->m_mcTruth = mcTruth; }
 
     // The MC truth is slightly unique, in that it should be the same across all states.
     // If there is multiple MC truths that aren't the same, either return the current one,
@@ -190,27 +190,27 @@ class HepEVDServer {
     std::string getMCTruth() {
         std::set<std::string> truths;
 
-        for (auto &state : this->eventStates) {
-            if (state.second.mcTruth.size() > 0)
-                truths.insert(state.second.mcTruth);
+        for (auto &state : this->m_eventStates) {
+            if (state.second.m_mcTruth.size() > 0)
+                truths.insert(state.second.m_mcTruth);
         }
 
         if (truths.size() == 1)
             return truths.begin()->c_str();
 
         if (truths.size() > 1)
-            return this->getState()->mcTruth;
+            return this->getState()->m_mcTruth;
 
         return "";
     }
 
   private:
-    httplib::Server server;
+    httplib::Server m_server;
 
-    DetectorGeometry geometry;
-    unsigned int currentState;
-    EventStates eventStates;
-    GUIConfig config;
+    DetectorGeometry m_geometry;
+    unsigned int m_currentState;
+    EventStates m_eventStates;
+    GUIConfig m_config;
 };
 
 // Run the actual server, spinning up the API endpoints and serving the
@@ -227,10 +227,10 @@ inline void HepEVDServer::startServer() {
     // 2. Post: Update the data.
 
     // First, the actual event hits.
-    this->server.Get("/hits", [&](const Request &, Response &res) {
+    this->m_server.Get("/hits", [&](const Request &, Response &res) {
         res.set_content(json(this->getHits()).dump(), "application/json");
     });
-    this->server.Post("/hits", [&](const Request &req, Response &res) {
+    this->m_server.Post("/hits", [&](const Request &req, Response &res) {
         try {
             this->addHits(json::parse(req.body));
             res.set_content("OK", "text/plain");
@@ -240,10 +240,10 @@ inline void HepEVDServer::startServer() {
     });
 
     // Next, the MC truth hits.
-    this->server.Get("/mcHits", [&](const Request &, Response &res) {
+    this->m_server.Get("/mcHits", [&](const Request &, Response &res) {
         res.set_content(json(this->getMCHits()).dump(), "application/json");
     });
-    this->server.Post("/mcHits", [&](const Request &req, Response &res) {
+    this->m_server.Post("/mcHits", [&](const Request &req, Response &res) {
         try {
             this->addMCHits(json::parse(req.body));
             res.set_content("OK", "text/plain");
@@ -253,14 +253,14 @@ inline void HepEVDServer::startServer() {
     });
 
     // And the MC truth information.
-    this->server.Get("/mcTruth",
+    this->m_server.Get("/mcTruth",
                      [&](const Request &, Response &res) { res.set_content(this->getMCTruth(), "text/plain"); });
 
     // Then any actual particles.
-    this->server.Get("/particles", [&](const Request &, Response &res) {
+    this->m_server.Get("/particles", [&](const Request &, Response &res) {
         res.set_content(json(this->getParticles()).dump(), "application/json");
     });
-    this->server.Post("/particles", [&](const Request &req, Response &res) {
+    this->m_server.Post("/particles", [&](const Request &req, Response &res) {
         try {
             this->addParticles(json::parse(req.body));
             res.set_content("OK", "text/plain");
@@ -270,10 +270,10 @@ inline void HepEVDServer::startServer() {
     });
 
     // Then, any markers (points, lines, rings, etc.)
-    this->server.Get("/markers", [&](const Request &, Response &res) {
+    this->m_server.Get("/markers", [&](const Request &, Response &res) {
         res.set_content(json(this->getMarkers()).dump(), "application/json");
     });
-    this->server.Post("/markers", [&](const Request &req, Response &res) {
+    this->m_server.Post("/markers", [&](const Request &req, Response &res) {
         try {
             this->addMarkers(json::parse(req.body));
             res.set_content("OK", "text/plain");
@@ -283,10 +283,10 @@ inline void HepEVDServer::startServer() {
     });
 
     // Any supplied raw images
-    this->server.Get("/images", [&](const Request &, Response &res) {
+    this->m_server.Get("/images", [&](const Request &, Response &res) {
         res.set_content(json(this->getImages()).dump(), "application/json");
     });
-    this->server.Post("/images", [&](const Request &req, Response &res) {
+    this->m_server.Post("/images", [&](const Request &req, Response &res) {
         try {
             this->addImages(json::parse(req.body));
             res.set_content("OK", "text/plain");
@@ -296,13 +296,13 @@ inline void HepEVDServer::startServer() {
     });
 
     // Finally, the detector geometry.
-    this->server.Get("/geometry", [&](const Request &, Response &res) {
-        res.set_content(json(this->geometry).dump(), "application/json");
+    this->m_server.Get("/geometry", [&](const Request &, Response &res) {
+        res.set_content(json(this->m_geometry).dump(), "application/json");
     });
-    this->server.Post("/geometry", [&](const Request &req, Response &res) {
+    this->m_server.Post("/geometry", [&](const Request &req, Response &res) {
         try {
             Volumes vols(json::parse(req.body));
-            this->geometry = DetectorGeometry(vols);
+            this->m_geometry = DetectorGeometry(vols);
             res.set_content("OK", "text/plain");
         } catch (const std::exception &e) {
             res.set_content("Error: " + std::string(e.what()), "text/plain");
@@ -310,9 +310,9 @@ inline void HepEVDServer::startServer() {
     });
 
     // Add a top level, dump everything endpoint.
-    this->server.Get("/stateToJson", [&](const Request &, Response &res) {
+    this->m_server.Get("/stateToJson", [&](const Request &, Response &res) {
         json output;
-        output["detectorGeometry"] = this->geometry;
+        output["detectorGeometry"] = this->m_geometry;
         output["hits"] = this->getHits();
         output["mcHits"] = this->getMCHits();
         output["particles"] = this->getParticles();
@@ -321,7 +321,7 @@ inline void HepEVDServer::startServer() {
         output["config"] = *this->getConfig();
         res.set_content(output.dump(4), "application/json");
     });
-    this->server.Get("/writeOutAllStates", [&](const Request &, Response &res) {
+    this->m_server.Get("/writeOutAllStates", [&](const Request &, Response &res) {
         // This is very different to the rest of the endpoints, as it needs to
         // write out JSON files for each state, rather than just returning the
         // data.
@@ -341,18 +341,18 @@ inline void HepEVDServer::startServer() {
 
         // Populate the top level file.
         json infoFile;
-        infoFile["detectorGeometry"] = this->geometry;
+        infoFile["detectorGeometry"] = this->m_geometry;
         infoFile["config"] = *this->getConfig();
         infoFile["stateInfo"] = *this->getState();
 
         int numberOfStates(0);
 
-        for (auto &state : this->eventStates) {
+        for (auto &state : this->m_eventStates) {
 
             if (state.second.isEmpty())
                 continue;
 
-            json nameUrlPair({{"name", state.second.name}, {"url", ""}});
+            json nameUrlPair({{"name", state.second.m_name}, {"url", ""}});
             infoFile["states"].push_back(nameUrlPair);
             ++numberOfStates;
         }
@@ -363,21 +363,21 @@ inline void HepEVDServer::startServer() {
         infoFileOut << infoFile.dump(4);
 
         // Then populate the state files...
-        for (unsigned int i = 0; i < this->eventStates.size(); i++) {
+        for (unsigned int i = 0; i < this->m_eventStates.size(); i++) {
             json stateFile;
-            EventState state = this->eventStates[i];
+            EventState state = this->m_eventStates[i];
 
             if (state.isEmpty())
                 continue;
 
-            stateFile["name"] = state.name;
-            stateFile["hits"] = state.hits;
-            stateFile["mcHits"] = state.mcHits;
-            stateFile["particles"] = state.particles;
-            stateFile["markers"] = state.markers;
-            stateFile["mcTruth"] = state.mcTruth;
+            stateFile["name"] = state.m_name;
+            stateFile["hits"] = state.m_hits;
+            stateFile["mcHits"] = state.m_mcHits;
+            stateFile["particles"] = state.m_particles;
+            stateFile["markers"] = state.m_markers;
+            stateFile["mcTruth"] = state.m_mcTruth;
 
-            std::string formattedName = state.name;
+            std::string formattedName = state.m_name;
 
             // Replace any spaces with underscores.
             std::replace(formattedName.begin(), formattedName.end(), ' ', '_');
@@ -397,21 +397,21 @@ inline void HepEVDServer::startServer() {
     });
 
     // State controls...
-    this->server.Get("/allStateInfo", [&](const Request &, Response &res) {
-        res.set_content(json(this->eventStates).dump(), "application/json");
+    this->m_server.Get("/allStateInfo", [&](const Request &, Response &res) {
+        res.set_content(json(this->m_eventStates).dump(), "application/json");
     });
-    this->server.Get("/stateInfo", [&](const Request &, Response &res) {
+    this->m_server.Get("/stateInfo", [&](const Request &, Response &res) {
         auto state = this->getState();
         const auto mcTruth = this->getMCTruth();
 
         // If the MC truth string and the MC truth in the state are different,
         // then we need to add the MC truth to the state.
-        if (mcTruth.size() > 0 && state->mcTruth.size() == 0)
-            state->mcTruth = mcTruth;
+        if (mcTruth.size() > 0 && state->m_mcTruth.size() == 0)
+            state->m_mcTruth = mcTruth;
 
         res.set_content(json(*state).dump(), "application/json");
     });
-    this->server.Get("/swap/id/:id", [&](const Request &req, Response &res) {
+    this->m_server.Get("/swap/id/:id", [&](const Request &req, Response &res) {
         try {
             this->swapEventState(std::stoi(req.path_params.at("id")));
             res.set_content("OK", "text/plain");
@@ -419,7 +419,7 @@ inline void HepEVDServer::startServer() {
             res.set_content("Error: " + std::string(e.what()), "text/plain");
         }
     });
-    this->server.Get("/swap/name/:name", [&](const Request &req, Response &res) {
+    this->m_server.Get("/swap/name/:name", [&](const Request &req, Response &res) {
         try {
             this->swapEventState(req.path_params.at("name"));
             res.set_content("OK", "text/plain");
@@ -427,23 +427,23 @@ inline void HepEVDServer::startServer() {
             res.set_content("Error: " + std::string(e.what()), "text/plain");
         }
     });
-    this->server.Get("/nextState", [&](const Request &, Response &res) {
+    this->m_server.Get("/nextState", [&](const Request &, Response &res) {
         this->nextEventState();
         res.set_content("OK", "text/plain");
     });
-    this->server.Get("/previousState", [&](const Request &, Response &res) {
+    this->m_server.Get("/previousState", [&](const Request &, Response &res) {
         this->previousEventState();
         res.set_content("OK", "text/plain");
     });
 
     // Management controls...
-    this->server.Get("/quit", [&](const Request &, Response &) { this->server.stop(); });
-    this->server.Get("/config", [&](const Request &, Response &res) {
+    this->m_server.Get("/quit", [&](const Request &, Response &) { this->m_server.stop(); });
+    this->m_server.Get("/config", [&](const Request &, Response &res) {
         res.set_content(json(*this->getConfig()).dump(), "application/json");
     });
 
     // Finally, mount the www folder, which contains the actual HepEVD JS code.
-    this->server.set_mount_point("/", WEB_FOLDER());
+    this->m_server.set_mount_point("/", WEB_FOLDER());
 
     // Start the server.
     // Since the port may be in use, we need to keep trying until we find one that works.
@@ -452,11 +452,11 @@ inline void HepEVDServer::startServer() {
         port++;
     }
     std::cout << "Starting HepEVD server on http://localhost:" << port << "..." << std::endl;
-    this->server.listen("localhost", port);
+    this->m_server.listen("localhost", port);
     std::cout << "Server closed, continuing..." << std::endl;
 }
 
-inline void HepEVDServer::stopServer() { this->server.stop(); }
+inline void HepEVDServer::stopServer() { this->m_server.stop(); }
 
 }; // namespace HepEVD
 
