@@ -72,6 +72,27 @@ From there, you can then use the library as normal.
 An example of how the library works can be seen in
 `example/test_python_bindings.py`, as well as in the HepEVD wiki.
 
+## Project Integration
+
+There is some basic support for pulling in HepEVD into a CMake-based project.
+This is usually not really necessary for basic debugging, but could be useful if
+HepEVD is used extensively.
+
+```cmake
+include(FetchContent)
+
+FetchContent_Declare(
+    HepEVD
+    GIT_REPOSITORY https://github.com/CrossR/hep_evd.git
+    GIT_BRANCH main
+)
+
+FetchContent_MakeAvailable(HepEVD)
+
+# Link the library to a target
+target_link_libraries(MyBigProject PRIVATE HepEVD)
+```
+
 ## Motivation
 
 It is often useful to be able to view how the interactions in a particle physics event

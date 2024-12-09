@@ -19,6 +19,12 @@ project(HepEVD
 # This is a header only library, so we don't need to build anything
 add_library(HepEVD INTERFACE)
 
+# However, we do need to make sure the required dependencies are available.
+# This is achieved using the get_extern_deps.sh script.
+set(SETUP_SCRIPT ${CMAKE_CURRENT_SOURCE_DIR}/get_extern_deps.sh)
+execute_process(COMMAND ${SETUP_SCRIPT} WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+
+
 # So just include the headers
 target_include_directories(HepEVD INTERFACE
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
