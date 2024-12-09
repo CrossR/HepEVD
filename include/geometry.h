@@ -180,17 +180,17 @@ using Volumes = std::vector<AllVolumes>;
 using VolumeMap = std::vector<std::pair<VolumeType, std::vector<double>>>;
 
 // Define the required JSON formatters for the detector geometry volumes.
-inline static void to_json(json &j, const AllVolumes &vol) {
-    std::visit([&j](const auto &vol) { j = vol; }, vol);
+inline static void to_json(json &j, const AllVolumes &volumes) {
+    std::visit([&j](const auto &vol) { j = vol; }, volumes);
 }
-inline static void to_json(json &j, const Volumes &vols) {
+inline static void to_json(json &j, const Volumes &volumes) {
 
-    if (vols.size() == 0) {
+    if (volumes.size() == 0) {
         j = json::array();
         return;
     }
-    for (const auto &vol : vols) {
-        std::visit([&j](const auto &vol) { j.push_back(vol); }, vol);
+    for (const auto &vol : volumes) {
+        std::visit([&j](const auto &v) { j.push_back(v); }, vol);
     }
 }
 

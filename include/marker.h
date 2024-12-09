@@ -149,7 +149,7 @@ using Markers = std::vector<AllMarkers>;
 
 // Define the required JSON formatters for the markers variant.
 inline static void to_json(json &j, const AllMarkers &marker) {
-    std::visit([&j](const auto &marker) { j = marker; }, marker);
+    std::visit([&j](const auto &m) { j = m; }, marker);
 }
 inline static void to_json(json &j, const Markers &markers) {
 
@@ -159,7 +159,7 @@ inline static void to_json(json &j, const Markers &markers) {
     }
 
     for (const auto &marker : markers) {
-        std::visit([&j](const auto &marker) { j.push_back(marker); }, marker);
+        std::visit([&j](const auto &m) { j.push_back(m); }, marker);
     }
 }
 
