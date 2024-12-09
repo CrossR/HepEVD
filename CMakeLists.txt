@@ -39,23 +39,3 @@ target_include_directories(HepEVD INTERFACE
 
 # Set a C++17 requirement
 target_compile_features(HepEVD INTERFACE cxx_std_17)
-
-# Add installation support
-include(GNUInstallDirs)
-
-# Install all the headers
-install(
-    FILES ${CMAKE_CURRENT_SOURCE_DIR}/hep_evd.h
-    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
-)
-install(
-    DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/
-    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
-)
-
-# Finally, install the library target
-install(
-    TARGETS HepEVD
-    EXPORT HepEVDTargets
-    INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
-)
