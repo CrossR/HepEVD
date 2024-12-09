@@ -30,7 +30,6 @@ execute_process(
     ERROR_QUIET
 )
 
-
 # So just include the headers
 target_include_directories(HepEVD INTERFACE
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>

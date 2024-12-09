@@ -126,3 +126,11 @@ The HTTP server in this project utilises
 [cpp-httplib](https://github.com/yhirose/cpp-httplib), to make the server code as simple
 as possible. Similarly, [nlohmann/json](https://github.com/nlohmann/json) is used to both
 convert and parse objects to/from JSON, such that they can be served via the HTTP server.
+
+## Licensing
+
+This code is released under the MIT License, though there are some exceptions.
+All of the bundled code has its own license, and there is additional license constraints
+on the code in `./integrations/`, due to the nature of that code building upon existing
+files from other libraries. Where appropriate, the license has been noted and included
+at the top of each file.
