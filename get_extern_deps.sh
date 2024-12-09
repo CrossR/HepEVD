@@ -33,7 +33,7 @@ JS_LIB_NAMES=(
 JS_PATH="web/vendor"
 
 # Three.js is fairly large (about 350 MB).
-# So, two options: Dynamicall load it from a CDN, or download it.
+# So, two options: Dynamically load it from a CDN, or download it.
 # Basically trading a slight delay for a large file size.
 THREEJS_VERSION="167"
 THREEJS_URL="https://github.com/mrdoob/three.js/archive/refs/tags/r${THREEJS_VERSION}.tar.gz"
