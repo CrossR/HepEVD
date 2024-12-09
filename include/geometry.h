@@ -69,8 +69,10 @@ class CylinderVolume {
     static const int ARG_COUNT = 3;
 
     CylinderVolume() {}
-    CylinderVolume(const Position &pos, double radius, double height) : m_position(pos), m_radius(radius), m_height(height) {}
-    CylinderVolume(const PosArray &pos, double radius, double height) : m_position(pos), m_radius(radius), m_height(height) {}
+    CylinderVolume(const Position &pos, double radius, double height)
+        : m_position(pos), m_radius(radius), m_height(height) {}
+    CylinderVolume(const PosArray &pos, double radius, double height)
+        : m_position(pos), m_radius(radius), m_height(height) {}
 
     Position getCenter() const { return this->m_position; }
     double getRadius() const { return this->m_radius; }
@@ -104,10 +106,12 @@ class TrapezoidVolume {
     TrapezoidVolume() {}
     TrapezoidVolume(const Position &pos, const Position &topLeft, const Position &topRight, const Position &bottomLeft,
                     const Position &bottomRight)
-        : m_position(pos), m_topLeft(topLeft), m_topRight(topRight), m_bottomLeft(bottomLeft), m_bottomRight(bottomRight) {}
+        : m_position(pos), m_topLeft(topLeft), m_topRight(topRight), m_bottomLeft(bottomLeft),
+          m_bottomRight(bottomRight) {}
     TrapezoidVolume(const PosArray &pos, const PosArray &topLeft, const PosArray &topRight, const PosArray &bottomLeft,
                     const PosArray &bottomRight)
-        : m_position(pos), m_topLeft(topLeft), m_topRight(topRight), m_bottomLeft(bottomLeft), m_bottomRight(bottomRight) {}
+        : m_position(pos), m_topLeft(topLeft), m_topRight(topRight), m_bottomLeft(bottomLeft),
+          m_bottomRight(bottomRight) {}
     TrapezoidVolume(const Position &pos, const std::vector<Position> &vertices)
         : m_position(pos), m_topLeft(vertices[0]), m_topRight(vertices[1]), m_bottomLeft(vertices[2]),
           m_bottomRight(vertices[3]) {}

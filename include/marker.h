@@ -115,7 +115,8 @@ class Line : public Marker {
 class Ring : public Marker {
   public:
     Ring() {}
-    Ring(const PosArray &center, const double inner, const double outer) : Marker(center), m_inner(inner), m_outer(outer) {}
+    Ring(const PosArray &center, const double inner, const double outer)
+        : Marker(center), m_inner(inner), m_outer(outer) {}
 
     // to_json and from_json for Ring.
     friend void to_json(json &j, const Ring &ring) {

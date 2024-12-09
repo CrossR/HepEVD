@@ -254,7 +254,7 @@ inline void HepEVDServer::startServer() {
 
     // And the MC truth information.
     this->m_server.Get("/mcTruth",
-                     [&](const Request &, Response &res) { res.set_content(this->getMCTruth(), "text/plain"); });
+                       [&](const Request &, Response &res) { res.set_content(this->getMCTruth(), "text/plain"); });
 
     // Then any actual particles.
     this->m_server.Get("/particles", [&](const Request &, Response &res) {
