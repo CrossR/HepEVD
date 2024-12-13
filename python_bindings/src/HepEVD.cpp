@@ -60,7 +60,8 @@ NB_MODULE(_hepevd_impl, m) {
     m.doc() = "HepEVD - High Energy Physics Event Display";
 
     m.def("is_initialised", &HepEVD::isServerInitialised,
-          "Checks if the server is initialised - i.e. does a server exists, with the geometry set?");
+          "Checks if the server is initialised - i.e. does a server exists, with the geometry set?",
+          nb::arg("quiet") = false);
     m.def("start_server", &HepEVD_py::start_server, "Starts the HepEVD server", nb::arg("start_state") = -1,
           nb::arg("clear_on_show") = true);
     m.def("set_verbose", &HepEVD::setVerboseLogging, "Sets the verbosity of the HepEVD server", nb::arg("verbose"));
