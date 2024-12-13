@@ -112,6 +112,7 @@ export function drawHits(
     hitMesh.instanceMatrix.needsUpdate = true;
     hitMesh.instanceColor.needsUpdate = true;
     hitMesh.matrixAutoUpdate = false;
+    hitMesh.renderOrder = hitConfig.renderOrder ?? 0;
 
     group.add(hitMesh);
   };

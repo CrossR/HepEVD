@@ -79,11 +79,13 @@ export const HIT_CONFIG = {
     hitSize: 2,
     materialHit: materialHit,
     materialParticle: materialParticle,
+    renderOrder: 1,
   },
   "3D": {
     hitSize: 2,
     materialHit: materialHit,
     materialParticle: materialParticle,
+    renderOrder: 1,
   },
 };
 

@@ -72,6 +72,27 @@ From there, you can then use the library as normal.
 An example of how the library works can be seen in
 `example/test_python_bindings.py`, as well as in the HepEVD wiki.
 
+## Project Integration
+
+There is some basic support for pulling in HepEVD into a CMake-based project.
+This is usually not really necessary for basic debugging, but could be useful if
+HepEVD is used extensively.
+
+```cmake
+include(FetchContent)
+
+FetchContent_Declare(
+    HepEVD
+    GIT_REPOSITORY https://github.com/CrossR/hep_evd.git
+    GIT_BRANCH main
+)
+
+FetchContent_MakeAvailable(HepEVD)
+
+# Link the library to a target
+target_link_libraries(MyBigProject PRIVATE HepEVD)
+```
+
 ## Motivation
 
 It is often useful to be able to view how the interactions in a particle physics event
@@ -105,3 +126,11 @@ The HTTP server in this project utilises
 [cpp-httplib](https://github.com/yhirose/cpp-httplib), to make the server code as simple
 as possible. Similarly, [nlohmann/json](https://github.com/nlohmann/json) is used to both
 convert and parse objects to/from JSON, such that they can be served via the HTTP server.
+
+## Licensing
+
+This code is released under the MIT License, though there are some exceptions.
+All of the bundled code has its own license, and there is additional license constraints
+on the code in `./integrations/`, due to the nature of that code building upon existing
+files from other libraries. Where appropriate, the license has been noted and included
+at the top of each file.
