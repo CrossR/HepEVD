@@ -6,15 +6,16 @@ import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 
 import { fitSceneInCamera, setupControls } from "./camera_and_controls.js";
+import { getCategoricalLutConf, getContinuousLutConf } from "./colourmaps.js";
 import { BUTTON_ID, HIT_CONFIG } from "./constants.js";
 import { getMCColouring } from "./helpers.js";
 import { HitDataState } from "./hit_data_state.js";
 import { HitTypeState } from "./hit_type_state.js";
-import { ParticleDataState } from "./particle_data_state.js";
 import { drawHits, drawParticles } from "./hits.js";
 import { MarkerDataState } from "./marker_data_state.js";
 import { drawLines, drawPoints, drawRingMarker } from "./markers.js";
 import { MCDataState } from "./mc_data_state.js";
+import { ParticleDataState } from "./particle_data_state.js";
 import { drawBox, drawTrapezoids } from "./rendering.js";
 import {
   enableInteractionTypeToggle,
@@ -27,7 +28,6 @@ import {
   toggleButton,
   updateUI,
 } from "./ui.js";
-import { getCategoricalLutConf, getContinuousLutConf } from "./colourmaps.js";
 
 /**
  * Represents the state of the rendering process, including the scene, camera,
@@ -197,7 +197,7 @@ export class RenderState {
     this.detectorGeometry.volumes
       .filter((volume) => volume.volumeType === "box")
       .forEach((box) => {
-        drawBox(this.hitDim, this.detGeoGroup, this.hitData.hits, box);
+        drawBox(this.hitDim, this.detGeoGroup, box);
       });
 
     // Next, any trapezoid volumes.
@@ -228,12 +228,9 @@ export class RenderState {
   renderParticles() {
     this.hitGroup.clear();
 
-    drawParticles(
-      this.hitGroup,
-      this.particleData,
-      this.hitData,
-      HIT_CONFIG[this.hitDim],
-    );
+    // INFO: Duplicate the hitConfig, so we can modify it for particles.
+    const hitConfig = Object.assign({}, HIT_CONFIG[this.hitDim]);
+    drawParticles(this.hitGroup, this.particleData, this.hitData, hitConfig);
 
     this.hitGroup.matrixAutoUpdate = false;
     this.hitGroup.matrixWorldAutoUpdate = false;
@@ -263,7 +260,9 @@ export class RenderState {
       });
     }
 
-    drawHits(this.hitGroup, hits, colours, HIT_CONFIG[this.hitDim], lutConfig);
+    // INFO: Duplicate the hitConfig, so we can modify it for hits.
+    const hitConfig = Object.assign({}, HIT_CONFIG[this.hitDim]);
+    drawHits(this.hitGroup, hits, colours, hitConfig, lutConfig);
 
     this.hitGroup.matrixAutoUpdate = false;
     this.hitGroup.matrixWorldAutoUpdate = false;
@@ -312,6 +311,8 @@ export class RenderState {
 
     if (this.hitDim === "3D") {
       hitConfig.hitSize += 0.5;
+    } else {
+      hitConfig.renderOrder = 500;
     }
 
     drawHits(this.mcHitGroup, this.mcData.mc, mcColours, hitConfig);

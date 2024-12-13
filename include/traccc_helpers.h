@@ -11,8 +11,8 @@
 
 // Detray Includes
 #include "detray/core/detector.hpp"
-#include "detray/geometry/detector_volume.hpp"
-#include "detray/geometry/surface.hpp"
+#include "detray/geometry/tracking_surface.hpp"
+#include "detray/geometry/tracking_volume.hpp"
 
 // traccc Includes
 #include "traccc/edm/seed.hpp"
@@ -67,10 +67,10 @@ template <typename detector_t> static void setHepEVDGeometry(const detector_t &d
     for (const auto &vol_desc : detector.volumes()) {
         ++volume_id;
         int surface_id(0);
-        const auto volume = detray::detector_volume{detector, vol_desc};
+        const auto volume = detray::tracking_volume{detector, vol_desc};
         for (const auto &surf_desc : volume.surfaces()) {
 
-            const auto surface = detray::surface{detector, surf_desc};
+            const auto surface = detray::tracking_surface{detector, surf_desc};
             const auto shape_name(surface.shape_name());
             auto gctx(typename detector_t::geometry_context{});
 
@@ -186,8 +186,13 @@ static void addTrackCandidates(const traccc::track_candidate_container_types::co
         // Loop over the measurements in the track candidate.
         for (const traccc::measurement &m : track.items) {
 
+            // Check the measurement isn't empty
+            if (m.local[0] == 0 && m.local[1] == 0 && m.local[2] == 0) {
+                continue;
+            }
+
             // Find the detector surface that this measurement sits on.
-            const detray::surface<detray::detector<>> surface{detector, m.surface_link};
+            const detray::tracking_surface<detray::detector<>> surface{detector, m.surface_link};
 
             // Calculate a position for this measurement in global 3D space.
             const auto global = surface.bound_to_global({}, m.local, {});
@@ -235,7 +240,7 @@ static void addTracks(const traccc::track_state_container_types::const_view &tra
 
             // Find the detector surface that this measurement sits on.
             const auto m = ts.get_measurement();
-            const detray::surface<detray::detector<>> surface{detector, m.surface_link};
+            const detray::tracking_surface<detray::detector<>> surface{detector, m.surface_link};
 
             // Calculate a position for this measurement in global 3D space.
             const auto global = surface.bound_to_global({}, m.local, {});

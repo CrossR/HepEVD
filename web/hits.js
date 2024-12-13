@@ -59,38 +59,68 @@ export function drawHits(
     if (maxColourValue === minColourValue) usingColour = false;
   }
 
-  // Start building the mesh.
-  const hitSize = hitConfig.hitSize;
-  const hitGeometry = new THREE.BoxGeometry(hitSize, hitSize, hitSize);
-  const dummyObject = new THREE.Object3D();
-  const hitMaterial = hitConfig.materialHit ?? materialHit;
-  const hitMesh = new THREE.InstancedMesh(
-    hitGeometry,
-    hitMaterial,
-    hits.length,
-  );
+  // Group the hits based on their hit width, then we can draw them.
+  const groupedHits = hits.reduce((acc, hit) => {
+    const width = hit.width ?? { x: 0, y: 0, z: 0 };
 
-  hits.forEach(function (hit, index) {
-    const pos = hit.position;
-    dummyObject.position.set(pos.x, pos.y, pos.z);
-    dummyObject.updateMatrix();
+    // Round to 1 decimal place.
+    const round = (num) => Math.round(num * 10) / 10;
+    const key = `${round(width.x)},${round(width.y)},${round(width.z)}`;
 
-    hitMesh.setMatrixAt(index, dummyObject.matrix);
-
-    if (usingColour && usingLut) {
-      hitMesh.setColorAt(index, colourLut.getColor(hitColours[index]));
-    } else if (usingColour && !usingLut) {
-      hitMesh.setColorAt(index, new THREE.Color(hitColours[index]));
+    if (!acc[key]) {
+      acc[key] = [hit];
     } else {
-      hitMesh.setColorAt(index, new THREE.Color(0x808080)); // Gray
+      acc[key].push(hit);
     }
+
+    return acc;
+  }, {});
+
+  // Start building the mesh.
+  const renderHits = (hits) => {
+    const hitSize = hitConfig.hitSize;
+    const hitWidth = hits[0].width ?? { x: 0, y: 0, z: 0 };
+    const hitGeometry = new THREE.BoxGeometry(
+      Math.max(hitWidth.x, hitSize),
+      Math.max(hitWidth.y, hitSize),
+      Math.max(hitWidth.z, hitSize),
+    );
+    const dummyObject = new THREE.Object3D();
+    const hitMaterial = hitConfig.materialHit ?? materialHit;
+    const hitMesh = new THREE.InstancedMesh(
+      hitGeometry,
+      hitMaterial,
+      hits.length,
+    );
+
+    hits.forEach(function (hit, index) {
+      const pos = hit.position;
+      dummyObject.position.set(pos.x, pos.y, pos.z);
+      dummyObject.updateMatrix();
+
+      hitMesh.setMatrixAt(index, dummyObject.matrix);
+
+      if (usingColour && usingLut) {
+        hitMesh.setColorAt(index, colourLut.getColor(hitColours[index]));
+      } else if (usingColour && !usingLut) {
+        hitMesh.setColorAt(index, new THREE.Color(hitColours[index]));
+      } else {
+        hitMesh.setColorAt(index, new THREE.Color(0x808080)); // Gray
+      }
+    });
+
+    hitMesh.instanceMatrix.needsUpdate = true;
+    hitMesh.instanceColor.needsUpdate = true;
+    hitMesh.matrixAutoUpdate = false;
+    hitMesh.renderOrder = hitConfig.renderOrder ?? 0;
+
+    group.add(hitMesh);
+  };
+
+  // Finally, go over the grouped hits and draw them.
+  Object.keys(groupedHits).forEach((key) => {
+    renderHits(groupedHits[key]);
   });
-
-  hitMesh.instanceMatrix.needsUpdate = true;
-  hitMesh.instanceColor.needsUpdate = true;
-  hitMesh.matrixAutoUpdate = false;
-
-  group.add(hitMesh);
 }
 
 /**

@@ -41,6 +41,17 @@ class Position {
     void setDim(HitDimension d) { dim = d; }
     void setHitType(HitType t) { hitType = t; }
 
+    void setValue(const std::string &axes, double value) {
+        if (axes == "x")
+            this->x = value;
+        else if (axes == "y")
+            this->y = value;
+        else if (axes == "z")
+            this->z = value;
+        else
+            throw std::runtime_error("Invalid axes value for Position: " + axes);
+    }
+
     // Implement comparison operators so we can sort Positions.
     bool operator<(const Position &other) const {
         if (this->x != other.x)

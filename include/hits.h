@@ -27,24 +27,28 @@ using HitProperties = std::map<std::tuple<std::string, PropertyType>, double>;
 
 class Hit {
   public:
-    Hit() : id(getUUID()), position(), energy(0.0) {}
-    Hit(const Position &pos, double e = 0) : id(getUUID()), position(pos), energy(e) {}
-    Hit(const PosArray &pos, double e = 0) : id(getUUID()), position(pos), energy(e) {}
+    Hit() : m_id(getUUID()), m_position(), m_energy(0.0) {}
+    Hit(const Position &pos, double e = 0) : m_id(getUUID()), m_position(pos), m_energy(e) {}
+    Hit(const PosArray &pos, double e = 0) : m_id(getUUID()), m_position(pos), m_energy(e) {}
 
-    void setDim(const HitDimension &dim) { this->position.setDim(dim); }
-    void setHitType(const HitType &hitType) { this->position.setHitType(hitType); }
-    void setLabel(const std::string &str) { this->label = str; }
+    void setDim(const HitDimension &dim) { this->m_position.setDim(dim); }
+    void setHitType(const HitType &hitType) { this->m_position.setHitType(hitType); }
+    void setLabel(const std::string &str) { this->m_label = str; }
+    void setEnergy(double e) { this->m_energy = e; }
+    void setPosition(const Position &pos) { this->m_position = pos; }
+    void setWidth(const std::string &axis, const float width) { this->m_width.setValue(axis, width); }
 
-    std::string getId() const { return this->id; }
-    Position getPosition() const { return this->position; }
-    double getEnergy() const { return this->energy; }
-    HitDimension getDim() const { return this->position.dim; }
-    HitType getHitType() const { return this->position.hitType; }
+    std::string getId() const { return this->m_id; }
+    Position getPosition() const { return this->m_position; }
+    Position getWidth() const { return this->m_width; }
+    double getEnergy() const { return this->m_energy; }
+    HitDimension getDim() const { return this->m_position.dim; }
+    HitType getHitType() const { return this->m_position.hitType; }
 
     // If no type is specified, the type is assumed to be numeric.
     void addProperties(std::map<std::string, double> props) {
         for (const auto &propValuePair : props)
-            this->properties.insert({{propValuePair.first, PropertyType::NUMERIC}, propValuePair.second});
+            this->m_properties.insert({{propValuePair.first, PropertyType::NUMERIC}, propValuePair.second});
 
         return;
     }
@@ -52,19 +56,37 @@ class Hit {
     // Add hit properties with a specified type.
     void addProperties(HitProperties props) {
         for (const auto &propValuePair : props)
-            this->properties.insert(propValuePair);
+            this->m_properties.insert(propValuePair);
 
         return;
     }
 
-    NLOHMANN_DEFINE_TYPE_INTRUSIVE(Hit, id, position, energy, label, properties);
+    // Define to_json and from_json for Hit.
+    friend void to_json(json &j, const Hit &hit) {
+        j["id"] = hit.m_id;
+        j["position"] = hit.m_position;
+        j["width"] = hit.m_width;
+        j["energy"] = hit.m_energy;
+        j["label"] = hit.m_label;
+        j["properties"] = hit.m_properties;
+    }
+
+    friend void from_json(const json &j, Hit &hit) {
+        j.at("id").get_to(hit.m_id);
+        j.at("position").get_to(hit.m_position);
+        j.at("width").get_to(hit.m_width);
+        j.at("energy").get_to(hit.m_energy);
+        j.at("label").get_to(hit.m_label);
+        j.at("properties").get_to(hit.m_properties);
+    }
 
   protected:
-    std::string id;
-    Position position;
-    double energy;
-    std::string label;
-    HitProperties properties;
+    std::string m_id;
+    Position m_position;
+    Position m_width = Position({1.0, 1.0, 1.0});
+    double m_energy;
+    std::string m_label;
+    HitProperties m_properties;
 };
 using Hits = std::vector<Hit *>;
 
@@ -100,14 +122,12 @@ class MCHit : public Hit {
 
     void setPDG(const double pdgCode) { this->addProperties({{"PDG", pdgCode}}); }
     double getPDG() const {
-        if (this->properties.count({"PDG", PropertyType::NUMERIC}) == 0) {
+        if (this->m_properties.count({"PDG", PropertyType::NUMERIC}) == 0) {
             return 0.0;
         }
 
-        return this->properties.at({"PDG", PropertyType::NUMERIC});
+        return this->m_properties.at({"PDG", PropertyType::NUMERIC});
     }
-
-    NLOHMANN_DEFINE_TYPE_INTRUSIVE(MCHit, position, energy, label, properties);
 };
 using MCHits = std::vector<MCHit *>;
 

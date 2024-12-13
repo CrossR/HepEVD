@@ -28,20 +28,20 @@ NLOHMANN_JSON_SERIALIZE_ENUM(RenderType, {{PARTICLE, "Particle"}, {TRACK, "Track
 // Represent a single particle in the event.
 class Particle {
   public:
-    Particle() : hits({}), label(""), id(""), parentID(""), childIDs({}) {}
+    Particle() : m_hits({}), m_label(""), m_id(""), m_parentID(""), m_childIDs({}) {}
     Particle(const Hits &hits, const std::string id = "", const std::string &label = "")
-        : hits(hits), label(label), id(id), parentID(""), childIDs({}) {}
+        : m_hits(hits), m_label(label), m_id(id), m_parentID(""), m_childIDs({}) {}
 
     double getEnergy() const {
         double energy = 0.0;
-        for (const auto &hit : this->hits)
+        for (const auto &hit : this->m_hits)
             energy += hit->getEnergy();
         return energy;
     }
 
-    unsigned int getNHits() const { return this->hits.size(); }
-    std::string getLabel() const { return this->label; }
-    std::string getID() const { return this->id; }
+    unsigned int getNHits() const { return this->m_hits.size(); }
+    std::string getLabel() const { return this->m_label; }
+    std::string getID() const { return this->m_id; }
 
     void setVertices(const Markers &vertices) {
         // Check that the markers are all Point-type.
@@ -51,46 +51,68 @@ class Particle {
             }
         }
 
-        this->vertices = vertices;
+        this->m_vertices = vertices;
     }
-    Markers getVertices() const { return this->vertices; }
+    Markers getVertices() const { return this->m_vertices; }
 
-    void setParentID(const std::string parentID) { this->parentID = parentID; }
+    void setParentID(const std::string parentID) { this->m_parentID = parentID; }
 
-    void setChildIDs(const std::vector<std::string> &childIDs) { this->childIDs = childIDs; }
-    void addChild(const std::string childID) { this->childIDs.push_back(childID); }
+    void setChildIDs(const std::vector<std::string> &childIDs) { this->m_childIDs = childIDs; }
+    void addChild(const std::string childID) { this->m_childIDs.push_back(childID); }
 
-    void setPrimary(bool primary) { this->primary = primary; }
-    bool getPrimary() const { return this->primary; }
+    void setPrimary(bool primary) { this->m_primary = primary; }
+    bool getPrimary() const { return this->m_primary; }
 
-    void setInteractionType(InteractionType interactionType) { this->interactionType = interactionType; }
-    InteractionType getInteractionType() const { return this->interactionType; }
+    void setInteractionType(InteractionType interactionType) { this->m_interactionType = interactionType; }
+    InteractionType getInteractionType() const { return this->m_interactionType; }
 
-    void setRenderType(RenderType renderType) { this->renderType = renderType; }
-    RenderType getRenderType() const { return this->renderType; }
+    void setRenderType(RenderType renderType) { this->m_renderType = renderType; }
+    RenderType getRenderType() const { return this->m_renderType; }
 
-    NLOHMANN_DEFINE_TYPE_INTRUSIVE(Particle, hits, vertices, label, id, primary, interactionType, renderType, parentID,
-                                   childIDs);
+    // Define to_json and from_json for Particle.
+    friend void to_json(json &j, const Particle &particle) {
+        j["id"] = particle.m_id;
+        j["label"] = particle.m_label;
+        j["hits"] = particle.m_hits;
+        j["vertices"] = particle.m_vertices;
+        j["primary"] = particle.m_primary;
+        j["interactionType"] = particle.m_interactionType;
+        j["renderType"] = particle.m_renderType;
+        j["parentID"] = particle.m_parentID;
+        j["childIDs"] = particle.m_childIDs;
+    }
+
+    friend void from_json(const json &j, Particle &particle) {
+        j.at("id").get_to(particle.m_id);
+        j.at("label").get_to(particle.m_label);
+        j.at("hits").get_to(particle.m_hits);
+        j.at("vertices").get_to(particle.m_vertices);
+        j.at("primary").get_to(particle.m_primary);
+        j.at("interactionType").get_to(particle.m_interactionType);
+        j.at("renderType").get_to(particle.m_renderType);
+        j.at("parentID").get_to(particle.m_parentID);
+        j.at("childIDs").get_to(particle.m_childIDs);
+    }
 
   private:
-    Hits hits;
-    Markers vertices;
-    std::string label;
-    std::string id;
+    Hits m_hits;
+    Markers m_vertices;
+    std::string m_label;
+    std::string m_id;
 
-    bool primary;
-    InteractionType interactionType;
+    bool m_primary;
+    InteractionType m_interactionType;
 
     // How to render the particle.
     // Default is PARTICLE, but can also be TRACK, SHOWER.
-    RenderType renderType = RenderType::PARTICLE;
+    RenderType m_renderType = RenderType::PARTICLE;
 
     // Lets just assume that the IDs are enough, and the list of particles
     // is available by the consumer (i.e. the Web UI). Less contained (could
     // instead have pointers to the parent/children), but easier to manage and
     // easier to serialise.
-    std::string parentID;
-    std::vector<std::string> childIDs;
+    std::string m_parentID;
+    std::vector<std::string> m_childIDs;
 };
 using Particles = std::vector<Particle *>;
 

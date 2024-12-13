@@ -24,21 +24,36 @@ class MonochromeImage {
         if (image.size() == 0)
             throw std::invalid_argument("MonochromeImage must have at least one row!");
 
-        this->data = image;
+        this->m_data = image;
 
-        this->width = image[0].size();
-        this->height = image.size();
-        this->label = label;
+        this->m_width = image[0].size();
+        this->m_height = image.size();
+        this->m_label = label;
     }
 
-    NLOHMANN_DEFINE_TYPE_INTRUSIVE(MonochromeImage, width, height, data, label, imageType);
+    // Define to_json and from_json for MonochromeImage.
+    friend void to_json(json &j, const MonochromeImage &image) {
+        j["imageType"] = image.m_imageType;
+        j["data"] = image.m_data;
+        j["width"] = image.m_width;
+        j["height"] = image.m_height;
+        j["label"] = image.m_label;
+    }
+
+    friend void from_json(const json &j, MonochromeImage &image) {
+        j.at("imageType").get_to(image.m_imageType);
+        j.at("data").get_to(image.m_data);
+        j.at("width").get_to(image.m_width);
+        j.at("height").get_to(image.m_height);
+        j.at("label").get_to(image.m_label);
+    }
 
   protected:
-    ImageType imageType = MONOCHROME;
-    std::vector<std::vector<float>> data;
-    int width;
-    int height;
-    std::string label;
+    ImageType m_imageType = MONOCHROME;
+    std::vector<std::vector<float>> m_data;
+    int m_width;
+    int m_height;
+    std::string m_label;
 };
 
 // TODO: Extend later to include other image types

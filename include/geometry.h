@@ -32,34 +32,34 @@ class BoxVolume {
 
     BoxVolume() {}
     BoxVolume(const Position &pos, double xWidth, double yWidth, double zWidth)
-        : position(pos), xWidth(xWidth), yWidth(yWidth), zWidth(zWidth) {}
+        : m_position(pos), m_xWidth(xWidth), m_yWidth(yWidth), m_zWidth(zWidth) {}
     BoxVolume(const PosArray &pos, double xWidth, double yWidth, double zWidth)
-        : position(pos), xWidth(xWidth), yWidth(yWidth), zWidth(zWidth) {}
+        : m_position(pos), m_xWidth(xWidth), m_yWidth(yWidth), m_zWidth(zWidth) {}
 
-    Position getCenter() const { return this->position; }
-    double getXWidth() const { return this->xWidth; }
-    double getYWidth() const { return this->yWidth; }
-    double getZWidth() const { return this->zWidth; }
+    Position getCenter() const { return this->m_position; }
+    double getXWidth() const { return this->m_xWidth; }
+    double getYWidth() const { return this->m_yWidth; }
+    double getZWidth() const { return this->m_zWidth; }
 
     // Use custom to/from_json to allow including the volume type.
     friend void to_json(json &j, const BoxVolume &box) {
         j["volumeType"] = BOX;
-        j["position"] = box.position;
-        j["xWidth"] = box.xWidth;
-        j["yWidth"] = box.yWidth;
-        j["zWidth"] = box.zWidth;
+        j["position"] = box.m_position;
+        j["xWidth"] = box.m_xWidth;
+        j["yWidth"] = box.m_yWidth;
+        j["zWidth"] = box.m_zWidth;
     }
 
     friend void from_json(const json &j, BoxVolume &box) {
-        j.at("position").get_to(box.position);
-        j.at("xWidth").get_to(box.xWidth);
-        j.at("yWidth").get_to(box.yWidth);
-        j.at("zWidth").get_to(box.zWidth);
+        j.at("position").get_to(box.m_position);
+        j.at("xWidth").get_to(box.m_xWidth);
+        j.at("yWidth").get_to(box.m_yWidth);
+        j.at("zWidth").get_to(box.m_zWidth);
     }
 
   private:
-    Position position;
-    double xWidth, yWidth, zWidth;
+    Position m_position;
+    double m_xWidth, m_yWidth, m_zWidth;
 };
 
 // And a 3D cylinder...
@@ -69,30 +69,32 @@ class CylinderVolume {
     static const int ARG_COUNT = 3;
 
     CylinderVolume() {}
-    CylinderVolume(const Position &pos, double radius, double height) : position(pos), radius(radius), height(height) {}
-    CylinderVolume(const PosArray &pos, double radius, double height) : position(pos), radius(radius), height(height) {}
+    CylinderVolume(const Position &pos, double radius, double height)
+        : m_position(pos), m_radius(radius), m_height(height) {}
+    CylinderVolume(const PosArray &pos, double radius, double height)
+        : m_position(pos), m_radius(radius), m_height(height) {}
 
-    Position getCenter() const { return this->position; }
-    double getRadius() const { return this->radius; }
-    double getHeight() const { return this->height; }
+    Position getCenter() const { return this->m_position; }
+    double getRadius() const { return this->m_radius; }
+    double getHeight() const { return this->m_height; }
 
     // Use custom to/from_json to allow including the volume type.
     friend void to_json(json &j, const CylinderVolume &cylinder) {
         j["volumeType"] = CYLINDER;
-        j["position"] = cylinder.position;
-        j["radius"] = cylinder.radius;
-        j["height"] = cylinder.height;
+        j["position"] = cylinder.m_position;
+        j["radius"] = cylinder.m_radius;
+        j["height"] = cylinder.m_height;
     }
 
     friend void from_json(const json &j, CylinderVolume &cylinder) {
-        j.at("position").get_to(cylinder.position);
-        j.at("radius").get_to(cylinder.radius);
-        j.at("height").get_to(cylinder.height);
+        j.at("position").get_to(cylinder.m_position);
+        j.at("radius").get_to(cylinder.m_radius);
+        j.at("height").get_to(cylinder.m_height);
     }
 
   private:
-    Position position;
-    double radius, height;
+    Position m_position;
+    double m_radius, m_height;
 };
 
 // Trapezoid volume...
@@ -104,41 +106,43 @@ class TrapezoidVolume {
     TrapezoidVolume() {}
     TrapezoidVolume(const Position &pos, const Position &topLeft, const Position &topRight, const Position &bottomLeft,
                     const Position &bottomRight)
-        : position(pos), topLeft(topLeft), topRight(topRight), bottomLeft(bottomLeft), bottomRight(bottomRight) {}
+        : m_position(pos), m_topLeft(topLeft), m_topRight(topRight), m_bottomLeft(bottomLeft),
+          m_bottomRight(bottomRight) {}
     TrapezoidVolume(const PosArray &pos, const PosArray &topLeft, const PosArray &topRight, const PosArray &bottomLeft,
                     const PosArray &bottomRight)
-        : position(pos), topLeft(topLeft), topRight(topRight), bottomLeft(bottomLeft), bottomRight(bottomRight) {}
+        : m_position(pos), m_topLeft(topLeft), m_topRight(topRight), m_bottomLeft(bottomLeft),
+          m_bottomRight(bottomRight) {}
     TrapezoidVolume(const Position &pos, const std::vector<Position> &vertices)
-        : position(pos), topLeft(vertices[0]), topRight(vertices[1]), bottomLeft(vertices[2]),
-          bottomRight(vertices[3]) {}
+        : m_position(pos), m_topLeft(vertices[0]), m_topRight(vertices[1]), m_bottomLeft(vertices[2]),
+          m_bottomRight(vertices[3]) {}
 
-    Position getCenter() const { return this->position; }
-    Position getTopLeft() const { return this->topLeft; }
-    Position getTopRight() const { return this->topRight; }
-    Position getBottomLeft() const { return this->bottomLeft; }
-    Position getBottomRight() const { return this->bottomRight; }
+    Position getCenter() const { return this->m_position; }
+    Position getTopLeft() const { return this->m_topLeft; }
+    Position getTopRight() const { return this->m_topRight; }
+    Position getBottomLeft() const { return this->m_bottomLeft; }
+    Position getBottomRight() const { return this->m_bottomRight; }
 
     // Use custom to/from_json to allow including the volume type.
     friend void to_json(json &j, const TrapezoidVolume &trapezoid) {
         j["volumeType"] = TRAPEZOID;
-        j["position"] = trapezoid.position;
-        j["topLeft"] = trapezoid.topLeft;
-        j["topRight"] = trapezoid.topRight;
-        j["bottomLeft"] = trapezoid.bottomLeft;
-        j["bottomRight"] = trapezoid.bottomRight;
+        j["position"] = trapezoid.m_position;
+        j["topLeft"] = trapezoid.m_topLeft;
+        j["topRight"] = trapezoid.m_topRight;
+        j["bottomLeft"] = trapezoid.m_bottomLeft;
+        j["bottomRight"] = trapezoid.m_bottomRight;
     }
 
     friend void from_json(const json &j, TrapezoidVolume &trapezoid) {
-        j.at("position").get_to(trapezoid.position);
-        j.at("topLeft").get_to(trapezoid.topLeft);
-        j.at("topRight").get_to(trapezoid.topRight);
-        j.at("bottomLeft").get_to(trapezoid.bottomLeft);
-        j.at("bottomRight").get_to(trapezoid.bottomRight);
+        j.at("position").get_to(trapezoid.m_position);
+        j.at("topLeft").get_to(trapezoid.m_topLeft);
+        j.at("topRight").get_to(trapezoid.m_topRight);
+        j.at("bottomLeft").get_to(trapezoid.m_bottomLeft);
+        j.at("bottomRight").get_to(trapezoid.m_bottomRight);
     }
 
   protected:
-    Position position;
-    Position topLeft, topRight, bottomLeft, bottomRight;
+    Position m_position;
+    Position m_topLeft, m_topRight, m_bottomLeft, m_bottomRight;
 };
 
 // Rectangle2D volume...
@@ -162,11 +166,11 @@ class Rectangle2DVolume : public TrapezoidVolume {
     }
 
     friend void from_json(const json &j, Rectangle2DVolume &rect) {
-        j.at("position").get_to(rect.position);
-        j.at("topLeft").get_to(rect.topLeft);
-        j.at("topRight").get_to(rect.topRight);
-        j.at("bottomLeft").get_to(rect.bottomLeft);
-        j.at("bottomRight").get_to(rect.bottomRight);
+        j.at("position").get_to(rect.m_position);
+        j.at("topLeft").get_to(rect.m_topLeft);
+        j.at("topRight").get_to(rect.m_topRight);
+        j.at("bottomLeft").get_to(rect.m_bottomLeft);
+        j.at("bottomRight").get_to(rect.m_bottomRight);
     }
 };
 
@@ -176,17 +180,17 @@ using Volumes = std::vector<AllVolumes>;
 using VolumeMap = std::vector<std::pair<VolumeType, std::vector<double>>>;
 
 // Define the required JSON formatters for the detector geometry volumes.
-inline static void to_json(json &j, const AllVolumes &vol) {
-    std::visit([&j](const auto &vol) { j = vol; }, vol);
+inline static void to_json(json &j, const AllVolumes &volumes) {
+    std::visit([&j](const auto &vol) { j = vol; }, volumes);
 }
-inline static void to_json(json &j, const Volumes &vols) {
+inline static void to_json(json &j, const Volumes &volumes) {
 
-    if (vols.size() == 0) {
+    if (volumes.size() == 0) {
         j = json::array();
         return;
     }
-    for (const auto &vol : vols) {
-        std::visit([&j](const auto &vol) { j.push_back(vol); }, vol);
+    for (const auto &vol : volumes) {
+        std::visit([&j](const auto &v) { j.push_back(v); }, vol);
     }
 }
 
@@ -215,10 +219,10 @@ inline static void from_json(const json &j, Volumes &vols) {
 class DetectorGeometry {
 
   public:
-    DetectorGeometry() : volumes({}) {}
-    DetectorGeometry(Volumes &vols) : volumes(vols) {}
+    DetectorGeometry() : m_volumes({}) {}
+    DetectorGeometry(Volumes &vols) : m_volumes(vols) {}
 
-    ~DetectorGeometry() { this->volumes.clear(); }
+    ~DetectorGeometry() { this->m_volumes.clear(); }
 
     DetectorGeometry(VolumeMap &volumeMap) {
         for (const auto &volume : volumeMap) {
@@ -236,7 +240,7 @@ class DetectorGeometry {
                 if (volume.second.size() - 3 != BoxVolume::ARG_COUNT)
                     throw std::invalid_argument("A box volume needs 6 inputs!");
                 BoxVolume boxVolume(pos, params[3], params[4], params[5]);
-                volumes.push_back(boxVolume);
+                m_volumes.push_back(boxVolume);
 
                 break;
             }
@@ -249,13 +253,15 @@ class DetectorGeometry {
         }
     }
 
-    int size() { return this->volumes.size(); }
-    void clear() { return this->volumes.clear(); }
+    int size() { return this->m_volumes.size(); }
+    void clear() { return this->m_volumes.clear(); }
 
-    NLOHMANN_DEFINE_TYPE_INTRUSIVE(DetectorGeometry, volumes);
+    // Define to/from_json.
+    friend void to_json(json &j, const DetectorGeometry &geom) { j["volumes"] = geom.m_volumes; }
+    friend void from_json(const json &j, DetectorGeometry &geom) { j.at("volumes").get_to(geom.m_volumes); }
 
   private:
-    Volumes volumes;
+    Volumes m_volumes;
 };
 
 }; // namespace HepEVD

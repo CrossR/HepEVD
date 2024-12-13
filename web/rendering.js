@@ -4,19 +4,11 @@
 
 import * as THREE from "three";
 import { ConvexGeometry } from "three/addons/geometries/ConvexGeometry.js";
-import { Line2 } from "three/addons/lines/Line2.js";
-import { LineGeometry } from "three/addons/lines/LineGeometry.js";
 import { Lut } from "three/addons/math/Lut.js";
 import * as BufferGeometryUtils from "three/addons/utils/BufferGeometryUtils.js";
 
 import { addColourMap, getContinuousLutConf } from "./colourmaps.js";
-import {
-  threeDGeoMat,
-  threeDTrapezoidMat,
-  twoDXMat,
-  twoDYMat,
-} from "./constants.js";
-import { getHitBoundaries } from "./helpers.js";
+import { threeDGeoMat, threeDTrapezoidMat } from "./constants.js";
 import { draw2DScaleBar } from "./markers.js";
 
 /**
@@ -24,11 +16,23 @@ import { draw2DScaleBar } from "./markers.js";
  *
  * @param {string} hitType - The type of hit, either "2D" or "3D".
  * @param {THREE.Group} group - The group to add the box to.
- * @param {Array} hits - The hits to draw.
  * @param {Object} box - The box to draw.
  */
-export function drawBox(hitType, group, hits, box) {
-  if (hitType === "2D") return drawTwoDBoxVolume(group, hits);
+export function drawBox(hitType, group, box) {
+  if (hitType === "2D") {
+    // Flips the y and z dimensions of the box, to draw it correctly in 2D.
+    const flippedBox = {
+      ...box,
+      zWidth: box.yWidth,
+      yWidth: box.zWidth,
+    };
+    flippedBox.position = {
+      ...flippedBox.position,
+      y: flippedBox.position.z,
+      z: flippedBox.position.y,
+    };
+    return drawBoxVolume(group, flippedBox);
+  }
   if (hitType === "3D") return drawBoxVolume(group, box);
 }
 
@@ -48,36 +52,6 @@ export function drawBoxVolume(group, box) {
   boxLines.updateMatrixWorld();
 
   group.add(boxLines);
-}
-
-/**
- * Draws a box volume in 2D space. In this case, the box is calculated based on
- * the input hits.
- *
- * @param {THREE.Group} group - The group to add the box to.
- * @param {Object} box - The box to draw.
- */
-export function drawTwoDBoxVolume(group, hits) {
-  const createLine = (points, material) => {
-    const axesGeo = new LineGeometry().setPositions(points);
-    const axes = new Line2(axesGeo, material);
-    axes.computeLineDistances();
-    axes.scale.set(1, 1, 1);
-    return axes;
-  };
-
-  if (hits.length === 0) return;
-
-  const xProps = getHitBoundaries(hits, "x");
-  const yProps = getHitBoundaries(hits, "y");
-
-  const xPoints = [xProps.min, yProps.min, 0.0, xProps.max, yProps.min, 0.0];
-  const yPoints = [xProps.min, yProps.min, 0.0, xProps.min, yProps.max, 0.0];
-
-  const xAxes = createLine(xPoints, twoDXMat);
-  const yAxes = createLine(yPoints, twoDYMat);
-
-  group.add(xAxes, yAxes);
 }
 
 /**
