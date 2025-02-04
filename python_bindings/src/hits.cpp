@@ -88,7 +88,7 @@ template <typename T> void add_hits(nb::handle hits, std::string label) {
         T *hit(nullptr);
 
         if constexpr (std::is_same<T, HepEVD::MCHit>::value) {
-            hit = new T(HepEVD::Position({x, y, z}), energy, pdgCode);
+            hit = new T(HepEVD::Position({x, y, z}), pdgCode, energy);
         } else {
             hit = new T(HepEVD::Position({x, y, z}), energy);
             pythonHitMap[std::make_tuple(x, y, z, energy)] = hit;

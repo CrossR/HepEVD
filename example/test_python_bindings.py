@@ -22,7 +22,7 @@ def main() -> None:
         [-182.954544067, 0, 696.293762207, 359.415008545, 1207.84753418, 1394.33996582],
         [182.954544067, 0, 696.293762207, 359.415008545, 1207.84753418, 1394.33996582],
     ]
-    
+
     # Once defined, we can now set the geometry by passing it over.
     assert not HepEVD.is_initialised()
     HepEVD.set_geometry(detector_geometry)
