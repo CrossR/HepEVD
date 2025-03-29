@@ -103,12 +103,17 @@ template <typename detector_t> static void setHepEVDGeometry(const detector_t &d
     // Since this function needs to be called for HepEVD to work with traccc, lets also do some quick setup.
     // Lets set a few GUI options, just to make our events look a bit nicer, as compared to the more LArTPC
     // focused defaults.
-    // We likely also want to disable mouse over, its much less useful in the high pileup events, and can
-    // be annoying and a peformance issue.
     hepEVDServer->getConfig()->hits.size = 10.0;
     hepEVDServer->getConfig()->hits.colour = "red";
+    // There is no need to show the 2D view, as we are not using it.
+    // Could later be updated to have some 2D projections?
     hepEVDServer->getConfig()->show2D = false;
+    // No need for mouse over interactions, as they are slow in the very high pileup events, and not
+    // very useful.
     hepEVDServer->getConfig()->disableMouseOver = true;
+    // Similarly, the particle menu can have so many entries in the high pileup events, that it
+    // is not very useful. As it is not a virtualised list, it is also very slow.
+    hepEVDServer->getConfig()->showParticleMenu = false;
 }
 
 // Add traccc::Spacepoints to the HepEVD server.

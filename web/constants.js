@@ -90,6 +90,13 @@ export const HIT_CONFIG = {
   },
 };
 
+export const PARTICLE_CONFIG = {
+  menu: {
+    showMenu: true,
+    maxToShow: 1000,
+  }
+}
+
 export const MARKER_CONFIG = {
   point: {
     size: 1.5,
@@ -158,6 +165,8 @@ export function applyConfig(config, renderStates) {
 
     if (dropDownButton) dropDownButton.style.display = "none";
   }
+
+  PARTICLE_CONFIG.menu.showMenu = config.showParticleMenu;
 
   // Only apply the colour updates to raw hits, not particles which should
   // already have an assigned colour...
