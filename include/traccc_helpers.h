@@ -221,8 +221,8 @@ static void addTrackCandidates(const traccc::track_candidate_container_types::co
 }
 
 template <typename detector_t>
-static void addTracks(const traccc::track_state_container_types::const_view &tracks_view,
-                      const detector_t &detector, std::string label = "") {
+static void addTracks(const traccc::track_state_container_types::const_view &tracks_view, const detector_t &detector,
+                      std::string label = "") {
 
     if (!isServerInitialised())
         return;
