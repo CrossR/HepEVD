@@ -2,6 +2,8 @@ import os
 import pathlib
 import sys
 
+print("HepEVD.__init__.py is being executed", file=sys.stderr)
+
 # Try to import from the C++ extension module
 try:
     # First import the module
