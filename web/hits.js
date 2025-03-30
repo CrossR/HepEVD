@@ -4,9 +4,9 @@
 
 import * as THREE from "three";
 import { Lut } from "three/addons/math/Lut.js";
-import { LineMaterial } from 'three/addons/lines/LineMaterial.js';
-import { LineSegments2 } from 'three/addons/lines/LineSegments2.js';
-import { LineSegmentsGeometry } from 'three/addons/lines/LineSegmentsGeometry.js';
+import { LineMaterial } from "three/addons/lines/LineMaterial.js";
+import { LineSegments2 } from "three/addons/lines/LineSegments2.js";
+import { LineSegmentsGeometry } from "three/addons/lines/LineSegmentsGeometry.js";
 
 import * as BufferGeometryUtils from "three/addons/utils/BufferGeometryUtils.js";
 import {
@@ -226,42 +226,46 @@ export function drawTracks(group, particles) {
   if (particles.length === 0) return;
 
   // Handle window resize for line width
-  window.addEventListener('resize', () => {
+  window.addEventListener("resize", () => {
     trackLineMaterial.resolution.set(window.innerWidth, window.innerHeight);
   });
 
   // First approach: create segments that can be combined
   const allPositions = [];
-  
-  particles.forEach(particle => {
+
+  particles.forEach((particle) => {
     if (particle.hits.length < 2) return;
-    
+
     // Convert hits to line segments (pairs of points)
     for (let i = 0; i < particle.hits.length - 1; i++) {
       const startHit = particle.hits[i];
       const endHit = particle.hits[i + 1];
-      
+
       // Add start point
       allPositions.push(
-        startHit.position.x, startHit.position.y, startHit.position.z,
+        startHit.position.x,
+        startHit.position.y,
+        startHit.position.z,
       );
-      
+
       // Add end point
       allPositions.push(
-        endHit.position.x, endHit.position.y, endHit.position.z,
+        endHit.position.x,
+        endHit.position.y,
+        endHit.position.z,
       );
     }
   });
-  
+
   if (allPositions.length === 0) return;
-  
+
   // Create line segments geometry and add all positions
   const geometry = new LineSegmentsGeometry();
   geometry.setPositions(allPositions);
-  
+
   // Create a single line segments object for all tracks
   const lines = new LineSegments2(geometry, trackLineMaterial);
-  
+
   // Add to the group
   group.add(lines);
 }

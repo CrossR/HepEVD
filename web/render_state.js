@@ -457,7 +457,7 @@ export class RenderState {
   // Setup the UI, should only be called once.
   // Populate various drop downs and buttons based on the state,
   // and then reset the camera.
-  setupUI(renderTarget, resetUI = false) {
+  async setupUI(renderTarget, resetUI = false) {
     // If nothing to render, just return after hiding the dropdown button.
     const dropDownButton = document.getElementById(
       `${this.hitDim}_dropdown_button`,

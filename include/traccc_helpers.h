@@ -94,8 +94,8 @@ template <typename detector_t> static void setHepEVDGeometry(const detector_t &d
     }
 
     for (const auto &missedSurface : missedSurfacesTypes) {
-        std::cout << "Missed surface type: " << missedSurface.first << " (" << missedSurface.second << " surfaces)"
-                  << std::endl;
+        std::cout << "HepEVD: Missed surface type: " << missedSurface.first << " (" << missedSurface.second
+                  << " surfaces)" << std::endl;
     }
 
     hepEVDServer = new HepEVDServer(DetectorGeometry(volumes));
