@@ -5,6 +5,9 @@ import HepEVD
 
 
 def main() -> None:
+    # Now, lets enable verbose output.
+    # This is useful for debugging, and seeing what HepEVD is doing.
+    HepEVD.set_verbose(True)
 
     # There is two ways to pass over a geometry:
     # 1. as a list/array or lists/arrays containing the geometry
@@ -24,8 +27,11 @@ def main() -> None:
     ]
 
     # Once defined, we can now set the geometry by passing it over.
-    assert not HepEVD.is_initialised()
+    # For testing, I'm asserting that the server is not initialised yet, and then
+    # becomes initialised, once the geometry is set.
+    assert not HepEVD.is_initialised(quiet=True)
     HepEVD.set_geometry(detector_geometry)
+    assert HepEVD.is_initialised(quiet=True)
 
     # If at any point you want to reset the server, you can call `reset_server`.
     # In most cases, you only want to reset the server, not the geometry. For
@@ -33,14 +39,15 @@ def main() -> None:
     #
     # In the rarer cases where you also need to reset the server, you can also
     # pass `reset_geo=True`.
-    assert HepEVD.is_initialised()
+    assert HepEVD.is_initialised(quiet=True)
     HepEVD.reset_server(reset_geo=True)
-    assert not HepEVD.is_initialised()
+    assert not HepEVD.is_initialised(quiet=True)
 
     # If HepEVD knows the geometry you want, you can instead just pass it as a string.
     # The defined geometries can be found in `python_bindings/src/include/detectors.hpp`.
+    assert not HepEVD.is_initialised(quiet=True)
     HepEVD.set_geometry("dunefd_1x2x6")
-    assert HepEVD.is_initialised()
+    assert HepEVD.is_initialised(quiet=True)
 
     # Now, lets add some 3D and 2D hits.
     # First, just generate a random set of 3D hits.
@@ -71,10 +78,13 @@ def main() -> None:
     #
     # In this case as well, the format is
     # [x, y, z, energy, dimension, view/hitType]
-    # with dimension coming from the HepEVD::HitDimension enum, and 
+    # with dimension coming from the HepEVD::HitDimension enum, and
     # view/hitType coming from the HepEVD::HitType enum.
     # If using in a non LArTPC environment, the view should be set to
     # HepEVD::HitType::GENERAL.
+    #
+    # This extended format is also supported via numpy arrays, but
+    # is not shown here.
     views = [HepEVD.HitType.TWO_D_U, HepEVD.HitType.TWO_D_V, HepEVD.HitType.TWO_D_W]
     twoD_hits = [
         [
@@ -160,7 +170,7 @@ def main() -> None:
     #
     # This is achieved through the `save_state` method, and passing over
     # a string name.
-    # 
+    #
     # Optionally, you can also pass over a `min_size` parameter
     # which will automatically start the server if there is at least `min_size`
     # number of states. This can be useful for showing iterations of things.
@@ -211,7 +221,7 @@ def main() -> None:
     HepEVD.start_server()
 
     # And done! The python code will wait on the above line until the server
-    # closes, unless you start messing with running the server in a different   
+    # closes, unless you start messing with running the server in a different
     # process / thread.
     return
 

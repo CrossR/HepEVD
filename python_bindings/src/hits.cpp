@@ -108,10 +108,13 @@ template <typename T> void add_hits(nb::handle hits, std::string label) {
         hepEVDHits.push_back(hit);
     }
 
-    if constexpr (std::is_same<T, HepEVD::MCHit>::value)
+    if constexpr (std::is_same<T, HepEVD::MCHit>::value) {
+        HepEVD::hepEVDLog("Adding " + std::to_string(hepEVDHits.size()) + " MC hits to the HepEVD server.");
         HepEVD::getServer()->addMCHits(hepEVDHits);
-    else
+    } else {
+        HepEVD::hepEVDLog("Adding " + std::to_string(hepEVDHits.size()) + " hits to the HepEVD server.");
         HepEVD::getServer()->addHits(hepEVDHits);
+    }
 }
 
 void set_hit_properties(nb::handle hit, nb::dict properties) {

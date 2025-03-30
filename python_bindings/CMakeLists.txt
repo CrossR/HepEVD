@@ -104,5 +104,6 @@ nanobind_add_stub(
 )
 
 # Install the python typing stub
+install(FILES "${CMAKE_CURRENT_SOURCE_DIR}/src/HepEVD/__init__.py" DESTINATION HepEVD)
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/__init__.pyi DESTINATION HepEVD)
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/py.typed DESTINATION HepEVD)

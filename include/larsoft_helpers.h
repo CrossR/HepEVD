@@ -71,7 +71,7 @@ static SpacePointHitMap *getSpacePointMap() { return &spacePointToEvdHit; }
 // Also register the map to the manager, so we don't leak memory.
 static void setHepEVDGeometry() {
 
-    if (isServerInitialised())
+    if (isServerInitialised(true))
         return;
 
     // Store for later use.
@@ -124,9 +124,7 @@ static void setHepEVDGeometry() {
         }
     }
 
-    if (hepEVDVerboseLogging)
-        std::cout << "HepEVD: Setting geometry with " << volumes.size() << " volumes." << std::endl;
-
+    hepEVDLog("Adding " + std::to_string(volumes.size()) + " volumes to the geometry.");
     hepEVDServer = new HepEVDServer(DetectorGeometry(volumes));
 
     // Register the clear functions for the hit maps,
@@ -199,14 +197,10 @@ static void addRecoHits(const art::Event &evt, const std::string hitLabel, const
     std::vector<art::Ptr<recob::Hit>> hitVector;
 
     if (!evt.getByLabel(hitLabel, hitHandle)) {
-        if (hepEVDVerboseLogging)
-            std::cout << "HepEVD: Failed to get recob::Hit data product." << std::endl;
+        hepEVDLog("Failed to get recob::Hit data product.");
         throw cet::exception("HepEVD") << "Failed to get recob::Hit data product." << std::endl;
     }
     art::fill_ptr_vector(hitVector, hitHandle);
-
-    if (hepEVDVerboseLogging)
-        std::cout << "HepEVD: Processing " << hitVector.size() << " recob::Hit objects." << std::endl;
 
     Hits hits;
 
@@ -216,6 +210,7 @@ static void addRecoHits(const art::Event &evt, const std::string hitLabel, const
         recoHitToEvdHit.insert({hit, hepEvdHit});
     }
 
+    hepEVDLog("Adding " + std::to_string(hits.size()) + " hits to the HepEVD server.");
     hepEVDServer->addHits(hits);
 }
 
@@ -264,6 +259,7 @@ static void showMCParticles(const art::Event &evt, const std::string hitLabel, c
         }
     }
 
+    hepEVDLog("Adding " + std::to_string(mcHits.size()) + " MC hits to the HepEVD server.");
     hepEVDServer->addMCHits(mcHits);
 }
 
@@ -313,6 +309,7 @@ static void showMCTruth(const art::Event &evt, const std::string mcTruthLabel) {
 
     const std::string mcTruthString(incomingParticles + " \\rightarrow " + outgoingParticles);
 
+    hepEVDLog("Set MC truth to " + mcTruthString);
     hepEVDServer->setMCTruth(mcTruthString);
 }
 
@@ -487,6 +484,7 @@ static void addPFPs(const art::Event &evt, const std::string pfpModuleLabel, con
         }
     }
 
+    hepEVDLog("Adding " + std::to_string(particles.size()) + " particles to the HepEVD server.");
     hepEVDServer->addParticles(particles);
 }
 
