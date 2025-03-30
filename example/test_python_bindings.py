@@ -5,11 +5,6 @@ import HepEVD
 
 
 def main() -> None:
-    # Print out the available HepEVD functions.
-    # This is useful to see what functions are available, and
-    # what their parameters are.
-    print("Available HepEVD functions:", dir(HepEVD))
-
     # Now, lets enable verbose output.
     # This is useful for debugging, and seeing what HepEVD is doing.
     HepEVD.set_verbose(True)
