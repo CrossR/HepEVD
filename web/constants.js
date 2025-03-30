@@ -53,6 +53,7 @@ export const BUTTON_ID = {
 export const THEME = {
   dark: "rgb(25, 30, 36)",
   light: "rgb(242, 242, 242)",
+  blue: "rgb(41, 22, 131)",
 };
 
 export const TO_THEME = {
@@ -89,6 +90,13 @@ export const HIT_CONFIG = {
   },
 };
 
+export const PARTICLE_CONFIG = {
+  menu: {
+    showMenu: true,
+    maxToShow: 1000,
+  }
+}
+
 export const MARKER_CONFIG = {
   point: {
     size: 1.5,
@@ -109,12 +117,14 @@ export const PDG_TO_COLOUR = {
   13: "palegreen", // mu-
   22: "yellow", // Photon
   211: "coral", // Pi+
+  321: "darkviolet", // K+
   2212: "crimson", // Proton
 
   // Vaguely inverse of the above
   "-11": "darkblue", // e+
   "-13": "darkgreen", // mu+
   "-211": "darkorange", // Pi-
+  "-321": "lightpink", // K-
   "-2212": "darkred", // Anti proton
 };
 
@@ -155,6 +165,8 @@ export function applyConfig(config, renderStates) {
 
     if (dropDownButton) dropDownButton.style.display = "none";
   }
+
+  PARTICLE_CONFIG.menu.showMenu = config.showParticleMenu;
 
   // Only apply the colour updates to raw hits, not particles which should
   // already have an assigned colour...

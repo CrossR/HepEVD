@@ -15,8 +15,8 @@
 #include "detray/geometry/tracking_volume.hpp"
 
 // traccc Includes
-#include "traccc/edm/seed.hpp"
-#include "traccc/edm/spacepoint.hpp"
+#include "traccc/edm/seed_collection.hpp"
+#include "traccc/edm/spacepoint_collection.hpp"
 #include "traccc/edm/track_candidate.hpp"
 #include "traccc/edm/track_state.hpp"
 
@@ -104,24 +104,31 @@ template <typename detector_t> static void setHepEVDGeometry(const detector_t &d
     // Since this function needs to be called for HepEVD to work with traccc, lets also do some quick setup.
     // Lets set a few GUI options, just to make our events look a bit nicer, as compared to the more LArTPC
     // focused defaults.
-    // We likely also want to disable mouse over, its much less useful in the high pileup events, and can
-    // be annoying and a peformance issue.
-    hepEVDServer->getConfig()->hits.size = 5.0;
+    hepEVDServer->getConfig()->hits.size = 10.0;
     hepEVDServer->getConfig()->hits.colour = "red";
+    // There is no need to show the 2D view, as we are not using it.
+    // Could later be updated to have some 2D projections?
     hepEVDServer->getConfig()->show2D = false;
+    // No need for mouse over interactions, as they are slow in the very high pileup events, and not
+    // very useful.
     hepEVDServer->getConfig()->disableMouseOver = true;
+    // Similarly, the particle menu can have so many entries in the high pileup events, that it
+    // is not very useful. As it is not a virtualised list, it is also very slow.
+    hepEVDServer->getConfig()->showParticleMenu = false;
 }
 
 // Add traccc::Spacepoints to the HepEVD server.
-static void addSpacepoints(const vecmem::data::vector_view<traccc::spacepoint> &spacePoints, std::string label = "") {
+static void addSpacepoints(const traccc::edm::spacepoint_collection::const_view &spacePoints, std::string label = "") {
 
     if (!isServerInitialised())
         return;
 
     Hits hits;
 
-    for (unsigned int i = 0; i < spacePoints.size(); i++) {
-        const auto spacePoint = spacePoints.ptr()[i];
+    const traccc::edm::spacepoint_collection::const_device spacePointsView{spacePoints};
+
+    for (unsigned int i = 0; i < spacePointsView.size(); i++) {
+        const auto spacePoint = spacePointsView.at(i);
         Hit *hit = new Hit({spacePoint.x(), spacePoint.y(), spacePoint.z()}, 0.0);
 
         if (label != "")
@@ -136,19 +143,24 @@ static void addSpacepoints(const vecmem::data::vector_view<traccc::spacepoint> &
 }
 
 // Add traccc::seeds to the HepEVD server.
-static void addSeeds(const vecmem::data::vector_view<traccc::seed> &seeds,
-                     const vecmem::data::vector_view<traccc::spacepoint> &spacePoints, std::string label = "") {
+static void addSeeds(const traccc::edm::seed_collection::const_view &seeds,
+                     const traccc::edm::spacepoint_collection::const_view &spacePoints, std::string label = "") {
 
     if (!isServerInitialised())
         return;
 
     Particles hepSeeds;
 
-    for (unsigned int i = 0; i < seeds.size(); i++) {
-        const auto seed = seeds.ptr()[i];
+    // Create a device collection around the seed container view.
+    const traccc::edm::seed_collection::const_device seedsView{seeds};
+    const traccc::edm::spacepoint_collection::const_device spacePointsView{spacePoints};
+
+    for (unsigned int i = 0; i < seedsView.size(); i++) {
+        const auto seed = seedsView.at(i);
         Hits hits;
 
-        for (const auto &spacePoint : seed.get_spacepoints(spacePoints)) {
+        for (const auto &index : {seed.bottom_index(), seed.middle_index(), seed.top_index()}) {
+            const auto spacePoint = spacePointsView.at(index);
             Hit *hit = new Hit({spacePoint.x(), spacePoint.y(), spacePoint.z()}, 0.0);
             hits.push_back(hit);
         }
@@ -164,8 +176,9 @@ static void addSeeds(const vecmem::data::vector_view<traccc::seed> &seeds,
 }
 
 // Add track candidates to the HepEVD server
+template <typename detector_t>
 static void addTrackCandidates(const traccc::track_candidate_container_types::const_view &tracks_view,
-                               const detray::detector<> &detector, std::string label = "") {
+                               const detector_t &detector, std::string label = "") {
 
     if (!isServerInitialised())
         return;
@@ -192,7 +205,7 @@ static void addTrackCandidates(const traccc::track_candidate_container_types::co
             }
 
             // Find the detector surface that this measurement sits on.
-            const detray::tracking_surface<detray::detector<>> surface{detector, m.surface_link};
+            const detray::tracking_surface<detector_t> surface{detector, m.surface_link};
 
             // Calculate a position for this measurement in global 3D space.
             const auto global = surface.bound_to_global({}, m.local, {});
@@ -216,8 +229,9 @@ static void addTrackCandidates(const traccc::track_candidate_container_types::co
     hepEVDServer->addParticles(hepTracks);
 }
 
-static void addTracks(const traccc::track_state_container_types::const_view &tracks_view,
-                      const detray::detector<> &detector, std::string label = "") {
+template <typename detector_t>
+static void addTracks(const traccc::track_state_container_types::const_view &tracks_view, const detector_t &detector,
+                      std::string label = "") {
 
     if (!isServerInitialised())
         return;
@@ -240,7 +254,7 @@ static void addTracks(const traccc::track_state_container_types::const_view &tra
 
             // Find the detector surface that this measurement sits on.
             const auto m = ts.get_measurement();
-            const detray::tracking_surface<detray::detector<>> surface{detector, m.surface_link};
+            const detray::tracking_surface<detector_t> surface{detector, m.surface_link};
 
             // Calculate a position for this measurement in global 3D space.
             const auto global = surface.bound_to_global({}, m.local, {});

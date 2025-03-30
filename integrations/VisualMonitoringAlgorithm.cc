@@ -131,9 +131,13 @@ StatusCode VisualMonitoringAlgorithm::Run() {
     if (m_detectorView != "xz")
         stateName = m_detectorView;
 
+    // Lets also hijack the m_showAssociatedTracks variable, to store if we want to reset
+    // the states on show.
+    bool resetOnShow = m_showAssociatedTracks;
+
     // Finally, display the event and pause application
     if (m_displayEvent) {
-        HepEVD::saveState(stateName, 1, true);
+        HepEVD::saveState(stateName, 1, resetOnShow);
     } else {
         HepEVD::saveState(stateName, 99, false);
     }
@@ -341,6 +345,9 @@ StatusCode VisualMonitoringAlgorithm::ReadSettings(const TiXmlHandle xmlHandle) 
     PANDORA_RETURN_RESULT_IF_AND_IF(STATUS_CODE_SUCCESS, STATUS_CODE_NOT_FOUND, !=,
                                     XmlHelper::ReadVectorOfValues(xmlHandle, "StateName", stateName));
 
+    PANDORA_RETURN_RESULT_IF_AND_IF(STATUS_CODE_SUCCESS, STATUS_CODE_NOT_FOUND, !=,
+                                    XmlHelper::ReadValue(xmlHandle, "ResetStateOnShow", m_showAssociatedTracks));
+
     // Hijack the detector view variable to store the state name.
     if (stateName.size() > 0) {
         m_detectorView = stateName[0] + " ";
@@ -354,7 +361,6 @@ StatusCode VisualMonitoringAlgorithm::ReadSettings(const TiXmlHandle xmlHandle) 
 // This is a hack to silence them.
 #define UNUSED(x) (void)(x)
     UNUSED(m_showDetector);
-    UNUSED(m_showAssociatedTracks);
     UNUSED(m_transparencyThresholdE);
     UNUSED(m_energyScaleThresholdE);
     UNUSED(m_scalingFactor);

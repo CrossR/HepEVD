@@ -99,6 +99,7 @@ class GUIConfig {
 
     bool show2D = true;
     bool show3D = true;
+    bool showParticleMenu = true;
 
     bool disableMouseOver = false;
 
@@ -122,6 +123,8 @@ class GUIConfig {
             hits.opacity = std::stof(value);
         else if (keyLower == "hitsize")
             hits.size = std::stof(value);
+        else if (keyLower == "showparticlemenu")
+            showParticleMenu = value == "True" || value == "1";
         else
             throw std::runtime_error("HepEVD: Unknown config key: " + key);
     }

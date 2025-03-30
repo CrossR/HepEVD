@@ -4,7 +4,7 @@
 // Display a nested menu of particle information, with checkboxes to
 // filter the particles displayed in the main view.
 
-import { INTERACTION_TYPE_SCORE } from "./constants.js";
+import { INTERACTION_TYPE_SCORE, PARTICLE_CONFIG } from "./constants.js";
 
 /**
  * Creates a menu item for a particle with the given hit dimension, particle object, and onClick function.
@@ -114,7 +114,7 @@ export function createParticleMenu(hitDim, particlesMap, onClick) {
   const menu = document.getElementById(`particle_menu_items_${hitDim}`);
   menu.innerHTML = "";
 
-  if (particlesMap.size === 0) {
+  if (particlesMap.size === 0 || !PARTICLE_CONFIG.menu.showMenu) {
     menu.hidden = true;
     return;
   } else if (menu.hidden) {
@@ -152,7 +152,7 @@ export function createParticleMenu(hitDim, particlesMap, onClick) {
       return (aNumHits < bNumHits) - (aNumHits > bNumHits);
     });
 
-  if (particles.length === 0) {
+  if (particles.length === 0 || particles.length > PARTICLE_CONFIG.menu.maxToShow) {
     menu.hidden = true;
     return;
   }

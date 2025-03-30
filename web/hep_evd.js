@@ -45,8 +45,6 @@ const twoDCamera = new THREE.OrthographicCamera(
 );
 const renderer = new THREE.WebGLRenderer({
   alpha: true,
-  antialias: true,
-  preserveDrawingBuffer: true,
 });
 renderer.shadowMap.autoUpdate = false;
 
