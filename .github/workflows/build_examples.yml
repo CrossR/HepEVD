@@ -63,6 +63,6 @@ jobs:
           pip install .
           pip install numpy
           cd ../example
-          python python_debug.py
+          python test_python_bindings.py
         env:
           HEP_EVD_NO_DISPLAY: 1
