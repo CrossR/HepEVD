@@ -4,7 +4,19 @@ import sys
 
 # Try to import from the C++ extension module
 try:
-    from ._hepevd_impl import *
+    # First import the module
+    from . import _hepevd_impl
+    
+    # Then explicitly bring all its symbols into the HepEVD namespace
+    # This is more robust than "from ._hepevd_impl import *", which
+    # was causing issues on Linux.
+    for name in dir(_hepevd_impl):
+        if not name.startswith('__'):
+            globals()[name] = getattr(_hepevd_impl, name)
+            
+    # Keep a reference to the module
+    globals()['_hepevd_impl'] = _hepevd_impl
+    
     _IMPORT_ERROR = None
 except ImportError as e:
     _IMPORT_ERROR = e
