@@ -152,7 +152,10 @@ export function createParticleMenu(hitDim, particlesMap, onClick) {
       return (aNumHits < bNumHits) - (aNumHits > bNumHits);
     });
 
-  if (particles.length === 0 || particles.length > PARTICLE_CONFIG.menu.maxToShow) {
+  if (
+    particles.length === 0 ||
+    particles.length > PARTICLE_CONFIG.menu.maxToShow
+  ) {
     menu.hidden = true;
     return;
   }

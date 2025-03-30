@@ -45,8 +45,11 @@ const twoDCamera = new THREE.OrthographicCamera(
 );
 const renderer = new THREE.WebGLRenderer({
   alpha: true,
+  antialias: true,
+  powerPreference: "high-performance",
 });
 renderer.shadowMap.autoUpdate = false;
+renderer.shadowMap.enabled = false;
 
 // Add FPS counter for debugging.
 const stats = new Stats();
