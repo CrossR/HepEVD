@@ -82,6 +82,9 @@ def main() -> None:
     # view/hitType coming from the HepEVD::HitType enum.
     # If using in a non LArTPC environment, the view should be set to
     # HepEVD::HitType::GENERAL.
+    #
+    # This extended format is also supported via numpy arrays, but
+    # is not shown here.
     views = [HepEVD.HitType.TWO_D_U, HepEVD.HitType.TWO_D_V, HepEVD.HitType.TWO_D_W]
     twoD_hits = [
         [
