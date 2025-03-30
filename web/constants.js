@@ -29,9 +29,10 @@ export const twoDYMat = new LineMaterial({
 export const materialHit = new THREE.MeshBasicMaterial({
   side: THREE.DoubleSide,
 });
-export const trackLineMaterial = new THREE.MeshBasicMaterial({
+export const trackLineMaterial = new LineMaterial({
   color: "darkred",
-  side: THREE.DoubleSide,
+  linewidth: 2, // in pixels
+  resolution: new THREE.Vector2(window.innerWidth, window.innerHeight),
 });
 
 export const materialParticle = new THREE.MeshBasicMaterial({
@@ -94,8 +95,8 @@ export const PARTICLE_CONFIG = {
   menu: {
     showMenu: true,
     maxToShow: 1000,
-  }
-}
+  },
+};
 
 export const MARKER_CONFIG = {
   point: {

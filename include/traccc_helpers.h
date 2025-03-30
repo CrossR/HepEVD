@@ -1,5 +1,5 @@
 //
-// Detray Helpers
+// traccc Helpers
 //
 // High-level helpers to view traccc / detray objects in HepEVD.
 
@@ -63,10 +63,7 @@ template <typename detector_t> static void setHepEVDGeometry(const detector_t &d
     Volumes volumes;
     std::map<std::string, int> missedSurfacesTypes;
 
-    int volume_id(0);
     for (const auto &vol_desc : detector.volumes()) {
-        ++volume_id;
-        int surface_id(0);
         const auto volume = detray::tracking_volume{detector, vol_desc};
         for (const auto &surf_desc : volume.surfaces()) {
 
@@ -88,14 +85,12 @@ template <typename detector_t> static void setHepEVDGeometry(const detector_t &d
             } else {
                 missedSurfacesTypes[shape_name]++;
             }
-
-            surface_id++;
         }
     }
 
     for (const auto &missedSurface : missedSurfacesTypes) {
-        std::cout << "Missed surface type: " << missedSurface.first << " (" << missedSurface.second << " surfaces)"
-                  << std::endl;
+        std::cout << "HepEVD: Missed surface type: " << missedSurface.first << " (" << missedSurface.second
+                  << " surfaces)" << std::endl;
     }
 
     hepEVDLog("Adding " + std::to_string(volumes.size()) + " volumes to the HepEVD server.");

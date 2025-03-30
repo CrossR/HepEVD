@@ -17,6 +17,8 @@
 #include "state.h"
 #include "utils.h"
 
+#include <fstream>
+
 #include "extern/httplib.h"
 
 #include "extern/json.hpp"
