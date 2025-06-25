@@ -17,7 +17,7 @@
 // traccc Includes
 #include "traccc/edm/seed_collection.hpp"
 #include "traccc/edm/spacepoint_collection.hpp"
-#include "traccc/edm/track_candidate.hpp"
+#include "traccc/edm/track_candidate_collection.hpp"
 #include "traccc/edm/track_state.hpp"
 
 // Local Includes
@@ -172,8 +172,10 @@ static void addSeeds(const traccc::edm::seed_collection::const_view &seeds,
 
 // Add track candidates to the HepEVD server
 template <typename detector_t>
-static void addTrackCandidates(const traccc::track_candidate_container_types::const_view &tracks_view,
-                               const detector_t &detector, std::string label = "") {
+static void
+addTrackCandidates(const traccc::edm::track_candidate_collection<traccc::default_algebra>::const_view &tracks,
+                   const traccc::measurement_collection_types::const_view &measurements, const detector_t &detector,
+                   std::string label = "") {
 
     if (!isServerInitialised())
         return;
@@ -181,18 +183,21 @@ static void addTrackCandidates(const traccc::track_candidate_container_types::co
     Particles hepTracks;
 
     // Create a device collection around the track container view.
-    const traccc::track_candidate_container_types::const_device tracks{tracks_view};
+    const traccc::edm::track_candidate_collection<traccc::default_algebra>::const_device tracksView(tracks);
+    const traccc::measurement_collection_types::const_device measurementsView(measurements);
 
-    for (unsigned int i = 0; i < tracks.size(); i++) {
+    for (unsigned int i = 0; i < tracksView.size(); i++) {
 
         // The track candidate in question.
-        const traccc::track_candidate_container_types::const_device::const_element_view track = tracks.at(i);
+        const auto track = tracksView.at(i);
 
         // Start to build the hits for this track candidate.
         Hits hits;
 
         // Loop over the measurements in the track candidate.
-        for (const traccc::measurement &m : track.items) {
+        for (const unsigned int m_index : track.measurement_indices()) {
+
+            const traccc::measurement m = measurementsView.at(m_index);
 
             // Check the measurement isn't empty
             if (m.local[0] == 0 && m.local[1] == 0 && m.local[2] == 0) {
@@ -203,7 +208,7 @@ static void addTrackCandidates(const traccc::track_candidate_container_types::co
             const detray::tracking_surface<detector_t> surface{detector, m.surface_link};
 
             // Calculate a position for this measurement in global 3D space.
-            const auto global = surface.bound_to_global({}, m.local, {});
+            const auto global = surface.local_to_global({}, m.local, {});
 
             // Create a hit object for this measurement.
             Hit *hit = new Hit({global[0], global[1], global[2]}, 0.0);
@@ -225,7 +230,7 @@ static void addTrackCandidates(const traccc::track_candidate_container_types::co
 }
 
 template <typename detector_t>
-static void addTracks(const traccc::track_state_container_types::const_view &tracks_view, const detector_t &detector,
+static void addTracks(const traccc::track_state_container_types::const_view &tracks, const detector_t &detector,
                       std::string label = "") {
 
     if (!isServerInitialised())
@@ -234,12 +239,12 @@ static void addTracks(const traccc::track_state_container_types::const_view &tra
     Particles hepTracks;
 
     // Create a device collection around the track container view.
-    const traccc::track_state_container_types::const_device tracks{tracks_view};
+    const traccc::track_state_container_types::const_device tracksView{tracks};
 
-    for (unsigned int i = 0; i < tracks.size(); i++) {
+    for (unsigned int i = 0; i < tracksView.size(); i++) {
 
         // The track state in question.
-        const traccc::track_state_container_types::const_device::const_element_view track = tracks.at(i);
+        const traccc::track_state_container_types::const_device::const_element_view track = tracksView.at(i);
 
         // Start to build the hits for this track candidate.
         Hits hits;
@@ -252,7 +257,7 @@ static void addTracks(const traccc::track_state_container_types::const_view &tra
             const detray::tracking_surface<detector_t> surface{detector, m.surface_link};
 
             // Calculate a position for this measurement in global 3D space.
-            const auto global = surface.bound_to_global({}, m.local, {});
+            const auto global = surface.local_to_global({}, m.local, {});
 
             // Create a hit object for this measurement.
             Hit *hit = new Hit({global[0], global[1], global[2]}, 0.0);
