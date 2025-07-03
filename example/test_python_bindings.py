@@ -156,18 +156,9 @@ def main() -> None:
         # Generate a random set of hits around the particle position.
         particle_hits = np.stack(
             (
-                [
-                    random.uniform(x - 100, x + 100)
-                    for _ in range(num_hits_per_particle)
-                ],
-                [
-                    random.uniform(y - 100, y + 100)
-                    for _ in range(num_hits_per_particle)
-                ],
-                [
-                    random.uniform(z - 100, z + 100)
-                    for _ in range(num_hits_per_particle)
-                ],
+                [random.uniform(x - 25, x + 25) for _ in range(num_hits_per_particle)],
+                [random.uniform(y - 25, y + 25) for _ in range(num_hits_per_particle)],
+                [random.uniform(z - 25, z + 25) for _ in range(num_hits_per_particle)],
             ),
             axis=1,
         )
