@@ -133,8 +133,60 @@ def main() -> None:
 
         HepEVD.add_hit_properties(hit, properties)
 
-    # Almost there...
+    # Lets add some particles to the event.
+    # Particles is a bit of a misnomer, as it is not just particles,
+    # but also tracks, clusters, or any other object that fits "grouping
+    # of hits" in a way that is useful for visualisation.
     #
+    # Particles are just groups of hits, and can be visualised in the same way
+    # as hits, but with the added benefits of some mouse over
+    # interactions, and consistent colouring.
+
+    # Particles are usually a bit more consistent than hits, so lets
+    # instead generate a random blob of hits around a point.
+    num_hits_per_particle = 500
+    particles = []
+
+    for _ in range(10):
+        # Generate a random position for the particle.
+        x = random.uniform(-350, 350)
+        y = random.uniform(-600, 600)
+        z = random.uniform(0, 1300)
+
+        # Generate a random set of hits around the particle position.
+        particle_hits = np.stack(
+            (
+                [
+                    random.uniform(x - 100, x + 100)
+                    for _ in range(num_hits_per_particle)
+                ],
+                [
+                    random.uniform(y - 100, y + 100)
+                    for _ in range(num_hits_per_particle)
+                ],
+                [
+                    random.uniform(z - 100, z + 100)
+                    for _ in range(num_hits_per_particle)
+                ],
+            ),
+            axis=1,
+        )
+
+        # And again, we need an "energy" for each hit, here just the sum of the three
+        # components.
+        hit_sum = np.sum(particle_hits, axis=1)
+
+        # Our final particle hits are a list/array of [x, y, z, energy] values.
+        # This format was chosen to be simplest for passing data that is already
+        # stored in a HDF5 or ROOT file.
+        particle_hits = np.concatenate((particle_hits, hit_sum[:, np.newaxis]), axis=1)
+
+        # Store the particle hits in a list, so we can pass them over
+        # to HepEVD in one go.
+        particles.append(particle_hits)
+
+    # We will add them a bit later, so for now lets move on to the next step.
+
     # We can now add some markers:
     #  - a 2D / 3D Point
     #  - a 2D / 3D Line
@@ -189,6 +241,13 @@ def main() -> None:
     right_hits = np.array([[*hit] for hit in threeD_hits if hit[0] > 0])
     HepEVD.add_hits(right_hits)
     HepEVD.save_state("Third")
+
+    # Finally, lets out particles from before into a final state.
+    # As you can see, the particles are a 3D array of shape
+    # (NParticles, NHits, Y), where Y is the number of columns in
+    # the hits, which is 4 in this case (x, y, z, energy).
+    HepEVD.add_particles(particles)
+    HepEVD.save_state("Particles")
 
     # We can also set some config, such as:
     # - show2D : 1 - Show 2D views
