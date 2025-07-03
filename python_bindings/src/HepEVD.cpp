@@ -17,6 +17,7 @@
 #include "include/geometry.hpp"
 #include "include/global.hpp"
 #include "include/hits.hpp"
+#include "include/particles.hpp"
 #include "include/markers.hpp"
 
 namespace nb = nanobind;
@@ -106,6 +107,14 @@ NB_MODULE(_hepevd_impl, m) {
           nb::sig("def add_mc(hits: collections.abc.Collection[collections.abc.Collection[float | int | HitType | "
                   "HitDimension]], "
                   "label: str = '') -> None"));
+    m.def("add_particles", &HepEVD_py::add_particles,
+          "Adds particles to the current event state.\n"
+          "Particles must be passed as an (NParticles, NHits, Y) list or array, with the columns being "
+          "(x, y, z, energy) and two optional columns (view, dimension) for the hit type and dimension.\n"
+          "The view and dimension values must be from the HepEVD.HitType and HepEVD.HitDimension enums respectively.",
+          nb::arg("particles"), nb::arg("label") = "",
+          nb::sig("def add_particles(particles: collections.abc.Collection[collections.abc.Collection[collections.abc.Collection[float | int | "
+                  "HitType | HitDimension]]], label: str = '') -> None"));
     m.def("add_hit_properties", &HepEVD_py::set_hit_properties,
           "Add custom properties to a hit, via a string / double dictionary.\n"
           "The hit must be passed as a (x, y, z, energy) list or array.",
