@@ -95,7 +95,9 @@ export class RenderState {
    */
   get hitSize() {
     if (this.particleData.length > 0) return this.particleData.length;
-    return this.hitData.length;
+    if (this.hitData.length > 0) return this.hitData.length;
+    if (this.mcData.length > 0) return this.mcData.length;
+    return 0;
   }
 
   /**
@@ -172,6 +174,21 @@ export class RenderState {
 
     // Setup the controls, since it varies depending on the view type.
     this.controlsSetups = false;
+
+    // Before we set things up...is there any non-MC data?
+    // i.e. particles or hits? If not...its easiest to fake
+    // a single hit here, and then render that out.
+    const nothingButMC =
+      filteredParticles.length === 0 && hits.length === 0 && mcHits.length > 0;
+
+    if (nothingButMC) {
+      // If there is zero "real" hits to render, but there are MC hits,
+      // just add a single, fake, empty hit to the hitData.
+      const hit = mcHits[0];
+      hit.position.x += 1e6;
+
+      hits = [hit];
+    }
 
     // These store the actual hits/markers etc that are in use.
     // This can differ from the static arrays above, as we may
