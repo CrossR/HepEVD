@@ -16,6 +16,7 @@
 // And any local includes...
 #include "include/geometry.hpp"
 #include "include/global.hpp"
+#include "include/graph.hpp"
 #include "include/hits.hpp"
 #include "include/markers.hpp"
 #include "include/particles.hpp"
@@ -129,6 +130,21 @@ NB_MODULE(_hepevd_impl, m) {
           "The various marker types are Point, Line and Ring."
           "Any required parameters (labels, colours, hit dims etc), should be applied to the underlying object.",
           nb::arg("markers"), nb::sig("def add_markers(markers: collections.abc.Collection[HepEVD.Marker]) -> None"));
+    m.def("add_graph", &HepEVD_py::add_graph,
+          "Adds a graph to the current event state.\n"
+          "The graph must be passed as a list or array of nodes and edges, with optional node and edge colours.",
+          "The nodes should be a 2D array of shape (N, 2|3) where N is the number of nodes, "
+          "and the columns are (x, y) or (x, y, z).\n"
+          "The edges should be a 2D array of shape (M, 2) where M is the number of edges, "
+          "and the columns are (start_node_index, end_node_index).\n",
+          nb::arg("nodes"), nb::arg("edges"), nb::arg("nodeColours") = nb::none(), nb::arg("edgeColours") = nb::none(),
+          nb::arg("label") = "",
+          nb::sig("def add_graph(nodes: collections.abc.Collection[collections.abc."
+                  "Collection[float | int]], "
+                  "edges: collections.abc.Collection[collections.abc.Collection[int]], "
+                  "nodeColours: collections.abc.Collection[str] = None, "
+                  "edgeColours: collections.abc.Collection[str] = None, "
+                  "label: str = '') -> None"));
 
     // Add enums
     nb::enum_<HepEVD::HitType>(m, "HitType",

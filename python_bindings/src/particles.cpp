@@ -14,7 +14,7 @@
 // Local Includes
 #include "include/array_list_utils.hpp"
 #include "include/global.hpp"
-#include "include/hits.hpp"
+#include "include/particles.hpp"
 
 // Include nanobind
 #include <nanobind/nanobind.h>

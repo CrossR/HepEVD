@@ -85,6 +85,10 @@ nanobind_add_module(
     src/include/markers.hpp
     src/markers.cpp
 
+    # ... Graph related code
+    src/include/graph.hpp
+    src/graph.cpp
+
     # Finally, the actual HepEVD Python Bindings
     src/HepEVD.cpp
 )
