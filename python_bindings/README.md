@@ -36,8 +36,3 @@ python
 $ import HepEVD
 ```
 
-## TODO
-
- - Add ability to pass over clusters / particles:
-    - I.e. groups of hits, and hierarchies of groups of hits
-    - Need to work out the best interface for that...
