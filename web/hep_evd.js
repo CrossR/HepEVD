@@ -33,7 +33,7 @@ const threeDCamera = new THREE.PerspectiveCamera(
   50,
   window.innerWidth / window.innerHeight,
   0.1,
-  1e6
+  1e6,
 );
 const twoDCamera = new THREE.OrthographicCamera(
   window.innerWidth / -2,
@@ -41,7 +41,7 @@ const twoDCamera = new THREE.OrthographicCamera(
   window.innerHeight / 2,
   window.innerHeight / -2,
   -1,
-  1e6
+  1e6,
 );
 const renderer = new THREE.WebGLRenderer({
   alpha: true,
@@ -84,7 +84,7 @@ const threeDRenderer = new RenderState(
   mcHits.filter((hit) => hit.position.dim === "3D"),
   markers.filter((marker) => marker.position.dim === "3D"),
   detectorGeometry,
-  stateInfo
+  stateInfo,
 );
 const twoDRenderer = new RenderState(
   "2D",
@@ -95,7 +95,7 @@ const twoDRenderer = new RenderState(
   mcHits.filter((hit) => hit.position.dim === "2D"),
   markers.filter((marker) => marker.position.dim === "2D"),
   detectorGeometry,
-  stateInfo
+  stateInfo,
 );
 threeDRenderer.otherRenderer = twoDRenderer;
 twoDRenderer.otherRenderer = threeDRenderer;
@@ -151,7 +151,7 @@ window.addEventListener(
     onWindowResize(threeDRenderer, renderer);
     onWindowResize(twoDRenderer, renderer);
   },
-  false
+  false,
 );
 document.resetView = () => {
   threeDRenderer.resetView();

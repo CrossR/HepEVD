@@ -17,8 +17,8 @@
 #include "include/geometry.hpp"
 #include "include/global.hpp"
 #include "include/hits.hpp"
-#include "include/particles.hpp"
 #include "include/markers.hpp"
+#include "include/particles.hpp"
 
 namespace nb = nanobind;
 
@@ -113,7 +113,8 @@ NB_MODULE(_hepevd_impl, m) {
           "(x, y, z, energy) and two optional columns (view, dimension) for the hit type and dimension.\n"
           "The view and dimension values must be from the HepEVD.HitType and HepEVD.HitDimension enums respectively.",
           nb::arg("particles"), nb::arg("label") = "",
-          nb::sig("def add_particles(particles: collections.abc.Collection[collections.abc.Collection[collections.abc.Collection[float | int | "
+          nb::sig("def add_particles(particles: "
+                  "collections.abc.Collection[collections.abc.Collection[collections.abc.Collection[float | int | "
                   "HitType | HitDimension]]], label: str = '') -> None"));
     m.def("add_hit_properties", &HepEVD_py::set_hit_properties,
           "Add custom properties to a hit, via a string / double dictionary.\n"

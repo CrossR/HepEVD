@@ -27,7 +27,7 @@ const raycaster = new THREE.Raycaster();
 export function highlightParticleOnMouseMove(
   renderStates,
   currentlyHighlighting,
-  event
+  event,
 ) {
   if (mouseTimeout) return currentlyHighlighting;
 
@@ -39,7 +39,7 @@ export function highlightParticleOnMouseMove(
   // since we can't relate unassociated hits.
   if (
     !Array.from(renderStates.values()).some(
-      (state) => state.particleData.length !== 0
+      (state) => state.particleData.length !== 0,
     )
   )
     return [];
@@ -78,7 +78,7 @@ export function highlightParticleOnMouseMove(
     if (!activeHit) return;
 
     const activeParticleId = state.particleData.hitToParticleMap.get(
-      activeHit.id
+      activeHit.id,
     );
     if (!activeParticleId) return;
 
@@ -167,7 +167,7 @@ export function setupMouseOverInteractions(canvas, renderStates) {
     currentlyHighlighting = highlightParticleOnMouseMove(
       renderStates,
       currentlyHighlighting,
-      event
+      event,
     );
   });
 }
