@@ -6,7 +6,7 @@ project(HepEVD LANGUAGES CXX)
 if (NOT SKBUILD)
     message(WARNING "\
         The 'HepEVD' extension requires the 'skbuild' package. \
-        
+
         If you are a user trying to install this package, use the \
         command below, which will install all necessary build dependencies, \
         compile the package in an isolated environment, and then install it. \
@@ -72,10 +72,14 @@ nanobind_add_module(
     src/include/geometry.hpp
     src/include/detectors.hpp
     src/geometry.cpp
-    
+
     # ... Hit related code
     src/include/hits.hpp
     src/hits.cpp
+
+    # ... Particle related code
+    src/include/particles.hpp
+    src/particles.cpp
 
     # ... Marker related code
     src/include/markers.hpp

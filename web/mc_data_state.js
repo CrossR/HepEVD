@@ -20,6 +20,15 @@ export class MCDataState {
   }
 
   /**
+   * Get the number of active MC hits.
+   *
+   * @return {number} The number of active MC hits.
+   */
+  get length() {
+    return this.activeMC.length;
+  }
+
+  /**
    * Top level update function, to update what the active MC hits are.
    *
    * @param {HitTypeState} hitTypeState - The hit type state object.
