@@ -86,23 +86,38 @@ void add_graph(nb::handle nodes, nb::handle edges, nb::handle nodeColours, nb::h
         markers.push_back(point);
     }
 
+
     for (int edgeIdx = 0; edgeIdx < numEdges; edgeIdx++) {
-        auto edge = nb::cast<std::array<int, 2>>(edges[edgeIdx]);
+        try {
+            // Try individual element casting instead of array casting
+            int startIdx = nb::cast<int>(edges[edgeIdx][0]);
+            int endIdx = nb::cast<int>(edges[edgeIdx][1]);
 
-        HepEVD::Point startPoint = std::get<HepEVD::Point>(markers[edge[0]]);
-        HepEVD::Point endPoint = std::get<HepEVD::Point>(markers[edge[1]]);
+            // Validate edge indices
+            if (startIdx < 0 || startIdx >= numNodes || endIdx < 0 || endIdx >= numNodes) {
+                throw std::runtime_error("HepEVD: Edge indices out of range");
+            }
 
-        HepEVD::Line line(startPoint, endPoint);
+            // Get the points using std::get with error handling
+            HepEVD::Point startPoint = std::get<HepEVD::Point>(markers[startIdx]);
+            HepEVD::Point endPoint = std::get<HepEVD::Point>(markers[endIdx]);
 
-        if (hasEdgeColours) {
-            auto colour = nb::cast<std::string>(edgeColours[edgeIdx]);
-            line.setColour(colour);
-        } else {
-            line.setColour("grey");
+            HepEVD::Line line(startPoint, endPoint);
+
+            if (hasEdgeColours) {
+                auto colour = nb::cast<std::string>(edgeColours[edgeIdx]);
+                line.setColour(colour);
+            } else {
+                line.setColour("grey");
+            }
+
+            line.setLabel(label);
+            markers.push_back(line);
+        } catch (const nb::cast_error& e) {
+            throw std::runtime_error("HepEVD: Failed to cast edge data at index " + std::to_string(edgeIdx));
+        } catch (const std::bad_variant_access& e) {
+            throw std::runtime_error("HepEVD: Failed to access point from markers at edge indices");
         }
-
-        line.setLabel(label);
-        markers.push_back(line);
     }
 
     HepEVD::hepEVDLog("Adding " + std::to_string(markers.size()) + " graph markers to the HepEVD server.");
