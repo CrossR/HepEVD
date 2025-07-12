@@ -133,4 +133,23 @@ BasicSizeInfo getBasicSizeInfo(nb::handle obj) {
     throw std::runtime_error("HepEVD: Unknown input type!");
 }
 
+bool isArrayEmpty(nb::handle obj) {
+
+    // Return true for any non-array/list types, including torch tensors.
+    if (!isArrayOrList(obj))
+        return true;
+
+    BasicSizeInfo size_info = getBasicSizeInfo(obj);
+
+    // Is it a scalar or empty?
+    if (size_info.empty()) return false;
+
+    for (const auto &dim : size_info) {
+        if (dim == 0)
+            return true;
+    }
+
+    return false;
+}
+
 } // namespace HepEVD_py

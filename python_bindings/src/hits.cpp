@@ -26,13 +26,21 @@ namespace HepEVD_py {
 
 template <typename T> void add_hits(nb::handle hits, std::string label) {
 
-    if (!HepEVD::isServerInitialised())
+    if (!HepEVD::isServerInitialised()) {
+        HepEVD::hepEVDLog("HepEVD: Server is not initialised, cannot add hits.");
         return;
+    }
 
     if (!isArrayOrList(hits))
         throw std::runtime_error("HepEVD: Hit must be an array or list");
 
     BasicSizeInfo arraySize = getBasicSizeInfo(hits);
+    bool arrayEmpty = isArrayEmpty(hits);
+
+    if (arrayEmpty) {
+        HepEVD::hepEVDLog("HepEVD: No hits to add, ignoring.");
+        return;
+    }
 
     if (arraySize.size() != 2)
         throw std::runtime_error("Hits array must be 2D");
@@ -119,11 +127,14 @@ template <typename T> void add_hits(nb::handle hits, std::string label) {
 
 void set_hit_properties(nb::handle hit, nb::dict properties) {
 
-    if (!HepEVD::isServerInitialised())
+    if (!HepEVD::isServerInitialised()) {
+        HepEVD::hepEVDLog("HepEVD: Server is not initialised, cannot add hits.");
         return;
+    }
 
-    if (!isArrayOrList(hit))
+    if (isArrayEmpty(hit)) {
         throw std::runtime_error("HepEVD: Hit must be an array or list");
+    }
 
     BasicSizeInfo hitSize = getBasicSizeInfo(hit);
 

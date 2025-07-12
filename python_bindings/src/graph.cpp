@@ -27,8 +27,10 @@ namespace HepEVD_py {
 
 void add_graph(nb::handle nodes, nb::handle edges, nb::handle nodeColours, nb::handle edgeColours, std::string label) {
 
-    if (!HepEVD::isServerInitialised())
+    if (!HepEVD::isServerInitialised()) {
+        HepEVD::hepEVDLog("HepEVD: Server is not initialised, cannot add graph.");
         return;
+    }
 
     if (!isArrayOrList(nodes) || !isArrayOrList(edges))
         throw std::runtime_error("HepEVD: Graph nodes and edges must be arrays or lists");
@@ -36,10 +38,17 @@ void add_graph(nb::handle nodes, nb::handle edges, nb::handle nodeColours, nb::h
     BasicSizeInfo nodesSize = getBasicSizeInfo(nodes);
     BasicSizeInfo nodeColoursSize = getBasicSizeInfo(nodeColours);
     bool hasNodeColours = !nodeColours.is_none();
+    bool nodeArrayEmpty = isArrayEmpty(nodes);
 
     BasicSizeInfo edgesSize = getBasicSizeInfo(edges);
     BasicSizeInfo edgeColoursSize = getBasicSizeInfo(edgeColours);
     bool hasEdgeColours = !edgeColours.is_none();
+    bool edgeArrayEmpty = isArrayEmpty(edges);
+
+    if (nodeArrayEmpty && edgeArrayEmpty) {
+        HepEVD::hepEVDLog("HepEVD: No graph nodes or edges to add, ignoring.");
+        return;
+    }
 
     // We expect the following shapes for the input arrays:
     // - A 2D array for nodes: (N, 3) where N is the number of nodes.

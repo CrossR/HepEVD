@@ -48,6 +48,15 @@ std::vector<double> getItems(nb::handle obj, int index, int size);
  */
 BasicSizeInfo getBasicSizeInfo(nb::handle obj);
 
+/**
+ * Check if the given array is empty or not.
+ *
+ * @param obj The handle object to extract size information from
+ *
+ * @return True if the array is empty or otherwise not valid, false otherwise
+ */
+bool isArrayEmpty(nb::handle obj);
+
 } // namespace HepEVD_py
 
 #endif // HEP_EVD_PY_ARRAY_UTILS_HPP

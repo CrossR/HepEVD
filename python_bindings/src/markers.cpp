@@ -62,13 +62,21 @@ void init_marker_classes(nb::module_ &m) {
 
 void add_markers(nb::handle markers) {
 
-    if (!HepEVD::isServerInitialised())
+    if (!HepEVD::isServerInitialised()) {
+        HepEVD::hepEVDLog("HepEVD: Server is not initialised, cannot add markers.");
         return;
+    }
 
     if (!isArrayOrList(markers))
         throw std::runtime_error("HepEVD: Markers must be an array or list");
 
     BasicSizeInfo markersSize = getBasicSizeInfo(markers);
+    bool arrayEmpty = isArrayEmpty(markers);
+
+    if (arrayEmpty) {
+        HepEVD::hepEVDLog("HepEVD: No markers to add, ignoring.");
+        return;
+    }
 
     if (markersSize.size() != 1)
         throw std::runtime_error("HepEVD: Markers array must be 1D");

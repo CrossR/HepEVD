@@ -27,13 +27,21 @@ namespace HepEVD_py {
 
 void add_particles(nb::handle particles, std::string label) {
 
-    if (!HepEVD::isServerInitialised())
+    if (!HepEVD::isServerInitialised()) {
+        HepEVD::hepEVDLog("HepEVD: Server is not initialised, cannot add particles.");
         return;
+    }
 
     if (!isArrayOrList(particles))
         throw std::runtime_error("HepEVD: Particles must be an array or list");
 
     BasicSizeInfo arraySize = getBasicSizeInfo(particles);
+    bool arrayEmpty = isArrayEmpty(particles);
+
+    if (arrayEmpty) {
+        HepEVD::hepEVDLog("HepEVD: No particles to add, ignoring.");
+        return;
+    }
 
     // For now, we only a flat list of particles.
     // That is:
