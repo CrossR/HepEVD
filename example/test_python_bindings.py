@@ -161,6 +161,7 @@ def main() -> None:
                 [random.uniform(z - 25, z + 25) for _ in range(num_hits_per_particle)],
             ),
             axis=1,
+            dtype=np.float64,
         )
 
         # And again, we need an "energy" for each hit, here just the sum of the three
