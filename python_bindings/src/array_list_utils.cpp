@@ -21,10 +21,10 @@ namespace HepEVD_py {
 
 bool isTensor(nb::handle obj) {
     try {
-        nb::object torch = nb::module_::import("torch");
+        nb::object torch = nb::module_::import_("torch");
         nb::object tensor_type = torch.attr("Tensor");
-        return nb::isinstance(obj, tensor_type);
-    } catch (const nb::error_already_set &) {
+        return nb::cast<bool>(tensor_type.attr("__instancecheck__")(obj));
+    } catch (...) {
         return false; // If torch is not available, we cannot check for tensors.
     }
 }
@@ -40,26 +40,27 @@ bool isArrayOrList(nb::handle obj) {
     return nb::isinstance<nb::ndarray<>>(obj) || nb::isinstance<nb::list>(obj);
 }
 
-double dtypeToDouble(const void *elem_ptr, char kind, size_t itemsize) {
-    switch (kind) {
-    case 'f': // float
-        if (itemsize == sizeof(float))
-            return static_cast<double>(*reinterpret_cast<const float *>(elem_ptr));
-        else if (itemsize == sizeof(double))
-            return *reinterpret_cast<const double *>(elem_ptr);
-        break;
-    case 'i': // signed int
+double dtypeToDouble(const void *elem_ptr, uint8_t type_code, size_t itemsize) {
+    switch (type_code) {
+    case 0: // signed int
         if (itemsize == sizeof(int32_t))
             return static_cast<double>(*reinterpret_cast<const int32_t *>(elem_ptr));
         else if (itemsize == sizeof(int64_t))
             return static_cast<double>(*reinterpret_cast<const int64_t *>(elem_ptr));
         break;
-    case 'u': // unsigned int
+    case 1: // unsigned int
         if (itemsize == sizeof(uint32_t))
             return static_cast<double>(*reinterpret_cast<const uint32_t *>(elem_ptr));
         else if (itemsize == sizeof(uint64_t))
             return static_cast<double>(*reinterpret_cast<const uint64_t *>(elem_ptr));
         break;
+    case 2: // float
+        if (itemsize == sizeof(float))
+            return static_cast<double>(*reinterpret_cast<const float *>(elem_ptr));
+        else if (itemsize == sizeof(double))
+            return *reinterpret_cast<const double *>(elem_ptr);
+        break;
+
     default:
         throw std::runtime_error("HepEVD: Unsupported dtype for conversion to double");
     }
@@ -75,15 +76,15 @@ std::vector<double> getItems(nb::handle obj, int index, int size) {
         nb::ndarray<> array = nb::cast<nb::ndarray<>>(obj);
 
         // Work out the array dtypes, so we can convert to double.
-        const size_t itemsize = array.dtype().itemsize();
-        const char kind = array.dtype().kind();
+        const size_t itemsize = array.itemsize();
+        const uint8_t type_code = array.dtype().code;
 
         const char *data = static_cast<const char *>(array.data());
         std::vector<double> items;
 
         for (int i = 0; i < size; i++) {
             const void *elem_ptr = data + (index * size + i) * itemsize;
-            items.push_back(dtypeToDouble(elem_ptr, kind, itemsize));
+            items.push_back(dtypeToDouble(elem_ptr, type_code, itemsize));
         }
 
         return items;

@@ -161,7 +161,7 @@ def main() -> None:
                 [random.uniform(z - 25, z + 25) for _ in range(num_hits_per_particle)],
             ),
             axis=1,
-            dtype=np.float64,
+            dtype=np.float64, # Any common dtype should work!
         )
 
         # And again, we need an "energy" for each hit, here just the sum of the three
@@ -254,6 +254,9 @@ def main() -> None:
     # show event data such as the interaction, or other things
     # like run numbers etc.
     HepEVD.set_mc_string("\\nu_e \\rightarrow e^- + \\nu_e")
+
+    # # Test calls...does HepEVD like getting empty arrays?
+    # HepEVD.add_hits(np.array([]))  # Should not crash, just ignore.
 
     # We can now start the server and view our 3 states.
     #
