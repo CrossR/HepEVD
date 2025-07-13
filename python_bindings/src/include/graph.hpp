@@ -23,10 +23,8 @@ namespace HepEVD_py {
  *                   If not provided, all edges will be grey.
  * @param label The label for the graph (default is empty).
  */
-void add_graph(nb::handle nodes, nb::handle edges,
-               nb::handle nodeColours = nb::none(),
-               nb::handle edgeColours = nb::none(),
-               std::string label = "");
+void add_graph(nb::handle nodes, nb::handle edges, nb::handle nodeColours = nb::none(),
+               nb::handle edgeColours = nb::none(), std::string label = "");
 
 } // namespace HepEVD_py
 

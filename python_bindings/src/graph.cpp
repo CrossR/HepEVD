@@ -95,7 +95,6 @@ void add_graph(nb::handle nodes, nb::handle edges, nb::handle nodeColours, nb::h
         markers.push_back(point);
     }
 
-
     for (int edgeIdx = 0; edgeIdx < numEdges; edgeIdx++) {
         try {
             // Try individual element casting instead of array casting
@@ -122,9 +121,9 @@ void add_graph(nb::handle nodes, nb::handle edges, nb::handle nodeColours, nb::h
 
             line.setLabel(label);
             markers.push_back(line);
-        } catch (const nb::cast_error& e) {
+        } catch (const nb::cast_error &e) {
             throw std::runtime_error("HepEVD: Failed to cast edge data at index " + std::to_string(edgeIdx));
-        } catch (const std::bad_variant_access& e) {
+        } catch (const std::bad_variant_access &e) {
             throw std::runtime_error("HepEVD: Failed to access point from markers at edge indices");
         }
     }

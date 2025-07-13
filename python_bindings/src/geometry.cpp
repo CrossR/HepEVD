@@ -28,8 +28,7 @@ namespace HepEVD_py {
 // Input will either be a string or a list/array of numbers.
 void set_geometry(nb::object geometry) {
 
-    if (HepEVD::isServerInitialised(true))
-    {
+    if (HepEVD::isServerInitialised(true)) {
         HepEVD::hepEVDLog("HepEVD: Server is already initialised, no need to set geometry again.");
         return;
     }

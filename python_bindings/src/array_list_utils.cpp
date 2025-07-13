@@ -142,7 +142,8 @@ bool isArrayEmpty(nb::handle obj) {
     BasicSizeInfo size_info = getBasicSizeInfo(obj);
 
     // Is it a scalar or empty?
-    if (size_info.empty()) return false;
+    if (size_info.empty())
+        return false;
 
     for (const auto &dim : size_info) {
         if (dim == 0)
