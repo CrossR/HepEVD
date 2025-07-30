@@ -55,7 +55,6 @@ namespace HepEVD {
 // LArSoft requires a lot more use of various objects for
 // converting things, so it is sometimes easier to keep
 // a pointer to them, to ease passing around functions.
-inline geo::Geometry const *hepEvdLArSoftGeo = nullptr;
 inline geo::WireReadoutGeom const *hepEvdLArSoftWireReadout = nullptr;
 inline detinfo::DetectorPropertiesData const *hepEVDDetProps = nullptr;
 
@@ -81,11 +80,7 @@ static void setHepEVDGeometry() {
     // Store for later use.
     // For example, for most recob::Hit use cases, we need to convert
     // the wire position to a real position, using the geometry.
-    art::ServiceHandle<geo::Geometry const> geometry;
-    hepEvdLArSoftGeo = &*geometry;
-
-    // Also store for later use.
-    geo::WireReadoutGeom const& wireReadout = art::ServiceHandle<geo::WireReadout>()->Get();
+    geo::WireReadoutGeom const &wireReadout = art::ServiceHandle<geo::WireReadout>()->Get();
     hepEvdLArSoftWireReadout = &wireReadout;
 
     Volumes volumes;
@@ -103,7 +98,7 @@ static void setHepEVDGeometry() {
 
             for (const auto &tpc2 : geometry->Iterate<geo::TPCGeo>(cryostat.ID())) {
 
-                if (tpc1.DetectDriftDirection() != tpc2.DetectDriftDirection())
+                if (tpc1.DriftDir() != tpc2.DriftDir())
                     continue;
 
                 const auto tpc2Bounds = tpc2.ActiveBoundingBox();
@@ -180,7 +175,7 @@ static Hit *getHitFromRecobHit(const art::Ptr<recob::Hit> &hit) {
     const float e(hit->Integral());
 
     // Figure out the hits secondary coordinate.
-    const auto wirePos(hepEvdLArSoftWireReadout->WirePtr(wireId).GetCenter());
+    const auto wirePos(hepEvdLArSoftWireReadout->WirePtr(wireId)->GetCenter());
     const float theta(0.5f * M_PI - hepEvdLArSoftWireReadout->WireAngleToVertical(view, wireId));
     const float z(wirePos.Z() * cos(theta) - wirePos.Y() * sin(theta));
 
