@@ -360,6 +360,7 @@ static Particle *addParticle(const art::Ptr<recob::PFParticle> &pfp,
     // Set the interaction type, based on the parent PFP.
     const auto pdgCode(std::abs(pfp->PdgCode()));
     const auto isNeutrino(pfp->IsPrimary() && (pdgCode == 12 || pdgCode == 14 || pdgCode == 16));
+    particle->setPrimary(pfp->IsPrimary());
 
     if (isNeutrino)
         particle->setInteractionType(InteractionType::NEUTRINO);
