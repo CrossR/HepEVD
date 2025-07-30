@@ -432,13 +432,13 @@ static void addPFPs(const art::Event &evt, const std::string pfpModuleLabel, con
     std::map<int, art::Ptr<recob::PFParticle>> pfpMap;
     std::map<int, int> childToParentMap;
 
-    // Link every PFP to its ID.
+    // Link every PFP to its ID and its parent PFP.
     // We can then use that when we traverse the parent/child relationships.
     for (const auto &pfp : particleVector)
+    {
         pfpMap.insert({pfp->Self(), pfp});
-
-    for (const auto &pfp : particleVector)
         childToParentMap.insert({pfp->Self(), pfp->Parent()});
+    }
 
     // Now, with all that information, we can go through and add the particles.
     for (const auto &pfp : particleVector) {
@@ -459,12 +459,14 @@ static void addPFPs(const art::Event &evt, const std::string pfpModuleLabel, con
         if (childToParentPair.first == childToParentPair.second) {
             continue;
         }
-
-        const auto parentPfp(pfpMap[childToParentPair.second]);
-        const auto parentParticle(pfpToParticleMap[parentPfp]);
-
         const auto childPfp(pfpMap[childToParentPair.first]);
+        const auto parentPfp(pfpMap[childToParentPair.second]);
+
+        if (childPfp->IsPrimary())
+            continue; // Skip primary particles, as they have no parent.
+
         const auto childParticle(pfpToParticleMap[childPfp]);
+        const auto parentParticle(pfpToParticleMap[parentPfp]);
 
         parentParticle->addChild(childParticle->getID());
         childParticle->setParentID(parentParticle->getID());
