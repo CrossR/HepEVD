@@ -430,7 +430,6 @@ static void addPFPs(const art::Event &evt, const std::string pfpModuleLabel, con
     // First, build up some useful information about the particles, and then we can
     // go through and add the particles, and then add the parent/child relationships.
     std::map<int, art::Ptr<recob::PFParticle>> pfpMap;
-    std::map<int, std::vector<int>> parentToChildMap;
     std::map<int, int> childToParentMap;
 
     // Link every PFP to its ID.
@@ -438,10 +437,8 @@ static void addPFPs(const art::Event &evt, const std::string pfpModuleLabel, con
     for (const auto &pfp : particleVector)
         pfpMap.insert({pfp->Self(), pfp});
 
-    for (const auto &pfp : particleVector) {
-        parentToChildMap[pfp->Parent()].push_back(pfp->Self());
+    for (const auto &pfp : particleVector)
         childToParentMap.insert({pfp->Self(), pfp->Parent()});
-    }
 
     // Now, with all that information, we can go through and add the particles.
     for (const auto &pfp : particleVector) {
@@ -457,22 +454,20 @@ static void addPFPs(const art::Event &evt, const std::string pfpModuleLabel, con
     }
 
     // Finally, link up the parent/child relationships.
-    for (const auto &parentChildPair : parentToChildMap) {
+    for (const auto &childToParentPair : childToParentMap) {
 
-        const auto parentPfp(pfpMap[parentChildPair.first]);
+        if (childToParentPair.first == childToParentPair.second) {
+            continue;
+        }
+
+        const auto parentPfp(pfpMap[childToParentPair.second]);
         const auto parentParticle(pfpToParticleMap[parentPfp]);
 
-        for (const auto &childId : parentChildPair.second) {
+        const auto childPfp(pfpMap[childToParentPair.first]);
+        const auto childParticle(pfpToParticleMap[childPfp]);
 
-            if (childId == parentPfp->Self())
-                continue;
-
-            const auto childPfp(pfpMap[childId]);
-            const auto childParticle(pfpToParticleMap[childPfp]);
-
-            parentParticle->addChild(childParticle->getID());
-            childParticle->setParentID(parentParticle->getID());
-        }
+        parentParticle->addChild(childParticle->getID());
+        childParticle->setParentID(parentParticle->getID());
     }
 
     hepEVDLog("Adding " + std::to_string(particles.size()) + " particles to the HepEVD server.");
