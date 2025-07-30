@@ -62,6 +62,17 @@ renderer.setClearColor(THEME[themeName]);
 document.body.appendChild(renderer.domElement);
 document.body.appendChild(stats.dom);
 
+// Prevent the browser default action for click-and-drag events, on
+// the renderer's canvas element, so that we can handle them ourselves.
+//
+// Without this, we get the browser trying to drag the canvas around,
+// which gives that annoying 'ghosting' effect when you try to
+// drag the mouse around to rotate the camera.
+renderer.domElement.addEventListener('dragstart', function(event) {
+  event.preventDefault();
+});
+
+
 // Now we need to wait for the data to load...
 const {
   hits,
