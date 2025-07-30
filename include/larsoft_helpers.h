@@ -319,7 +319,7 @@ static void showMCTruth(const art::Event &evt, const std::string mcTruthLabel) {
     hepEVDServer->setMCTruth(mcTruthString);
 }
 
-static Particle *addParticle(const art::Ptr<recob::PFParticle> &pfp, const art::Ptr<recob::PFParticle> &parentPfp,
+static Particle *addParticle(const art::Ptr<recob::PFParticle> &pfp,
                              const std::vector<art::Ptr<recob::SpacePoint>> &spacePoints,
                              const std::vector<art::Ptr<recob::Cluster>> &clusters,
                              const std::vector<art::Ptr<recob::Vertex>> &vertices,
@@ -358,7 +358,7 @@ static Particle *addParticle(const art::Ptr<recob::PFParticle> &pfp, const art::
     Particle *particle = new Particle(hits, id, pfp->PdgCode() == 13 ? "Track-like" : "Shower-like");
 
     // Set the interaction type, based on the parent PFP.
-    const auto pdgCode(std::abs(parentPfp->PdgCode()));
+    const auto pdgCode(std::abs(pfp->PdgCode()));
     const auto isNeutrino(pfp->IsPrimary() && (pdgCode == 12 || pdgCode == 14 || pdgCode == 16));
 
     if (isNeutrino)
@@ -439,22 +439,8 @@ static void addPFPs(const art::Event &evt, const std::string pfpModuleLabel, con
         pfpMap.insert({pfp->Self(), pfp});
 
     for (const auto &pfp : particleVector) {
-
-        auto currentPfp(pfp);
-
-        while (!currentPfp->IsPrimary()) {
-
-            if (pfpMap.find(currentPfp->Parent()) == pfpMap.end()) {
-                if (hepEVDVerboseLogging)
-                    std::cout << "HepEVD: Failed to find parent PFP with ID " << currentPfp->Parent() << std::endl;
-                break;
-            }
-
-            currentPfp = pfpMap[currentPfp->Parent()];
-        }
-
-        parentToChildMap[currentPfp->Self()].push_back(pfp->Self());
-        childToParentMap.insert({pfp->Self(), currentPfp->Self()});
+        parentToChildMap[pfp->Parent()].push_back(pfp->Self());
+        childToParentMap.insert({pfp->Self(), pfp->Parent()});
     }
 
     // Now, with all that information, we can go through and add the particles.
@@ -464,9 +450,8 @@ static void addPFPs(const art::Event &evt, const std::string pfpModuleLabel, con
         const std::vector<art::Ptr<recob::SpacePoint>> &pfpSpacePoints(spacePointAssoc.at(pfp.key()));
         const std::vector<art::Ptr<recob::Cluster>> &clusters(pfpClusterAssoc.at(pfp.key()));
         const std::vector<art::Ptr<recob::Vertex>> &vertices(vertexAssoc.at(pfp.key()));
-        const auto parentPfp(pfpMap[childToParentMap[pfp->Self()]]);
 
-        const auto particle = addParticle(pfp, parentPfp, pfpSpacePoints, clusters, vertices, clusterHitAssoc, label);
+        const auto particle = addParticle(pfp, pfpSpacePoints, clusters, vertices, clusterHitAssoc, label);
         particles.push_back(particle);
         pfpToParticleMap.insert({pfp, particle});
     }
