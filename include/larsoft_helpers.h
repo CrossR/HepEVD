@@ -389,8 +389,7 @@ static Particle *addParticle(const art::Ptr<recob::PFParticle> &pfp, const art::
     return particle;
 }
 
-static void addPFPs(const art::Event &evt, const std::string pfpModuleLabel, const std::string processName = "",
-                    const std::string label = "") {
+static void addPFPs(const art::Event &evt, const std::string pfpModuleLabel, const std::string label = "") {
 
     if (!isServerInitialised())
         return;
@@ -407,17 +406,9 @@ static void addPFPs(const art::Event &evt, const std::string pfpModuleLabel, con
     art::Handle<std::vector<recob::PFParticle>> pfpHandle;
     std::vector<art::Ptr<recob::PFParticle>> particleVector;
 
-    // Get the PFParticles from the event.
-    if (processName != "" && !evt.getByLabel(pfpModuleLabel, processName, pfpHandle)) {
+    if (!evt.getByLabel(pfpModuleLabel, pfpHandle)) {
         if (hepEVDVerboseLogging)
-            std::cout << "HepEVD: Failed to get recob::PFParticle data product from label " << pfpModuleLabel
-                      << " with process name " << processName << std::endl;
-        throw cet::exception("HepEVD") << "Failed to get recob::PFParticle data product with process name "
-                                       << processName << std::endl;
-    } else if (!evt.getByLabel(pfpModuleLabel, pfpHandle)) {
-        if (hepEVDVerboseLogging)
-            std::cout << "HepEVD: Failed to get recob::PFParticle data product from label " << pfpModuleLabel
-                      << std::endl;
+            std::cout << "HepEVD: Failed to get recob::PFParticle data product." << std::endl;
         throw cet::exception("HepEVD") << "Failed to get recob::PFParticle data product." << std::endl;
     }
     art::fill_ptr_vector(particleVector, pfpHandle);
