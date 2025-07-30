@@ -83,6 +83,9 @@ static void setHepEVDGeometry() {
     geo::WireReadoutGeom const &wireReadout = art::ServiceHandle<geo::WireReadout>()->Get();
     hepEvdLArSoftWireReadout = &wireReadout;
 
+    // Get the geometry service, to pull out all the relevant information.
+    art::ServiceHandle<geo::Geometry const> geometry;
+
     Volumes volumes;
 
     for (const auto &cryostat : geometry->Iterate<geo::CryostatGeo>()) {
