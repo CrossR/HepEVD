@@ -27,6 +27,7 @@
 // Various LArSoft Objects...
 // Detector..
 #include "larcore/Geometry/Geometry.h"
+#include "larcore/Geometry/WireReadout.h"
 #include "lardata/DetectorInfoServices/DetectorPropertiesService.h"
 #include "lardataobj/AnalysisBase/BackTrackerMatchingData.h"
 // Reco...
@@ -35,6 +36,8 @@
 #include "lardataobj/RecoBase/PFParticle.h"
 #include "lardataobj/RecoBase/SpacePoint.h"
 #include "lardataobj/RecoBase/Vertex.h"
+// Simulation...
+#include "lardataobj/Simulation/SimEnergyDeposit.h"
 // MC...
 #include "nusimdata/SimulationBase/MCParticle.h"
 #include "nusimdata/SimulationBase/MCTruth.h"
@@ -53,6 +56,7 @@ namespace HepEVD {
 // converting things, so it is sometimes easier to keep
 // a pointer to them, to ease passing around functions.
 inline geo::Geometry const *hepEvdLArSoftGeo = nullptr;
+inline geo::WireReadoutGeom const *hepEvdLArSoftWireReadout = nullptr;
 inline detinfo::DetectorPropertiesData const *hepEVDDetProps = nullptr;
 
 using RecoHitMap = std::map<const art::Ptr<recob::Hit>, Hit *>;
@@ -80,6 +84,10 @@ static void setHepEVDGeometry() {
     art::ServiceHandle<geo::Geometry const> geometry;
     hepEvdLArSoftGeo = &*geometry;
 
+    // Also store for later use.
+    geo::WireReadoutGeom const& wireReadout = art::ServiceHandle<geo::WireReadout>()->Get();
+    hepEvdLArSoftWireReadout = &wireReadout;
+
     Volumes volumes;
 
     for (const auto &cryostat : geometry->Iterate<geo::CryostatGeo>()) {
@@ -95,7 +103,7 @@ static void setHepEVDGeometry() {
 
             for (const auto &tpc2 : geometry->Iterate<geo::TPCGeo>(cryostat.ID())) {
 
-                if (tpc1.DriftDirection() != tpc2.DriftDirection())
+                if (tpc1.DetectDriftDirection() != tpc2.DetectDriftDirection())
                     continue;
 
                 const auto tpc2Bounds = tpc2.ActiveBoundingBox();
@@ -172,8 +180,8 @@ static Hit *getHitFromRecobHit(const art::Ptr<recob::Hit> &hit) {
     const float e(hit->Integral());
 
     // Figure out the hits secondary coordinate.
-    const auto wirePos(hepEvdLArSoftGeo->Wire(wireId).GetCenter());
-    const float theta(0.5f * M_PI - hepEvdLArSoftGeo->WireAngleToVertical(view, wireId));
+    const auto wirePos(hepEvdLArSoftWireReadout->WirePtr(wireId).GetCenter());
+    const float theta(0.5f * M_PI - hepEvdLArSoftWireReadout->WireAngleToVertical(view, wireId));
     const float z(wirePos.Z() * cos(theta) - wirePos.Y() * sin(theta));
 
     // Now we can make a HepEVD hit.
