@@ -3,7 +3,7 @@
 //
 
 import * as THREE from "three";
-import { INTERACTION_LAYER, INTERACTION_CHECK_INTERVAL } from "./constants";
+import { INTERACTION_LAYER, INTERACTION_CHECK_INTERVAL } from "./constants.js";
 
 let mouseTimeout;
 

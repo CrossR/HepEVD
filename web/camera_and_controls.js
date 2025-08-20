@@ -4,7 +4,7 @@
 
 import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
-import { NON_INTERACTIVE_LAYER } from "./constants";
+import { NON_INTERACTIVE_LAYER } from "./constants.js";
 
 /**
  * Sets up the controls for the given view type.
