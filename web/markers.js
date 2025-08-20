@@ -7,6 +7,7 @@ import { Line2 } from "three/addons/lines/Line2.js";
 import { LineGeometry } from "three/addons/lines/LineGeometry.js";
 import { LineMaterial } from "three/addons/lines/LineMaterial.js";
 import { Lut } from "three/addons/math/Lut.js";
+import * as BufferGeometryUtils from "three/addons/utils/BufferGeometryUtils.js";
 
 import { MARKER_CONFIG } from "./constants.js";
 import { getHitBoundaries } from "./helpers.js";
@@ -111,12 +112,12 @@ export function drawRingMarker(rings, group) {
 
   bufferGeometry.setAttribute(
     "position",
-    new THREE.Float32BufferAttribute(vertices, 3),
+    new THREE.Float32BufferAttribute(vertices, 3)
   );
   bufferGeometry.setIndex(indicies);
   bufferGeometry.setAttribute(
     "color",
-    new THREE.Float32BufferAttribute(colors, 4),
+    new THREE.Float32BufferAttribute(colors, 4)
   );
 
   const ringMaterial = new THREE.MeshBasicMaterial({
@@ -160,7 +161,7 @@ export function drawPoints(points, group) {
   const pointMesh = new THREE.InstancedMesh(
     pointGeo,
     materialPoint,
-    points.length,
+    points.length
   );
 
   const lut = new Lut("cooltowarm", 512);
@@ -200,63 +201,77 @@ export function drawPoints(points, group) {
 /**
  * Draws lines using the provided data and adds them to the specified group.
  * @param {Array} lines - An array of lines data objects.
- * @param {THREE.Group} group - The group to which the lines will be added.
+ * @param {THREE.Group} group - The group to which the final mesh will be added.
  */
 export function drawLines(lines, group) {
   if (lines.length === 0) return;
 
-  let lineColours = [];
-
-  lines.forEach((line) => {
-    // If the line has a colour, use that.
-    if (line.colour) {
-      lineColours.push(line.colour);
-    } else {
-      lineColours.push(MARKER_CONFIG["line"].colour);
-    }
-  });
-
+  const geometries = [];
+  const tempColor = new THREE.Color();
   const lut = new Lut("cooltowarm", 512);
-  let usingLut = typeof lineColours[0] === "number";
+  const usingLut = typeof lines[0].colour === "number";
 
   if (usingLut) {
-    let minColourValue = Infinity;
-    let maxColourValue = Number.NEGATIVE_INFINITY;
-    pointColours.forEach((value) => {
-      if (value < minColourValue) minColourValue = value;
-      if (value > maxColourValue) maxColourValue = value;
+    let minVal = Infinity;
+    let maxVal = -Infinity;
+    lines.forEach((line) => {
+      const colorValue = line.colour ?? 0;
+      if (colorValue < minVal) minVal = colorValue;
+      if (colorValue > maxVal) maxVal = colorValue;
     });
-    lut.setMax(maxColourValue);
+    lut.setMin(minVal);
+    lut.setMax(maxVal);
   }
 
-  const lineMaterial = new LineMaterial({
-    linewidth: MARKER_CONFIG["line"].size,
-  });
-  const lineObjects = [];
+  // Rendering N individual lines is very slow...
+  // Lets merge them all at the end, such that we get a single,
+  // big render call.
+  lines.forEach((line) => {
+    // Define the path of the line
+    const path = new THREE.LineCurve3(line.position, line.end);
 
-  lines.forEach(function (line, index) {
-    const start = line.position;
-    const end = line.end;
-    const points = [start.x, start.y, start.z, end.x, end.y, end.z];
+    // Create the tube geometry along the path
+    // Parameters: path, tubularSegments, radius, radialSegments
+    const tubeGeo = new THREE.TubeGeometry(
+      path,
+      1,
+      MARKER_CONFIG.line.size,
+      4,
+      false
+    );
 
+    // Get the color for this specific line
     if (usingLut) {
-      lineMaterial.color = lut.getColor(lineColours[index]);
+      tempColor.copy(lut.getColor(line.colour));
     } else {
-      lineMaterial.color = new THREE.Color(lineColours[index]);
+      tempColor.set(line.colour || MARKER_CONFIG.line.colour);
     }
 
-    const lineGeo = new LineGeometry().setPositions(points);
-    const lineObj = new Line2(lineGeo, lineMaterial);
+    // Create a color attribute and apply it to every vertex in this tube
+    const colors = [];
+    const vertexCount = tubeGeo.attributes.position.count;
+    for (let i = 0; i < vertexCount; i++) {
+      colors.push(tempColor.r, tempColor.g, tempColor.b);
+    }
+    tubeGeo.setAttribute("color", new THREE.Float32BufferAttribute(colors, 3));
 
-    lineObj.computeLineDistances();
-    lineObj.scale.set(1, 1, 1);
-
-    lineObjects.push(lineObj);
+    geometries.push(tubeGeo);
   });
 
-  group.add(...lineObjects);
+  if (geometries.length === 0) return;
 
-  return;
+  // Merge All Geometries into One
+  const mergedGeometry = BufferGeometryUtils.mergeGeometries(geometries);
+
+  // Create a Single Mesh, with vertex colours to pick up any differences.
+  const material = new THREE.MeshBasicMaterial({
+    vertexColors: true,
+    opacity: 0.5,
+  });
+
+  const finalMesh = new THREE.Mesh(mergedGeometry, material);
+  finalMesh.layers.set(1);
+  group.add(finalMesh);
 }
 
 /**

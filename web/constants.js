@@ -104,7 +104,7 @@ export const MARKER_CONFIG = {
     colour: "red",
   },
   line: {
-    size: 0.002,
+    size: 0.5,
     colour: "blue",
   },
 };
