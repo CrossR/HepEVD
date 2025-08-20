@@ -27,6 +27,7 @@
 // Various LArSoft Objects...
 // Detector..
 #include "larcore/Geometry/Geometry.h"
+#include "larcore/Geometry/WireReadout.h"
 #include "lardata/DetectorInfoServices/DetectorPropertiesService.h"
 #include "lardataobj/AnalysisBase/BackTrackerMatchingData.h"
 // Reco...
@@ -35,6 +36,8 @@
 #include "lardataobj/RecoBase/PFParticle.h"
 #include "lardataobj/RecoBase/SpacePoint.h"
 #include "lardataobj/RecoBase/Vertex.h"
+// Simulation...
+#include "lardataobj/Simulation/SimEnergyDeposit.h"
 // MC...
 #include "nusimdata/SimulationBase/MCParticle.h"
 #include "nusimdata/SimulationBase/MCTruth.h"
@@ -52,7 +55,7 @@ namespace HepEVD {
 // LArSoft requires a lot more use of various objects for
 // converting things, so it is sometimes easier to keep
 // a pointer to them, to ease passing around functions.
-inline geo::Geometry const *hepEvdLArSoftGeo = nullptr;
+inline geo::WireReadoutGeom const *hepEvdLArSoftWireReadout = nullptr;
 inline detinfo::DetectorPropertiesData const *hepEVDDetProps = nullptr;
 
 using RecoHitMap = std::map<const art::Ptr<recob::Hit>, Hit *>;
@@ -77,8 +80,11 @@ static void setHepEVDGeometry() {
     // Store for later use.
     // For example, for most recob::Hit use cases, we need to convert
     // the wire position to a real position, using the geometry.
+    geo::WireReadoutGeom const &wireReadout = art::ServiceHandle<geo::WireReadout>()->Get();
+    hepEvdLArSoftWireReadout = &wireReadout;
+
+    // Get the geometry service, to pull out all the relevant information.
     art::ServiceHandle<geo::Geometry const> geometry;
-    hepEvdLArSoftGeo = &*geometry;
 
     Volumes volumes;
 
@@ -95,7 +101,7 @@ static void setHepEVDGeometry() {
 
             for (const auto &tpc2 : geometry->Iterate<geo::TPCGeo>(cryostat.ID())) {
 
-                if (tpc1.DriftDirection() != tpc2.DriftDirection())
+                if (tpc1.DriftDir() != tpc2.DriftDir())
                     continue;
 
                 const auto tpc2Bounds = tpc2.ActiveBoundingBox();
@@ -172,8 +178,8 @@ static Hit *getHitFromRecobHit(const art::Ptr<recob::Hit> &hit) {
     const float e(hit->Integral());
 
     // Figure out the hits secondary coordinate.
-    const auto wirePos(hepEvdLArSoftGeo->Wire(wireId).GetCenter());
-    const float theta(0.5f * M_PI - hepEvdLArSoftGeo->WireAngleToVertical(view, wireId));
+    const auto wirePos(hepEvdLArSoftWireReadout->WirePtr(wireId)->GetCenter());
+    const float theta(0.5f * M_PI - hepEvdLArSoftWireReadout->WireAngleToVertical(view, wireId));
     const float z(wirePos.Z() * cos(theta) - wirePos.Y() * sin(theta));
 
     // Now we can make a HepEVD hit.
@@ -313,7 +319,7 @@ static void showMCTruth(const art::Event &evt, const std::string mcTruthLabel) {
     hepEVDServer->setMCTruth(mcTruthString);
 }
 
-static Particle *addParticle(const art::Ptr<recob::PFParticle> &pfp, const art::Ptr<recob::PFParticle> &parentPfp,
+static Particle *addParticle(const art::Ptr<recob::PFParticle> &pfp,
                              const std::vector<art::Ptr<recob::SpacePoint>> &spacePoints,
                              const std::vector<art::Ptr<recob::Cluster>> &clusters,
                              const std::vector<art::Ptr<recob::Vertex>> &vertices,
@@ -352,8 +358,9 @@ static Particle *addParticle(const art::Ptr<recob::PFParticle> &pfp, const art::
     Particle *particle = new Particle(hits, id, pfp->PdgCode() == 13 ? "Track-like" : "Shower-like");
 
     // Set the interaction type, based on the parent PFP.
-    const auto pdgCode(std::abs(parentPfp->PdgCode()));
+    const auto pdgCode(std::abs(pfp->PdgCode()));
     const auto isNeutrino(pfp->IsPrimary() && (pdgCode == 12 || pdgCode == 14 || pdgCode == 16));
+    particle->setPrimary(pfp->IsPrimary());
 
     if (isNeutrino)
         particle->setInteractionType(InteractionType::NEUTRINO);
@@ -424,31 +431,14 @@ static void addPFPs(const art::Event &evt, const std::string pfpModuleLabel, con
     // First, build up some useful information about the particles, and then we can
     // go through and add the particles, and then add the parent/child relationships.
     std::map<int, art::Ptr<recob::PFParticle>> pfpMap;
-    std::map<int, std::vector<int>> parentToChildMap;
     std::map<int, int> childToParentMap;
 
-    // Link every PFP to its ID.
+    // Link every PFP to its ID and its parent PFP.
     // We can then use that when we traverse the parent/child relationships.
     for (const auto &pfp : particleVector)
+    {
         pfpMap.insert({pfp->Self(), pfp});
-
-    for (const auto &pfp : particleVector) {
-
-        auto currentPfp(pfp);
-
-        while (!currentPfp->IsPrimary()) {
-
-            if (pfpMap.find(currentPfp->Parent()) == pfpMap.end()) {
-                if (hepEVDVerboseLogging)
-                    std::cout << "HepEVD: Failed to find parent PFP with ID " << currentPfp->Parent() << std::endl;
-                break;
-            }
-
-            currentPfp = pfpMap[currentPfp->Parent()];
-        }
-
-        parentToChildMap[currentPfp->Self()].push_back(pfp->Self());
-        childToParentMap.insert({pfp->Self(), currentPfp->Self()});
+        childToParentMap.insert({pfp->Self(), pfp->Parent()});
     }
 
     // Now, with all that information, we can go through and add the particles.
@@ -458,30 +448,29 @@ static void addPFPs(const art::Event &evt, const std::string pfpModuleLabel, con
         const std::vector<art::Ptr<recob::SpacePoint>> &pfpSpacePoints(spacePointAssoc.at(pfp.key()));
         const std::vector<art::Ptr<recob::Cluster>> &clusters(pfpClusterAssoc.at(pfp.key()));
         const std::vector<art::Ptr<recob::Vertex>> &vertices(vertexAssoc.at(pfp.key()));
-        const auto parentPfp(pfpMap[childToParentMap[pfp->Self()]]);
 
-        const auto particle = addParticle(pfp, parentPfp, pfpSpacePoints, clusters, vertices, clusterHitAssoc, label);
+        const auto particle = addParticle(pfp, pfpSpacePoints, clusters, vertices, clusterHitAssoc, label);
         particles.push_back(particle);
         pfpToParticleMap.insert({pfp, particle});
     }
 
     // Finally, link up the parent/child relationships.
-    for (const auto &parentChildPair : parentToChildMap) {
+    for (const auto &childToParentPair : childToParentMap) {
 
-        const auto parentPfp(pfpMap[parentChildPair.first]);
+        if (childToParentPair.first == childToParentPair.second) {
+            continue;
+        }
+        const auto childPfp(pfpMap[childToParentPair.first]);
+        const auto parentPfp(pfpMap[childToParentPair.second]);
+
+        if (childPfp->IsPrimary())
+            continue; // Skip primary particles, as they have no parent.
+
+        const auto childParticle(pfpToParticleMap[childPfp]);
         const auto parentParticle(pfpToParticleMap[parentPfp]);
 
-        for (const auto &childId : parentChildPair.second) {
-
-            if (childId == parentPfp->Self())
-                continue;
-
-            const auto childPfp(pfpMap[childId]);
-            const auto childParticle(pfpToParticleMap[childPfp]);
-
-            parentParticle->addChild(childParticle->getID());
-            childParticle->setParentID(parentParticle->getID());
-        }
+        parentParticle->addChild(childParticle->getID());
+        childParticle->setParentID(parentParticle->getID());
     }
 
     hepEVDLog("Adding " + std::to_string(particles.size()) + " particles to the HepEVD server.");
