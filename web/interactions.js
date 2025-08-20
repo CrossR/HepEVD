@@ -108,7 +108,7 @@ export function highlightParticleOnMouseMove(
     }
 
     state.particleData.addHighlightTarget(targetParticle.id);
-    state.triggerEvent("fullUpdate");
+    state.triggerEvent("interactionUpdate");
   });
 
   if (currentlyHighlighting.length > 0 && selectedParticles.length === 0) {
@@ -117,7 +117,7 @@ export function highlightParticleOnMouseMove(
         return;
       }
       state.particleData.disableHighlights();
-      state.triggerEvent("fullUpdate");
+      state.triggerEvent("interactionUpdate");
     });
   }
 
@@ -145,7 +145,7 @@ export function setupMouseOverInteractions(canvas, renderStates) {
         renderStates.forEach((renderState) => {
           if (renderState.visible) {
             renderState.particleData.disableHighlights();
-            renderState.triggerEvent("fullUpdate");
+            renderState.triggerEvent("interactionUpdate");
           }
         });
         currentlyHighlighting = [];

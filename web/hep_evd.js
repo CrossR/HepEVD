@@ -136,6 +136,10 @@ renderStates.forEach((state) => {
     state.renderEvent(true);
     animate(renderer, renderStates, stats);
   });
+  state.addEventListener("interactionUpdate", () => {
+    state.renderEvent(false);
+    animate(renderer, renderStates, stats);
+  });
   state.addEventListener("change", () => {
     animate(renderer, renderStates, stats);
   });
