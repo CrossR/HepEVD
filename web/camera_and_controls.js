@@ -4,6 +4,7 @@
 
 import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+import { NON_INTERACTIVE_LAYER } from "./constants";
 
 /**
  * Sets up the controls for the given view type.
@@ -119,4 +120,7 @@ export function fitSceneInCamera(
   controls.update();
   camera.updateProjectionMatrix();
   camera.updateMatrix();
+
+  // Final camera setup...
+  camera.layers.enable(NON_INTERACTIVE_LAYER);
 }

@@ -9,7 +9,7 @@ import { LineMaterial } from "three/addons/lines/LineMaterial.js";
 import { Lut } from "three/addons/math/Lut.js";
 import * as BufferGeometryUtils from "three/addons/utils/BufferGeometryUtils.js";
 
-import { MARKER_CONFIG } from "./constants.js";
+import { MARKER_CONFIG, NON_INTERACTIVE_LAYER } from "./constants.js";
 import { getHitBoundaries } from "./helpers.js";
 import { dragElement } from "./ui.js";
 
@@ -128,6 +128,10 @@ export function drawRingMarker(rings, group) {
   const mesh = new THREE.Mesh(bufferGeometry, ringMaterial);
   mesh.matrixAutoUpdate = false;
   mesh.matrixWorldAutoUpdate = false;
+
+  // Markers should be ignored by the interaction raytracer
+  mesh.layers.set(NON_INTERACTIVE_LAYER);
+
   group.add(mesh);
 }
 
@@ -194,6 +198,9 @@ export function drawPoints(points, group) {
   pointMesh.instanceMatrix.needsUpdate = true;
   pointMesh.instanceColor.needsUpdate = true;
   pointMesh.renderOrder = 999;
+
+  // Markers should be ignored by the interaction raytracer
+  pointMesh.layers.set(NON_INTERACTIVE_LAYER);
 
   group.add(pointMesh);
 }
@@ -270,7 +277,10 @@ export function drawLines(lines, group) {
   });
 
   const finalMesh = new THREE.Mesh(mergedGeometry, material);
-  finalMesh.layers.set(1);
+
+  // Markers should be ignored by the interaction raytracer
+  finalMesh.layers.set(NON_INTERACTIVE_LAYER);
+
   group.add(finalMesh);
 }
 

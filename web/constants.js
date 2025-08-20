@@ -39,6 +39,14 @@ export const materialParticle = new THREE.MeshBasicMaterial({
   side: THREE.DoubleSide,
 });
 
+// Mouseover interactions can be very expensive, so we try to
+// limit the number of times we do this by only checking
+// every 16 milliseconds (60 FPS).
+export const INTERACTION_CHECK_INTERVAL = 16;
+
+export const INTERACTION_LAYER = 0;
+export const NON_INTERACTIVE_LAYER = 1;
+
 //==============================================================================
 // UI Constants
 //==============================================================================

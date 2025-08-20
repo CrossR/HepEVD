@@ -3,11 +3,8 @@
 //
 
 import * as THREE from "three";
+import { INTERACTION_LAYER, INTERACTION_CHECK_INTERVAL } from "./constants";
 
-// Mouseover interactions can be very expensive, so we try to
-// limit the number of times we do this by only checking
-// every 16 milliseconds (60 FPS).
-const INTERACTION_CHECK_INTERVAL = 16;
 let mouseTimeout;
 
 // Also store and re-use certain objects to avoid
@@ -17,7 +14,7 @@ const raycaster = new THREE.Raycaster();
 
 // The raycaster is only active on layer 0.
 // I.e. to make anything invisible to the raycaster, set it to another layer.
-raycaster.layers.set(0);
+raycaster.layers.set(INTERACTION_LAYER);
 
 /**
  * Highlights a particle on mouse move, if applicable.

@@ -8,7 +8,7 @@ import { Lut } from "three/addons/math/Lut.js";
 import * as BufferGeometryUtils from "three/addons/utils/BufferGeometryUtils.js";
 
 import { addColourMap, getContinuousLutConf } from "./colourmaps.js";
-import { threeDGeoMat, threeDTrapezoidMat } from "./constants.js";
+import { NON_INTERACTIVE_LAYER, threeDGeoMat, threeDTrapezoidMat } from "./constants.js";
 import { draw2DScaleBar } from "./markers.js";
 
 /**
@@ -50,6 +50,9 @@ export function drawBoxVolume(group, box) {
   const boxPos = box.position;
   boxLines.position.set(boxPos.x, boxPos.y, boxPos.z);
   boxLines.updateMatrixWorld();
+
+  // Geometry should be ignored by the interaction raytracer
+  boxLines.layers.set(NON_INTERACTIVE_LAYER);
 
   group.add(boxLines);
 }
@@ -139,6 +142,10 @@ export function drawTrapezoids(group, trapezoids) {
   const mergedGeo = BufferGeometryUtils.mergeGeometries(geometries);
   const edges = new THREE.EdgesGeometry(mergedGeo);
   const line = new THREE.LineSegments(edges, threeDTrapezoidMat);
+
+  // Geometries should be ignored by the interaction raytracer
+  line.layers.set(NON_INTERACTIVE_LAYER);
+
   group.add(line);
 }
 
