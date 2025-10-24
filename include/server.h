@@ -22,6 +22,8 @@
 
 #include "extern/httplib.h"
 
+#include <chrono>
+
 #include "extern/json.hpp"
 using json = nlohmann::json;
 
@@ -231,8 +233,17 @@ inline void HepEVDServer::startServer() {
 
     // First, the actual event hits.
     this->m_server.Get("/hits", [&](const Request &, Response &res) {
+        auto start = std::chrono::high_resolution_clock::now();
         const std::vector<uint8_t> msgPackData = json::to_msgpack(this->getHits());
+        auto end = std::chrono::high_resolution_clock::now();
+        std::cout << "Serialized hits to MsgPack in "
+                  << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << " ms."
+                  << std::endl;
+        start = std::chrono::high_resolution_clock::now();
         res.set_content(reinterpret_cast<const char *>(msgPackData.data()), msgPackData.size(), "application/msgpack");
+        end = std::chrono::high_resolution_clock::now();
+        std::cout << "Sent hits over HTTP in "
+                  << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << " ms." << std::endl;
     });
     this->m_server.Post("/hits", [&](const Request &req, Response &res) {
         try {
