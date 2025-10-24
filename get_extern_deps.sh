@@ -22,6 +22,7 @@ JS_LIBS=(
     "https://cdn.jsdelivr.net/npm/theme-change@2.5.0/index.js"
     "https://ga.jspm.io/npm:es-module-shims@1.10.0/dist/es-module-shims.js"
     "https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.js"
+    "https://cdn.jsdelivr.net/npm/@msgpack/msgpack@3.1.2/+esm"
 )
 JS_LIB_NAMES=(
     "tailwindcss.js"
@@ -29,6 +30,7 @@ JS_LIB_NAMES=(
     "theme-change.js"
     "es-module-shims.js"
     "katex.js"
+    "msgpack.min.js"
 )
 JS_PATH="web/vendor"
 

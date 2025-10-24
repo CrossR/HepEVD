@@ -2,6 +2,8 @@
 // Data Loader
 //
 
+import * as msgpack from "msgpack";
+
 import { addCitation } from "./ui.js";
 
 // This is a global variable that will be used to store the state of the event
@@ -100,11 +102,9 @@ async function getDataWithProgress(url) {
     position += chunk.length;
   }
 
-  let result = new TextDecoder("utf-8").decode(chunksAll);
-
   if (contentLength && contentLength > 250) loadingBar.style.display = "none";
 
-  return JSON.parse(result);
+  return msgpack.decode(chunksAll);
 }
 
 // Simple function to pull down all data from the server.
@@ -252,7 +252,7 @@ export async function getData() {
     }
 
     return loadExternalData(
-      "https://gist.githubusercontent.com/CrossR/2edd3622d13987d37ef3a4c02286207c/raw/80df485be9f2ca27aa2a8825dbdfdcd794363290/eventDisplayInfo.json",
+      "https://gist.githubusercontent.com/CrossR/2edd3622d13987d37ef3a4c02286207c/raw/80df485be9f2ca27aa2a8825dbdfdcd794363290/eventDisplayInfo.json"
     );
   } else {
     return loadServerData();

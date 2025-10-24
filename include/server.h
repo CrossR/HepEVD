@@ -17,6 +17,7 @@
 #include "state.h"
 #include "utils.h"
 
+#include <cstdint>
 #include <fstream>
 
 #include "extern/httplib.h"
@@ -230,7 +231,8 @@ inline void HepEVDServer::startServer() {
 
     // First, the actual event hits.
     this->m_server.Get("/hits", [&](const Request &, Response &res) {
-        res.set_content(json(this->getHits()).dump(), "application/json");
+        const std::vector<uint8_t> msgPackData = json::to_msgpack(this->getHits());
+        res.set_content(reinterpret_cast<const char *>(msgPackData.data()), msgPackData.size(), "application/msgpack");
     });
     this->m_server.Post("/hits", [&](const Request &req, Response &res) {
         try {
@@ -243,7 +245,8 @@ inline void HepEVDServer::startServer() {
 
     // Next, the MC truth hits.
     this->m_server.Get("/mcHits", [&](const Request &, Response &res) {
-        res.set_content(json(this->getMCHits()).dump(), "application/json");
+        const std::vector<uint8_t> msgPackData = json::to_msgpack(this->getMCHits());
+        res.set_content(reinterpret_cast<const char *>(msgPackData.data()), msgPackData.size(), "application/msgpack");
     });
     this->m_server.Post("/mcHits", [&](const Request &req, Response &res) {
         try {
@@ -260,7 +263,8 @@ inline void HepEVDServer::startServer() {
 
     // Then any actual particles.
     this->m_server.Get("/particles", [&](const Request &, Response &res) {
-        res.set_content(json(this->getParticles()).dump(), "application/json");
+        const std::vector<uint8_t> msgPackData = json::to_msgpack(this->getParticles());
+        res.set_content(reinterpret_cast<const char *>(msgPackData.data()), msgPackData.size(), "application/msgpack");
     });
     this->m_server.Post("/particles", [&](const Request &req, Response &res) {
         try {
@@ -273,7 +277,8 @@ inline void HepEVDServer::startServer() {
 
     // Then, any markers (points, lines, rings, etc.)
     this->m_server.Get("/markers", [&](const Request &, Response &res) {
-        res.set_content(json(this->getMarkers()).dump(), "application/json");
+        const std::vector<uint8_t> msgPackData = json::to_msgpack(this->getMarkers());
+        res.set_content(reinterpret_cast<const char *>(msgPackData.data()), msgPackData.size(), "application/msgpack");
     });
     this->m_server.Post("/markers", [&](const Request &req, Response &res) {
         try {
@@ -286,7 +291,8 @@ inline void HepEVDServer::startServer() {
 
     // Any supplied raw images
     this->m_server.Get("/images", [&](const Request &, Response &res) {
-        res.set_content(json(this->getImages()).dump(), "application/json");
+        const std::vector<uint8_t> msgPackData = json::to_msgpack(this->getImages());
+        res.set_content(reinterpret_cast<const char *>(msgPackData.data()), msgPackData.size(), "application/msgpack");
     });
     this->m_server.Post("/images", [&](const Request &req, Response &res) {
         try {
@@ -299,7 +305,8 @@ inline void HepEVDServer::startServer() {
 
     // Finally, the detector geometry.
     this->m_server.Get("/geometry", [&](const Request &, Response &res) {
-        res.set_content(json(this->m_geometry).dump(), "application/json");
+        const std::vector<uint8_t> msgPackData = json::to_msgpack(this->m_geometry);
+        res.set_content(reinterpret_cast<const char *>(msgPackData.data()), msgPackData.size(), "application/msgpack");
     });
     this->m_server.Post("/geometry", [&](const Request &req, Response &res) {
         try {
@@ -321,7 +328,9 @@ inline void HepEVDServer::startServer() {
         output["markers"] = this->getMarkers();
         output["stateInfo"] = *this->getState();
         output["config"] = *this->getConfig();
-        res.set_content(output.dump(4), "application/json");
+
+        const std::vector<uint8_t> msgPackData = json::to_msgpack(output);
+        res.set_content(reinterpret_cast<const char *>(msgPackData.data()), msgPackData.size(), "application/msgpack");
     });
     this->m_server.Get("/writeOutAllStates", [&](const Request &, Response &res) {
         // This is very different to the rest of the endpoints, as it needs to
@@ -400,7 +409,8 @@ inline void HepEVDServer::startServer() {
 
     // State controls...
     this->m_server.Get("/allStateInfo", [&](const Request &, Response &res) {
-        res.set_content(json(this->m_eventStates).dump(), "application/json");
+        const std::vector<uint8_t> msgPackData = json::to_msgpack(this->m_eventStates);
+        res.set_content(reinterpret_cast<const char *>(msgPackData.data()), msgPackData.size(), "application/msgpack");
     });
     this->m_server.Get("/stateInfo", [&](const Request &, Response &res) {
         auto state = this->getState();
@@ -411,7 +421,8 @@ inline void HepEVDServer::startServer() {
         if (mcTruth.size() > 0 && state->m_mcTruth.size() == 0)
             state->m_mcTruth = mcTruth;
 
-        res.set_content(json(*state).dump(), "application/json");
+        const std::vector<uint8_t> msgPackData = json::to_msgpack(*state);
+        res.set_content(reinterpret_cast<const char *>(msgPackData.data()), msgPackData.size(), "application/msgpack");
     });
     this->m_server.Get("/swap/id/:id", [&](const Request &req, Response &res) {
         try {
@@ -441,7 +452,8 @@ inline void HepEVDServer::startServer() {
     // Management controls...
     this->m_server.Get("/quit", [&](const Request &, Response &) { this->m_server.stop(); });
     this->m_server.Get("/config", [&](const Request &, Response &res) {
-        res.set_content(json(*this->getConfig()).dump(), "application/json");
+        const std::vector<uint8_t> msgPackData = json::to_msgpack(*this->getConfig());
+        res.set_content(reinterpret_cast<const char *>(msgPackData.data()), msgPackData.size(), "application/msgpack");
     });
 
     // Finally, mount the www folder, which contains the actual HepEVD JS code.
