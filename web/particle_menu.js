@@ -21,7 +21,7 @@ function createMenuItem(
   particle,
   onClick,
   particlesMap,
-  parentElement,
+  parentElement
 ) {
   // Make the top level menu item for the particle.
   const menuItem = document.createElement("li");
@@ -156,12 +156,21 @@ export function createParticleMenu(hitDim, particlesMap, onClick) {
       return (aNumHits < bNumHits) - (aNumHits > bNumHits);
     });
 
-  if (
-    particles.length === 0 ||
-    particles.length > PARTICLE_CONFIG.menu.maxToShow
-  ) {
+  if (particles.length === 0) {
     menu.hidden = true;
     return;
+  } else {
+    menu.hidden = false;
+  }
+
+  const tooManyParticles =
+    particles.length > PARTICLE_CONFIG.menu.maxParticlesToShow;
+
+  if (tooManyParticles) {
+    console.log(`Particle menu truncated: showing first ${PARTICLE_CONFIG.menu.maxParticlesToShow} of ${particles.length} particles.`);
+    particles = particles.slice(0, PARTICLE_CONFIG.menu.maxParticlesToShow);
+
+    // TODO: Indicate to the user that there are too many particles to show.
   }
 
   particles.forEach((particle, _) => {
