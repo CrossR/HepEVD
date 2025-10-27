@@ -132,7 +132,7 @@ export function createParticleMenu(hitDim, particlesMap, onClick) {
   // Sorting is done by:
   // 1. The interaction type, based on the INTERACTION_TYPE_SCORE.
   // 2. The number of hits (including child particles)
-  const particles = Array.from(particlesMap.values())
+  let particles = Array.from(particlesMap.values())
     .filter((particle) => particle.parentID === "")
     .sort((a, b) => {
       if (a.interactionType !== b.interactionType) {
@@ -164,13 +164,17 @@ export function createParticleMenu(hitDim, particlesMap, onClick) {
   }
 
   const tooManyParticles =
-    particles.length > PARTICLE_CONFIG.menu.maxParticlesToShow;
+    particles.length > PARTICLE_CONFIG.menu.maxToShow;
+
+  console.log(tooManyParticles, particles.length);
 
   if (tooManyParticles) {
-    console.log(`Particle menu truncated: showing first ${PARTICLE_CONFIG.menu.maxParticlesToShow} of ${particles.length} particles.`);
-    particles = particles.slice(0, PARTICLE_CONFIG.menu.maxParticlesToShow);
+    const numParticles = particles.length;
+    particles = particles.slice(0, PARTICLE_CONFIG.menu.maxToShow);
 
-    // TODO: Indicate to the user that there are too many particles to show.
+    const summaryItem = document.createElement("summary");
+    summaryItem.innerText = `Details (${PARTICLE_CONFIG.menu.maxToShow} / ${numParticles})`;
+    menu.appendChild(summaryItem);
   }
 
   particles.forEach((particle, _) => {
