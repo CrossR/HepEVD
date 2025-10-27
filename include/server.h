@@ -289,14 +289,7 @@ inline void HepEVDServer::startServer() {
         }
 
         final_json_stream << "]";
-        std::string final_json = final_json_stream.str();
-
-        auto end_serialize = std::chrono::high_resolution_clock::now();
-        auto serialize_duration =
-            std::chrono::duration_cast<std::chrono::milliseconds>(end_serialize - start_serialize);
-        std::cout << "[C++] Parallel RapidJSON Time: " << serialize_duration.count() << " ms." << std::endl;
-
-        res.set_content(final_json, "application/json");
+        res.set_content(final_json_stream.str(), "application/json");
     });
     this->m_server.Post("/hits", [&](const Request &req, Response &res) {
         try {
