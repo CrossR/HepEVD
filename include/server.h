@@ -234,16 +234,69 @@ inline void HepEVDServer::startServer() {
 
     // First, the actual event hits.
     this->m_server.Get("/hits", [&](const Request &, Response &res) {
-        rapidjson::StringBuffer s;
-        rapidjson::Writer<rapidjson::StringBuffer> writer(s);
+        auto start_serialize = std::chrono::high_resolution_clock::now();
+        const Hits &hitsData = this->getHits();
 
-        writer.StartArray();
-        for (const auto *hit_ptr : this->getHits()) {
-            if (hit_ptr)
-                hit_ptr->writeJson(writer);
+        // Define a lambda to process one chunk and return a JSON array string
+        auto process_hit_chunk = [](Hits::const_iterator begin, Hits::const_iterator end) -> std::string {
+            rapidjson::StringBuffer s;
+            rapidjson::Writer<rapidjson::StringBuffer> writer(s);
+
+            writer.StartArray();
+            for (auto it = begin; it != end; ++it) {
+                const auto *hit_ptr = *it;
+                if (!hit_ptr) {
+                    writer.Null();
+                } else {
+                    hit_ptr->writeJson(writer); // Call the member function
+                }
+            }
+            writer.EndArray();
+
+            // This returns "[ {hitA}, {hitB} ]"
+            return s.GetString();
+        };
+
+        // Call the parallel helper
+        std::vector<std::string> json_array_fragments =
+            parallel_process<Hits, decltype(process_hit_chunk), std::string>(hitsData, process_hit_chunk);
+
+        // Now, lets combine the fragments into a single JSON array string.
+        // Start a new array, then for each block, strip the brackets and add commas as needed.
+        std::stringstream final_json_stream;
+        final_json_stream << "[";
+
+        bool first_fragment = true;
+        for (const auto &fragment : json_array_fragments) {
+            // Skip empty fragments (e.g., if a thread processed zero hits)
+            // 2 here because we have at least "[]"
+            if (fragment.length() <= 2)
+                continue;
+
+            // If this isn't the first fragment, we need a comma separator.
+            if (!first_fragment) {
+                final_json_stream << ",";
+            }
+
+            // Extract content between brackets: "[ {hitA}, {hitB} ]" -> " {hitA}, {hitB} "
+            // Using string_view for efficiency (C++17)
+            std::string_view fragment_content(fragment);
+            fragment_content.remove_prefix(1);
+            fragment_content.remove_suffix(1);
+
+            final_json_stream << fragment_content;
+            first_fragment = false;
         }
-        writer.EndArray();
-        res.set_content(s.GetString(), s.GetSize(), "application/json");
+
+        final_json_stream << "]";
+        std::string final_json = final_json_stream.str();
+
+        auto end_serialize = std::chrono::high_resolution_clock::now();
+        auto serialize_duration =
+            std::chrono::duration_cast<std::chrono::milliseconds>(end_serialize - start_serialize);
+        std::cout << "[C++] Parallel RapidJSON Time: " << serialize_duration.count() << " ms." << std::endl;
+
+        res.set_content(final_json, "application/json");
     });
     this->m_server.Post("/hits", [&](const Request &req, Response &res) {
         try {

@@ -12,7 +12,12 @@
 #include "extern/json.hpp"
 using json = nlohmann::json;
 
+#include <algorithm>
 #include <array>
+#include <functional>
+#include <future>
+#include <iterator>
+#include <numeric>
 #include <ostream>
 #include <random>
 
@@ -248,6 +253,65 @@ static inline std::string pdgToString(const int pdgCode, const double energy = -
 static inline bool portInUse(const int port) {
     const std::string cmd("nc -z localhost " + std::to_string(port) + " 2> /dev/null");
     return std::system(cmd.c_str()) == 0;
+}
+
+// Processes elements of a container in parallel using multiple threads.
+//
+// Splits the container into chunks and applies a processing function to each chunk
+// concurrently. Returns a vector containing the result produced by each thread.
+template <typename Container, typename Func,
+          typename ResultType = typename std::__invoke_result<Func, typename Container::const_iterator,
+                                                              typename Container::const_iterator>::type>
+std::vector<ResultType> parallel_process(const Container &container, Func process_chunk) {
+
+    size_t num_items = container.size();
+    std::vector<ResultType> all_results;
+
+    if (num_items == 0)
+        return all_results;
+
+    // Get the number of threads to use.
+    unsigned int num_threads = std::thread::hardware_concurrency();
+    if (num_threads == 0)
+        num_threads = 4;
+
+    // Avoid over-threading for small workloads.
+    size_t min_items_per_thread = 50;
+    if (num_items < num_threads * min_items_per_thread) {
+        num_threads = 1;
+    }
+
+    // Fallback, single threaded case.
+    if (num_threads == 1) {
+        all_results.push_back(process_chunk(container.cbegin(), container.cend()));
+        return all_results;
+    }
+
+    // Regular multi-threaded case.
+    std::vector<std::future<ResultType>> futures;
+    size_t items_per_thread = static_cast<size_t>(std::ceil(static_cast<double>(num_items) / num_threads));
+    auto it_begin = container.cbegin();
+
+    for (unsigned int i = 0; i < num_threads; ++i) {
+        size_t start_index = i * items_per_thread;
+        if (start_index >= num_items)
+            break;
+
+        size_t current_chunk_size = std::min(items_per_thread, num_items - start_index);
+        auto chunk_begin = std::next(it_begin, start_index);
+        auto chunk_end = std::next(chunk_begin, current_chunk_size);
+
+        // Launch async task, passing the process_chunk function
+        futures.push_back(std::async(std::launch::async, process_chunk, chunk_begin, chunk_end));
+    }
+
+    // Collect results from all threads
+    all_results.reserve(futures.size());
+    for (auto &fut : futures) {
+        all_results.push_back(fut.get());
+    }
+
+    return all_results;
 }
 
 }; // namespace HepEVD
