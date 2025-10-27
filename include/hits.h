@@ -16,14 +16,22 @@
 #include "extern/json.hpp"
 using json = nlohmann::json;
 
+// Add RapidJSON includes
+#include "extern/rapidjson/stringbuffer.h"
+#include "extern/rapidjson/writer.h"
+
 #include <map>
 #include <ostream>
+#include <stdexcept>
 #include <string>
 #include <vector>
 
 namespace HepEVD {
 
 using HitProperties = std::map<std::tuple<std::string, PropertyType>, double>;
+
+// Forward declare function to write hit properties as JSON.
+template <typename WriterType> void writePropertiesJson(WriterType &writer, const HitProperties &properties);
 
 class Hit {
   public:
@@ -39,8 +47,8 @@ class Hit {
     void setWidth(const std::string &axis, const float width) { this->m_width.setValue(axis, width); }
 
     std::string getId() const { return this->m_id; }
-    Position getPosition() const { return this->m_position; }
-    Position getWidth() const { return this->m_width; }
+    const Position &getPosition() const { return this->m_position; }
+    const Position &getWidth() const { return this->m_width; }
     double getEnergy() const { return this->m_energy; }
     HitDimension getDim() const { return this->m_position.dim; }
     HitType getHitType() const { return this->m_position.hitType; }
@@ -61,7 +69,34 @@ class Hit {
         return;
     }
 
-    // Define to_json and from_json for Hit.
+    // RapidJSON serialization, which is faster than nlohmann::json.
+    // This is important for the potentially large number of hits.
+    template <typename WriterType> void writeJson(WriterType &writer) const {
+        writer.StartObject();
+
+        writer.Key("id");
+        writer.String(m_id.c_str(), static_cast<rapidjson::SizeType>(m_id.length()));
+
+        writer.Key("position");
+        m_position.writeJson(writer);
+
+        writer.Key("width");
+        m_width.writeJson(writer);
+
+        writer.Key("energy");
+        writer.Double(m_energy);
+
+        writer.Key("label");
+        writer.String(m_label.c_str(), static_cast<rapidjson::SizeType>(m_label.length()));
+
+        writer.Key("properties");
+        writePropertiesJson(writer, m_properties);
+
+        writer.EndObject();
+    }
+
+    // Fallback JSON serialization using nlohmann::json.
+    // Slower, but kept for backwards compatibility.
     friend void to_json(json &j, const Hit &hit) {
         j["id"] = hit.m_id;
         j["position"] = hit.m_position;
@@ -114,19 +149,19 @@ class MCHit : public Hit {
     MCHit() : Hit() {}
     MCHit(const Position &pos, const double energy) : Hit(pos, energy) {}
     MCHit(const Position &pos, const double pdgCode, const double energy) : Hit(pos, energy) {
-        this->addProperties({{"PDG", pdgCode}});
+        this->addProperties({{{"PDG", PropertyType::NUMERIC}, pdgCode}});
     }
     MCHit(const PosArray &pos, const double pdgCode, const double energy) : Hit(pos, energy) {
-        this->addProperties({{"PDG", pdgCode}});
+        this->addProperties({{{"PDG", PropertyType::NUMERIC}, pdgCode}});
     }
 
-    void setPDG(const double pdgCode) { this->addProperties({{"PDG", pdgCode}}); }
+    void setPDG(const double pdgCode) { this->addProperties({{{"PDG", PropertyType::NUMERIC}, pdgCode}}); }
     double getPDG() const {
-        if (this->m_properties.count({"PDG", PropertyType::NUMERIC}) == 0) {
+        auto key = std::make_tuple("PDG", PropertyType::NUMERIC);
+        if (this->m_properties.count(key) == 0) {
             return 0.0;
         }
-
-        return this->m_properties.at({"PDG", PropertyType::NUMERIC});
+        return this->m_properties.at(key);
     }
 };
 using MCHits = std::vector<MCHit *>;
@@ -154,6 +189,31 @@ inline static void from_json(const json &j, MCHits &hits) {
     for (const auto &hit : j) {
         hits.push_back(new MCHit(hit));
     }
+}
+
+template <typename WriterType>
+inline void writePropertiesJson(WriterType& writer, const HepEVD::HitProperties& properties) {
+    writer.StartArray();
+
+    for (const auto& pair : properties) {
+        const auto& key_tuple = pair.first;
+        const double& value = pair.second;
+        const std::string& prop_name = std::get<0>(key_tuple);
+        HepEVD::PropertyType prop_type = std::get<1>(key_tuple);
+
+        writer.StartArray();
+        writer.StartArray();
+        writer.String(prop_name.c_str(), static_cast<rapidjson::SizeType>(prop_name.length()));
+
+        const char* type_str = prop_type == HepEVD::PropertyType::NUMERIC ? "NUMERIC" : "CATEGORIC";
+        writer.String(type_str, static_cast<rapidjson::SizeType>(strlen(type_str)));
+
+        writer.EndArray();
+        writer.Double(value);
+        writer.EndArray();
+    }
+
+    writer.EndArray();
 }
 
 }; // namespace HepEVD

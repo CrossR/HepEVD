@@ -16,13 +16,16 @@ HTTPLIB_FILE_PATH="${EXTERN_PATH}/httplib.h"
 JSON_URL="https://raw.githubusercontent.com/nlohmann/json/develop/single_include/nlohmann/json.hpp"
 JSON_PATH="${EXTERN_PATH}/json.hpp"
 
+RAPIDJSON_VERSION="1.1.0"
+RAPIDJSON_URL="https://github.com/Tencent/rapidjson/archive/refs/tags/v${RAPIDJSON_VERSION}.tar.gz"
+RAPIDJSON_PATH="${EXTERN_PATH}/rapidjson"
+
 JS_LIBS=(
     "https://cdn.tailwindcss.com/3.4.5"
     "https://cdn.jsdelivr.net/npm/daisyui@4.12.10/dist/full.min.css"
     "https://cdn.jsdelivr.net/npm/theme-change@2.5.0/index.js"
     "https://ga.jspm.io/npm:es-module-shims@1.10.0/dist/es-module-shims.js"
     "https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.js"
-    "https://cdn.jsdelivr.net/npm/@msgpack/msgpack@3.1.2/+esm"
 )
 JS_LIB_NAMES=(
     "tailwindcss.js"
@@ -30,7 +33,6 @@ JS_LIB_NAMES=(
     "theme-change.js"
     "es-module-shims.js"
     "katex.js"
-    "msgpack.min.js"
 )
 JS_PATH="web/vendor"
 
@@ -150,6 +152,21 @@ LogMessage "Getting json.hpp..."
 RunAndCheck "wget ${JSON_URL} -O ${JSON_PATH} " \
     "Failed to download json.hpp!" \
     "ERR"
+
+LogMessage "Getting RapidJSON headers..."
+RunAndCheck "wget ${RAPIDJSON_URL} -O ${EXTERN_PATH}/rapidjson_v${RAPIDJSON_VERSION}.tar.gz" \
+    "Failed to download RapidJSON tarball!" \
+    "ERR"
+RunAndCheck "mkdir -p ${RAPIDJSON_PATH}" \
+    "Failed to make RapidJSON directory!" \
+    "ERR"
+RunAndCheck "tar -xzf ${EXTERN_PATH}/rapidjson_v${RAPIDJSON_VERSION}.tar.gz -C ${RAPIDJSON_PATH} --strip-components=3 rapidjson-${RAPIDJSON_VERSION}/include/rapidjson" \
+    "Failed to extract RapidJSON headers!" \
+    "ERR"
+RunAndCheck "rm ${EXTERN_PATH}/rapidjson_v${RAPIDJSON_VERSION}.tar.gz" \
+    "Failed to remove RapidJSON tarball!" \
+    "WARN"
+LogMessage "RapidJSON headers placed in ${RAPIDJSON_PATH}"
 
 LogMessage "Getting JS libs..."
 for i in "${!JS_LIBS[@]}"; do

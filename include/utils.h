@@ -68,8 +68,40 @@ class Position {
         return this->x == other.x && this->y == other.y && this->z == other.z;
     }
 
-    // When converting to JSON, we want to convert 2D positoins to use
+    // When converting to JSON, we want to convert 2D positions to use
     // XY, not XZ.
+    template <typename WriterType> void writeJson(WriterType &writer) const {
+        writer.StartObject();
+
+        writer.Key("x");
+        writer.Double(this->x);
+        writer.Key("y");
+        writer.Double(this->y);
+        writer.Key("z");
+        writer.Double(this->z);
+
+        writer.Key("dim");
+        writer.String(this->dim == THREE_D ? "3D" : "2D");
+        writer.Key("hitType");
+        switch (this->hitType) {
+        case GENERAL:
+            writer.String("Hit");
+            break;
+        case TWO_D_U:
+            writer.String("U View");
+            break;
+        case TWO_D_V:
+            writer.String("V View");
+            break;
+        case TWO_D_W:
+            writer.String("W View");
+            break;
+        }
+
+        writer.EndObject();
+    }
+
+
     friend void to_json(json &j, const Position &pos) {
         if (pos.dim == THREE_D) {
             j = {{"x", pos.x}, {"y", pos.y}, {"z", pos.z}, {"dim", pos.dim}, {"hitType", pos.hitType}};
