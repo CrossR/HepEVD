@@ -2,8 +2,6 @@
 // Useful helper functions.
 //
 
-import * as msgpack from "msgpack";
-
 import { BUTTON_ID, PDG_TO_COLOUR } from "./constants.js";
 
 /**
@@ -160,20 +158,4 @@ export function hashStr(str) {
   }
 
   return hash;
-}
-
-/**
- * Fetches and decodes MessagePack data from the given URL.
- *
- * @param {string} url - The URL to fetch the MessagePack data from.
- * @param {boolean} shouldThrow - Whether to throw an error if the fetch fails. Defaults to false.
- * @returns {Promise} A Promise that resolves with the decoded data.
- */
-export async function fetchMsgPack(url, shouldThrow = false) {
-  const response = await fetch(url);
-  if (!response.ok && shouldThrow) {
-    throw new Error(`Failed to fetch MessagePack data from ${url}: ${response.statusText}`);
-  }
-  const buffer = await response.arrayBuffer();
-  return msgpack.decode(new Uint8Array(buffer));
 }

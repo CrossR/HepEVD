@@ -9,7 +9,6 @@ import {
   isRunningOnGitHubPages,
 } from "./data_loader.js";
 import { populateImages } from "./ui.js";
-import { fetchMsgPack } from "./helpers.js";
 
 /**
  * Updates the UI for the state swapper based on the current state.
@@ -125,7 +124,7 @@ export function getCurrentStateInfo() {
     return Promise.resolve(null);
   }
 
-  return fetchMsgPack("/stateInfo");
+  return fetch("/stateInfo").then((response) => response.json());
 }
 
 /**
@@ -147,7 +146,7 @@ export function getAllStateInfo() {
     return Promise.resolve(null);
   }
 
-  return fetchMsgPack("/allStateInfo");
+  return fetch("/allStateInfo").then((response) => response.json());
 }
 
 /**

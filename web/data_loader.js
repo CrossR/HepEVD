@@ -2,8 +2,6 @@
 // Data Loader
 //
 
-import * as msgpack from "msgpack";
-
 import { addCitation } from "./ui.js";
 
 // This is a global variable that will be used to store the state of the event
@@ -102,9 +100,11 @@ async function getDataWithProgress(url) {
     position += chunk.length;
   }
 
+  let result = new TextDecoder("utf-8").decode(chunksAll);
+
   if (contentLength && contentLength > 250) loadingBar.style.display = "none";
 
-  return msgpack.decode(chunksAll);
+  return JSON.parse(result);
 }
 
 // Simple function to pull down all data from the server.
