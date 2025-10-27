@@ -17,16 +17,16 @@
 #include "state.h"
 #include "utils.h"
 
+#include <chrono>
 #include <cstdint>
 #include <fstream>
-#include <chrono>
 
 #include "extern/json.hpp"
 using json = nlohmann::json;
 
 #include "extern/httplib.h"
-#include "extern/rapidjson/writer.h"
 #include "extern/rapidjson/stringbuffer.h"
+#include "extern/rapidjson/writer.h"
 
 namespace HepEVD {
 
@@ -234,33 +234,16 @@ inline void HepEVDServer::startServer() {
 
     // First, the actual event hits.
     this->m_server.Get("/hits", [&](const Request &, Response &res) {
-        auto start = std::chrono::high_resolution_clock::now();
-        const Hits& hitsData = this->getHits();
-        auto end = std::chrono::high_resolution_clock::now();
-        std::cout << "Got hits in "
-                  << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << " ms."
-                  << std::endl;
-
-        start = std::chrono::high_resolution_clock::now();
         rapidjson::StringBuffer s;
         rapidjson::Writer<rapidjson::StringBuffer> writer(s);
 
         writer.StartArray();
-        for (const auto* hit_ptr : hitsData) {
+        for (const auto *hit_ptr : this->getHits()) {
             if (hit_ptr)
                 hit_ptr->writeJson(writer);
         }
         writer.EndArray();
-        end = std::chrono::high_resolution_clock::now();
-        std::cout << "Serialized hits to JSON in "
-                  << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << " ms."
-                  << std::endl;
-
-        start = std::chrono::high_resolution_clock::now();
         res.set_content(s.GetString(), s.GetSize(), "application/json");
-        end = std::chrono::high_resolution_clock::now();
-        std::cout << "Sent hits over HTTP in "
-                  << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << " ms." << std::endl;
     });
     this->m_server.Post("/hits", [&](const Request &req, Response &res) {
         try {

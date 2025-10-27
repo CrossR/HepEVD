@@ -102,7 +102,6 @@ class Position {
         writer.EndObject();
     }
 
-
     friend void to_json(json &j, const Position &pos) {
         if (pos.dim == THREE_D) {
             j = {{"x", pos.x}, {"y", pos.y}, {"z", pos.z}, {"dim", pos.dim}, {"hitType", pos.hitType}};

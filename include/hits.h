@@ -192,20 +192,20 @@ inline static void from_json(const json &j, MCHits &hits) {
 }
 
 template <typename WriterType>
-inline void writePropertiesJson(WriterType& writer, const HepEVD::HitProperties& properties) {
+inline void writePropertiesJson(WriterType &writer, const HepEVD::HitProperties &properties) {
     writer.StartArray();
 
-    for (const auto& pair : properties) {
-        const auto& key_tuple = pair.first;
-        const double& value = pair.second;
-        const std::string& prop_name = std::get<0>(key_tuple);
+    for (const auto &pair : properties) {
+        const auto &key_tuple = pair.first;
+        const double &value = pair.second;
+        const std::string &prop_name = std::get<0>(key_tuple);
         HepEVD::PropertyType prop_type = std::get<1>(key_tuple);
 
         writer.StartArray();
         writer.StartArray();
         writer.String(prop_name.c_str(), static_cast<rapidjson::SizeType>(prop_name.length()));
 
-        const char* type_str = prop_type == HepEVD::PropertyType::NUMERIC ? "NUMERIC" : "CATEGORIC";
+        const char *type_str = prop_type == HepEVD::PropertyType::NUMERIC ? "NUMERIC" : "CATEGORIC";
         writer.String(type_str, static_cast<rapidjson::SizeType>(strlen(type_str)));
 
         writer.EndArray();

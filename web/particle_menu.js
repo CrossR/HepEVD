@@ -83,7 +83,9 @@ function createMenuItem(
 
   // Set the label text to include the number of hits, including the
   // child particles hits.
-  let particleType = particle.primary ? particle.interactionType : particle.label;
+  let particleType = particle.primary
+    ? particle.interactionType
+    : particle.label;
 
   label.innerHTML = `${particleType} (${totalNumHits})`;
   summary.appendChild(label);
