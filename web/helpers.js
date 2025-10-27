@@ -52,10 +52,10 @@ export function getHitProperties(particles, hits) {
   const hitPropMaps = new Map();
   const hitPropTypes = new Map();
 
-  const allHits = particles.flatMap((particle) => {
+  let allHits = particles.flatMap((particle) => {
     return particle.hits;
   });
-  allHits.push(...hits);
+  allHits = allHits.concat(hits);
 
   // Every hit should have an energy property, but there is
   // then two additional cases where a hit can be grouped:
@@ -103,10 +103,10 @@ export function getHitTypes(particles, hits) {
     return true;
   });
 
-  const allHits = particles.flatMap((particle) => {
+  let allHits = particles.flatMap((particle) => {
     return particle.hits;
   });
-  allHits.push(...hits);
+  allHits = allHits.concat(hits);
 
   allHits.forEach((hit) => {
     if (hit.position.hitType !== "Hit") {
