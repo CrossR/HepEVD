@@ -73,15 +73,16 @@ class Position {
     template <typename WriterType> void writeJson(WriterType &writer) const {
         writer.StartObject();
 
+        const bool is2D = this->dim == TWO_D;
         writer.Key("x");
         writer.Double(this->x);
         writer.Key("y");
-        writer.Double(this->y);
+        writer.Double(is2D ? this->z : this->y);
         writer.Key("z");
-        writer.Double(this->z);
+        writer.Double(is2D ? 0.0 : this->z);
 
         writer.Key("dim");
-        writer.String(this->dim == THREE_D ? "3D" : "2D");
+        writer.String(is2D ? "2D" : "3D");
         writer.Key("hitType");
         switch (this->hitType) {
         case GENERAL:

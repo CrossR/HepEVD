@@ -19,14 +19,12 @@
 
 #include <cstdint>
 #include <fstream>
-
-#include "extern/httplib.h"
-
 #include <chrono>
 
 #include "extern/json.hpp"
 using json = nlohmann::json;
 
+#include "extern/httplib.h"
 #include "extern/rapidjson/writer.h"
 #include "extern/rapidjson/stringbuffer.h"
 
