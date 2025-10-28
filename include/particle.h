@@ -101,33 +101,12 @@ class Particle {
         writer.Bool(m_primary);
 
         writer.Key("interactionType");
-        switch (m_interactionType) {
-        case BEAM:
-            writer.String("Beam");
-            break;
-        case COSMIC:
-            writer.String("Cosmic");
-            break;
-        case NEUTRINO:
-            writer.String("Neutrino");
-            break;
-        case OTHER:
-            writer.String("Other");
-            break;
-        }
+        writer.String(enumToString(m_interactionType).c_str(),
+                      static_cast<rapidjson::SizeType>(enumToString(m_interactionType).length()));
 
         writer.Key("renderType");
-        switch (m_renderType) {
-        case PARTICLE:
-            writer.String("Particle");
-            break;
-        case TRACK:
-            writer.String("Track");
-            break;
-        case SHOWER:
-            writer.String("Shower");
-            break;
-        }
+        writer.String(enumToString(m_renderType).c_str(),
+                      static_cast<rapidjson::SizeType>(enumToString(m_renderType).length()));
 
         writer.Key("parentID");
         writer.String(m_parentID.c_str(), static_cast<rapidjson::SizeType>(m_parentID.length()));

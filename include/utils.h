@@ -39,6 +39,9 @@ enum class PropertyType { CATEGORIC, NUMERIC };
 NLOHMANN_JSON_SERIALIZE_ENUM(PropertyType,
                              {{PropertyType::CATEGORIC, "CATEGORIC"}, {PropertyType::NUMERIC, "NUMERIC"}});
 
+// Forward declare enumToString, so we can use it in Position.
+template <typename EnumType> static inline std::string enumToString(const EnumType &enumValue);
+
 // Store a 3D position, and include a helper for JSON production.
 class Position {
 
@@ -91,21 +94,10 @@ class Position {
 
         writer.Key("dim");
         writer.String(is2D ? "2D" : "3D");
+
         writer.Key("hitType");
-        switch (this->hitType) {
-        case GENERAL:
-            writer.String("Hit");
-            break;
-        case TWO_D_U:
-            writer.String("U View");
-            break;
-        case TWO_D_V:
-            writer.String("V View");
-            break;
-        case TWO_D_W:
-            writer.String("W View");
-            break;
-        }
+        writer.String(enumToString(this->hitType).c_str(),
+                      static_cast<rapidjson::SizeType>(enumToString(this->hitType).length()));
 
         writer.EndObject();
     }
@@ -368,6 +360,13 @@ template <typename Container> std::string parallel_to_json_array(const Container
     final_json_stream << "]";
 
     return final_json_stream.str();
+}
+
+// Basic helper to convert an enum to a string for JSON output.
+// Relies on nlohmann::json serialization of the enum.
+template <typename EnumType> static inline std::string enumToString(const EnumType &enumValue) {
+    json j = enumValue;
+    return j.get<std::string>();
 }
 
 }; // namespace HepEVD
