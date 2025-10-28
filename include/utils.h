@@ -11,6 +11,8 @@
 #include "extern/httplib.h"
 #include "extern/json.hpp"
 using json = nlohmann::json;
+#include "extern/rapidjson/stringbuffer.h"
+#include "extern/rapidjson/writer.h"
 
 #include <algorithm>
 #include <array>
@@ -20,6 +22,7 @@ using json = nlohmann::json;
 #include <numeric>
 #include <ostream>
 #include <random>
+#include <sstream>
 
 namespace HepEVD {
 
@@ -312,6 +315,59 @@ std::vector<ResultType> parallel_process(const Container &container, Func proces
     }
 
     return all_results;
+}
+
+// Given a container, process its element into a JSON string, using multiple threads.
+template <typename Container> std::string parallel_to_json_array(const Container &container) {
+    // Define a lambda to process one chunk and return a JSON array string
+    auto process_chunk = [&](typename Container::const_iterator begin,
+                             typename Container::const_iterator end) -> std::string {
+        rapidjson::StringBuffer s;
+        rapidjson::Writer<rapidjson::StringBuffer> writer(s);
+
+        writer.StartArray();
+        for (auto it = begin; it != end; ++it) {
+            const auto *item_ptr = *it;
+            item_ptr->writeJson(writer);
+        }
+        writer.EndArray();
+
+        // This returns "[ {hitA}, {hitB} ]"
+        return s.GetString();
+    };
+
+    // Call the parallel helper
+    std::vector<std::string> json_array_fragments =
+        parallel_process<Container, decltype(process_chunk), std::string>(container, process_chunk);
+
+    // Now, lets combine the fragments into a single JSON array string.
+    std::stringstream final_json_stream;
+    final_json_stream << "[";
+
+    bool first_fragment = true;
+    for (const auto &fragment : json_array_fragments) {
+        // Skip empty fragments (e.g., if a thread processed zero elems)
+        // 2 here because we have at least "[]"
+        if (fragment.length() <= 2)
+            continue;
+
+        // If this isn't the first fragment, we need a comma separator.
+        if (!first_fragment)
+            final_json_stream << ",";
+
+        // Extract content between brackets: "[ {hitA}, {hitB} ]" -> " {hitA}, {hitB} "
+        std::string_view fragment_content(fragment);
+        fragment_content.remove_prefix(1);
+        fragment_content.remove_suffix(1);
+
+        final_json_stream << fragment_content;
+        first_fragment = false;
+    }
+
+    // Close the array.
+    final_json_stream << "]";
+
+    return final_json_stream.str();
 }
 
 }; // namespace HepEVD
