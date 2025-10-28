@@ -14,6 +14,8 @@
 
 #include "extern/json.hpp"
 using json = nlohmann::json;
+#include "extern/rapidjson/stringbuffer.h"
+#include "extern/rapidjson/writer.h"
 
 #include <array>
 #include <sstream>
@@ -55,6 +57,27 @@ class Point : public Marker {
     Point(const PosArray &pos, const HitDimension &hitDim, const HitType &hitType) : Marker(pos) {
         this->m_position.setDim(hitDim);
         this->m_position.setHitType(hitType);
+    }
+
+    // RapidJSON serialization for Point.
+    // Markers aren't (currently) numerous enough to cause
+    // performance issues...but needed for Particles which are.
+    template <typename WriterType> void writeJson(WriterType &writer) const {
+        writer.StartObject();
+
+        writer.Key("markerType");
+        writer.String("Point");
+
+        writer.Key("position");
+        this->m_position.writeJson(writer);
+
+        writer.Key("colour");
+        writer.String(this->m_colour.c_str(), static_cast<rapidjson::SizeType>(this->m_colour.length()));
+
+        writer.Key("label");
+        writer.String(this->m_label.c_str(), static_cast<rapidjson::SizeType>(this->m_label.length()));
+
+        writer.EndObject();
     }
 
     // to_json and from_json for Point.

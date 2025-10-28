@@ -12,6 +12,8 @@
 
 #include "extern/json.hpp"
 using json = nlohmann::json;
+#include "extern/rapidjson/stringbuffer.h"
+#include "extern/rapidjson/writer.h"
 
 #include <map>
 #include <vector>
@@ -68,6 +70,77 @@ class Particle {
 
     void setRenderType(RenderType renderType) { this->m_renderType = renderType; }
     RenderType getRenderType() const { return this->m_renderType; }
+
+    // RapidJSON serialization, which is faster than nlohmann::json.
+    // This is important for the potentially large number of particles.
+    template <typename WriterType> void writeJson(WriterType &writer) const {
+        writer.StartObject();
+
+        writer.Key("id");
+        writer.String(m_id.c_str(), static_cast<rapidjson::SizeType>(m_id.length()));
+
+        writer.Key("label");
+        writer.String(m_label.c_str(), static_cast<rapidjson::SizeType>(m_label.length()));
+
+        writer.Key("hits");
+        writer.StartArray();
+        for (const auto &hit : m_hits) {
+            hit->writeJson(writer);
+        }
+        writer.EndArray();
+
+        writer.Key("vertices");
+        writer.StartArray();
+        for (const auto &marker : m_vertices) {
+            const Point &point = std::get<Point>(marker);
+            point.writeJson(writer);
+        }
+        writer.EndArray();
+
+        writer.Key("primary");
+        writer.Bool(m_primary);
+
+        writer.Key("interactionType");
+        switch (m_interactionType) {
+        case BEAM:
+            writer.String("Beam");
+            break;
+        case COSMIC:
+            writer.String("Cosmic");
+            break;
+        case NEUTRINO:
+            writer.String("Neutrino");
+            break;
+        case OTHER:
+            writer.String("Other");
+            break;
+        }
+
+        writer.Key("renderType");
+        switch (m_renderType) {
+        case PARTICLE:
+            writer.String("Particle");
+            break;
+        case TRACK:
+            writer.String("Track");
+            break;
+        case SHOWER:
+            writer.String("Shower");
+            break;
+        }
+
+        writer.Key("parentID");
+        writer.String(m_parentID.c_str(), static_cast<rapidjson::SizeType>(m_parentID.length()));
+
+        writer.Key("childIDs");
+        writer.StartArray();
+        for (const auto &childID : m_childIDs) {
+            writer.String(childID.c_str(), static_cast<rapidjson::SizeType>(childID.length()));
+        }
+        writer.EndArray();
+
+        writer.EndObject();
+    }
 
     // Define to_json and from_json for Particle.
     friend void to_json(json &j, const Particle &particle) {

@@ -15,8 +15,6 @@
 
 #include "extern/json.hpp"
 using json = nlohmann::json;
-
-// Add RapidJSON includes
 #include "extern/rapidjson/stringbuffer.h"
 #include "extern/rapidjson/writer.h"
 

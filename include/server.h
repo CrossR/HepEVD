@@ -265,7 +265,8 @@ inline void HepEVDServer::startServer() {
 
     // Then any actual particles.
     this->m_server.Get("/particles", [&](const Request &, Response &res) {
-        res.set_content(json(this->getParticles()).dump(), "application/json");
+        const auto particleJson = parallel_to_json_array<Particles>(this->getParticles());
+        res.set_content(particleJson, "application/json");
     });
     this->m_server.Post("/particles", [&](const Request &req, Response &res) {
         try {
