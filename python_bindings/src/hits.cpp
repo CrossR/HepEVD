@@ -37,19 +37,12 @@ template <typename T> void add_hits(nb::handle hits, std::string label) {
     if (arraySize.size() != 2)
         throw std::runtime_error("Hits array must be 2D");
 
-    // Check that the shape of the array is correct.
-    // We are expecting the shape to be (N, 4 or 5) where N is the number of hits.
-    //
-    // Optionally, there can also be 2 extra columns, one for the dimension and one for the view.
     int expectedSize = std::is_same<T, HepEVD::Hit>::value ? 4 : 5;
     int actualSize = arraySize[1];
 
     bool includesDimension = false;
     bool includesView = false;
 
-    // Check that the number of columns is correct.  That is, either 4, 5, 6 or
-    // 7, corresponding to a regular hit or MC hit, and then 2 additional extra
-    // fields for the dimension and view.
     switch (actualSize) {
     case 4:
     case 5:
@@ -67,45 +60,83 @@ template <typename T> void add_hits(nb::handle hits, std::string label) {
     int rows = arraySize[0];
     int cols = arraySize[1];
 
-    // Process all the hits in the array.
+    // Pre-allocate the vector with the known size
     std::vector<T *> hepEVDHits;
+    hepEVDHits.reserve(rows);
 
-    for (int i = 0; i < rows; i++) {
+    // If it's an ndarray, process all data at once
+    if (nb::isinstance<nb::ndarray<>>(hits)) {
+        auto array = nb::cast<nb::ndarray<nb::numpy, double>>(hits);
+        const double* data = array.data();
 
-        auto data = getItems(hits, i, cols);
+        for (int i = 0; i < rows; i++) {
+            const double* row = data + (i * cols);
 
-        auto idx(0);
-        double x = data[idx++];
-        double y = data[idx++];
-        double z = data[idx++];
-        double energy = data[idx++];
+            int idx = 0;
+            double x = row[idx++];
+            double y = row[idx++];
+            double z = row[idx++];
+            double energy = row[idx++];
 
-        // Optional features
-        double pdgCode = std::is_same<T, HepEVD::MCHit>::value ? data[idx++] : -1.0;
-        double dimension = includesDimension ? data[idx++] : -1.0;
-        double view = includesView ? data[idx++] : -1.0;
+            double pdgCode = std::is_same<T, HepEVD::MCHit>::value ? row[idx++] : -1.0;
+            double dimension = includesDimension ? row[idx++] : -1.0;
+            double view = includesView ? row[idx++] : -1.0;
 
-        T *hit(nullptr);
+            T *hit(nullptr);
 
-        if constexpr (std::is_same<T, HepEVD::MCHit>::value) {
-            hit = new T(HepEVD::Position({x, y, z}), pdgCode, energy);
-        } else {
-            hit = new T(HepEVD::Position({x, y, z}), energy);
-            pythonHitMap[std::make_tuple(x, y, z, energy)] = hit;
+            if constexpr (std::is_same<T, HepEVD::MCHit>::value) {
+                hit = new T(HepEVD::Position({x, y, z}), pdgCode, energy);
+            } else {
+                hit = new T(HepEVD::Position({x, y, z}), energy);
+                pythonHitMap[std::make_tuple(x, y, z, energy)] = hit;
+            }
+
+            if (includesDimension)
+                hit->setDim(static_cast<HepEVD::HitDimension>(dimension));
+
+            if (includesView)
+                hit->setHitType(static_cast<HepEVD::HitType>(view));
+
+            if (label != "")
+                hit->setLabel(label);
+
+            hepEVDHits.push_back(hit);
         }
+    } else {
+        // Fall back to getItems for lists
+        for (int i = 0; i < rows; i++) {
+            auto data = getItems(hits, i, cols);
 
-        // If we have either a dimension or view, add them to the hit.
-        if (includesDimension)
-            hit->setDim(static_cast<HepEVD::HitDimension>(dimension));
+            auto idx(0);
+            double x = data[idx++];
+            double y = data[idx++];
+            double z = data[idx++];
+            double energy = data[idx++];
 
-        if (includesView)
-            hit->setHitType(static_cast<HepEVD::HitType>(view));
+            double pdgCode = std::is_same<T, HepEVD::MCHit>::value ? data[idx++] : -1.0;
+            double dimension = includesDimension ? data[idx++] : -1.0;
+            double view = includesView ? data[idx++] : -1.0;
 
-        // Finally, apply the label if one was provided.
-        if (label != "")
-            hit->setLabel(label);
+            T *hit(nullptr);
 
-        hepEVDHits.push_back(hit);
+            if constexpr (std::is_same<T, HepEVD::MCHit>::value) {
+                hit = new T(HepEVD::Position({x, y, z}), pdgCode, energy);
+            } else {
+                hit = new T(HepEVD::Position({x, y, z}), energy);
+                pythonHitMap[std::make_tuple(x, y, z, energy)] = hit;
+            }
+
+            if (includesDimension)
+                hit->setDim(static_cast<HepEVD::HitDimension>(dimension));
+
+            if (includesView)
+                hit->setHitType(static_cast<HepEVD::HitType>(view));
+
+            if (label != "")
+                hit->setLabel(label);
+
+            hepEVDHits.push_back(hit);
+        }
     }
 
     if constexpr (std::is_same<T, HepEVD::MCHit>::value) {
