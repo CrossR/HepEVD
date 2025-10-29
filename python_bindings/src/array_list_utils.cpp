@@ -24,13 +24,19 @@ std::vector<double> getItems(nb::handle obj, int index, int size) {
         throw std::runtime_error("HepEVD: Object must be an array or list");
 
     if (nb::isinstance<nb::ndarray<>>(obj)) {
-        nb::ndarray<> array = nb::cast<nb::ndarray<>>(obj);
+        // Request array as contiguous double precision
+        auto array = nb::cast<nb::ndarray<nb::numpy, double>>(obj);
 
-        double *data = static_cast<double *>(array.data());
         std::vector<double> items;
+        items.reserve(size);
 
-        for (int i = 0; i < size; i++)
-            items.push_back(data[index * size + i]);
+        // Now we can safely access as double*
+        const double* data = array.data();
+        size_t offset = index * size;
+
+        for (int i = 0; i < size; i++) {
+            items.push_back(data[offset + i]);
+        }
 
         return items;
 
