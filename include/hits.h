@@ -203,8 +203,8 @@ inline void writePropertiesJson(WriterType &writer, const HepEVD::HitProperties 
         writer.StartArray();
         writer.String(prop_name.c_str(), static_cast<rapidjson::SizeType>(prop_name.length()));
 
-        const char *type_str = prop_type == HepEVD::PropertyType::NUMERIC ? "NUMERIC" : "CATEGORIC";
-        writer.String(type_str, static_cast<rapidjson::SizeType>(strlen(type_str)));
+        std::string_view type_str = prop_type == HepEVD::PropertyType::NUMERIC ? "NUMERIC" : "CATEGORIC";
+        writer.String(type_str.data(), static_cast<rapidjson::SizeType>(type_str.length()));
 
         writer.EndArray();
         writer.Double(value);
