@@ -31,7 +31,7 @@ std::vector<double> getItems(nb::handle obj, int index, int size) {
         items.reserve(size);
 
         // Now we can safely access as double*
-        const double* data = array.data();
+        const double *data = array.data();
         size_t offset = index * size;
 
         for (int i = 0; i < size; i++) {

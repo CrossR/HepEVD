@@ -67,10 +67,10 @@ template <typename T> void add_hits(nb::handle hits, std::string label) {
     // If it's an ndarray, process all data at once
     if (nb::isinstance<nb::ndarray<>>(hits)) {
         auto array = nb::cast<nb::ndarray<nb::numpy, double>>(hits);
-        const double* data = array.data();
+        const double *data = array.data();
 
         for (int i = 0; i < rows; i++) {
-            const double* row = data + (i * cols);
+            const double *row = data + (i * cols);
 
             int idx = 0;
             double x = row[idx++];

@@ -21,7 +21,7 @@ function createMenuItem(
   particle,
   onClick,
   particlesMap,
-  parentElement
+  parentElement,
 ) {
   // Make the top level menu item for the particle.
   const menuItem = document.createElement("li");
@@ -163,8 +163,7 @@ export function createParticleMenu(hitDim, particlesMap, onClick) {
     menu.hidden = false;
   }
 
-  const tooManyParticles =
-    particles.length > PARTICLE_CONFIG.menu.maxToShow;
+  const tooManyParticles = particles.length > PARTICLE_CONFIG.menu.maxToShow;
 
   console.log(tooManyParticles, particles.length);
 
