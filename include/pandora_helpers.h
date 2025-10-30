@@ -276,7 +276,7 @@ static void showMC(const pandora::Algorithm &pAlgorithm, const std::string &list
             MCHit *mcHit = new MCHit({pos.GetX(), pos.GetY(), pos.GetZ()}, mcParticle->GetParticleId(),
                                      caloHit->GetMipEquivalentEnergy());
 
-            mcHit->setDim(HitDimension::TWO_D);
+            mcHit->setDim(getHepEVDHitDimension(caloHit->GetHitType()));
             mcHit->setHitType(getHepEVDHitType(caloHit->GetHitType()));
 
             mcHits.push_back(mcHit);
