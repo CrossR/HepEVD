@@ -4,7 +4,7 @@ build-backend = "scikit_build_core.build"
 
 [project]
 name = "HepEVD"
-version = "0.3.2"
+version = "0.4.0"
 description = "Event Display for Particle Physics Data"
 readme = "README.md"
 requires-python = ">=3.8"
