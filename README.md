@@ -124,7 +124,8 @@ a web-based event display trivially works remotely, if you use SSH forwarding.
 
 The HTTP server in this project utilises
 [cpp-httplib](https://github.com/yhirose/cpp-httplib), to make the server code as simple
-as possible. Similarly, [nlohmann/json](https://github.com/nlohmann/json) is used to both
+as possible. Similarly, both [nlohmann/json](https://github.com/nlohmann/json) and
+[RapidJSON](https://github.com/Tencent/rapidjson) are used to both
 convert and parse objects to/from JSON, such that they can be served via the HTTP server.
 
 ## Licensing
@@ -134,3 +135,10 @@ All of the bundled code has its own license, and there is additional license con
 on the code in `./integrations/`, due to the nature of that code building upon existing
 files from other libraries. Where appropriate, the license has been noted and included
 at the top of each file.
+
+All of the downloaded external dependencies are MIT-licenesed, and their specific
+licenses can be found here:
+
+ - https://github.com/yhirose/cpp-httplib/blob/master/LICENSE
+ - https://github.com/nlohmann/json/blob/develop/LICENSE.MIT
+ - https://github.com/Tencent/rapidjson/blob/master/license.txt
