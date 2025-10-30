@@ -256,7 +256,7 @@ static inline bool portInUse(const int port) {
 // concurrently. Returns a vector containing the result produced by each thread.
 template <typename Container, typename Func,
           typename ResultType = typename std::invoke_result<Func, typename Container::const_iterator,
-                                                              typename Container::const_iterator>::type>
+                                                            typename Container::const_iterator>::type>
 std::vector<ResultType> parallel_process(const Container &container, Func process_chunk) {
 
     size_t num_items = container.size();
