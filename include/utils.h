@@ -255,7 +255,7 @@ static inline bool portInUse(const int port) {
 // Splits the container into chunks and applies a processing function to each chunk
 // concurrently. Returns a vector containing the result produced by each thread.
 template <typename Container, typename Func,
-          typename ResultType = typename std::__invoke_result<Func, typename Container::const_iterator,
+          typename ResultType = typename std::invoke_result<Func, typename Container::const_iterator,
                                                               typename Container::const_iterator>::type>
 std::vector<ResultType> parallel_process(const Container &container, Func process_chunk) {
 
