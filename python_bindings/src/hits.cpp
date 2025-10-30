@@ -24,6 +24,39 @@ namespace nb = nanobind;
 
 namespace HepEVD_py {
 
+template <typename T>
+T *processHitRow(const double *rowData, bool includesDimension, bool includesView, const std::string &label) {
+    int idx = 0;
+    double x = rowData[idx++];
+    double y = rowData[idx++];
+    double z = rowData[idx++];
+    double energy = rowData[idx++];
+
+    double pdgCode = std::is_same_v<T, HepEVD::MCHit> ? rowData[idx++] : -1.0;
+    double dimension = includesDimension ? rowData[idx++] : -1.0;
+    double view = includesView ? rowData[idx++] : -1.0;
+
+    T *hit(nullptr);
+
+    if constexpr (std::is_same_v<T, HepEVD::MCHit>) {
+        hit = new T(HepEVD::Position({x, y, z}), pdgCode, energy);
+    } else {
+        hit = new T(HepEVD::Position({x, y, z}), energy);
+        pythonHitMap[std::make_tuple(x, y, z, energy)] = hit;
+    }
+
+    if (includesDimension)
+        hit->setDim(static_cast<HepEVD::HitDimension>(dimension));
+
+    if (includesView)
+        hit->setHitType(static_cast<HepEVD::HitType>(view));
+
+    if (label != "")
+        hit->setLabel(label);
+
+    return hit;
+}
+
 template <typename T> void add_hits(nb::handle hits, std::string label) {
 
     if (!HepEVD::isServerInitialised())
@@ -37,7 +70,7 @@ template <typename T> void add_hits(nb::handle hits, std::string label) {
     if (arraySize.size() != 2)
         throw std::runtime_error("Hits array must be 2D");
 
-    int expectedSize = std::is_same<T, HepEVD::Hit>::value ? 4 : 5;
+    int expectedSize = std::is_same_v<T, HepEVD::Hit> ? 4 : 5;
     int actualSize = arraySize[1];
 
     bool includesDimension = false;
@@ -60,7 +93,6 @@ template <typename T> void add_hits(nb::handle hits, std::string label) {
     int rows = arraySize[0];
     int cols = arraySize[1];
 
-    // Pre-allocate the vector with the known size
     std::vector<T *> hepEVDHits;
     hepEVDHits.reserve(rows);
 
@@ -71,75 +103,17 @@ template <typename T> void add_hits(nb::handle hits, std::string label) {
 
         for (int i = 0; i < rows; i++) {
             const double *row = data + (i * cols);
-
-            int idx = 0;
-            double x = row[idx++];
-            double y = row[idx++];
-            double z = row[idx++];
-            double energy = row[idx++];
-
-            double pdgCode = std::is_same<T, HepEVD::MCHit>::value ? row[idx++] : -1.0;
-            double dimension = includesDimension ? row[idx++] : -1.0;
-            double view = includesView ? row[idx++] : -1.0;
-
-            T *hit(nullptr);
-
-            if constexpr (std::is_same<T, HepEVD::MCHit>::value) {
-                hit = new T(HepEVD::Position({x, y, z}), pdgCode, energy);
-            } else {
-                hit = new T(HepEVD::Position({x, y, z}), energy);
-                pythonHitMap[std::make_tuple(x, y, z, energy)] = hit;
-            }
-
-            if (includesDimension)
-                hit->setDim(static_cast<HepEVD::HitDimension>(dimension));
-
-            if (includesView)
-                hit->setHitType(static_cast<HepEVD::HitType>(view));
-
-            if (label != "")
-                hit->setLabel(label);
-
-            hepEVDHits.push_back(hit);
+            hepEVDHits.push_back(processHitRow<T>(row, includesDimension, includesView, label));
         }
     } else {
         // Fall back to getItems for lists
         for (int i = 0; i < rows; i++) {
             auto data = getItems(hits, i, cols);
-
-            auto idx(0);
-            double x = data[idx++];
-            double y = data[idx++];
-            double z = data[idx++];
-            double energy = data[idx++];
-
-            double pdgCode = std::is_same<T, HepEVD::MCHit>::value ? data[idx++] : -1.0;
-            double dimension = includesDimension ? data[idx++] : -1.0;
-            double view = includesView ? data[idx++] : -1.0;
-
-            T *hit(nullptr);
-
-            if constexpr (std::is_same<T, HepEVD::MCHit>::value) {
-                hit = new T(HepEVD::Position({x, y, z}), pdgCode, energy);
-            } else {
-                hit = new T(HepEVD::Position({x, y, z}), energy);
-                pythonHitMap[std::make_tuple(x, y, z, energy)] = hit;
-            }
-
-            if (includesDimension)
-                hit->setDim(static_cast<HepEVD::HitDimension>(dimension));
-
-            if (includesView)
-                hit->setHitType(static_cast<HepEVD::HitType>(view));
-
-            if (label != "")
-                hit->setLabel(label);
-
-            hepEVDHits.push_back(hit);
+            hepEVDHits.push_back(processHitRow<T>(data.data(), includesDimension, includesView, label));
         }
     }
 
-    if constexpr (std::is_same<T, HepEVD::MCHit>::value) {
+    if constexpr (std::is_same_v<T, HepEVD::MCHit>) {
         HepEVD::hepEVDLog("Adding " + std::to_string(hepEVDHits.size()) + " MC hits to the HepEVD server.");
         HepEVD::getServer()->addMCHits(hepEVDHits);
     } else {
