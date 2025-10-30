@@ -25,6 +25,8 @@ export async function updateStateUI(renderStates) {
   if (stateIdPairs === null || stateIdPairs.length === 1) {
     stateDiv.style.display = "none";
     return;
+  } else {
+    stateDiv.style.display = "";
   }
 
   // Since there are multiple states, populate the state swapper.

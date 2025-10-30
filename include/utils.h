@@ -11,10 +11,18 @@
 #include "extern/httplib.h"
 #include "extern/json.hpp"
 using json = nlohmann::json;
+#include "extern/rapidjson/stringbuffer.h"
+#include "extern/rapidjson/writer.h"
 
+#include <algorithm>
 #include <array>
+#include <functional>
+#include <future>
+#include <iterator>
+#include <numeric>
 #include <ostream>
 #include <random>
+#include <sstream>
 
 namespace HepEVD {
 
@@ -30,6 +38,9 @@ NLOHMANN_JSON_SERIALIZE_ENUM(HitType,
 enum class PropertyType { CATEGORIC, NUMERIC };
 NLOHMANN_JSON_SERIALIZE_ENUM(PropertyType,
                              {{PropertyType::CATEGORIC, "CATEGORIC"}, {PropertyType::NUMERIC, "NUMERIC"}});
+
+// Forward declare enumToString, so we can use it in Position.
+template <typename EnumType> static inline std::string enumToString(const EnumType &enumValue);
 
 // Store a 3D position, and include a helper for JSON production.
 class Position {
@@ -68,8 +79,29 @@ class Position {
         return this->x == other.x && this->y == other.y && this->z == other.z;
     }
 
-    // When converting to JSON, we want to convert 2D positoins to use
+    // When converting to JSON, we want to convert 2D positions to use
     // XY, not XZ.
+    template <typename WriterType> void writeJson(WriterType &writer) const {
+        writer.StartObject();
+
+        const bool is2D = this->dim == TWO_D;
+        writer.Key("x");
+        writer.Double(this->x);
+        writer.Key("y");
+        writer.Double(is2D ? this->z : this->y);
+        writer.Key("z");
+        writer.Double(is2D ? 0.0 : this->z);
+
+        writer.Key("dim");
+        writer.String(is2D ? "2D" : "3D");
+
+        writer.Key("hitType");
+        writer.String(enumToString(this->hitType).c_str(),
+                      static_cast<rapidjson::SizeType>(enumToString(this->hitType).length()));
+
+        writer.EndObject();
+    }
+
     friend void to_json(json &j, const Position &pos) {
         if (pos.dim == THREE_D) {
             j = {{"x", pos.x}, {"y", pos.y}, {"z", pos.z}, {"dim", pos.dim}, {"hitType", pos.hitType}};
@@ -216,6 +248,125 @@ static inline std::string pdgToString(const int pdgCode, const double energy = -
 static inline bool portInUse(const int port) {
     const std::string cmd("nc -z localhost " + std::to_string(port) + " 2> /dev/null");
     return std::system(cmd.c_str()) == 0;
+}
+
+// Processes elements of a container in parallel using multiple threads.
+//
+// Splits the container into chunks and applies a processing function to each chunk
+// concurrently. Returns a vector containing the result produced by each thread.
+template <typename Container, typename Func,
+          typename ResultType = typename std::invoke_result<Func, typename Container::const_iterator,
+                                                            typename Container::const_iterator>::type>
+std::vector<ResultType> parallel_process(const Container &container, Func process_chunk) {
+
+    size_t num_items = container.size();
+    std::vector<ResultType> all_results;
+
+    if (num_items == 0)
+        return all_results;
+
+    // Get the number of threads to use.
+    unsigned int num_threads = std::thread::hardware_concurrency();
+    if (num_threads == 0)
+        num_threads = 4;
+
+    // Avoid over-threading for small workloads.
+    size_t min_items_per_thread = 50;
+    if (num_items < num_threads * min_items_per_thread) {
+        num_threads = 1;
+    }
+
+    // Fallback, single threaded case.
+    if (num_threads == 1) {
+        all_results.push_back(process_chunk(container.cbegin(), container.cend()));
+        return all_results;
+    }
+
+    // Regular multi-threaded case.
+    std::vector<std::future<ResultType>> futures;
+    size_t items_per_thread = static_cast<size_t>(std::ceil(static_cast<double>(num_items) / num_threads));
+    auto it_begin = container.cbegin();
+
+    for (unsigned int i = 0; i < num_threads; ++i) {
+        size_t start_index = i * items_per_thread;
+        if (start_index >= num_items)
+            break;
+
+        size_t current_chunk_size = std::min(items_per_thread, num_items - start_index);
+        auto chunk_begin = std::next(it_begin, start_index);
+        auto chunk_end = std::next(chunk_begin, current_chunk_size);
+
+        // Launch async task, passing the process_chunk function
+        futures.push_back(std::async(std::launch::async, process_chunk, chunk_begin, chunk_end));
+    }
+
+    // Collect results from all threads
+    all_results.reserve(futures.size());
+    for (auto &fut : futures) {
+        all_results.push_back(fut.get());
+    }
+
+    return all_results;
+}
+
+// Given a container, process its element into a JSON string, using multiple threads.
+template <typename Container> std::string parallel_to_json_array(const Container &container) {
+    // Define a lambda to process one chunk and return a JSON array string
+    auto process_chunk = [&](typename Container::const_iterator begin,
+                             typename Container::const_iterator end) -> std::string {
+        rapidjson::StringBuffer s;
+        rapidjson::Writer<rapidjson::StringBuffer> writer(s);
+
+        writer.StartArray();
+        for (auto it = begin; it != end; ++it) {
+            const auto *item_ptr = *it;
+            item_ptr->writeJson(writer);
+        }
+        writer.EndArray();
+
+        // This returns "[ {hitA}, {hitB} ]"
+        return s.GetString();
+    };
+
+    // Call the parallel helper
+    std::vector<std::string> json_array_fragments =
+        parallel_process<Container, decltype(process_chunk), std::string>(container, process_chunk);
+
+    // Now, lets combine the fragments into a single JSON array string.
+    std::stringstream final_json_stream;
+    final_json_stream << "[";
+
+    bool first_fragment = true;
+    for (const auto &fragment : json_array_fragments) {
+        // Skip empty fragments (e.g., if a thread processed zero elems)
+        // 2 here because we have at least "[]"
+        if (fragment.length() <= 2)
+            continue;
+
+        // If this isn't the first fragment, we need a comma separator.
+        if (!first_fragment)
+            final_json_stream << ",";
+
+        // Extract content between brackets: "[ {hitA}, {hitB} ]" -> " {hitA}, {hitB} "
+        std::string_view fragment_content(fragment);
+        fragment_content.remove_prefix(1);
+        fragment_content.remove_suffix(1);
+
+        final_json_stream << fragment_content;
+        first_fragment = false;
+    }
+
+    // Close the array.
+    final_json_stream << "]";
+
+    return final_json_stream.str();
+}
+
+// Basic helper to convert an enum to a string for JSON output.
+// Relies on nlohmann::json serialization of the enum.
+template <typename EnumType> static inline std::string enumToString(const EnumType &enumValue) {
+    json j = enumValue;
+    return j.get<std::string>();
 }
 
 }; // namespace HepEVD

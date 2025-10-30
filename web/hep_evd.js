@@ -68,10 +68,9 @@ document.body.appendChild(stats.dom);
 // Without this, we get the browser trying to drag the canvas around,
 // which gives that annoying 'ghosting' effect when you try to
 // drag the mouse around to rotate the camera.
-renderer.domElement.addEventListener('dragstart', function(event) {
+renderer.domElement.addEventListener("dragstart", function (event) {
   event.preventDefault();
 });
-
 
 // Now we need to wait for the data to load...
 const {

@@ -83,7 +83,9 @@ function createMenuItem(
 
   // Set the label text to include the number of hits, including the
   // child particles hits.
-  let particleType = particle.primary ? particle.interactionType : particle.label;
+  let particleType = particle.primary
+    ? particle.interactionType
+    : particle.label;
 
   label.innerHTML = `${particleType} (${totalNumHits})`;
   summary.appendChild(label);
@@ -130,7 +132,7 @@ export function createParticleMenu(hitDim, particlesMap, onClick) {
   // Sorting is done by:
   // 1. The interaction type, based on the INTERACTION_TYPE_SCORE.
   // 2. The number of hits (including child particles)
-  const particles = Array.from(particlesMap.values())
+  let particles = Array.from(particlesMap.values())
     .filter((particle) => particle.parentID === "")
     .sort((a, b) => {
       if (a.interactionType !== b.interactionType) {
@@ -154,12 +156,24 @@ export function createParticleMenu(hitDim, particlesMap, onClick) {
       return (aNumHits < bNumHits) - (aNumHits > bNumHits);
     });
 
-  if (
-    particles.length === 0 ||
-    particles.length > PARTICLE_CONFIG.menu.maxToShow
-  ) {
+  if (particles.length === 0) {
     menu.hidden = true;
     return;
+  } else {
+    menu.hidden = false;
+  }
+
+  const tooManyParticles = particles.length > PARTICLE_CONFIG.menu.maxToShow;
+
+  console.log(tooManyParticles, particles.length);
+
+  if (tooManyParticles) {
+    const numParticles = particles.length;
+    particles = particles.slice(0, PARTICLE_CONFIG.menu.maxToShow);
+
+    const summaryItem = document.createElement("summary");
+    summaryItem.innerText = `Details (${PARTICLE_CONFIG.menu.maxToShow} / ${numParticles})`;
+    menu.appendChild(summaryItem);
   }
 
   particles.forEach((particle, _) => {

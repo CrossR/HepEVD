@@ -17,7 +17,7 @@
 // traccc Includes
 #include "traccc/edm/seed_collection.hpp"
 #include "traccc/edm/spacepoint_collection.hpp"
-#include "traccc/edm/track_candidate.hpp"
+#include "traccc/edm/track_candidate_collection.hpp"
 #include "traccc/edm/track_state.hpp"
 
 // Local Includes
@@ -32,24 +32,14 @@ namespace HepEVD {
 
 // First, we need to define a mapping between the various detray objects
 // and the HepEVD objects.
-
-namespace {
-struct surface_converter {
-    template <typename mask_group_t, typename index_t, typename transform_t>
-    inline auto operator()(const mask_group_t &mask_group, const index_t &index, const transform_t &transform) const {
-
-        const auto vertices(mask_group[index].vertices(10u));
-        Positions positions;
-        for (std::size_t i = 0; i < vertices.size(); ++i) {
-            const auto vertex(transform.point_to_global(vertices[i]));
-            Position pos({(double)vertex[0], (double)vertex[1], (double)vertex[2]});
-            positions.push_back(pos);
-        }
-
-        return positions;
+Positions convert_to_positions(const std::vector<detray::detail::global_vertex> &vertices) {
+    Positions positions;
+    positions.reserve(vertices.size());
+    for (const auto &vertex : vertices) {
+        positions.emplace_back(vertex.x, vertex.y, vertex.z);
     }
-};
-} // namespace
+    return positions;
+}
 
 // Set the HepEVD geometry by pulling the relevant information from the
 // detray detector_t object.
@@ -75,11 +65,13 @@ template <typename detector_t> static void setHepEVDGeometry(const detector_t &d
             const Position position({(double)centroid[0], (double)centroid[1], (double)centroid[2]});
 
             if (shape_name == "trapezoid2D") {
-                const auto vertices(surface.template visit_mask<surface_converter>(surface.transform(gctx)));
+                const auto detrayVertices = detray::detail::get_global_vertices(gctx, surface, 10u);
+                const Positions vertices(convert_to_positions(detrayVertices));
                 TrapezoidVolume trapezoid(position, vertices);
                 volumes.push_back(trapezoid);
             } else if (shape_name == "rectangle2D") {
-                const auto vertices(surface.template visit_mask<surface_converter>(surface.transform(gctx)));
+                const auto detrayVertices(detray::detail::get_global_vertices(gctx, surface, 10u));
+                const Positions vertices(convert_to_positions(detrayVertices));
                 Rectangle2DVolume rect(position, vertices);
                 volumes.push_back(rect);
             } else {
@@ -172,8 +164,10 @@ static void addSeeds(const traccc::edm::seed_collection::const_view &seeds,
 
 // Add track candidates to the HepEVD server
 template <typename detector_t>
-static void addTrackCandidates(const traccc::track_candidate_container_types::const_view &tracks_view,
-                               const detector_t &detector, std::string label = "") {
+static void
+addTrackCandidates(const traccc::edm::track_candidate_collection<traccc::default_algebra>::const_view &tracks,
+                   const traccc::measurement_collection_types::const_view &measurements, const detector_t &detector,
+                   std::string label = "") {
 
     if (!isServerInitialised())
         return;
@@ -181,18 +175,21 @@ static void addTrackCandidates(const traccc::track_candidate_container_types::co
     Particles hepTracks;
 
     // Create a device collection around the track container view.
-    const traccc::track_candidate_container_types::const_device tracks{tracks_view};
+    const traccc::edm::track_candidate_collection<traccc::default_algebra>::const_device tracksView(tracks);
+    const traccc::measurement_collection_types::const_device measurementsView(measurements);
 
-    for (unsigned int i = 0; i < tracks.size(); i++) {
+    for (unsigned int i = 0; i < tracksView.size(); i++) {
 
         // The track candidate in question.
-        const traccc::track_candidate_container_types::const_device::const_element_view track = tracks.at(i);
+        const auto track = tracksView.at(i);
 
         // Start to build the hits for this track candidate.
         Hits hits;
 
         // Loop over the measurements in the track candidate.
-        for (const traccc::measurement &m : track.items) {
+        for (const unsigned int m_index : track.measurement_indices()) {
+
+            const traccc::measurement m = measurementsView.at(m_index);
 
             // Check the measurement isn't empty
             if (m.local[0] == 0 && m.local[1] == 0 && m.local[2] == 0) {
@@ -203,7 +200,7 @@ static void addTrackCandidates(const traccc::track_candidate_container_types::co
             const detray::tracking_surface<detector_t> surface{detector, m.surface_link};
 
             // Calculate a position for this measurement in global 3D space.
-            const auto global = surface.bound_to_global({}, m.local, {});
+            const auto global = surface.local_to_global({}, m.local, {});
 
             // Create a hit object for this measurement.
             Hit *hit = new Hit({global[0], global[1], global[2]}, 0.0);
@@ -225,7 +222,7 @@ static void addTrackCandidates(const traccc::track_candidate_container_types::co
 }
 
 template <typename detector_t>
-static void addTracks(const traccc::track_state_container_types::const_view &tracks_view, const detector_t &detector,
+static void addTracks(const traccc::track_state_container_types::const_view &tracks, const detector_t &detector,
                       std::string label = "") {
 
     if (!isServerInitialised())
@@ -234,12 +231,12 @@ static void addTracks(const traccc::track_state_container_types::const_view &tra
     Particles hepTracks;
 
     // Create a device collection around the track container view.
-    const traccc::track_state_container_types::const_device tracks{tracks_view};
+    const traccc::track_state_container_types::const_device tracksView{tracks};
 
-    for (unsigned int i = 0; i < tracks.size(); i++) {
+    for (unsigned int i = 0; i < tracksView.size(); i++) {
 
         // The track state in question.
-        const traccc::track_state_container_types::const_device::const_element_view track = tracks.at(i);
+        const traccc::track_state_container_types::const_device::const_element_view track = tracksView.at(i);
 
         // Start to build the hits for this track candidate.
         Hits hits;
@@ -252,7 +249,7 @@ static void addTracks(const traccc::track_state_container_types::const_view &tra
             const detray::tracking_surface<detector_t> surface{detector, m.surface_link};
 
             // Calculate a position for this measurement in global 3D space.
-            const auto global = surface.bound_to_global({}, m.local, {});
+            const auto global = surface.local_to_global({}, m.local, {});
 
             // Create a hit object for this measurement.
             Hit *hit = new Hit({global[0], global[1], global[2]}, 0.0);

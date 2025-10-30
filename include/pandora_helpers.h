@@ -35,7 +35,8 @@ typedef lar_content::SliceList SliceList;
 typedef lar_content::SlicingAlgorithm::SliceList SliceList;
 #endif
 
-#if __has_include("larpandoradlcontent/LArHelpers/LArDLHelper.h")
+#if __has_include("larpandoradlcontent/LArHelpers/LArDLHelper.h") && __has_include(<ATen/ATen.h>) && \
+     __has_include(<torch/script.h>)
 #include <ATen/ATen.h>
 #include <torch/script.h>
 #endif
@@ -275,7 +276,7 @@ static void showMC(const pandora::Algorithm &pAlgorithm, const std::string &list
             MCHit *mcHit = new MCHit({pos.GetX(), pos.GetY(), pos.GetZ()}, mcParticle->GetParticleId(),
                                      caloHit->GetMipEquivalentEnergy());
 
-            mcHit->setDim(HitDimension::TWO_D);
+            mcHit->setDim(getHepEVDHitDimension(caloHit->GetHitType()));
             mcHit->setHitType(getHepEVDHitType(caloHit->GetHitType()));
 
             mcHits.push_back(mcHit);
@@ -477,7 +478,8 @@ static void addPFOs(const pandora::Pandora &pPandora, const pandora::PfoList *pP
     hepEVDServer->addParticles(particles);
 }
 
-#if __has_include("larpandoradlcontent/LArHelpers/LArDLHelper.h")
+#if __has_include("larpandoradlcontent/LArHelpers/LArDLHelper.h") && __has_include(<ATen/ATen.h>) && \
+     __has_include(<torch/script.h>)
 template <typename T> static void addDLTensorImage(const at::Tensor inputImageTensor, const std::string name) {
 
     if (!isServerInitialised())

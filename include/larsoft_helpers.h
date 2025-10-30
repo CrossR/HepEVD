@@ -435,8 +435,7 @@ static void addPFPs(const art::Event &evt, const std::string pfpModuleLabel, con
 
     // Link every PFP to its ID and its parent PFP.
     // We can then use that when we traverse the parent/child relationships.
-    for (const auto &pfp : particleVector)
-    {
+    for (const auto &pfp : particleVector) {
         pfpMap.insert({pfp->Self(), pfp});
         childToParentMap.insert({pfp->Self(), pfp->Parent()});
     }

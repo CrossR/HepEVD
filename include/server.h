@@ -17,12 +17,16 @@
 #include "state.h"
 #include "utils.h"
 
+#include <chrono>
+#include <cstdint>
 #include <fstream>
-
-#include "extern/httplib.h"
 
 #include "extern/json.hpp"
 using json = nlohmann::json;
+
+#include "extern/httplib.h"
+#include "extern/rapidjson/stringbuffer.h"
+#include "extern/rapidjson/writer.h"
 
 namespace HepEVD {
 
@@ -230,7 +234,8 @@ inline void HepEVDServer::startServer() {
 
     // First, the actual event hits.
     this->m_server.Get("/hits", [&](const Request &, Response &res) {
-        res.set_content(json(this->getHits()).dump(), "application/json");
+        const std::string hitJson = parallel_to_json_array<Hits>(this->getHits());
+        res.set_content(hitJson, "application/json");
     });
     this->m_server.Post("/hits", [&](const Request &req, Response &res) {
         try {
@@ -260,7 +265,8 @@ inline void HepEVDServer::startServer() {
 
     // Then any actual particles.
     this->m_server.Get("/particles", [&](const Request &, Response &res) {
-        res.set_content(json(this->getParticles()).dump(), "application/json");
+        const auto particleJson = parallel_to_json_array<Particles>(this->getParticles());
+        res.set_content(particleJson, "application/json");
     });
     this->m_server.Post("/particles", [&](const Request &req, Response &res) {
         try {
