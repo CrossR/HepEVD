@@ -262,8 +262,17 @@ static void showMC(const pandora::Algorithm &pAlgorithm, const std::string &list
     std::function<bool(const pandora::MCParticle *const)> getAll = [](const pandora::MCParticle *const) {
         return true;
     };
+
+    // Since this is for vis...not for analysis, just get everything.
+    lar_content::LArMCParticleHelper::PrimaryParameters primaryParams;
+    primaryParams.m_minPrimaryGoodHits = 1;
+    primaryParams.m_minHitsForGoodView = 1;
+    primaryParams.m_minPrimaryGoodViews = 1;
+    primaryParams.m_selectInputHits = false;
+    primaryParams.m_maxPhotonPropagation = std::numeric_limits<float>::max();
+
     lar_content::LArMCParticleHelper::SelectReconstructableMCParticles(
-        pMCParticleList, pCaloHitList, lar_content::LArMCParticleHelper::PrimaryParameters(), getAll, mcToHitsMap);
+        pMCParticleList, pCaloHitList, primaryParams, getAll, mcToHitsMap);
 
     for (auto const &mcCaloHitListPair : mcToHitsMap) {
 
