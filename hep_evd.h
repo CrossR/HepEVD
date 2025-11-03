@@ -8,6 +8,11 @@
 #ifndef HEP_EVD_H
 #define HEP_EVD_H
 
+// Set a version number
+#define HEP_EVD_VERSION_MAJOR 0
+#define HEP_EVD_VERSION_MINOR 4
+#define HEP_EVD_VERSION_PATCH 2
+
 // Include everything...
 #include "include/config.h"
 #include "include/geometry.h"
