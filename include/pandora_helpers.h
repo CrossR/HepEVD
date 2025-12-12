@@ -271,8 +271,8 @@ static void showMC(const pandora::Algorithm &pAlgorithm, const std::string &list
     primaryParams.m_selectInputHits = false;
     primaryParams.m_maxPhotonPropagation = std::numeric_limits<float>::max();
 
-    lar_content::LArMCParticleHelper::SelectReconstructableMCParticles(
-        pMCParticleList, pCaloHitList, primaryParams, getAll, mcToHitsMap);
+    lar_content::LArMCParticleHelper::SelectReconstructableMCParticles(pMCParticleList, pCaloHitList, primaryParams,
+                                                                       getAll, mcToHitsMap);
 
     for (auto const &mcCaloHitListPair : mcToHitsMap) {
 
