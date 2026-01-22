@@ -81,19 +81,24 @@ export function fitSceneInCamera(
     // Get the maximum dimension of the bounding box...
     const maxDim = Math.max(size.x, size.y, size.z);
     const cameraFOV = camera.fov * (Math.PI / 180);
-    let cameraZ = Math.abs((maxDim / 4) * Math.tan(cameraFOV * 2));
+
+    // Calculate distance needed to fit the scene
+    let cameraZ = maxDim / 2 / Math.tan(cameraFOV / 2);
 
     // Zoom out a bit, according to the padding factor...
     cameraZ *= offset;
-    camera.position.z = cameraZ;
+
+    // Position camera at center, offset by calculated distance
+    camera.position.set(center.x, center.y, center.z + cameraZ);
 
     // Apply limits to the camera...
     const minZ = boundingBox.min.z;
-    const cameraToFarEdge = minZ < 0 ? -minZ + cameraZ : cameraZ - minZ;
+    const cameraToFarEdge = Math.abs(camera.position.z - minZ);
     camera.far = cameraToFarEdge * 3;
+    camera.near = 0.1; // Make sure near plane is set
 
-    controls.target = center;
-    controls.maxDistance = cameraToFarEdge;
+    controls.target.copy(center);
+    controls.maxDistance = cameraToFarEdge * 2;
   } else {
     const yOffset = -center.y / 2 - 50;
     const xOffset = center.x;

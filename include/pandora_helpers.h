@@ -240,11 +240,25 @@ static void showMC(const pandora::Algorithm &pAlgorithm, const std::string &list
         return;
 
     MCHits mcHits;
+    pandora::CaloHitList caloHitList;
 
-    const pandora::CaloHitList *pCaloHitList(nullptr);
-    try {
-        PandoraContentApi::GetCurrentList(pAlgorithm, pCaloHitList);
-    } catch (pandora::StatusCodeException &) {
+    // Don't rely on "GetCurrentList" here...just load everything and use everything.
+    // We can use 3D hits here too, since they shouldn't connect back unless there is truly
+    // 3D MC available in our event.
+    std::vector<std::string> caloHitListNames{"CaloHitListU", "CaloHitListV", "CaloHitListW", "CaloHitList3D"};
+    for (const auto &hitListName : caloHitListNames) {
+        const pandora::CaloHitList *pCurrentCaloHitList(nullptr);
+        try {
+            PandoraContentApi::GetList(pAlgorithm, hitListName, pCurrentCaloHitList);
+            caloHitList.insert(caloHitList.end(), pCurrentCaloHitList->begin(), pCurrentCaloHitList->end());
+        } catch (pandora::StatusCodeException &) {
+            continue;
+        }
+    }
+
+    // Check we actually have any hits.
+    if (caloHitList.empty()) {
+        hepEVDLog("No CaloHits to build MC from! Skipping...");
         return;
     }
 
@@ -271,8 +285,9 @@ static void showMC(const pandora::Algorithm &pAlgorithm, const std::string &list
     primaryParams.m_selectInputHits = false;
     primaryParams.m_maxPhotonPropagation = std::numeric_limits<float>::max();
 
-    lar_content::LArMCParticleHelper::SelectReconstructableMCParticles(
-        pMCParticleList, pCaloHitList, primaryParams, getAll, mcToHitsMap);
+    const pandora::CaloHitList *pCaloHitList{&caloHitList};
+    lar_content::LArMCParticleHelper::SelectReconstructableMCParticles(pMCParticleList, pCaloHitList, primaryParams,
+                                                                       getAll, mcToHitsMap);
 
     for (auto const &mcCaloHitListPair : mcToHitsMap) {
 

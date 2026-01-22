@@ -24,18 +24,31 @@ std::vector<double> getItems(nb::handle obj, int index, int size) {
         throw std::runtime_error("HepEVD: Object must be an array or list");
 
     if (nb::isinstance<nb::ndarray<>>(obj)) {
-        // Request array as contiguous double precision
-        auto array = nb::cast<nb::ndarray<nb::numpy, double>>(obj);
+        auto array = nb::cast<nb::ndarray<nb::numpy>>(obj);
 
         std::vector<double> items;
         items.reserve(size);
 
-        // Now we can safely access as double*
-        const double *data = array.data();
         size_t offset = index * size;
 
-        for (int i = 0; i < size; i++) {
-            items.push_back(data[offset + i]);
+        // Handle different dtypes
+        if (array.dtype() == nb::dtype<double>()) {
+            const double *data = static_cast<const double *>(array.data());
+            for (int i = 0; i < size; i++) {
+                items.push_back(data[offset + i]);
+            }
+        } else if (array.dtype() == nb::dtype<float>()) {
+            const float *data = static_cast<const float *>(array.data());
+            for (int i = 0; i < size; i++) {
+                items.push_back(static_cast<double>(data[offset + i]));
+            }
+        } else {
+            // Fallback: use Python item access (slower but works for any dtype)
+            nb::object array_obj = nb::cast(array);
+            for (int i = 0; i < size; i++) {
+                nb::object item = array_obj.attr("flat")[nb::int_(offset + i)];
+                items.push_back(nb::cast<double>(item));
+            }
         }
 
         return items;
