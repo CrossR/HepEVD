@@ -33,12 +33,12 @@ std::vector<double> getItems(nb::handle obj, int index, int size) {
 
         // Handle different dtypes
         if (array.dtype() == nb::dtype<double>()) {
-            const double *data = static_cast<const double*>(array.data());
+            const double *data = static_cast<const double *>(array.data());
             for (int i = 0; i < size; i++) {
                 items.push_back(data[offset + i]);
             }
         } else if (array.dtype() == nb::dtype<float>()) {
-            const float *data = static_cast<const float*>(array.data());
+            const float *data = static_cast<const float *>(array.data());
             for (int i = 0; i < size; i++) {
                 items.push_back(static_cast<double>(data[offset + i]));
             }

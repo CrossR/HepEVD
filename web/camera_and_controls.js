@@ -83,7 +83,7 @@ export function fitSceneInCamera(
     const cameraFOV = camera.fov * (Math.PI / 180);
 
     // Calculate distance needed to fit the scene
-    let cameraZ = (maxDim / 2) / Math.tan(cameraFOV / 2);
+    let cameraZ = maxDim / 2 / Math.tan(cameraFOV / 2);
 
     // Zoom out a bit, according to the padding factor...
     cameraZ *= offset;
