@@ -11,7 +11,7 @@
 cmake_minimum_required(VERSION 3.14) # Required for FetchContent
 
 project(HepEVD
-  VERSION 0.4.2
+  VERSION 0.4.4
   LANGUAGES CXX
   DESCRIPTION "HepEVD - A C++ & Web-based Event Display for HEP Events"
 )
