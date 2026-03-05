@@ -10,7 +10,7 @@ import { LineMaterial } from "three/addons/lines/LineMaterial.js";
 //==============================================================================
 
 export const threeDGeoMat = new THREE.LineBasicMaterial({
-  color: "darkred",
+  color: "lightgray",
 });
 export const threeDTrapezoidMat = new THREE.LineBasicMaterial({
   side: THREE.FrontSide,
@@ -53,7 +53,7 @@ export const BUTTON_ID = {
 
 export const THEME = {
   dark: "rgb(25, 30, 36)",
-  light: "rgb(242, 242, 242)",
+  light: "rgb(255, 255, 255)",
   blue: "rgb(41, 22, 131)",
 };
 
