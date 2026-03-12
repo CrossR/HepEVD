@@ -78,6 +78,39 @@ static void setHepEVDGeometry(const pandora::GeometryManager *manager) {
         volumes.push_back(larTPCVolume);
     }
 
+    // If we've only got a single volume...we may be in a slice worker.
+    // Lets also load in the detector gaps, and just add them as separate
+    // volumes, so we can at least see where they are.
+    //
+    // TODO: Other gaps too?
+    if (volumes.size() == 1) {
+        for (const auto *const pGap : manager->GetDetectorGapList()) {
+            const pandora::BoxGap *const pBoxGap(dynamic_cast<const pandora::BoxGap *>(pGap));
+
+            // Safety check in case there are other gap types (e.g. LineGap)
+            if (!pBoxGap) continue;
+
+            const pandora::CartesianVector &vertex = pBoxGap->GetVertex();
+            const pandora::CartesianVector &side1 = pBoxGap->GetSide1();
+            const pandora::CartesianVector &side2 = pBoxGap->GetSide2();
+            const pandora::CartesianVector &side3 = pBoxGap->GetSide3();
+
+            // Center is vertex + half of each side vector
+            const pandora::CartesianVector center = vertex + (side1 * 0.5f) + (side2 * 0.5f) + (side3 * 0.5f);
+
+            // Widths are the magnitudes of the side vectors
+            const float widthX = side1.GetMagnitude();
+            const float widthY = side2.GetMagnitude();
+            const float widthZ = side3.GetMagnitude();
+
+            BoxVolume gapVolume({center.GetX(), center.GetY(), center.GetZ()},
+                                widthX, widthY, widthZ);
+            gapVolume.setOpacity(0.25);
+
+            volumes.push_back(gapVolume);
+        }
+    }
+
     hepEVDLog("Setting HepEVD geometry: " + std::to_string(volumes.size()) + " volumes.");
     hepEVDServer = new HepEVDServer(DetectorGeometry(volumes));
 

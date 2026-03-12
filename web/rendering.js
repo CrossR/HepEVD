@@ -45,7 +45,19 @@ export function drawBox(hitType, group, box) {
 export function drawBoxVolume(group, box) {
   const boxGeometry = new THREE.BoxGeometry(box.xWidth, box.yWidth, box.zWidth);
   const boxEdges = new THREE.EdgesGeometry(boxGeometry);
-  const boxLines = new THREE.LineSegments(boxEdges, threeDGeoMat);
+  const boxLines = new THREE.LineSegments(boxEdges, threeDGeoMat.clone());
+
+  // Check the box properties and adjust accordingly.
+  if (box.colour !== "")
+    boxLines.material.color = new THREE.Color(box.colour);
+
+  if (box.opacity !== 1.0)
+  {
+    boxLines.material.opacity = box.opacity;
+    boxLines.material.transparent = true;
+  }
+
+  console.log(box)
 
   const boxPos = box.position;
   boxLines.position.set(boxPos.x, boxPos.y, boxPos.z);

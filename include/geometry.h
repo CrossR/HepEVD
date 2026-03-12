@@ -40,6 +40,8 @@ class BoxVolume {
     double getXWidth() const { return this->m_xWidth; }
     double getYWidth() const { return this->m_yWidth; }
     double getZWidth() const { return this->m_zWidth; }
+    void setOpacity(double opacity) { this->opacity = opacity; }
+    void setColour(std::string colour) { this->colour = colour; }
 
     // Use custom to/from_json to allow including the volume type.
     friend void to_json(json &j, const BoxVolume &box) {
@@ -48,6 +50,8 @@ class BoxVolume {
         j["xWidth"] = box.m_xWidth;
         j["yWidth"] = box.m_yWidth;
         j["zWidth"] = box.m_zWidth;
+        j["opacity"] = box.opacity;
+        j["colour"] = box.colour;
     }
 
     friend void from_json(const json &j, BoxVolume &box) {
@@ -55,11 +59,15 @@ class BoxVolume {
         j.at("xWidth").get_to(box.m_xWidth);
         j.at("yWidth").get_to(box.m_yWidth);
         j.at("zWidth").get_to(box.m_zWidth);
+        j.at("opacity").get_to(box.opacity);
+        j.at("colour").get_to(box.colour);
     }
 
   private:
     Position m_position;
     double m_xWidth, m_yWidth, m_zWidth;
+    double opacity = 1.0;
+    std::string colour = "";
 };
 
 // And a 3D cylinder...
