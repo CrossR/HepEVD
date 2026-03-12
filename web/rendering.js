@@ -57,8 +57,6 @@ export function drawBoxVolume(group, box) {
     boxLines.material.transparent = true;
   }
 
-  console.log(box)
-
   const boxPos = box.position;
   boxLines.position.set(boxPos.x, boxPos.y, boxPos.z);
   boxLines.updateMatrixWorld();
