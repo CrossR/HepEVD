@@ -40,8 +40,8 @@ class BoxVolume {
     double getXWidth() const { return this->m_xWidth; }
     double getYWidth() const { return this->m_yWidth; }
     double getZWidth() const { return this->m_zWidth; }
-    void setOpacity(double opacity) { this->opacity = opacity; }
-    void setColour(std::string colour) { this->colour = colour; }
+    void setOpacity(double newOpacity) { this->opacity = newOpacity; }
+    void setColour(std::string newColour) { this->colour = newColour; }
 
     // Use custom to/from_json to allow including the volume type.
     friend void to_json(json &j, const BoxVolume &box) {
