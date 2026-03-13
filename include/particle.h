@@ -30,9 +30,12 @@ NLOHMANN_JSON_SERIALIZE_ENUM(RenderType, {{PARTICLE, "Particle"}, {TRACK, "Track
 // Represent a single particle in the event.
 class Particle {
   public:
-    Particle() : m_hits({}), m_label(""), m_id(""), m_parentID(""), m_childIDs({}) {}
+    Particle() : m_hits({}), m_label(""), m_parentID(""), m_childIDs({}) { m_id = getUUID(); }
     Particle(const Hits &hits, const std::string id = "", const std::string &label = "")
-        : m_hits(hits), m_label(label), m_id(id), m_parentID(""), m_childIDs({}) {}
+        : m_hits(hits), m_label(label), m_id(id), m_parentID(""), m_childIDs({}) {
+        if (id.empty())
+            m_id = getUUID();
+    }
 
     double getEnergy() const {
         double energy = 0.0;
