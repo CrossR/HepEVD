@@ -64,7 +64,7 @@ export function drawHits(
 
   // Group the hits based on their hit width, then we can draw them.
   const groupedHits = hits.reduce((acc, hit) => {
-    const width = hit.width ?? { x: 0, y: 0, z: 0 };
+    const width = hit.width ?? { x: 1, y: 1, z: 1 };
 
     // Round to 1 decimal place.
     const round = (num) => Math.round(num * 10) / 10;

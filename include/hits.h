@@ -78,17 +78,23 @@ class Hit {
         writer.Key("position");
         m_position.writeJson(writer);
 
-        writer.Key("width");
-        m_width.writeJson(writer);
+        if (m_width.x != 1.0 || m_width.y != 1.0 || m_width.z != 1.0) {
+            writer.Key("width");
+            m_width.writeJson(writer);
+        }
 
         writer.Key("energy");
         writer.Double(m_energy);
 
-        writer.Key("label");
-        writer.String(m_label.c_str(), static_cast<rapidjson::SizeType>(m_label.length()));
+        if (!m_label.empty()) {
+            writer.Key("label");
+            writer.String(m_label.c_str(), static_cast<rapidjson::SizeType>(m_label.length()));
+        }
 
-        writer.Key("properties");
-        writePropertiesJson(writer, m_properties);
+        if (!m_properties.empty()) {
+            writer.Key("properties");
+            writePropertiesJson(writer, m_properties);
+        }
 
         writer.EndObject();
     }

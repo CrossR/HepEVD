@@ -69,7 +69,7 @@ export function getHitProperties(particles, hits) {
       hitPropMaps.get(hit.id).set(hit.label, 1.0);
     }
 
-    if (Object.keys(hit.properties).length > 0) {
+    if (hit.properties && Object.keys(hit.properties).length > 0) {
       Object.entries(hit.properties).forEach((prop) => {
         // The prop object will look one of two ways:
         // [propertyNumber, [ [propertyName, propertyType], propertyValue ] ]
