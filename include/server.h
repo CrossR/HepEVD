@@ -353,6 +353,22 @@ inline void HepEVDServer::startServer() {
         infoFile["config"] = *this->getConfig();
         infoFile["stateInfo"] = *this->getState();
 
+        // Define a lambda to produce a valid file name from a state name, which
+        // can be used in the state files.
+        auto getFileName = [](const int i, const std::string &name) {
+            std::string formattedName = name;
+
+            // Replace any spaces with underscores.
+            std::replace(formattedName.begin(), formattedName.end(), ' ', '_');
+
+            // Remove any non-alphanumeric characters.
+            formattedName.erase(std::remove_if(formattedName.begin(), formattedName.end(),
+                                               [](char c) { return !std::isalnum(c) && c != '_'; }),
+                                formattedName.end());
+
+            return std::to_string(i) + "_" + formattedName + ".json";
+        };
+
         int numberOfStates(0);
 
         for (auto &state : this->m_eventStates) {
@@ -360,10 +376,19 @@ inline void HepEVDServer::startServer() {
             if (state.second.isEmpty())
                 continue;
 
-            json nameUrlPair({{"name", state.second.m_name}, {"url", ""}});
+            json nameUrlPair({{"name", state.second.m_name},
+                              {
+                                  "url",
+                                  "",
+                              },
+                              {"file_name", getFileName(numberOfStates, state.second.m_name)}});
             infoFile["states"].push_back(nameUrlPair);
             ++numberOfStates;
         }
+
+        // Add an empty, top level property of "root_url".
+        // This can then be used to set a link later, for Gist usage.
+        infoFile["root_url"] = "";
 
         // Now write out the top level file.
         infoFile["numberOfStates"] = numberOfStates;

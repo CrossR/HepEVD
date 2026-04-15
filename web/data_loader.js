@@ -23,6 +23,7 @@ import { addCitation } from "./ui.js";
 //      - url: The URL for the state.
 //      - description: A description of the state.
 //    - detectorGeometry: The detector geometry for the event display.
+//    - rootUrl: The root URL for the event display, which can be used to construct URLs for each state.
 // If the input github gist URL is a single JSON object, then this variable
 // will be undefined.
 export var hepEVD_GLOBAL_STATE = {
@@ -157,9 +158,11 @@ async function loadServerData() {
  * @returns {Promise<Object>} An object containing the updated data, including hits, mcHits, markers, particles, and detectorGeometry.
  */
 async function updateExternalData() {
-  const newDataUrl =
-    hepEVD_GLOBAL_STATE.state.states[hepEVD_GLOBAL_STATE.state.currentState]
-      .url;
+  const newData =
+    hepEVD_GLOBAL_STATE.state.states[hepEVD_GLOBAL_STATE.state.currentState];
+  const newDataUrl = newData.url
+    ? newData.url
+    : hepEVD_GLOBAL_STATE.state.rootUrl + newData.file_name;
   const newStateData = await getDataWithProgress(newDataUrl);
 
   return {
@@ -211,8 +214,11 @@ async function loadExternalData(url) {
   const numberOfStates = result.numberOfStates;
 
   // Get the last state.
-  const lastState = states[numberOfStates - 1].url;
-  const lastStateData = await getDataWithProgress(lastState);
+  const lastState = states[numberOfStates - 1];
+  const lastStateUrl = lastState.url
+    ? lastState.url
+    : result.root_url + lastState.file_name;
+  const lastStateData = await getDataWithProgress(lastStateUrl);
 
   hepEVD_GLOBAL_STATE.state = {
     numberOfStates: numberOfStates,
@@ -220,6 +226,7 @@ async function loadExternalData(url) {
     states: states,
     detectorGeometry: result.detectorGeometry,
     config: result.config,
+    rootUrl: result.root_url,
   };
 
   // Set any citations, if they exist.
@@ -237,6 +244,7 @@ async function loadExternalData(url) {
     detectorGeometry: result.detectorGeometry,
     stateInfo: lastStateData.stateInfo || { mcTruth: "" },
     config: result.config || {},
+    rootUrl: result.root_url,
   };
 }
 
