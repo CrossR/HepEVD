@@ -88,7 +88,8 @@ static void setHepEVDGeometry(const pandora::GeometryManager *manager) {
             const pandora::BoxGap *const pBoxGap(dynamic_cast<const pandora::BoxGap *>(pGap));
 
             // Safety check in case there are other gap types (e.g. LineGap)
-            if (!pBoxGap) continue;
+            if (!pBoxGap)
+                continue;
 
             const pandora::CartesianVector &vertex = pBoxGap->GetVertex();
             const pandora::CartesianVector &side1 = pBoxGap->GetSide1();
@@ -103,8 +104,7 @@ static void setHepEVDGeometry(const pandora::GeometryManager *manager) {
             const float widthY = side2.GetMagnitude();
             const float widthZ = side3.GetMagnitude();
 
-            BoxVolume gapVolume({center.GetX(), center.GetY(), center.GetZ()},
-                                widthX, widthY, widthZ);
+            BoxVolume gapVolume({center.GetX(), center.GetY(), center.GetZ()}, widthX, widthY, widthZ);
             gapVolume.setOpacity(0.25);
 
             volumes.push_back(gapVolume);
