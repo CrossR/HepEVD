@@ -65,7 +65,7 @@ export function getHitProperties(particles, hits) {
     hitPropMaps.set(hit.id, new Map([[BUTTON_ID.All, 0.0]]));
     hitPropMaps.get(hit.id).set("energy", hit.energy);
 
-    if (hit.label !== "") {
+    if (hit.label && hit.label !== "") {
       hitPropMaps.get(hit.id).set(hit.label, 1.0);
     }
 
