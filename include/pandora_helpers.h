@@ -150,11 +150,7 @@ static HitType getHepEVDHitType(pandora::HitType pandoraHitType) {
     }
 }
 
-// Add the given CaloHits to the server.
-static void addHits(const pandora::CaloHitList *caloHits, std::string label = "") {
-
-    if (!isServerInitialised())
-        return;
+static HepEVD::Hits getHits(const pandora::CaloHitList *caloHits, std::string label = "") {
 
     Hits hits;
 
@@ -175,6 +171,15 @@ static void addHits(const pandora::CaloHitList *caloHits, std::string label = ""
         caloHitToEvdHit.insert({pCaloHit, hit});
     }
 
+    return hits;
+}
+
+// Add the given CaloHits to the server.
+static void addHits(const pandora::CaloHitList *caloHits, std::string label = "") {
+    if (!isServerInitialised())
+        return;
+
+    const auto hits = HepEVD::getHits(caloHits, label);
     hepEVDLog("Adding " + std::to_string(hits.size()) + " hits to the HepEVD server.");
     hepEVDServer->addHits(hits);
 }
@@ -190,26 +195,18 @@ static void addClusters(const pandora::ClusterList *clusters, std::string label 
     if (!isServerInitialised())
         return;
 
-    unsigned int clusterNumber = 0;
+    HepEVD::Particles particles;
 
     for (const pandora::Cluster *const pCluster : *clusters) {
         pandora::CaloHitList clusterCaloHits;
         HepEVD::getAllCaloHits(pCluster, clusterCaloHits);
-        HepEVD::addHits(&clusterCaloHits, label);
 
-        for (const auto &pCaloHit : clusterCaloHits) {
-
-            if (caloHitToEvdHit.count(pCaloHit) == 0)
-                continue;
-
-            caloHitToEvdHit[pCaloHit]->addProperties(
-                {{{"ClusterNumber", HepEVD::PropertyType::CATEGORIC}, clusterNumber}});
-        }
-
-        ++clusterNumber;
+        auto clusterParticle = new Particle(HepEVD::getHits(&clusterCaloHits, label), getUUID());
+        particles.push_back(clusterParticle);
     }
 
-    hepEVDLog("Added " + std::to_string(clusterNumber) + " clusters to the HepEVD server.");
+    hepEVDLog("Adding " + std::to_string(particles.size()) + " clusters to the HepEVD server.");
+    hepEVDServer->addParticles(particles);
 }
 
 static void addClusterProperties(const pandora::Cluster *cluster, std::map<std::string, double> props) {
@@ -227,44 +224,30 @@ static void addClusterProperties(const pandora::Cluster *cluster, std::map<std::
     }
 }
 
-static void addSlices(const SliceList *slices, const ClusterToSliceIndexMap *clusterToSliceIndexMap = nullptr,
-                      const std::string label = "") {
+static void addSlices(const SliceList *slices, const std::string label = "") {
 
     if (!isServerInitialised())
         return;
 
+    HepEVD::Particles particles;
+
     for (unsigned int sliceNumber = 0; sliceNumber < slices->size(); ++sliceNumber) {
         const auto slice = (*slices)[sliceNumber];
+        HepEVD::Hits sliceHits;
 
-        HepEVD::addHits(&slice.m_caloHitListU, label);
-        HepEVD::addHits(&slice.m_caloHitListV, label);
-        HepEVD::addHits(&slice.m_caloHitListW, label);
+        auto uHits = HepEVD::getHits(&slice.m_caloHitListU, label);
+        sliceHits.insert(sliceHits.end(), uHits.begin(), uHits.end());
+        auto vHits = HepEVD::getHits(&slice.m_caloHitListV, label);
+        sliceHits.insert(sliceHits.end(), vHits.begin(), vHits.end());
+        auto wHits = HepEVD::getHits(&slice.m_caloHitListW, label);
+        sliceHits.insert(sliceHits.end(), wHits.begin(), wHits.end());
 
-        for (const auto &pCaloHit : slice.m_caloHitListU)
-            caloHitToEvdHit[pCaloHit]->addProperties({{{"SliceNumber", HepEVD::PropertyType::CATEGORIC}, sliceNumber}});
-        for (const auto &pCaloHit : slice.m_caloHitListV)
-            caloHitToEvdHit[pCaloHit]->addProperties({{{"SliceNumber", HepEVD::PropertyType::CATEGORIC}, sliceNumber}});
-        for (const auto &pCaloHit : slice.m_caloHitListW)
-            caloHitToEvdHit[pCaloHit]->addProperties({{{"SliceNumber", HepEVD::PropertyType::CATEGORIC}, sliceNumber}});
+        auto sliceParticle = new Particle(sliceHits, getUUID());
+        particles.push_back(sliceParticle);
     }
 
-    if (clusterToSliceIndexMap == nullptr)
-        return;
-
-    for (const auto &clusterToSliceIndex : *clusterToSliceIndexMap) {
-        const auto cluster = clusterToSliceIndex.first;
-        const auto sliceIndex = clusterToSliceIndex.second;
-
-        pandora::CaloHitList clusterCaloHits;
-        HepEVD::getAllCaloHits(cluster, clusterCaloHits);
-        HepEVD::addHits(&clusterCaloHits, label);
-
-        for (const auto &pCaloHit : clusterCaloHits) {
-            caloHitToEvdHit[pCaloHit]->addProperties({{{"SliceNumber", HepEVD::PropertyType::CATEGORIC}, sliceIndex}});
-        }
-    }
-
-    hepEVDLog("Added " + std::to_string(slices->size()) + " slices to the HepEVD server.");
+    hepEVDLog("Adding " + std::to_string(slices->size()) + " slices to the HepEVD server.");
+    hepEVDServer->addParticles(particles);
 }
 
 static void showMC(const pandora::Algorithm &pAlgorithm, const std::string &listName = "") {
