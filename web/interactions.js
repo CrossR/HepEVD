@@ -3,6 +3,7 @@
 //
 
 import * as THREE from "three";
+import { BUTTON_ID } from "./constants.js";
 
 // Mouseover interactions can be very expensive, so we try to
 // limit the number of times we do this by only checking
@@ -14,6 +15,33 @@ let mouseTimeout;
 // creating new ones every time.
 const mouse = new THREE.Vector2();
 const raycaster = new THREE.Raycaster();
+
+/**
+ * Whether this render state is currently showing a hit-property override
+ * (i.e. anything except the default "All" colouring).
+ *
+ * @param {RenderState} state - The render state to inspect.
+ * @returns {boolean}
+ */
+function isUsingHitPropertyOverride(state) {
+  if (!state?.hitData?.activeProps) return false;
+
+  return Array.from(state.hitData.activeProps).some(
+    (prop) => prop !== BUTTON_ID.All,
+  );
+}
+
+/**
+ * Whether hover highlighting should be disabled for the current frame.
+ *
+ * @param {Map<string, RenderState>} renderStates - The render states.
+ * @returns {boolean}
+ */
+function shouldDisableHoverHighlight(renderStates) {
+  return Array.from(renderStates.values()).some(
+    (state) => state.visible && isUsingHitPropertyOverride(state),
+  );
+}
 
 /**
  * Highlights a particle on mouse move, if applicable.
@@ -29,6 +57,10 @@ export function highlightParticleOnMouseMove(
   currentlyHighlighting,
   event,
 ) {
+  if (shouldDisableHoverHighlight(renderStates)) {
+    return [];
+  }
+
   if (mouseTimeout) return currentlyHighlighting;
 
   mouseTimeout = setTimeout(() => {
@@ -163,6 +195,20 @@ export function setupMouseOverInteractions(canvas, renderStates) {
   canvas.addEventListener("mousemove", (event) => {
     // Skip highlighting during camera movement
     if (isMovingCamera) return;
+
+    // Property-based colouring is incompatible with particle hover highlighting.
+    if (shouldDisableHoverHighlight(renderStates)) {
+      if (currentlyHighlighting.length > 0) {
+        renderStates.forEach((state) => {
+          if (state.visible) {
+            state.particleData.disableHighlights();
+            state.triggerEvent("fullUpdate");
+          }
+        });
+        currentlyHighlighting = [];
+      }
+      return;
+    }
 
     currentlyHighlighting = highlightParticleOnMouseMove(
       renderStates,
