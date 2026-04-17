@@ -40,8 +40,10 @@ export function populateDropdown(hitDim, hitPropMap, onClick = (_) => {}) {
 
   entries.forEach((entry) => {
     const listElement = document.createElement("li");
-    const newButton = document.createElement("li");
+    const newButton = document.createElement("button");
+    newButton.type = "button";
     newButton.style.textTransform = "capitalize";
+    newButton.style.textAlign = "left";
     newButton.innerText = entry;
     newButton.id = `${hitDim}_${entry}`;
     newButton.addEventListener("click", () => onClick(entry));

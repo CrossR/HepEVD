@@ -41,6 +41,42 @@ div {
   display: block;
 }
 
+.reactive-dropdown {
+  position: absolute;
+  left: 0;
+  right: auto;
+  display: block;
+  width: 14rem;
+  max-height: min(60vh, 22rem);
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  overscroll-behavior: contain;
+}
+
+.reactive-dropdown > li {
+  width: 100%;
+  max-width: 100%;
+}
+
+.reactive-dropdown > li > * {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+#state_dropdown {
+  width: 12rem;
+}
+
+@media (max-width: 768px) {
+  .reactive-dropdown {
+    width: min(90vw, 14rem);
+    max-height: 50vh;
+  }
+}
+
 #all_toggle_options {
   position: absolute;
   width: 8em;
