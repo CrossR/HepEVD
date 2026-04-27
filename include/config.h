@@ -16,10 +16,21 @@
 #define HEP_EVD_PORT 5555
 #endif
 
+// What host to use?
+#ifndef HEP_EVD_HOST
+#define HEP_EVD_HOST "localhost"
+#endif
+
 inline int EVD_PORT() {
     if (std::getenv("HEP_EVD_PORT"))
         return std::atoi(std::getenv("HEP_EVD_PORT"));
     return HEP_EVD_PORT;
+}
+
+inline std::string HOST() {
+    if (std::getenv("HEP_EVD_HOST"))
+        return std::getenv("HEP_EVD_HOST");
+    return HEP_EVD_HOST;
 }
 
 // If the HEP_EVD_WEB_FOLDER env variable is set, use that as the web folder

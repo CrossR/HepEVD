@@ -484,8 +484,9 @@ inline void HepEVDServer::startServer() {
     while (portInUse(port)) {
         port++;
     }
-    std::cout << "Starting HepEVD server on http://localhost:" << port << "..." << std::endl;
-    this->m_server.listen("localhost", port);
+    std::string host = HOST();
+    std::cout << "Starting HepEVD server on http://" << host << ":" << port << "..." << std::endl;
+    this->m_server.listen(host, port);
     std::cout << "Server closed, continuing..." << std::endl;
 }
 
