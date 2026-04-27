@@ -16,7 +16,7 @@ namespace nb = nanobind;
 
 namespace HepEVD_py {
 
-bool isArrayOrList(nb::handle obj) { return nb::isinstance<nb::ndarray<>>(obj) || nb::isinstance<nb::list>(obj); }
+bool isArrayOrList(nb::handle obj) { return nb::isinstance<nb::list>(obj) || nb::isinstance<nb::ndarray<>>(obj); }
 
 std::vector<double> getItems(nb::handle obj, int index, int size) {
 
@@ -75,13 +75,10 @@ std::vector<double> getItems(nb::handle obj, int index, int size) {
 
 BasicSizeInfo getBasicSizeInfo(nb::handle obj) {
 
-    if (nb::isinstance<nb::ndarray<>>(obj)) {
-        nb::ndarray<> array = nb::cast<nb::ndarray<>>(obj);
-        return BasicSizeInfo(array.shape_ptr(), array.shape_ptr() + array.ndim());
-    } else if (nb::isinstance<nb::list>(obj)) {
+    if (nb::isinstance<nb::list>(obj)) {
         nb::list list = nb::cast<nb::list>(obj);
         BasicSizeInfo size({static_cast<int>(list.size())});
-        nb::handle child = list[0];
+        nb::object child = nb::object(list[0]);
 
         if (isArrayOrList(child)) {
             try {
@@ -92,6 +89,9 @@ BasicSizeInfo getBasicSizeInfo(nb::handle obj) {
         }
 
         return size;
+    } else if (nb::isinstance<nb::ndarray<>>(obj)) {
+        nb::ndarray<> array = nb::cast<nb::ndarray<>>(obj);
+        return BasicSizeInfo(array.shape_ptr(), array.shape_ptr() + array.ndim());
     }
 
     throw std::runtime_error("HepEVD: Unknown input type!");
