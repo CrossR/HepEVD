@@ -23,10 +23,6 @@
 
 // Backwards compatibility with older versions of Pandora.
 // Somethings have been moved around or don't exist.
-#if __has_include("larpandoracontent/LArObjects/LArGraph.h")
-#include "larpandoracontent/LArObjects/LArGraph.h"
-#endif
-
 #if __has_include("larpandoracontent/LArObjects/LArSlice.h")
 #include "larpandoracontent/LArObjects/LArSlice.h"
 typedef lar_content::SliceList SliceList;
@@ -551,45 +547,6 @@ template <typename T> static void addDLTensorImage(const at::Tensor inputImageTe
 
     hepEVDLog("Adding " + name + " image to the HepEVD server.");
     hepEVDServer->addImages({image});
-}
-#endif
-
-#if __has_include("larpandoracontent/LArObjects/LArGraph.h")
-static void addGraph(const lar_content::LArGraph &graph, std::string label = "", std::string nodeColour = "grey",
-                     std::string lineColour = "blue") {
-
-    Markers markers;
-    const auto &edges = graph.GetEdges();
-
-    for (const auto &edge : edges) {
-        const auto &startHit = edge->m_v0;
-        const auto &endHit = edge->m_v1;
-
-        const auto &startPos = startHit->GetPositionVector();
-        const auto &endPos = endHit->GetPositionVector();
-
-        // Assume the two hits are in the same dimension / hit type.
-        const auto hitType = getHepEVDHitType(startHit->GetHitType());
-        const auto hitDim = getHepEVDHitDimension(startHit->GetHitType());
-
-        Point startPoint({startPos.GetX(), startPos.GetY(), startPos.GetZ()}, hitDim, hitType);
-        startPoint.setLabel(label);
-        startPoint.setColour(nodeColour);
-
-        Point endPoint({endPos.GetX(), endPos.GetY(), endPos.GetZ()}, hitDim, hitType);
-        endPoint.setLabel(label);
-        endPoint.setColour(nodeColour);
-
-        Line line(startPoint, endPoint);
-        line.setLabel(label);
-        line.setColour(lineColour);
-
-        markers.push_back(startPoint);
-        markers.push_back(endPoint);
-        markers.push_back(line);
-    }
-
-    hepEVDServer->addMarkers(markers);
 }
 #endif
 
