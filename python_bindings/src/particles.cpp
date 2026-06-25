@@ -53,7 +53,8 @@ void add_particles(nb::handle particles, std::string label) {
     for (int particleIdx = 0; particleIdx < numParticles; particleIdx++) {
 
         // Get the hits for this particle.
-        BasicSizeInfo particleSize = getBasicSizeInfo(particles[particleIdx]);
+        nb::object particleObj = nb::cast<nb::object>(particles[particleIdx]);
+        BasicSizeInfo particleSize = getBasicSizeInfo(particleObj);
         int numHits = particleSize[0];
 
         HepEVD::Hits particleHits;
@@ -61,20 +62,20 @@ void add_particles(nb::handle particles, std::string label) {
         for (int hitIdx = 0; hitIdx < numHits; hitIdx++) {
 
             // Get the hit for this particle.
-            nb::handle hitHandle = particles[particleIdx][hitIdx];
+            nb::object hitObj = nb::cast<nb::object>(particleObj[hitIdx]);
 
             // Check that the hit is a list or array.
-            if (!isArrayOrList(hitHandle))
+            if (!isArrayOrList(hitObj))
                 throw std::runtime_error("HepEVD: Hit must be an array or list");
 
-            BasicSizeInfo hitSize = getBasicSizeInfo(hitHandle);
+            BasicSizeInfo hitSize = getBasicSizeInfo(hitObj);
 
             // Each hit should be a 1D array with 4+ elements...
             if (hitSize.size() != 1 || hitSize[0] < 4)
                 throw std::runtime_error("HepEVD: Hit must be a 1D array, with at least 4 elements (x, y, z, energy)");
 
             // Get hit data
-            auto hitData = getItems(hitHandle, 0, hitSize[0]);
+            auto hitData = getItems(hitObj, 0, hitSize[0]);
             int dataSize = hitSize[0];
 
             auto idx(0);
