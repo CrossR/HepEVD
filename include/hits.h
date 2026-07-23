@@ -43,6 +43,7 @@ class Hit {
     void setEnergy(double e) { this->m_energy = e; }
     void setPosition(const Position &pos) { this->m_position = pos; }
     void setWidth(const std::string &axis, const float width) { this->m_width.setValue(axis, width); }
+    void setColour(const std::string &colour) { this->m_colour = colour; }
 
     std::string getId() const { return this->m_id; }
     const Position &getPosition() const { return this->m_position; }
@@ -50,6 +51,7 @@ class Hit {
     double getEnergy() const { return this->m_energy; }
     HitDimension getDim() const { return this->m_position.dim; }
     HitType getHitType() const { return this->m_position.hitType; }
+    const std::string &getColour() const { return this->m_colour; }
 
     // If no type is specified, the type is assumed to be numeric.
     void addProperties(std::map<std::string, double> props) {
@@ -108,6 +110,7 @@ class Hit {
         j["energy"] = hit.m_energy;
         j["label"] = hit.m_label;
         j["properties"] = hit.m_properties;
+        j["colour"] = hit.m_colour;
     }
 
     friend void from_json(const json &j, Hit &hit) {
@@ -117,15 +120,24 @@ class Hit {
         j.at("energy").get_to(hit.m_energy);
         j.at("label").get_to(hit.m_label);
         j.at("properties").get_to(hit.m_properties);
+        j.at("colour").get_to(hit.m_colour);
     }
 
   protected:
+    // Unique identifier for the hit.
     std::string m_id;
+    // (x, y, z) position of the hit in the detector.
     Position m_position;
+    // (x, y, z) width of the hit in the detector.
     Position m_width = Position({1.0, 1.0, 1.0});
+    // Energy deposited in the hit.
     double m_energy;
+    // Optional label for the hit.
     std::string m_label;
+    // Optional properties for the hit.
     HitProperties m_properties;
+    // Optional specific colour for the hit.
+    std::string m_colour;
 };
 using Hits = std::vector<Hit *>;
 
