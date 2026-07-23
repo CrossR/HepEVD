@@ -98,6 +98,11 @@ class Hit {
             writePropertiesJson(writer, m_properties);
         }
 
+        if (!m_colour.empty()) {
+            writer.Key("colour");
+            writer.String(m_colour.c_str(), static_cast<rapidjson::SizeType>(m_colour.length()));
+        }
+
         writer.EndObject();
     }
 

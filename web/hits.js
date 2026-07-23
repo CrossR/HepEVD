@@ -103,7 +103,9 @@ export function drawHits(
 
       hitMesh.setMatrixAt(index, dummyObject.matrix);
 
-      if (usingColour && usingLut) {
+      if (hit.colour !== undefined && hit.colour !== "") {
+        hitMesh.setColorAt(index, new THREE.Color(hit.colour));
+      } else if (usingColour && usingLut) {
         hitMesh.setColorAt(index, colourLut.getColor(hitColours[index]));
       } else if (usingColour && !usingLut) {
         hitMesh.setColorAt(index, new THREE.Color(hitColours[index]));
