@@ -96,12 +96,13 @@ export function drawHits(
       hits.length,
     );
 
+    const hitPositionMatrix = new THREE.Matrix4();
+
     hits.forEach(function (hit, index) {
       const pos = hit.position;
-      dummyObject.position.set(pos.x, pos.y, pos.z);
-      dummyObject.updateMatrix();
+      hitPositionMatrix.setPosition(pos.x, pos.y, pos.z);
 
-      hitMesh.setMatrixAt(index, dummyObject.matrix);
+      hitMesh.setMatrixAt(index, hitPositionMatrix);
 
       if (hit.colour !== undefined && hit.colour !== "") {
         hitMesh.setColorAt(index, new THREE.Color(hit.colour));
