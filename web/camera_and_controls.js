@@ -133,6 +133,13 @@ export function fitSceneInCamera(
  * @param {string} plane - The desired projection plane ("3D", "XY", "XZ", "YZ").
  */
 export function setProjection(state, plane) {
+  // Update the dropdown button text
+  const projButton = document.getElementById("projection_dropdown_button");
+  if (projButton) {
+    projButton.innerText =
+      plane === "3D" ? "🧊 3D View" : `⬛ ${plane} Projection`;
+  }
+
   // If the user wants a 3D view, we can just restore the original
   // PerspectiveCamera.
   if (plane === "3D") {
@@ -151,9 +158,12 @@ export function setProjection(state, plane) {
   if (!state.orthoCamera) {
     state.perspCamera = state.camera; // Save original PerspectiveCamera
     state.orthoCamera = new THREE.OrthographicCamera(
-      window.innerWidth / -2, window.innerWidth / 2,
-      window.innerHeight / 2, window.innerHeight / -2,
-      -1e6, 1e6
+      window.innerWidth / -2,
+      window.innerWidth / 2,
+      window.innerHeight / 2,
+      window.innerHeight / -2,
+      -1e6,
+      1e6,
     );
   }
 
@@ -168,22 +178,22 @@ export function setProjection(state, plane) {
   const size = boundingBox.getSize(new THREE.Vector3());
   const distance = 10000; // Far enough to avoid clipping
 
-  if (plane === 'XY') {
+  if (plane === "XY") {
     state.camera.position.set(center.x, center.y, center.z + distance);
-    state.camera.up.set(0, 1, 0);
-  } else if (plane === 'XZ') {
+    state.camera.up.set(0, -1, 0);
+  } else if (plane === "XZ") {
     state.camera.position.set(center.x, center.y + distance, center.z);
-    state.camera.up.set(0, 0, -1);
-  } else if (plane === 'YZ') {
+    state.camera.up.set(0, 0, 1);
+  } else if (plane === "YZ") {
     state.camera.position.set(center.x + distance, center.y, center.z);
-    state.camera.up.set(0, 1, 0);
+    state.camera.up.set(0, -1, 0);
   }
 
   state.controls.target.copy(center);
 
   // Calculate zoom to fit the geometry
-  let width = plane === 'YZ' ? size.z : size.x;
-  let height = plane === 'XZ' ? size.z : size.y;
+  let width = plane === "YZ" ? size.z : size.x;
+  let height = plane === "XZ" ? size.z : size.y;
 
   // Guard against division by zero on empty scenes
   width = width === 0 ? 1 : width * 1.2; // Add 20% padding
