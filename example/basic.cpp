@@ -27,7 +27,7 @@ int main(void) {
     const std::vector<double> pdgCodes({11, 13});
     std::uniform_int_distribution<> disPdg(0, 1);
 
-    for (unsigned int i = 0; i < 25000; ++i) {
+    for (unsigned int i = 0; i < 250000; ++i) {
 
         const double x = disX(gen);
         const double y = disY(gen);
