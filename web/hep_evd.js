@@ -147,7 +147,7 @@ renderStates.forEach((state) => {
 // Hook up various global events and tidy functions.
 setupMobileUI(renderer);
 populateImages(images);
-document.screenshotEvd = () => screenshotEvd(renderer);
+document.screenshotEvd = () => screenshotEvd(renderer, renderStates);
 document.quitEvd = () => quitEvd(renderStates);
 document.toggleTheme = () => toggleTheme(renderStates);
 document.saveState = () => saveState(renderStates);
