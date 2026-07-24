@@ -224,7 +224,7 @@ export class RenderState {
    * box geometry.
    */
   renderGeometry() {
-    disposeGroup(this.detGeoGroup);
+    this.disposeGroup(this.detGeoGroup);
 
     // First, render the box volumes.
     this.detectorGeometry.volumes
@@ -259,7 +259,7 @@ export class RenderState {
    * Clears the hit group and then draws the hits with the active hit colours.
    */
   renderParticles() {
-    disposeGroup(this.hitGroup);
+    this.disposeGroup(this.hitGroup);
 
     // INFO: Duplicate the hitConfig, so we can modify it for particles.
     const hitConfig = Object.assign({}, HIT_CONFIG[this.hitDim]);
@@ -279,7 +279,7 @@ export class RenderState {
     colours = this.hitData.colours,
     clear = true,
   ) {
-    if (clear) disposeGroup(this.hitGroup);
+    if (clear) this.disposeGroup(this.hitGroup);
 
     // Use the continuous colouring by default.
     let lutConfig = getContinuousLutConf();
@@ -337,7 +337,7 @@ export class RenderState {
    * Clears the hit group and then draws the hits with the active hit colours.
    */
   renderMCHits() {
-    disposeGroup(this.mcHitGroup);
+    this.disposeGroup(this.mcHitGroup);
 
     const mcColours = getMCColouring(this.mcData.mc);
     const hitConfig = Object.assign({}, HIT_CONFIG[this.hitDim]);
@@ -360,7 +360,7 @@ export class RenderState {
    * Clears the hit group and then draws the hits with the active hit colours.
    */
   renderMarkers() {
-    disposeGroup(this.markerGroup);
+    this.disposeGroup(this.markerGroup);
 
     drawRingMarker(this.markerData.getMarkersOfType("Ring"), this.markerGroup);
     drawPoints(this.markerData.getMarkersOfType("Point"), this.markerGroup);
