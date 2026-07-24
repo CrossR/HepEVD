@@ -138,6 +138,18 @@
       </div>
 
       <div class="flex justify-end flex-1 px-2">
+        <div class="dropdown dropdown-hover" id="projection_dropdown">
+          <label class="btn btn-primary m-1">
+            🎥 Projection
+          </label>
+          <div class="dropdown-content reactive-dropdown z-[1] menu p-1 shadow bg-base-100 rounded-box">
+            <button class="btn btn-primary btn-outline m-1 w-44" onclick="setProjection('3D')">🧊 3D View</button>
+            <button class="btn btn-primary btn-outline m-1 w-44" onclick="setProjection('XY')">⬛ XY Projection</button>
+            <button class="btn btn-primary btn-outline m-1 w-44" onclick="setProjection('XZ')">⬛ XZ Projection</button>
+            <button class="btn btn-primary btn-outline m-1 w-44" onclick="setProjection('YZ')">⬛ YZ Projection</button>
+          </div>
+        </div>
+
         <div class="dropdown dropdown-hover">
           <label
             id="options_button"
