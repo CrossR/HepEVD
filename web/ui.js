@@ -371,6 +371,13 @@ export function updateUI(activeHitType, mcTruthString) {
         elem.style.visibility = "hidden";
       }
     });
+
+  const projDropdown = document.getElementById("projection_dropdown");
+  if (projDropdown) {
+    projDropdown.style.display =
+      activeHitType === "3D" ? "inline-block" : "none";
+  }
+
   toggleVisibleParticleMenu(activeHitType);
   setMCTruth(mcTruthString);
 }

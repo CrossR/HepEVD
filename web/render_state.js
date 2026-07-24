@@ -575,6 +575,13 @@ export class RenderState {
   resetView() {
     if (!this.scene.visible) return;
 
+    // If we swapped to an ortho camera for projections, revert it
+    if (this.hitDim === "3D" && this.perspCamera) {
+      this.camera = this.perspCamera;
+      this.controls.object = this.camera;
+      this.controls.enableRotate = true;
+    }
+
     // Reset the camera + controls.
     this.controls.reset();
 
