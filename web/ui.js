@@ -524,7 +524,7 @@ export function fixThemeButton() {
   }
 
   // These are inverted, since we want to change to the opposite theme.
-  const emojis = { dark: "☀️", light: "🌙" };
+  const emojis = { dark: "☼", light: "☾" };
   const themeButton = document.getElementById("theme_button");
   themeButton.innerHTML = `${emojis[themeName]} Change Theme`;
 }
