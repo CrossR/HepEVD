@@ -96,22 +96,26 @@ export function drawHits(
       hits.length,
     );
 
+    const hitPositionMatrix = new THREE.Matrix4();
+    const hitColour = new THREE.Color();
+
     hits.forEach(function (hit, index) {
       const pos = hit.position;
-      dummyObject.position.set(pos.x, pos.y, pos.z);
-      dummyObject.updateMatrix();
+      hitPositionMatrix.setPosition(pos.x, pos.y, pos.z);
 
-      hitMesh.setMatrixAt(index, dummyObject.matrix);
+      hitMesh.setMatrixAt(index, hitPositionMatrix);
 
       if (hit.colour !== undefined && hit.colour !== "") {
-        hitMesh.setColorAt(index, new THREE.Color(hit.colour));
+        hitColour.set(hit.colour);
       } else if (usingColour && usingLut) {
-        hitMesh.setColorAt(index, colourLut.getColor(hitColours[index]));
+        hitColour.copy(colourLut.getColor(hitColours[index]));
       } else if (usingColour && !usingLut) {
-        hitMesh.setColorAt(index, new THREE.Color(hitColours[index]));
+        hitColour.set(hitColours[index]);
       } else {
-        hitMesh.setColorAt(index, new THREE.Color(0x808080)); // Gray
+        hitColour.set(0x808080);
       }
+
+      hitMesh.setColorAt(index, hitColour);
     });
 
     hitMesh.instanceMatrix.needsUpdate = true;

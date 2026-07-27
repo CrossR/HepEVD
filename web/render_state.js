@@ -204,11 +204,27 @@ export class RenderState {
   }
 
   /**
+   * Helper function to dispose of a THREE.js group and its children, releasing resources.
+   */
+  disposeGroup(group) {
+    group.children.forEach((child) => {
+      if (child.geometry) child.geometry.dispose();
+      if (child.material) {
+        if (Array.isArray(child.material))
+          child.material.forEach((m) => m.dispose());
+        else child.material.dispose();
+      }
+      if (child.dispose) child.dispose();
+    });
+    group.clear();
+  }
+
+  /**
    * Renders the detector geometry for the current state. Currently only renders
    * box geometry.
    */
   renderGeometry() {
-    this.detGeoGroup.clear();
+    this.disposeGroup(this.detGeoGroup);
 
     // First, render the box volumes.
     this.detectorGeometry.volumes
@@ -243,7 +259,7 @@ export class RenderState {
    * Clears the hit group and then draws the hits with the active hit colours.
    */
   renderParticles() {
-    this.hitGroup.clear();
+    this.disposeGroup(this.hitGroup);
 
     // INFO: Duplicate the hitConfig, so we can modify it for particles.
     const hitConfig = Object.assign({}, HIT_CONFIG[this.hitDim]);
@@ -263,7 +279,7 @@ export class RenderState {
     colours = this.hitData.colours,
     clear = true,
   ) {
-    if (clear) this.hitGroup.clear();
+    if (clear) this.disposeGroup(this.hitGroup);
 
     // Use the continuous colouring by default.
     let lutConfig = getContinuousLutConf();
@@ -321,7 +337,7 @@ export class RenderState {
    * Clears the hit group and then draws the hits with the active hit colours.
    */
   renderMCHits() {
-    this.mcHitGroup.clear();
+    this.disposeGroup(this.mcHitGroup);
 
     const mcColours = getMCColouring(this.mcData.mc);
     const hitConfig = Object.assign({}, HIT_CONFIG[this.hitDim]);
@@ -344,7 +360,7 @@ export class RenderState {
    * Clears the hit group and then draws the hits with the active hit colours.
    */
   renderMarkers() {
-    this.markerGroup.clear();
+    this.disposeGroup(this.markerGroup);
 
     drawRingMarker(this.markerData.getMarkersOfType("Ring"), this.markerGroup);
     drawPoints(this.markerData.getMarkersOfType("Point"), this.markerGroup);
@@ -558,6 +574,13 @@ export class RenderState {
   // If this is currently active, reset the event display.
   resetView() {
     if (!this.scene.visible) return;
+
+    // If we swapped to an ortho camera for projections, revert it
+    if (this.hitDim === "3D" && this.perspCamera) {
+      this.camera = this.perspCamera;
+      this.controls.object = this.camera;
+      this.controls.enableRotate = true;
+    }
 
     // Reset the camera + controls.
     this.controls.reset();

@@ -371,6 +371,13 @@ export function updateUI(activeHitType, mcTruthString) {
         elem.style.visibility = "hidden";
       }
     });
+
+  const projDropdown = document.getElementById("projection_dropdown");
+  if (projDropdown) {
+    projDropdown.style.display =
+      activeHitType === "3D" ? "inline-block" : "none";
+  }
+
   toggleVisibleParticleMenu(activeHitType);
   setMCTruth(mcTruthString);
 }
@@ -379,31 +386,24 @@ export function updateUI(activeHitType, mcTruthString) {
  * Saves a screenshot of the given renderer as a JPEG image and opens it in a new tab.
  *
  * @param {THREE.WebGLRenderer} renderer - The renderer to take a screenshot of.
+ * @param {Map} renderStates - The states to save.
  */
-export function screenshotEvd(renderer) {
-  const imageData = renderer.domElement.toDataURL("image/jpeg", 1.0);
-  const contentType = "image/jpeg";
+export function screenshotEvd(renderer, renderStates) {
+  // Open up a new tab to store the screenshot in...
+  const newTab = window.open("", "_blank");
+  // Place holder text in the new tab, so that the user knows something is happening.
+  newTab.document.write("Loading screenshot...");
 
-  const byteCharacters = atob(
-    imageData.substr(`data:${contentType};base64,`.length),
-  );
-  const bytes = [];
+  // Force a synchronous render immediately before capturing
+  renderStates.forEach((state) => {
+    if (state.visible) renderer.render(state.scene, state.camera);
+  });
 
-  for (let offset = 0; offset < byteCharacters.length; offset += 1024) {
-    const slice = byteCharacters.slice(offset, offset + 1024);
-    const byteNumbers = new Array(slice.length);
-    for (let i = 0; i < slice.length; i++) {
-      byteNumbers[i] = slice.charCodeAt(i);
-    }
-
-    const byteArray = new Uint8Array(byteNumbers);
-    bytes.push(byteArray);
-  }
-
-  const blob = new Blob(bytes, { type: contentType });
-  const blobUrl = URL.createObjectURL(blob);
-
-  window.open(blobUrl, "_blank");
+  // Use native toBlob with "image/png" to safely preserve the alpha channel
+  renderer.domElement.toBlob((blob) => {
+    const blobUrl = URL.createObjectURL(blob);
+    newTab.location.href = blobUrl;
+  }, "image/png");
 }
 
 /**
@@ -524,7 +524,7 @@ export function fixThemeButton() {
   }
 
   // These are inverted, since we want to change to the opposite theme.
-  const emojis = { dark: "☀️", light: "🌙" };
+  const emojis = { dark: "☼", light: "☾" };
   const themeButton = document.getElementById("theme_button");
   themeButton.innerHTML = `${emojis[themeName]} Change Theme`;
 }

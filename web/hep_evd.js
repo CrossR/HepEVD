@@ -5,8 +5,10 @@
 import * as THREE from "three";
 import Stats from "three/addons/libs/stats.module.js";
 
+import { setProjection } from "./camera_and_controls.js";
 import { THEME, applyConfig } from "./constants.js";
 import { getData } from "./data_loader.js";
+import { setupMouseOverInteractions } from "./interactions.js";
 import { RenderState } from "./render_state.js";
 import { animate, onWindowResize } from "./rendering.js";
 import { nextState, previousState, updateStateUI } from "./states.js";
@@ -21,7 +23,6 @@ import {
   setupMobileUI,
   toggleTheme,
 } from "./ui.js";
-import { setupMouseOverInteractions } from "./interactions.js";
 
 // Set off the data loading straight away.
 // For big events, this can take a while, so we want to do it in parallel with
@@ -147,7 +148,7 @@ renderStates.forEach((state) => {
 // Hook up various global events and tidy functions.
 setupMobileUI(renderer);
 populateImages(images);
-document.screenshotEvd = () => screenshotEvd(renderer);
+document.screenshotEvd = () => screenshotEvd(renderer, renderStates);
 document.quitEvd = () => quitEvd(renderStates);
 document.toggleTheme = () => toggleTheme(renderStates);
 document.saveState = () => saveState(renderStates);
@@ -166,6 +167,10 @@ window.addEventListener(
 document.resetView = () => {
   threeDRenderer.resetView();
   twoDRenderer.resetView();
+};
+document.setProjection = (plane) => {
+  const state3D = renderStates.get("3D");
+  if (state3D) setProjection(state3D, plane);
 };
 fixThemeButton();
 updateStateUI(renderStates);

@@ -21,11 +21,11 @@ RAPIDJSON_URL="https://github.com/Tencent/rapidjson/archive/refs/tags/v${RAPIDJS
 RAPIDJSON_PATH="${EXTERN_PATH}/rapidjson"
 
 JS_LIBS=(
-    "https://cdn.tailwindcss.com/3.4.5"
-    "https://cdn.jsdelivr.net/npm/daisyui@4.12.10/dist/full.min.css"
-    "https://cdn.jsdelivr.net/npm/theme-change@2.5.0/index.js"
-    "https://ga.jspm.io/npm:es-module-shims@1.10.0/dist/es-module-shims.js"
-    "https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.js"
+    "https://cdn.tailwindcss.com/3.4.17"
+    "https://cdn.jsdelivr.net/npm/daisyui@4.12.23/dist/full.min.css"
+    "https://cdn.jsdelivr.net/npm/theme-change@3.0.4/index.js"
+    "https://ga.jspm.io/npm:es-module-shims@2.8.2/dist/es-module-shims.js"
+    "https://cdn.jsdelivr.net/npm/katex@0.18.1/dist/katex.js"
 )
 JS_LIB_NAMES=(
     "tailwindcss.js"
@@ -39,7 +39,7 @@ JS_PATH="web/vendor"
 # Three.js is fairly large (about 350 MB).
 # So, two options: Dynamically load it from a CDN, or download it.
 # Basically trading a slight delay for a large file size.
-THREEJS_VERSION="167"
+THREEJS_VERSION="185"
 THREEJS_URL="https://github.com/mrdoob/three.js/archive/refs/tags/r${THREEJS_VERSION}.tar.gz"
 DOWNLOAD_THREEJS=false
 PATCH_THREEJS=false
