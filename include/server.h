@@ -129,6 +129,10 @@ class HepEVDServer {
     }
     Hits getHits() { return this->getState()->m_hits; }
 
+    // Look up a hit that was already added (directly, or via a Particle) by its ID,
+    // so callers can attach properties to it after the fact without holding a pointer.
+    Hit *getHitById(const std::string &id) { return this->getState()->getHitById(id); }
+
     bool addMarkers(const Markers &inputMarkers) {
 
         if (this->getState()->m_markers.size() == 0) {
