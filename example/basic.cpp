@@ -34,8 +34,8 @@ int main(void) {
         const double z = disZ(gen);
         const double e = x + y + z;
 
-        Hit hit(Position({x, y, z}), e);
-        MCHit mcHit(Position({disX(gen), disY(gen), disZ(gen)}), pdgCodes[disPdg(gen)], e);
+        Hit hit({x, y, z}, e);
+        MCHit mcHit({disX(gen), disY(gen), disZ(gen)}, pdgCodes[disPdg(gen)], e);
 
         HitProperties properties;
 

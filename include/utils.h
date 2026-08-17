@@ -21,6 +21,7 @@ using json = nlohmann::json;
 #include <iterator>
 #include <numeric>
 #include <ostream>
+#include <iostream>
 #include <random>
 #include <sstream>
 
