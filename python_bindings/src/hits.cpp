@@ -25,7 +25,7 @@ namespace nb = nanobind;
 namespace HepEVD_py {
 
 template <typename T>
-T *processHitRow(const double *rowData, bool includesDimension, bool includesView, const std::string &label) {
+T processHitRow(const double *rowData, bool includesDimension, bool includesView, const std::string &label) {
     int idx = 0;
     double x = rowData[idx++];
     double y = rowData[idx++];
@@ -36,23 +36,25 @@ T *processHitRow(const double *rowData, bool includesDimension, bool includesVie
     double dimension = includesDimension ? rowData[idx++] : -1.0;
     double view = includesView ? rowData[idx++] : -1.0;
 
-    T *hit(nullptr);
+    T hit = [&]() {
+        if constexpr (std::is_same_v<T, HepEVD::MCHit>) {
+            return T(HepEVD::Position({x, y, z}), pdgCode, energy);
+        } else {
+            return T(HepEVD::Position({x, y, z}), energy);
+        }
+    }();
 
-    if constexpr (std::is_same_v<T, HepEVD::MCHit>) {
-        hit = new T(HepEVD::Position({x, y, z}), pdgCode, energy);
-    } else {
-        hit = new T(HepEVD::Position({x, y, z}), energy);
-        pythonHitMap[std::make_tuple(x, y, z, energy)] = hit;
-    }
+    if constexpr (!std::is_same_v<T, HepEVD::MCHit>)
+        pythonHitMap[std::make_tuple(x, y, z, energy)] = hit.getId();
 
     if (includesDimension)
-        hit->setDim(static_cast<HepEVD::HitDimension>(dimension));
+        hit.setDim(static_cast<HepEVD::HitDimension>(dimension));
 
     if (includesView)
-        hit->setHitType(static_cast<HepEVD::HitType>(view));
+        hit.setHitType(static_cast<HepEVD::HitType>(view));
 
     if (label != "")
-        hit->setLabel(label);
+        hit.setLabel(label);
 
     return hit;
 }
@@ -93,7 +95,7 @@ template <typename T> void add_hits(nb::handle hits, std::string label) {
     int rows = arraySize[0];
     int cols = arraySize[1];
 
-    std::vector<T *> hepEVDHits;
+    std::vector<T> hepEVDHits;
     hepEVDHits.reserve(rows);
 
     // If it's an ndarray, process all data at once
@@ -143,7 +145,10 @@ void set_hit_properties(nb::handle hit, nb::dict properties) {
     if (!pythonHitMap.count(inputHit))
         throw std::runtime_error("HepEVD: No hit exists with the given position");
 
-    HepEVD::Hit *hepEVDHit = pythonHitMap[inputHit];
+    HepEVD::Hit *hepEVDHit = HepEVD::getServer()->getHitById(pythonHitMap[inputHit]);
+
+    if (!hepEVDHit)
+        throw std::runtime_error("HepEVD: Hit no longer exists (was the server reset?)");
 
     for (auto item : properties) {
         std::string key = nb::cast<std::string>(item.first);

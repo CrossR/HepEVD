@@ -116,12 +116,12 @@ static void addSpacepoints(const traccc::edm::spacepoint_collection::const_view 
 
     for (unsigned int i = 0; i < spacePointsView.size(); i++) {
         const auto spacePoint = spacePointsView.at(i);
-        Hit *hit = new Hit({spacePoint.x(), spacePoint.y(), spacePoint.z()}, 0.0);
+        Hit hit(Position({spacePoint.x(), spacePoint.y(), spacePoint.z()}), 0.0);
 
         if (label != "")
-            hit->setLabel(label);
+            hit.setLabel(label);
 
-        hit->setDim(THREE_D);
+        hit.setDim(THREE_D);
         hits.push_back(hit);
     }
 
@@ -148,12 +148,12 @@ static void addSeeds(const traccc::edm::seed_collection::const_view &seeds,
 
         for (const auto &index : {seed.bottom_index(), seed.middle_index(), seed.top_index()}) {
             const auto spacePoint = spacePointsView.at(index);
-            Hit *hit = new Hit({spacePoint.x(), spacePoint.y(), spacePoint.z()}, 0.0);
+            Hit hit(Position({spacePoint.x(), spacePoint.y(), spacePoint.z()}), 0.0);
             hits.push_back(hit);
         }
 
         std::string id = getUUID();
-        Particle *particle = new Particle(hits, id, label);
+        Particle particle(hits, id, label);
 
         hepSeeds.push_back(particle);
     }
@@ -203,14 +203,14 @@ addTrackCandidates(const traccc::edm::track_candidate_collection<traccc::default
             const auto global = surface.local_to_global({}, m.local, {});
 
             // Create a hit object for this measurement.
-            Hit *hit = new Hit({global[0], global[1], global[2]}, 0.0);
+            Hit hit(Position({global[0], global[1], global[2]}), 0.0);
             hits.push_back(hit);
         }
 
         // Create a particle object for this track candidate.
         std::string id = getUUID();
-        Particle *particle = new Particle(hits, id, label);
-        particle->setRenderType(RenderType::TRACK);
+        Particle particle(hits, id, label);
+        particle.setRenderType(RenderType::TRACK);
 
         // Add the particle to the list of particles to be added to the server.
         hepTracks.push_back(particle);
@@ -252,14 +252,14 @@ static void addTracks(const traccc::track_state_container_types::const_view &tra
             const auto global = surface.local_to_global({}, m.local, {});
 
             // Create a hit object for this measurement.
-            Hit *hit = new Hit({global[0], global[1], global[2]}, 0.0);
+            Hit hit(Position({global[0], global[1], global[2]}), 0.0);
             hits.push_back(hit);
         }
 
         // Create a particle object for this track candidate.
         std::string id = getUUID();
-        Particle *particle = new Particle(hits, id, label);
-        particle->setRenderType(RenderType::TRACK);
+        Particle particle(hits, id, label);
+        particle.setRenderType(RenderType::TRACK);
 
         // Add the particle to the list of particles to be added to the server.
         hepTracks.push_back(particle);

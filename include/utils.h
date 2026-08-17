@@ -18,6 +18,7 @@ using json = nlohmann::json;
 #include <array>
 #include <functional>
 #include <future>
+#include <iostream>
 #include <iterator>
 #include <numeric>
 #include <ostream>
@@ -319,8 +320,8 @@ template <typename Container> std::string parallel_to_json_array(const Container
 
         writer.StartArray();
         for (auto it = begin; it != end; ++it) {
-            const auto *item_ptr = *it;
-            item_ptr->writeJson(writer);
+            const auto &item = *it;
+            item.writeJson(writer);
         }
         writer.EndArray();
 

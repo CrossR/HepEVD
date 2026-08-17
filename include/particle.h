@@ -40,13 +40,16 @@ class Particle {
     double getEnergy() const {
         double energy = 0.0;
         for (const auto &hit : this->m_hits)
-            energy += hit->getEnergy();
+            energy += hit.getEnergy();
         return energy;
     }
 
     unsigned int getNHits() const { return this->m_hits.size(); }
     std::string getLabel() const { return this->m_label; }
     std::string getID() const { return this->m_id; }
+
+    Hits &getHits() { return this->m_hits; }
+    const Hits &getHits() const { return this->m_hits; }
 
     void setVertices(const Markers &vertices) {
         // Check that the markers are all Point-type.
@@ -88,7 +91,7 @@ class Particle {
         writer.Key("hits");
         writer.StartArray();
         for (const auto &hit : m_hits) {
-            hit->writeJson(writer);
+            hit.writeJson(writer);
         }
         writer.EndArray();
 
@@ -169,7 +172,7 @@ class Particle {
     std::string m_parentID;
     std::vector<std::string> m_childIDs;
 };
-using Particles = std::vector<Particle *>;
+using Particles = std::vector<Particle>;
 
 inline static void to_json(json &j, const Particles &particles) {
 
@@ -179,13 +182,13 @@ inline static void to_json(json &j, const Particles &particles) {
     }
 
     for (const auto &particle : particles) {
-        j.push_back(*particle);
+        j.push_back(particle);
     }
 }
 
 inline static void from_json(const json &j, Particles &particles) {
     for (const auto &particle : j) {
-        particles.push_back(new Particle(particle));
+        particles.push_back(Particle(particle));
     }
 }
 

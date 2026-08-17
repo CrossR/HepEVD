@@ -89,22 +89,22 @@ void add_particles(nb::handle particles, std::string label) {
             double dimension = includesView ? hitData[idx++] : -1.0;
             double view = includesView ? hitData[idx++] : -1.0;
 
-            HepEVD::Hit *hepHit = new HepEVD::Hit({x, y, z}, energy);
+            HepEVD::Hit hepHit(HepEVD::Position({x, y, z}), energy);
 
             if (includesView) {
-                hepHit->setHitType(static_cast<HepEVD::HitType>(view));
-                hepHit->setDim(static_cast<HepEVD::HitDimension>(dimension));
+                hepHit.setHitType(static_cast<HepEVD::HitType>(view));
+                hepHit.setDim(static_cast<HepEVD::HitDimension>(dimension));
             }
 
             if (!label.empty())
-                hepHit->setLabel(label);
+                hepHit.setLabel(label);
 
             particleHits.push_back(hepHit);
         }
 
         // Now, we can create a HepEVD particle object.
         std::string id(HepEVD::getUUID());
-        HepEVD::Particle *hepParticle = new HepEVD::Particle(particleHits, id, label);
+        HepEVD::Particle hepParticle(particleHits, id, label);
         hepEVDParticles.push_back(hepParticle);
     }
 

@@ -144,7 +144,7 @@ class Hit {
     // Optional specific colour for the hit.
     std::string m_colour;
 };
-using Hits = std::vector<Hit *>;
+using Hits = std::vector<Hit>;
 
 inline static void to_json(json &j, const Hits &hits) {
 
@@ -154,13 +154,13 @@ inline static void to_json(json &j, const Hits &hits) {
     }
 
     for (const auto &hit : hits) {
-        j.push_back(*hit);
+        j.push_back(hit);
     }
 }
 
 inline static void from_json(const json &j, Hits &hits) {
     for (const auto &hit : j) {
-        hits.push_back(new Hit(hit));
+        hits.push_back(Hit(hit));
     }
 }
 
@@ -185,7 +185,7 @@ class MCHit : public Hit {
         return this->m_properties.at(key);
     }
 };
-using MCHits = std::vector<MCHit *>;
+using MCHits = std::vector<MCHit>;
 
 inline static void to_json(json &j, const MCHits &hits) {
 
@@ -199,16 +199,16 @@ inline static void to_json(json &j, const MCHits &hits) {
         // Skip hits without a PDG code.
         // This is because technically you can initialize an MCHit without a PDG code.
         // But, if you don't have a PDG code, you're not really an MCHit.
-        if (hit->getPDG() == 0.0)
+        if (hit.getPDG() == 0.0)
             continue;
 
-        j.push_back(*hit);
+        j.push_back(hit);
     }
 }
 
 inline static void from_json(const json &j, MCHits &hits) {
     for (const auto &hit : j) {
-        hits.push_back(new MCHit(hit));
+        hits.push_back(MCHit(hit));
     }
 }
 

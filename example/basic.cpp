@@ -34,8 +34,8 @@ int main(void) {
         const double z = disZ(gen);
         const double e = x + y + z;
 
-        Hit *hit = new Hit({x, y, z}, e);
-        MCHit *mcHit = new MCHit({disX(gen), disY(gen), disZ(gen)}, pdgCodes[disPdg(gen)], e);
+        Hit hit({x, y, z}, e);
+        MCHit mcHit({disX(gen), disY(gen), disZ(gen)}, pdgCodes[disPdg(gen)], e);
 
         HitProperties properties;
 
@@ -57,7 +57,7 @@ int main(void) {
         // Add a continuous property, based on distance from the middle of the detector
         properties[{"Distance", PropertyType::NUMERIC}] = std::abs(x) + std::abs(y) + std::abs(z);
 
-        hit->addProperties(properties);
+        hit.addProperties(properties);
         hits.push_back(hit);
         mcHits.push_back(mcHit);
 
@@ -83,18 +83,18 @@ int main(void) {
             const double z = disZ(gen);
             const double e = x + z;
 
-            Hit *hit = new Hit({x, 0.f, z}, e);
-            hit->setDim(TWO_D);
-            hit->setHitType(views[i]);
+            Hit hit(Position({x, 0.f, z}), e);
+            hit.setDim(TWO_D);
+            hit.setHitType(views[i]);
 
             if (disProb(gen) < 0.1)
-                hit->setWidth("x", 10.f);
+                hit.setWidth("x", 10.f);
 
             hits.push_back(hit);
 
-            MCHit *mcHit = new MCHit({disX(gen), 0.f, disZ(gen)}, pdgCodes[disPdg(gen)], e);
-            mcHit->setDim(TWO_D);
-            mcHit->setHitType(views[i]);
+            MCHit mcHit(Position({disX(gen), 0.f, disZ(gen)}), pdgCodes[disPdg(gen)], e);
+            mcHit.setDim(TWO_D);
+            mcHit.setHitType(views[i]);
             mcHits.push_back(mcHit);
         }
     }

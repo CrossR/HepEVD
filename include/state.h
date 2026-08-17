@@ -18,6 +18,8 @@
 #include "extern/json.hpp"
 using json = nlohmann::json;
 
+#include <unordered_map>
+
 namespace HepEVD {
 
 // Top level state object, that contains everything about the current state of the
@@ -44,8 +46,40 @@ class EventState {
         m_markers.clear();
         m_images.clear();
 
+        m_hitIdCache.clear();
+        m_hitIdCacheSize = 0;
+
         if (resetMCTruth)
             m_mcTruth = "";
+    }
+
+    // Find a hit that was previously added (either directly, or as part of a
+    // Particle), by its ID, so properties can be attached to it after the
+    // fact. Returns nullptr if no such hit exists.
+    //
+    // The lookup cache is rebuilt whenever the total number of hits changes,
+    // rather than on every mutation, since hits/particles are effectively
+    // append-only between calls to clear().
+    Hit *getHitById(const std::string &id) {
+        size_t currentSize = m_hits.size();
+        for (const auto &particle : m_particles)
+            currentSize += particle.getHits().size();
+
+        if (currentSize != m_hitIdCacheSize) {
+            m_hitIdCache.clear();
+
+            for (auto &hit : m_hits)
+                m_hitIdCache[hit.getId()] = &hit;
+
+            for (auto &particle : m_particles)
+                for (auto &hit : particle.getHits())
+                    m_hitIdCache[hit.getId()] = &hit;
+
+            m_hitIdCacheSize = currentSize;
+        }
+
+        const auto it = m_hitIdCache.find(id);
+        return it == m_hitIdCache.end() ? nullptr : it->second;
     }
 
     // Only need a to JSON method, as we don't need to read in the state.
@@ -67,6 +101,10 @@ class EventState {
     Markers m_markers;
     Images m_images;
     std::string m_mcTruth;
+
+  private:
+    std::unordered_map<std::string, Hit *> m_hitIdCache;
+    size_t m_hitIdCacheSize = 0;
 };
 
 using EventStates = std::map<int, EventState>;
