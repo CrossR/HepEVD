@@ -19,7 +19,7 @@ namespace HepEVD_py {
 
 // Map from Python types to HepEVD types.
 using RawHit = std::tuple<double, double, double, double>;
-using PythonHitMap = std::map<RawHit, HepEVD::Hit *>;
+using PythonHitMap = std::map<RawHit, std::string>;
 inline PythonHitMap pythonHitMap;
 
 /**
