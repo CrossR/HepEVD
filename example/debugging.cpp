@@ -53,12 +53,11 @@ int main(void) {
             const double z = corner.z + disZ(gen);
             const double e = particles.size() + 1;
 
-            Hit *hit = new Hit({x, y, z}, e);
+            Hit hit(Position({x, y, z}), e);
             particleHits.push_back(hit);
         }
 
-        Particle *particle =
-            new Particle(particleHits, std::to_string(particles.size()), std::to_string(particles.size()));
+        Particle particle(particleHits, std::to_string(particles.size()), std::to_string(particles.size()));
         particles.push_back(particle);
     }
 

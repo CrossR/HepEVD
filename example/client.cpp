@@ -32,8 +32,8 @@ int main(void) {
         const double z = disZ(gen);
         const double e = x + y + z;
 
-        Hit *hit = new Hit({x, y, z}, e);
-        MCHit *mcHit = new MCHit({disX(gen), disY(gen), disZ(gen)}, pdgCodes[disPdg(gen)], e);
+        Hit hit(Position({x, y, z}), e);
+        MCHit mcHit(Position({disX(gen), disY(gen), disZ(gen)}), pdgCodes[disPdg(gen)], e);
 
         std::map<std::string, double> properties;
 
@@ -52,7 +52,7 @@ int main(void) {
         if (z > 1200.0)
             properties["Back"] = 1.0f;
 
-        hit->addProperties(properties);
+        hit.addProperties(properties);
         hits.push_back(hit);
         mcHits.push_back(mcHit);
     }
@@ -68,14 +68,14 @@ int main(void) {
             const double z = disZ(gen);
             const double e = x + z;
 
-            Hit *hit = new Hit({x, 0.f, z}, e);
-            hit->setDim(TWO_D);
-            hit->setHitType(views[i]);
+            Hit hit(Position({x, 0.f, z}), e);
+            hit.setDim(TWO_D);
+            hit.setHitType(views[i]);
             hits.push_back(hit);
 
-            MCHit *mcHit = new MCHit({disX(gen), 0.f, disZ(gen)}, pdgCodes[disPdg(gen)], e);
-            mcHit->setDim(TWO_D);
-            mcHit->setHitType(views[i]);
+            MCHit mcHit(Position({disX(gen), 0.f, disZ(gen)}), pdgCodes[disPdg(gen)], e);
+            mcHit.setDim(TWO_D);
+            mcHit.setHitType(views[i]);
             mcHits.push_back(mcHit);
         }
     }
