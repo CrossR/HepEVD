@@ -57,7 +57,7 @@ class MonochromeImage {
 };
 
 // TODO: Extend later to include other image types
-using Images = std::vector<MonochromeImage *>;
+using Images = std::vector<MonochromeImage>;
 
 inline static void to_json(json &j, const Images &images) {
 
@@ -67,7 +67,7 @@ inline static void to_json(json &j, const Images &images) {
     }
 
     for (const auto &image : images) {
-        j.push_back(*image);
+        j.push_back(image);
     }
 }
 
@@ -76,7 +76,7 @@ inline static void from_json(const json &j, Images &images) {
         throw std::invalid_argument("Images must be an array!");
 
     for (const auto &jsonImage : j) {
-        images.push_back(new MonochromeImage(jsonImage));
+        images.push_back(MonochromeImage(jsonImage));
     }
 }
 
