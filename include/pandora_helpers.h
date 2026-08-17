@@ -311,7 +311,7 @@ static void showMC(const pandora::Algorithm &pAlgorithm, const std::string &list
 
             const auto pos = caloHit->GetPositionVector();
             MCHit mcHit(Position({pos.GetX(), pos.GetY(), pos.GetZ()}), mcParticle->GetParticleId(),
-                       caloHit->GetMipEquivalentEnergy());
+                        caloHit->GetMipEquivalentEnergy());
 
             mcHit.setDim(getHepEVDHitDimension(caloHit->GetHitType()));
             mcHit.setHitType(getHepEVDHitType(caloHit->GetHitType()));
@@ -383,7 +383,7 @@ static void getAllCaloHits(const pandora::ParticleFlowObject *pPfo, pandora::Cal
 }
 
 static Particle addParticle(const pandora::Pandora &pPandora, const pandora::ParticleFlowObject *pPfo,
-                             std::string label = "") {
+                            std::string label = "") {
 
     Hits hits;
     pandora::CaloHitList caloHitList;

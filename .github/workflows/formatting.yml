@@ -26,10 +26,11 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+
       - name: Check clang-format include
-        uses: jidicula/clang-format-action@v4.13.0
+        uses: jidicula/clang-format-action@v4.18.0
         with:
-          clang-format-version: '18'
+          clang-format-version: '22'
           check-path: ${{ matrix.path }}
 
   prettier:
@@ -39,8 +40,9 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
+
       - name: Check prettier
-        uses: creyD/prettier_action@v4.3
+        uses: creyD/prettier_action@v4.6
         with:
           dry: True
           prettier_options: --check web/*.{js,css,html}

@@ -320,10 +320,10 @@ static void showMCTruth(const art::Event &evt, const std::string mcTruthLabel) {
 }
 
 static Particle addParticle(const art::Ptr<recob::PFParticle> &pfp,
-                             const std::vector<art::Ptr<recob::SpacePoint>> &spacePoints,
-                             const std::vector<art::Ptr<recob::Cluster>> &clusters,
-                             const std::vector<art::Ptr<recob::Vertex>> &vertices,
-                             const art::FindManyP<recob::Hit> &clusterHitAssoc, const std::string label = "") {
+                            const std::vector<art::Ptr<recob::SpacePoint>> &spacePoints,
+                            const std::vector<art::Ptr<recob::Cluster>> &clusters,
+                            const std::vector<art::Ptr<recob::Vertex>> &vertices,
+                            const art::FindManyP<recob::Hit> &clusterHitAssoc, const std::string label = "") {
 
     Hits hits;
 
